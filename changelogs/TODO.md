@@ -17,3 +17,5 @@ This file is here for me to track things I wanna fix for the next release. If th
 - toast notification timer says 5s but definitely taking way more than 5 seconds.
 - mod update button missing color.
 - button size and icon spacing needs to be adjusted to match the tauri one better.
+- cursor wrong for checkbox part of checkbox row.
+- bug: can click through toast notifications.

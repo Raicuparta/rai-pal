@@ -30,10 +30,6 @@ export component SidebarAction inherits ListRow {
     background-color: root.highlighted ? root.highlighted-background : transparent;
     hover-background: root.highlighted ? root.highlighted-hover-background : Theme.hover-background;
     pressed-background: root.highlighted ? root.highlighted-pressed-background : Theme.pressed-background;
-    content-padding-left: Theme.space-12;
-    content-padding-right: Theme.space-12;
-    content-padding-top: Theme.space-8;
-    content-padding-bottom: Theme.space-8;
     spacing: Theme.space-8;
     interactive: root.enabled && root.current-state != ActionState.loading;
     accessible-label: root.text;
@@ -63,17 +59,10 @@ export component SidebarAction inherits ListRow {
         }
     }
 
-    Rectangle {
-        width: Theme.icon-size;
-        height: Theme.icon-size;
-
-        if root.shows-icon: SvgIcon {
-            width: 100%;
-            height: 100%;
-            icon: root.display-icon;
-            color: root.content-color;
-            transform-rotation: root.shows-spinner ? root.spinner-angle : 0deg;
-        }
+    SvgIcon {
+        icon: root.display-icon;
+        color: root.content-color;
+        transform-rotation: root.shows-spinner ? root.spinner-angle : 0deg;
     }
 
     Text {

@@ -60,41 +60,38 @@ export component GamesSidebar inherits Sidebar {
         }
     }
 
-    HorizontalLayout {
-        vertical-stretch: 0;
-        padding-left: Theme.space-8;
-        padding-right: Theme.space-8;
-        spacing: Theme.space-4;
-        cross-axis-alignment: center;
-
-        IconButton {
-            icon: Icon.collapse-all;
-            tooltip: @tr("filterMenu" => "Collapse all filters");
-            enabled: root.filters-have-expanded;
-
-            clicked => {
-                root.filters-collapse-all();
-            }
-        }
-
-        LabeledDivider {
-            label: @tr("filterMenu" => "Filters");
-            horizontal-stretch: 1;
-        }
-
-        ResetButton {
-            tooltip: @tr("filterMenu" => "Reset all filters");
-            enabled: root.filters-have-changes;
-
-            clicked => {
-                root.filters-reset();
-            }
-        }
-    }
-
     VerticalLayout {
-        alignment: start;
-        spacing: Theme.space-8;
+        HorizontalLayout {
+            vertical-stretch: 0;
+            padding-left: Theme.space-8;
+            padding-right: Theme.space-8;
+            spacing: Theme.space-4;
+            cross-axis-alignment: center;
+
+            IconButton {
+                icon: Icon.collapse-all;
+                tooltip: @tr("filterMenu" => "Collapse all filters");
+                enabled: root.filters-have-expanded;
+
+                clicked => {
+                    root.filters-collapse-all();
+                }
+            }
+
+            LabeledDivider {
+                label: @tr("filterMenu" => "Filters");
+                horizontal-stretch: 1;
+            }
+
+            ResetButton {
+                tooltip: @tr("filterMenu" => "Reset all filters");
+                enabled: root.filters-have-changes;
+
+                clicked => {
+                    root.filters-reset();
+                }
+            }
+        }
 
         for group in root.filter-groups: FilterGroupView {
             group: group;

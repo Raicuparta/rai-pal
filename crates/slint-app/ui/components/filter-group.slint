@@ -18,8 +18,6 @@ component FilterValueRow inherits ListRow {
     extra-hovered: checkbox-touch.has-hover || only-button.hovered || lock-button.hovered;
     content-padding-left: Theme.space-20 + Theme.space-4;
     content-padding-right: Theme.space-8;
-    content-padding-top: Theme.space-4;
-    content-padding-bottom: Theme.space-4;
     spacing: Theme.space-4;
     accessible-label: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
 
@@ -115,8 +113,6 @@ export component FilterGroupView inherits Rectangle {
             extra-hovered: reset-button.hovered;
             content-padding-left: Theme.space-8;
             content-padding-right: Theme.space-8;
-            content-padding-top: Theme.space-4;
-            content-padding-bottom: Theme.space-4;
             spacing: Theme.space-4;
             accessible-label: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
 
