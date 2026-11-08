@@ -130,13 +130,13 @@ impl<T: Hash + Eq> FilterGroup<T> {
 			|| self.unknown.as_ref().is_some_and(|item| item.locked)
 	}
 
-	pub fn has_any_enabled(&self, possible_values: &[T], has_unknown: bool) -> bool {
+	pub fn has_any_unlocked_enabled(&self, possible_values: &[T], has_unknown: bool) -> bool {
 		possible_values.iter().any(|value| {
 			let item = self.item(Some(value));
-			item.enabled || item.locked
+			item.enabled && !item.locked
 		}) || (has_unknown && {
 			let item = self.item(None);
-			item.enabled || item.locked
+			item.enabled && !item.locked
 		})
 	}
 
@@ -191,7 +191,7 @@ impl<T: Hash + Eq + Clone> FilterGroup<T> {
 				item.enabled = enabled;
 				self.set_item(target, item);
 
-				if !self.has_any_enabled(possible_values, has_unknown) {
+				if !self.has_any_unlocked_enabled(possible_values, has_unknown) {
 					self.keep_only_locked();
 				}
 			}

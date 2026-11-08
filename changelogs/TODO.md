@@ -6,8 +6,6 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 
 # Do these now:
 
-- bug: unchecking all filters not taking into account locked (shouldnt count locked as something that needs to be unchecked for the reset to happen, unchecking all unlocked items is what matters and should trigger the reset to check all that are unlocked).
-
 # Do not do yet:
 
 - Filters scrolling still always scrolls entire sidebar.
@@ -29,3 +27,4 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - Mod Update buttons now use the success/green tint.
 - Filter checkbox rows now show the pointer cursor over the checkbox area too, not just the rest of the row.
 - Toasts now have a `TouchArea` behind their content, so clicks on a toast no longer fall through to the UI underneath.
+- Filter auto-reset now only counts unlocked+enabled items. Locked items no longer keep a group from resetting, so unchecking the last unlocked item resets the group and re-enables all unlocked values.
