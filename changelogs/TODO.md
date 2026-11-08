@@ -16,3 +16,10 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - button size and icon spacing needs to be adjusted to match the tauri one better.
 - look for props that are exposed but never actually used and only the default is used.
 - look for things that are set in private properties and are only used once, just do them in place.
+- investigate callback drilling. does it have to be this way?
+- look for components that are named like navbar := Rectangle but the name is never used. no linter for unused variables in slint?
+- process name is still rai-pal-slint on appimage at least.
+- some modals have clipped titles (add to steam as example, i saw on deck)
+- maybe a bit too small on steam deck?
+
+# Report:

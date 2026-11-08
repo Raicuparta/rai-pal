@@ -94,6 +94,10 @@ EXCLUDES=(
 	"libgbm.so.*"
 	"libX11.so.*"
 	"libX11-xcb.so.*"
+	"libwayland-client.so.*"
+	"libwayland-cursor.so.*"
+	"libwayland-egl.so.*"
+	"libwayland-server.so.*"
 )
 
 linuxdeploy_args=(
@@ -130,9 +134,6 @@ force_pkg_library() {
 	fi
 }
 
-force_pkg_library wayland-client libwayland-client.so.0
-force_pkg_library wayland-cursor libwayland-cursor.so.0
-force_pkg_library wayland-egl libwayland-egl.so.1
 force_pkg_library xkbcommon libxkbcommon.so.0
 force_pkg_library xkbcommon-x11 libxkbcommon-x11.so.0
 force_pkg_library xcb libxcb.so.1

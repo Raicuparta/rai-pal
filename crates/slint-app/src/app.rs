@@ -40,6 +40,7 @@ use crate::{
 };
 
 pub fn run() -> Result<(), slint::PlatformError> {
+	fix_gamescope_scale_factor();
 	logging::init();
 
 	let Some(_single_instance) = single_instance::acquire() else {
@@ -1366,15 +1367,51 @@ fn apply_window_state(window: &MainWindow, state: Option<WindowState>) {
 		return;
 	};
 
-	if state.width > 0 && state.height > 0 {
-		window
-			.window()
-			.set_size(slint::PhysicalSize::new(state.width, state.height));
+	// Gamescope (Steam Deck game mode) scales windows larger than its output for display,
+	// but pointer input stays in unscaled window coordinates, leaving the bottom/right part
+	// of the window unreachable. Never restore a size that doesn't fit the current monitor.
+	let monitor_size = window.window().with_winit_window(|winit_window| {
+		winit_window
+			.current_monitor()
+			.or_else(|| winit_window.primary_monitor())
+			.map(|monitor| monitor.size())
+	})
+	.flatten();
+
+	let (width, height) = match monitor_size {
+		Some(monitor_size) => (state.width.min(monitor_size.width), state.height.min(monitor_size.height)),
+		None => (state.width, state.height),
+	};
+
+	if (width, height) != (state.width, state.height) {
+		log::warn!(
+			"Clamping restored window size {}x{} to {}x{}",
+			state.width,
+			state.height,
+			width,
+			height
+		);
 	}
 
-	window
-		.window()
-		.set_position(slint::PhysicalPosition::new(state.x, state.y));
+	if width > 0 && height > 0 {
+		window.window().set_size(slint::PhysicalSize::new(width, height));
+	}
+
+	let position = match monitor_size {
+		Some(monitor_size) => slint::PhysicalPosition::new(
+			state.x.clamp(
+				0,
+				i32::try_from(monitor_size.width.saturating_sub(width)).unwrap_or(i32::MAX),
+			),
+			state.y.clamp(
+				0,
+				i32::try_from(monitor_size.height.saturating_sub(height)).unwrap_or(i32::MAX),
+			),
+		),
+		None => slint::PhysicalPosition::new(state.x, state.y),
+	};
+
+	window.window().set_position(position);
 
 	if state.maximized {
 		window.window().set_maximized(true);
@@ -1605,6 +1642,26 @@ fn monospace_font_family() -> &'static str {
 	}
 
 	"DejaVu Sans Mono"
+}
+
+/// Gamescope's Xwayland reports bogus output dimensions and no `Xft.dpi`, so winit's X11
+/// DPI heuristic derives a ~2.17x scale factor from them. Gamescope already scales the
+/// window to the display, so the UI must be rendered at 1x there.
+fn fix_gamescope_scale_factor() {
+	let in_gamescope = std::env::var_os("GAMESCOPE_WAYLAND_DISPLAY").is_some()
+		|| std::env::var("XDG_SESSION_DESKTOP").is_ok_and(|value| value == "gamescope");
+
+	if !in_gamescope
+		|| std::env::var_os("SLINT_SCALE_FACTOR").is_some()
+		|| std::env::var_os("WINIT_X11_SCALE_FACTOR").is_some()
+	{
+		return;
+	}
+
+	// SAFETY: called before the Slint backend is initialized and before any threads are spawned.
+	unsafe {
+		std::env::set_var("SLINT_SCALE_FACTOR", "1");
+	}
 }
 
 fn platform_name() -> String {
