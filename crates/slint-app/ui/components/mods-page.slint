@@ -7,6 +7,7 @@ import { ModsTabFamilyRowView } from "mods-tab-family-row.slint";
 import { RefreshButton } from "refresh-button.slint";
 import { Sidebar } from "sidebar.slint";
 import { SidebarAction } from "sidebar-action.slint";
+import { Icon } from "svg-icon.slint";
 
 export component ModsPage inherits Rectangle {
     in property <[ModsTabItemView]> items;
@@ -30,7 +31,7 @@ export component ModsPage inherits Rectangle {
 
             SidebarAction {
                 text: @tr("urlModSources" => "Mod Sources");
-                icon: @image-url("../icons/ui/mod-sources.svg");
+                icon: Icon.mod-sources;
 
                 clicked => {
                     root.open-url-mod-sources();
@@ -39,7 +40,7 @@ export component ModsPage inherits Rectangle {
 
             SidebarAction {
                 text: @tr("modsPage" => "Open Local Mods Folder");
-                icon: @image-url("../icons/ui/folder-mods.svg");
+                icon: Icon.folder-mods;
                 action-id: "open-local-mods-folder";
                 tooltip: @tr("modsPage" => "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database.");
 

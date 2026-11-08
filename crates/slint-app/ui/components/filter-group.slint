@@ -6,7 +6,7 @@ import { Button } from "button.slint";
 import { IconButton } from "icon-button.slint";
 import { ListRow } from "list-row.slint";
 import { ResetButton } from "reset-button.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { Icon, SvgIcon } from "svg-icon.slint";
 
 component FilterValueRow inherits ListRow {
     in property <FilterValueView> item;
@@ -58,7 +58,7 @@ component FilterValueRow inherits ListRow {
             width: 12px;
 
             SvgIcon {
-                source: @image-url("../icons/ui/help.svg");
+                icon: Icon.help;
                 size: 12px;
                 color: Theme.dimmed-foreground;
             }
@@ -84,7 +84,7 @@ component FilterValueRow inherits ListRow {
     }
 
     lock-button := IconButton {
-        icon: root.item.locked ? @image-url("../icons/ui/locked.svg") : @image-url("../icons/ui/unlocked.svg");
+        icon: root.item.locked ? Icon.locked : Icon.unlocked;
         tooltip: root.item.locked ? @tr("filterMenu" => "Unlock filter value") : @tr("filterMenu" => "Lock filter value");
         visible: root.item.locked || root.hovered;
         enabled: !root.item.enabled;
@@ -131,7 +131,7 @@ export component FilterGroupView inherits Rectangle {
                 SvgIcon {
                     x: (parent.width - self.width) / 2;
                     y: (parent.height - self.height) / 2;
-                    source: root.group.expanded ? @image-url("../icons/ui/expanded.svg") : @image-url("../icons/ui/collapsed.svg");
+                    icon: root.group.expanded ? Icon.expanded : Icon.collapsed;
                     color: Theme.dimmed-foreground;
                 }
             }

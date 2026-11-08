@@ -34,6 +34,7 @@ import { Fonts, Theme } from "theme.slint";
 import { ModActions } from "actions.slint";
 import { ActionState, ActionStates } from "action-state.slint";
 import { AppColorScheme, AppTab, AddGamePhase } from "app-types.slint";
+import { Icon } from "components/svg-icon.slint";
 
 export {
     ActionState,
@@ -238,7 +239,7 @@ export component MainWindow inherits Window {
 
                     NavTab {
                         title: @tr("tab" => "Games");
-                        icon: @image-url("icons/ui/games.svg");
+                        icon: Icon.games;
                         selected: root.current-tab == AppTab.games;
 
                         clicked => {
@@ -249,7 +250,7 @@ export component MainWindow inherits Window {
 
                     NavTab {
                         title: @tr("tab" => "Mods");
-                        icon: @image-url("icons/ui/mods.svg");
+                        icon: Icon.mods;
                         selected: root.current-tab == AppTab.mods;
 
                         clicked => {
@@ -260,7 +261,7 @@ export component MainWindow inherits Window {
 
                     NavTab {
                         title: @tr("tab" => "Thanks");
-                        icon: @image-url("icons/ui/thanks.svg");
+                        icon: Icon.thanks;
                         icon-color: #c92a2a;
                         selected: root.current-tab == AppTab.thanks;
 

@@ -1,7 +1,7 @@
 import { ProgressIndicator } from "std-widgets.slint";
 import { DownloadItemView } from "../download-view.slint";
 import { Theme } from "../theme.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { Icon, SvgIcon } from "svg-icon.slint";
 import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
 
 export component DownloadProgress inherits Rectangle {
@@ -23,7 +23,7 @@ export component DownloadProgress inherits Rectangle {
         background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
 
         SvgIcon {
-            source: @image-url("../icons/ui/download.svg");
+            icon: Icon.download;
             size: 18px;
             color: Theme.foreground;
         }

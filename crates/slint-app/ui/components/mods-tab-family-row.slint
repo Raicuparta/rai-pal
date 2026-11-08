@@ -1,7 +1,7 @@
 import { ModsTabItemView } from "../mods-tab-view.slint";
 import { Theme } from "../theme.slint";
 import { ModsTabRowView } from "mods-tab-row.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { Icon, SvgIcon } from "svg-icon.slint";
 
 export component ModsTabFamilyRowView inherits Rectangle {
     in property <ModsTabItemView> item;
@@ -25,7 +25,7 @@ export component ModsTabFamilyRowView inherits Rectangle {
                 cross-axis-alignment: center;
 
                 SvgIcon {
-                    source: root.expanded ? @image-url("../icons/ui/expanded.svg") : @image-url("../icons/ui/collapsed.svg");
+                    icon: root.expanded ? Icon.expanded : Icon.collapsed;
                     size: Theme.space-16;
                     color: Theme.dimmed-foreground;
                 }

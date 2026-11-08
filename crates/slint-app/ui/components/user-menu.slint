@@ -1,6 +1,6 @@
 import { Theme } from "../theme.slint";
 import { NavButton } from "nav-button.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { Icon, SvgIcon } from "svg-icon.slint";
 import { PopupMenu, PopupMenuItem } from "menu.slint";
 
 export component UserMenu inherits Rectangle {
@@ -56,7 +56,7 @@ export component UserMenu inherits Rectangle {
         }
 
         if !root.logged-in: SvgIcon {
-            source: @image-url("../icons/ui/account.svg");
+            icon: Icon.account;
             size: root.avatar-size;
             color: Theme.foreground;
         }

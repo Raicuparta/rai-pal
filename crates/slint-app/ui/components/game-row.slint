@@ -2,7 +2,7 @@ import { Branding } from "../branding.slint";
 import { GameRowView } from "../game-row-view.slint";
 import { Fonts, Theme } from "../theme.slint";
 import { ProviderIcon } from "provider-icon.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { Icon, SvgIcon } from "svg-icon.slint";
 import { EngineIcon } from "engine-icon.slint";
 import { HorizontalBox, Palette } from "std-widgets.slint";
 
@@ -34,7 +34,7 @@ export component GameRowView inherits Rectangle {
                 }
 
                 SvgIcon {
-                    source: game-row.installed ? @image-url("../icons/ui/game-installed.svg") : @image-url("../icons/ui/game-not-installed.svg");
+                    icon: game-row.installed ? Icon.game-installed : Icon.game-not-installed;
                     color: game-row.installed && Theme.dark ? white : Theme.foreground;
                 }
             }

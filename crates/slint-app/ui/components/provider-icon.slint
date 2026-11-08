@@ -1,6 +1,6 @@
 import { Branding } from "../branding.slint";
 import { Theme } from "../theme.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { Icon, SvgIcon } from "svg-icon.slint";
 
 export component ProviderIcon inherits Rectangle {
     in property <string> provider-id;
@@ -9,33 +9,33 @@ export component ProviderIcon inherits Rectangle {
     width: root.icon-size;
     height: root.icon-size;
 
-    pure function icon-source(id: string) -> image {
+    pure function icon-source(id: string) -> Icon {
         if id == "Amazon" {
-            return @image-url("../icons/providers/amazon.svg");
+            return Icon.amazon;
         }
         if id == "Steam" {
-            return @image-url("../icons/providers/steam.svg");
+            return Icon.steam;
         }
         if id == "Epic" {
-            return @image-url("../icons/providers/epic.svg");
+            return Icon.epic;
         }
         if id == "Gog" {
-            return @image-url("../icons/providers/gog.svg");
+            return Icon.gog;
         }
         if id == "Itch" {
-            return @image-url("../icons/providers/itch.svg");
+            return Icon.itch;
         }
         if id == "Xbox" {
-            return @image-url("../icons/providers/xbox.svg");
+            return Icon.xbox;
         }
         if id == "Manual" {
-            return @image-url("../icons/providers/manual.svg");
+            return Icon.manual;
         }
-        return @image-url("");
+        return Icon.none;
     }
 
     SvgIcon {
-        source: root.icon-source(root.provider-id);
+        icon: root.icon-source(root.provider-id);
         size: root.icon-size;
         color: Branding.provider-foreground(root.provider-id);
     }

@@ -1,5 +1,5 @@
 import { Theme } from "../theme.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { Icon, SvgIcon } from "svg-icon.slint";
 import { PopupMenu, PopupMenuItem } from "menu.slint";
 
 export struct SelectOption {
@@ -11,7 +11,7 @@ export component SelectMenu inherits Rectangle {
     in property <string> label: "";
     in property <[SelectOption]> options;
     in-out property <int> selected-index: 0;
-    in property <image> icon: @image-url("../icons/ui/sort-menu.svg");
+    in property <Icon> icon: Icon.sort-menu;
     in property <bool> enabled: true;
 
     callback selected(index: int);
@@ -46,7 +46,7 @@ export component SelectMenu inherits Rectangle {
         }
 
         SvgIcon {
-            source: root.icon;
+            icon: root.icon;
             color: Theme.dimmed-foreground;
         }
     }

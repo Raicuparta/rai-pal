@@ -8,6 +8,7 @@ import { ActionButton } from "action-button.slint";
 import { GameRowView } from "game-row.slint";
 import { ModsSection } from "mods-section.slint";
 import { PotentialModsSection } from "potential-mods-section.slint";
+import { Icon } from "svg-icon.slint";
 
 export component GameDetailsPage inherits Rectangle {
     in property <GameRowView> game-row;
@@ -83,7 +84,7 @@ export component GameDetailsPage inherits Rectangle {
                         ActionButton {
                             vertical-stretch: 0;
                             text: @tr("gameModal" => "Uninstall all mods");
-                            icon: @image-url("../icons/ui/uninstall.svg");
+                            icon: Icon.uninstall;
                             action-id: "game-mod-uninstall-all";
                             tint: Theme.danger;
 

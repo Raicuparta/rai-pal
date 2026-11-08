@@ -3,6 +3,7 @@ import { Tr } from "../translations.slint";
 import { LabeledDivider } from "labeled-divider.slint";
 import { SidebarAction } from "sidebar-action.slint";
 import { Sidebar, SidebarSection } from "sidebar.slint";
+import { Icon } from "svg-icon.slint";
 
 export component GameSidebar inherits Sidebar {
     in property <string> provider-id;
@@ -27,7 +28,7 @@ export component GameSidebar inherits Sidebar {
 
         SidebarAction {
             text: @tr("subPage" => "Back");
-            icon: @image-url("../icons/ui/back.svg");
+            icon: Icon.back;
 
             clicked => {
                 root.back();
@@ -79,7 +80,7 @@ export component GameSidebar inherits Sidebar {
 
             SidebarAction {
                 text: @tr("gameModal" => "Game Files");
-                icon: @image-url("../icons/ui/folder.svg");
+                icon: Icon.folder;
                 action-id: "open-game-folder";
 
                 clicked => {
@@ -89,7 +90,7 @@ export component GameSidebar inherits Sidebar {
 
             SidebarAction {
                 text: @tr("gameModal" => "Installed Mods");
-                icon: @image-url("../icons/ui/folder-mods.svg");
+                icon: Icon.folder-mods;
                 action-id: "open-game-mods-folder";
 
                 clicked => {
@@ -141,7 +142,7 @@ export component GameSidebar inherits Sidebar {
 
             if root.has-exe-path: SidebarAction {
                 text: @tr("gameModal" => "Refresh game");
-                icon: @image-url("../icons/ui/refresh.svg");
+                icon: Icon.refresh;
                 action-id: "refresh-game";
 
                 clicked => {
@@ -151,7 +152,7 @@ export component GameSidebar inherits Sidebar {
 
             SidebarAction {
                 text: @tr("debugData" => "Debug data");
-                icon: @image-url("../icons/ui/bug.svg");
+                icon: Icon.bug;
 
                 clicked => {
                     root.debug-data();

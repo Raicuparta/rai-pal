@@ -1,5 +1,5 @@
 import { Theme } from "../theme.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { Icon, SvgIcon } from "svg-icon.slint";
 
 export component LabeledDivider inherits HorizontalLayout {
     in property <string> label;
@@ -28,7 +28,7 @@ export component LabeledDivider inherits HorizontalLayout {
         }
 
         if root.tooltip != "" : SvgIcon {
-            source: @image-url("../icons/ui/help.svg");
+            icon: Icon.help;
             size: Theme.font-12;
             color: Theme.dimmed-foreground;
 

@@ -5,6 +5,7 @@ import { ActionButton } from "action-button.slint";
 import { IconButton } from "icon-button.slint";
 import { ModSummaryView } from "mod-summary.slint";
 import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
+import { Icon } from "svg-icon.slint";
 
 export component GameModRowView inherits Rectangle {
     in property <GameModView> game-mod;
@@ -23,7 +24,7 @@ export component GameModRowView inherits Rectangle {
 
         if game-mod.can-edit-config: PopupMenuItem {
             text: @tr("gameModRow" => "Edit Mod Config");
-            icon: @image-url("../icons/ui/settings.svg");
+            icon: Icon.settings;
 
             clicked => {
                 ModActions.configure(game-mod.mod-id);
@@ -33,7 +34,7 @@ export component GameModRowView inherits Rectangle {
 
         if game-mod.can-edit-config: PopupMenuItem {
             text: @tr("gameModRow" => "Open folder containing this mod's config files");
-            icon: @image-url("../icons/ui/folder-mods.svg");
+            icon: Icon.folder-mods;
 
             clicked => {
                 ModActions.configure-folder(game-mod.mod-id);
@@ -45,7 +46,7 @@ export component GameModRowView inherits Rectangle {
 
         if game-mod.can-open-mod-folder: PopupMenuItem {
             text: @tr("gameModRow" => "Open Mod Folder");
-            icon: @image-url("../icons/ui/folder-mods.svg");
+            icon: Icon.folder-mods;
 
             clicked => {
                 ModActions.open-folder(game-mod.mod-id);
@@ -55,7 +56,7 @@ export component GameModRowView inherits Rectangle {
 
         if game-mod.can-download-config: PopupMenuItem {
             text: @tr("gameModRow" => "Download Recommended Config");
-            icon: @image-url("../icons/ui/download.svg");
+            icon: Icon.download;
 
             clicked => {
                 ModActions.download-config(game-mod.mod-id);
@@ -67,7 +68,7 @@ export component GameModRowView inherits Rectangle {
 
         if game-mod.can-reinstall: PopupMenuItem {
             text: @tr("gameModRow" => "Reinstall");
-            icon: @image-url("../icons/ui/reinstall.svg");
+            icon: Icon.reinstall;
 
             clicked => {
                 ModActions.reinstall(game-mod.mod-id);
@@ -77,7 +78,7 @@ export component GameModRowView inherits Rectangle {
 
         if game-mod.can-uninstall: PopupMenuItem {
             text: @tr("gameModRow" => "Uninstall");
-            icon: @image-url("../icons/ui/uninstall.svg");
+            icon: Icon.uninstall;
             enabled: !game-mod.has-installed-dependants;
 
             clicked => {
@@ -125,7 +126,7 @@ export component GameModRowView inherits Rectangle {
 
             if game-mod.can-install: ActionButton {
                 text: @tr("gameModRow" => "Install");
-                icon: @image-url("../icons/ui/install.svg");
+                icon: Icon.install;
                 action-id: "game-mod-install:" + game-mod.mod-id;
 
                 clicked => {
@@ -140,7 +141,7 @@ export component GameModRowView inherits Rectangle {
 
             if game-mod.can-update: ActionButton {
                 text: @tr("gameModRow" => "Update");
-                icon: @image-url("../icons/ui/update.svg");
+                icon: Icon.update;
                 action-id: "game-mod-install:" + game-mod.mod-id;
 
                 clicked => {
@@ -150,7 +151,7 @@ export component GameModRowView inherits Rectangle {
 
             if game-mod.can-run: ActionButton {
                 text: @tr("gameModRow" => "Run");
-                icon: @image-url("../icons/ui/play.svg");
+                icon: Icon.play;
                 action-id: "game-mod-run:" + game-mod.mod-id;
 
                 clicked => {
@@ -160,7 +161,7 @@ export component GameModRowView inherits Rectangle {
 
             actions-button := IconButton {
                 visible: root.has-dropdown-actions;
-                icon: @image-url("../icons/ui/more.svg");
+                icon: Icon.more;
                 icon-size: 22px;
                 tooltip: @tr("gameModRow" => "Mod actions");
 

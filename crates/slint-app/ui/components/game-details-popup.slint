@@ -1,6 +1,7 @@
 import { TextEdit } from "std-widgets.slint";
 import { Fonts, Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
+import { Icon } from "svg-icon.slint";
 
 export component GameDetailsPopup inherits Modal {
     in property <string> game-json;
@@ -10,7 +11,7 @@ export component GameDetailsPopup inherits Modal {
 
     title: @tr("debugData" => "Debug data");
     big: true;
-    header-action-icon: root.copied ? @image-url("../icons/ui/copied.svg") : @image-url("../icons/ui/copy.svg");
+    header-action-icon: root.copied ? Icon.copied : Icon.copy;
     header-action-tooltip: @tr("debugData" => "Copy debug data");
 
     copy-reset-timer := Timer {

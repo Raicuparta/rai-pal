@@ -1,8 +1,8 @@
 import { BaseButton } from "base-button.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { Icon, SvgIcon } from "svg-icon.slint";
 
 export component IconButton inherits BaseButton {
-    in property <image> icon;
+    in property <Icon> icon: Icon.none;
     in property <length> icon-size: 14px;
 
     private property <length> size: icon-size * 1.2;
@@ -13,8 +13,8 @@ export component IconButton inherits BaseButton {
 
     accessible-label: root.tooltip;
 
-    if root.icon.width > 0: SvgIcon {
-        source: root.icon;
+    if root.icon != Icon.none: SvgIcon {
+        icon: root.icon;
         size: root.icon-size;
         color: root.ink-color;
     }

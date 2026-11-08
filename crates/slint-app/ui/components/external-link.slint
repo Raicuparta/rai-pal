@@ -1,15 +1,16 @@
 import { ModActions } from "../actions.slint";
 import { Theme } from "../theme.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { Icon, SvgIcon } from "svg-icon.slint";
 
 export component ExternalLinkIcon inherits SvgIcon {
-    source: @image-url("../icons/ui/external-link.svg");
+    icon: Icon.external-link;
 }
 
 export component ExternalLink inherits Rectangle {
     in property <string> label;
-    in property <image> icon;
-    in property <bool> has-icon: true;
+    in property <Icon> icon: Icon.none;
+    in property <image> icon-image;
+    private property <bool> has-icon: root.icon != Icon.none || root.icon-image.width > 0;
     in property <brush> icon-color: Theme.foreground;
     in property <bool> icon-round: false;
     in property <length> icon-size: Theme.space-20;
@@ -40,7 +41,7 @@ export component ExternalLink inherits Rectangle {
             clip: true;
 
             Image {
-                source: root.icon;
+                source: root.icon-image;
                 width: 100%;
                 height: 100%;
                 image-fit: cover;
@@ -48,7 +49,7 @@ export component ExternalLink inherits Rectangle {
         }
 
         if root.has-icon && !root.icon-round : SvgIcon {
-            source: root.icon;
+            icon: root.icon;
             size: root.icon-size;
             color: root.icon-color;
         }

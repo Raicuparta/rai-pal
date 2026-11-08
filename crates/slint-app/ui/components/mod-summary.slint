@@ -1,8 +1,8 @@
 import { Theme } from "../theme.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { Icon, SvgIcon } from "svg-icon.slint";
 
 component MetaItem inherits HorizontalLayout {
-    in property <image> icon;
+    in property <Icon> icon: Icon.none;
     in property <string> text;
     in property <string> tooltip: "";
 
@@ -11,7 +11,7 @@ component MetaItem inherits HorizontalLayout {
     cross-axis-alignment: center;
 
     SvgIcon {
-        source: root.icon;
+        icon: root.icon;
         size: Theme.font-10;
         color: Theme.foreground;
     }
@@ -48,7 +48,7 @@ export component ModSummaryView inherits HorizontalLayout {
     cross-axis-alignment: center;
 
     if show-status : SvgIcon {
-        source: outdated ? @image-url("../icons/ui/outdated.svg") : installed ? @image-url("../icons/ui/success.svg") : @image-url("../icons/ui/mod-not-installed.svg");
+        icon: outdated ? Icon.outdated : installed ? Icon.success : Icon.mod-not-installed;
         size: 15px;
         color: outdated ? Theme.status-warning : installed ? Theme.status-success : Theme.dimmed-foreground;
     }
@@ -86,7 +86,7 @@ export component ModSummaryView inherits HorizontalLayout {
                     alignment: center;
 
                     SvgIcon {
-                        source: @image-url("../icons/ui/deprecated.svg");
+                        icon: Icon.deprecated;
                         size: Theme.font-11;
                         color: Theme.deprecated-foreground;
                     }
@@ -119,22 +119,22 @@ export component ModSummaryView inherits HorizontalLayout {
             }
 
             if root.release-date != "" : MetaItem {
-                icon: @image-url("../icons/ui/calendar.svg");
+                icon: Icon.calendar;
                 text: root.release-date;
             }
 
             if root.author != "" : MetaItem {
-                icon: @image-url("../icons/ui/user.svg");
+                icon: Icon.user;
                 text: root.author;
             }
 
             if root.engine-text != "" : MetaItem {
-                icon: @image-url("../icons/ui/engine.svg");
+                icon: Icon.engine;
                 text: root.engine-text;
             }
 
             if root.has-remote-config : MetaItem {
-                icon: @image-url("../icons/ui/settings.svg");
+                icon: Icon.settings;
                 text: @tr("gameModRow" => "Recommended config");
                 tooltip: @tr("gameModRow" => "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu.");
             }

@@ -2,7 +2,7 @@ import { ScrollView } from "std-widgets.slint";
 import { Theme } from "../theme.slint";
 import { LabeledDivider } from "labeled-divider.slint";
 import { ListRow } from "list-row.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { Icon, SvgIcon } from "svg-icon.slint";
 
 export component PopupMenu inherits PopupWindow {
     in property <length> menu-width: Theme.menu-width;
@@ -39,14 +39,14 @@ export component PopupMenu inherits PopupWindow {
 
 export component PopupMenuItem inherits ListRow {
     in property <string> text;
-    in property <image> icon;
+    in property <Icon> icon: Icon.none;
     in property <bool> checkable: false;
     in property <bool> checked: false;
 
     accessible-label: root.text;
 
     SvgIcon {
-        source: root.checked ? @image-url("../icons/ui/check.svg") : root.icon;
+        icon: root.checked ? Icon.check : root.icon;
         color: root.enabled ? Theme.foreground : Theme.dimmed-foreground;
     }
 

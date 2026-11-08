@@ -1,10 +1,142 @@
 import { Theme } from "../theme.slint";
 
+export enum Icon {
+    none,
+    account,
+    back,
+    bug,
+    calendar,
+    check,
+    close,
+    collapse-all,
+    collapsed,
+    copied,
+    copy,
+    deprecated,
+    download,
+    engine,
+    error,
+    expanded,
+    external-link,
+    folder-mods,
+    folder,
+    game-installed,
+    game-not-installed,
+    games,
+    help,
+    info,
+    install,
+    loading,
+    locked,
+    menu,
+    mod-not-installed,
+    mod-sources,
+    mods,
+    more,
+    outdated,
+    play,
+    refresh,
+    refreshing,
+    reinstall,
+    reset,
+    settings,
+    sort-menu,
+    success,
+    thanks,
+    trophy,
+    uninstall,
+    unlocked,
+    update,
+    user,
+    website,
+    github,
+    patreon,
+    paypal,
+    gamemaker,
+    godot,
+    unity,
+    unreal,
+    amazon,
+    epic,
+    gog,
+    itch,
+    manual,
+    steam,
+    xbox,
+}
+
 export component SvgIcon inherits Image {
+    in property <Icon> icon: Icon.none;
     in property <length> size: Theme.icon-size;
     in property <brush> color: Theme.foreground;
 
     width: root.size;
     height: root.size;
+    source: root.icon-source(root.icon);
     colorize: root.color;
+
+    pure function icon-source(icon: Icon) -> image {
+        if icon == Icon.account { return @image-url("../icons/ui/account.svg"); }
+        if icon == Icon.back { return @image-url("../icons/ui/back.svg"); }
+        if icon == Icon.bug { return @image-url("../icons/ui/bug.svg"); }
+        if icon == Icon.calendar { return @image-url("../icons/ui/calendar.svg"); }
+        if icon == Icon.check { return @image-url("../icons/ui/check.svg"); }
+        if icon == Icon.close { return @image-url("../icons/ui/close.svg"); }
+        if icon == Icon.collapse-all { return @image-url("../icons/ui/collapse-all.svg"); }
+        if icon == Icon.collapsed { return @image-url("../icons/ui/collapsed.svg"); }
+        if icon == Icon.copied { return @image-url("../icons/ui/copied.svg"); }
+        if icon == Icon.copy { return @image-url("../icons/ui/copy.svg"); }
+        if icon == Icon.deprecated { return @image-url("../icons/ui/deprecated.svg"); }
+        if icon == Icon.download { return @image-url("../icons/ui/download.svg"); }
+        if icon == Icon.engine { return @image-url("../icons/ui/engine.svg"); }
+        if icon == Icon.error { return @image-url("../icons/ui/error.svg"); }
+        if icon == Icon.expanded { return @image-url("../icons/ui/expanded.svg"); }
+        if icon == Icon.external-link { return @image-url("../icons/ui/external-link.svg"); }
+        if icon == Icon.folder-mods { return @image-url("../icons/ui/folder-mods.svg"); }
+        if icon == Icon.folder { return @image-url("../icons/ui/folder.svg"); }
+        if icon == Icon.game-installed { return @image-url("../icons/ui/game-installed.svg"); }
+        if icon == Icon.game-not-installed { return @image-url("../icons/ui/game-not-installed.svg"); }
+        if icon == Icon.games { return @image-url("../icons/ui/games.svg"); }
+        if icon == Icon.help { return @image-url("../icons/ui/help.svg"); }
+        if icon == Icon.info { return @image-url("../icons/ui/info.svg"); }
+        if icon == Icon.install { return @image-url("../icons/ui/install.svg"); }
+        if icon == Icon.loading { return @image-url("../icons/ui/loading.svg"); }
+        if icon == Icon.locked { return @image-url("../icons/ui/locked.svg"); }
+        if icon == Icon.menu { return @image-url("../icons/ui/menu.svg"); }
+        if icon == Icon.mod-not-installed { return @image-url("../icons/ui/mod-not-installed.svg"); }
+        if icon == Icon.mod-sources { return @image-url("../icons/ui/mod-sources.svg"); }
+        if icon == Icon.mods { return @image-url("../icons/ui/mods.svg"); }
+        if icon == Icon.more { return @image-url("../icons/ui/more.svg"); }
+        if icon == Icon.outdated { return @image-url("../icons/ui/outdated.svg"); }
+        if icon == Icon.play { return @image-url("../icons/ui/play.svg"); }
+        if icon == Icon.refresh { return @image-url("../icons/ui/refresh.svg"); }
+        if icon == Icon.refreshing { return @image-url("../icons/ui/refreshing.svg"); }
+        if icon == Icon.reinstall { return @image-url("../icons/ui/reinstall.svg"); }
+        if icon == Icon.reset { return @image-url("../icons/ui/reset.svg"); }
+        if icon == Icon.settings { return @image-url("../icons/ui/settings.svg"); }
+        if icon == Icon.sort-menu { return @image-url("../icons/ui/sort-menu.svg"); }
+        if icon == Icon.success { return @image-url("../icons/ui/success.svg"); }
+        if icon == Icon.thanks { return @image-url("../icons/ui/thanks.svg"); }
+        if icon == Icon.trophy { return @image-url("../icons/ui/trophy.svg"); }
+        if icon == Icon.uninstall { return @image-url("../icons/ui/uninstall.svg"); }
+        if icon == Icon.unlocked { return @image-url("../icons/ui/unlocked.svg"); }
+        if icon == Icon.update { return @image-url("../icons/ui/update.svg"); }
+        if icon == Icon.user { return @image-url("../icons/ui/user.svg"); }
+        if icon == Icon.website { return @image-url("../icons/ui/website.svg"); }
+        if icon == Icon.github { return @image-url("../icons/brands/github.svg"); }
+        if icon == Icon.patreon { return @image-url("../icons/brands/patreon.svg"); }
+        if icon == Icon.paypal { return @image-url("../icons/brands/paypal.svg"); }
+        if icon == Icon.gamemaker { return @image-url("../icons/engines/gamemaker.svg"); }
+        if icon == Icon.godot { return @image-url("../icons/engines/godot.svg"); }
+        if icon == Icon.unity { return @image-url("../icons/engines/unity.svg"); }
+        if icon == Icon.unreal { return @image-url("../icons/engines/unreal.svg"); }
+        if icon == Icon.amazon { return @image-url("../icons/providers/amazon.svg"); }
+        if icon == Icon.epic { return @image-url("../icons/providers/epic.svg"); }
+        if icon == Icon.gog { return @image-url("../icons/providers/gog.svg"); }
+        if icon == Icon.itch { return @image-url("../icons/providers/itch.svg"); }
+        if icon == Icon.manual { return @image-url("../icons/providers/manual.svg"); }
+        if icon == Icon.steam { return @image-url("../icons/providers/steam.svg"); }
+        if icon == Icon.xbox { return @image-url("../icons/providers/xbox.svg"); }
+        return @image-url("");
+    }
 }

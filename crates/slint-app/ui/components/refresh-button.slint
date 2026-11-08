@@ -1,13 +1,14 @@
 import { Theme } from "../theme.slint";
 import { Tr } from "../translations.slint";
 import { SidebarAction } from "sidebar-action.slint";
+import { Icon } from "svg-icon.slint";
 
 export component RefreshButton inherits SidebarAction {
     in property <bool> refreshing;
     in property <string> task-names;
 
     text: root.refreshing ? Tr.refresh-loading(root.task-names) : @tr("refresh" => "Refresh");
-    icon: root.refreshing ? @image-url("../icons/ui/refreshing.svg") : @image-url("../icons/ui/refresh.svg");
+    icon: root.refreshing ? Icon.refreshing : Icon.refresh;
     highlighted: true;
     enabled: !root.refreshing;
 }

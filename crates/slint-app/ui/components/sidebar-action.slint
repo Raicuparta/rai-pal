@@ -1,11 +1,11 @@
 import { ActionState, ActionStates } from "../action-state.slint";
 import { Theme } from "../theme.slint";
 import { ListRow } from "list-row.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { Icon, SvgIcon } from "svg-icon.slint";
 
 export component SidebarAction inherits ListRow {
     in property <string> text;
-    in property <image> icon;
+    in property <Icon> icon: Icon.none;
     in property <string> action-id: "";
     in property <bool> highlighted: false;
     in property <ActionState> state: ActionState.idle;
@@ -16,10 +16,10 @@ export component SidebarAction inherits ListRow {
     private property <bool> long-loading: false;
     private property <bool> has-status: root.current-state == ActionState.success || root.current-state == ActionState.error;
     private property <bool> shows-spinner: root.current-state == ActionState.loading && root.long-loading;
-    private property <bool> has-icon: root.icon.width > 0;
+    private property <bool> has-icon: root.icon != Icon.none;
     private property <bool> shows-icon: root.has-icon || root.has-status || root.shows-spinner;
     private property <angle> spinner-angle: mod(animation-tick(), 1s) / 1s * 360deg;
-    private property <image> display-icon: root.current-state == ActionState.success ? @image-url("../icons/ui/success.svg") : root.current-state == ActionState.error ? @image-url("../icons/ui/error.svg") : root.shows-spinner ? @image-url("../icons/ui/loading.svg") : root.icon;
+    private property <Icon> display-icon: root.current-state == ActionState.success ? Icon.success : root.current-state == ActionState.error ? Icon.error : root.shows-spinner ? Icon.loading : root.icon;
     private property <bool> needs-dark-ink: Theme.primary.to-oklch().lightness > 0.62;
     private property <brush> highlighted-ink: root.needs-dark-ink ? Theme.strong-foreground-light : Theme.strong-foreground-dark;
     private property <brush> highlighted-background: root.enabled ? Theme.primary : transparent;
@@ -70,7 +70,7 @@ export component SidebarAction inherits ListRow {
         if root.shows-icon: SvgIcon {
             width: 100%;
             height: 100%;
-            source: root.display-icon;
+            icon: root.display-icon;
             color: root.content-color;
             transform-rotation: root.shows-spinner ? root.spinner-angle : 0deg;
         }

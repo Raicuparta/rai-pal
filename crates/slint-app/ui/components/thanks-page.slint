@@ -5,7 +5,7 @@ import { Theme } from "../theme.slint";
 import { ExternalLink } from "external-link.slint";
 import { LabeledDivider } from "labeled-divider.slint";
 import { Sidebar } from "sidebar.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { Icon, SvgIcon } from "svg-icon.slint";
 
 component PatronRow inherits Rectangle {
     in property <PatronView> patron;
@@ -57,7 +57,7 @@ component PatronRow inherits Rectangle {
         }
 
         if root.patron.ranking <= 3 : SvgIcon {
-            source: @image-url("../icons/ui/trophy.svg");
+            icon: Icon.trophy;
             color: root.rank-color;
         }
 
@@ -180,35 +180,35 @@ export component ThanksPage inherits Rectangle {
 
                                         ExternalLink {
                                             label: "raicuparta.com";
-                                            icon: @image-url("../images/raicuparta.png");
+                                            icon-image: @image-url("../images/raicuparta.png");
                                             icon-round: true;
                                             url: "https://raicuparta.com";
                                         }
 
                                         ExternalLink {
                                             label: @tr("thanksPage" => "Star Rai Pal on GitHub");
-                                            icon: @image-url("../icons/brands/github.svg");
+                                            icon: Icon.github;
                                             icon-color: Branding.brand-color("GitHub");
                                             url: "https://github.com/raicuparta/rai-pal";
                                         }
 
                                         ExternalLink {
                                             label: "Patreon";
-                                            icon: @image-url("../icons/brands/patreon.svg");
+                                            icon: Icon.patreon;
                                             icon-color: Branding.brand-color("Patreon");
                                             url: "https://www.patreon.com/raivr";
                                         }
 
                                         ExternalLink {
                                             label: "Paypal";
-                                            icon: @image-url("../icons/brands/paypal.svg");
+                                            icon: Icon.paypal;
                                             icon-color: Branding.brand-color("Paypal");
                                             url: "https://paypal.me/raicuparta/5usd";
                                         }
 
                                         ExternalLink {
                                             label: "Itch.io";
-                                            icon: @image-url("../icons/providers/itch.svg");
+                                            icon: Icon.itch;
                                             icon-color: Branding.provider-foreground("Itch");
                                             url: "https://raicuparta.itch.io/";
                                         }
