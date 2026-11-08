@@ -4,8 +4,8 @@ import { Theme } from "../theme.slint";
 export component SidebarSection inherits VerticalLayout {
     vertical-stretch: 0;
     alignment: start;
-    padding-left: Theme.space-12;
-    padding-right: Theme.space-12;
+    padding-left: Theme.space-md;
+    padding-right: Theme.space-md;
 
     @children
 }
@@ -16,9 +16,9 @@ export component Sidebar inherits Rectangle {
 
     ScrollView {
         VerticalLayout {
-            padding-bottom: Theme.space-12;
-            padding-top: Theme.space-12;
-            spacing: Theme.space-8;
+            padding-bottom: Theme.space-md;
+            padding-top: Theme.space-md;
+            spacing: Theme.space-sm;
             alignment: start;
 
             @children

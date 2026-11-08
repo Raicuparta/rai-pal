@@ -14,7 +14,7 @@ component UrlModSourceRow inherits Rectangle {
     height: Theme.control-height;
 
     HorizontalLayout {
-        spacing: Theme.space-6;
+        spacing: Theme.space-sm;
         cross-axis-alignment: center;
 
         source-checkbox := CheckBox {
@@ -79,7 +79,7 @@ export component UrlModSourcesPopup inherits Modal {
     }
 
     HorizontalLayout {
-        spacing: Theme.space-6;
+        spacing: Theme.space-sm;
         alignment: start;
         cross-axis-alignment: center;
 
@@ -107,12 +107,12 @@ export component UrlModSourcesPopup inherits Modal {
         text: root.error;
         color: red;
         wrap: word-wrap;
-        font-size: Theme.font-12;
+        font-size: Theme.font-sm;
     }
 
     Text {
         text: @tr("urlModSources" => "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep-link {0}.", "rai-pal://add-mod-source?url=[URL]");
-        font-size: Theme.font-12;
+        font-size: Theme.font-sm;
         opacity: 0.7;
         wrap: word-wrap;
     }

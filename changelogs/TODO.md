@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 
 # Do these now:
 
-- theme variables are named after pixels, that's dumb. let's try to do md, sm, xl, xs, and reduce very specific numbers. look through usages and make a report of all sizes we need, and some that differ by only 1px could be merged into one. unused ones can be deleted.
 - missing borders between mod rows.
 - the border between game rows seems to "eat" into the game row height, making things look misaligned vertically. the border should be outside the game row and add to the height of it i think, like pushing things down. mod rows should have the same border.
 - need to adjust styling for the dropdowns inside menus:
@@ -30,3 +29,5 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - button size and icon spacing needs to be adjusted to match the tauri one better.
 
 # Super succint report on what is done, why, what was left for me to answer questions, etc.
+
+- Theme sizes now use a t-shirt scale. Spacing is a 4px base (`2xs`=2, `xs`=4, `sm`=8, `md`=12, `lg`=16, `xl`=24, `2xl`=32). Merged old 3→2, 6→8, 10→12, 20→24; deleted unused sizes. Fonts are `2xs`=8, `xs`=10 (merged 10/11), `sm`=12, `md`=14, `lg`=16, `xl`=20. Radii are `sm`=4 (merged 3/4) and `md`=8. Kept semantic sizes like `control-height`, `icon-size`, and popup dimensions as-is.

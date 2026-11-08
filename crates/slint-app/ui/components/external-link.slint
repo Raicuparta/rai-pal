@@ -6,7 +6,7 @@ export component ExternalLink inherits Rectangle {
     in property <string> label;
     in property <Icon> icon: Icon.none;
     in property <brush> icon-color: Theme.foreground;
-    in property <length> text-size: Theme.font-16;
+    in property <length> text-size: Theme.font-lg;
     in property <string> url;
 
     horizontal-stretch: 0;
@@ -21,7 +21,7 @@ export component ExternalLink inherits Rectangle {
         cross-axis-alignment: center;
 
         if root.icon != Icon.none: HorizontalLayout {
-            padding-right: Theme.space-8;
+            padding-right: Theme.space-sm;
 
             SvgIcon {
                 icon: root.icon;

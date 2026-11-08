@@ -5,7 +5,7 @@ export component ListRow inherits Rectangle {
     in property <bool> interactive: root.enabled;
     in property <bool> extra-hovered: false;
     in property <string> tooltip: "";
-    in property <length> spacing: Theme.space-8;
+    in property <length> spacing: Theme.space-sm;
     in property <brush> background-color: transparent;
     in property <brush> hover-background: Theme.hover-background;
     in property <brush> pressed-background: Theme.pressed-background;
@@ -36,10 +36,10 @@ export component ListRow inherits Rectangle {
     }
 
     HorizontalLayout {
-        padding-left: Theme.space-8;
-        padding-right: Theme.space-16;
-        padding-top: Theme.space-6;
-        padding-bottom: Theme.space-6;
+        padding-left: Theme.space-sm;
+        padding-right: Theme.space-lg;
+        padding-top: Theme.space-sm;
+        padding-bottom: Theme.space-sm;
         spacing: root.spacing;
         cross-axis-alignment: center;
 

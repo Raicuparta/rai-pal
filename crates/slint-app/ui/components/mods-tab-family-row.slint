@@ -14,30 +14,30 @@ export component ModsTabFamilyRowView inherits Rectangle {
 
     VerticalLayout {
         alignment: start;
-        spacing: Theme.space-2;
+        spacing: Theme.space-2xs;
 
         Rectangle {
             background: header-touch.has-hover ? Theme.hover-background : transparent;
 
             HorizontalLayout {
-                padding: Theme.space-6;
-                spacing: Theme.space-8;
+                padding: Theme.space-sm;
+                spacing: Theme.space-sm;
                 cross-axis-alignment: center;
 
                 SvgIcon {
                     icon: root.expanded ? Icon.expanded : Icon.collapsed;
-                    size: Theme.space-16;
+                    size: Theme.space-lg;
                     color: Theme.dimmed-foreground;
                 }
 
                 VerticalLayout {
                     horizontal-stretch: 1;
                     alignment: start;
-                    spacing: Theme.space-2;
+                    spacing: Theme.space-2xs;
 
                     Text {
                         text: root.item.family-title;
-                        font-size: Theme.font-16;
+                        font-size: Theme.font-lg;
                         font-weight: Theme.weight-bold;
                         overflow: elide;
                     }
@@ -45,7 +45,7 @@ export component ModsTabFamilyRowView inherits Rectangle {
                     if root.item.family-description != "": Text {
                         height: self.preferred-height;
                         text: root.item.family-description;
-                        font-size: Theme.font-12;
+                        font-size: Theme.font-sm;
                         opacity: 0.75;
                         wrap: word-wrap;
                     }

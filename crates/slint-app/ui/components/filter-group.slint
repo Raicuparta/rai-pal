@@ -16,7 +16,7 @@ component FilterValueRow inherits ListRow {
     callback only;
 
     extra-hovered: checkbox-touch.has-hover || only-button.hovered || lock-button.hovered;
-    spacing: Theme.space-4;
+    spacing: Theme.space-xs;
     accessible-label: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
 
     clicked => {
@@ -30,7 +30,7 @@ component FilterValueRow inherits ListRow {
         height: 100%;
 
         check-box := CheckBox {
-            x: Theme.space-16;
+            x: Theme.space-lg;
             y: (parent.height - self.height) / 2;
             text: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
             checked: root.item.enabled;
@@ -49,7 +49,7 @@ component FilterValueRow inherits ListRow {
         }
 
         if root.item.note-label-key != "": Rectangle {
-            x: check-box.preferred-width + Theme.space-16;
+            x: check-box.preferred-width + Theme.space-lg;
             y: (parent.height - self.height) / 2;
             width: 12px;
 
@@ -107,7 +107,7 @@ export component FilterGroupView inherits Rectangle {
 
         header := ListRow {
             extra-hovered: reset-button.hovered;
-            spacing: Theme.space-4;
+            spacing: Theme.space-xs;
             accessible-label: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
 
             clicked => {

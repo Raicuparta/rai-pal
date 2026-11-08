@@ -8,9 +8,9 @@ component PotentialModRowView inherits Rectangle {
     vertical-stretch: 0;
 
     VerticalLayout {
-        padding: Theme.space-6;
+        padding: Theme.space-sm;
         alignment: start;
-        spacing: Theme.space-2;
+        spacing: Theme.space-2xs;
 
         Text {
             text: potential-mod.title;
@@ -21,7 +21,7 @@ component PotentialModRowView inherits Rectangle {
         if potential-mod.description != "" : Text {
             height: self.preferred-height;
             text: potential-mod.description;
-            font-size: Theme.font-12;
+            font-size: Theme.font-sm;
             opacity: 0.75;
             wrap: word-wrap;
             color: Theme.foreground;
@@ -36,7 +36,7 @@ export component PotentialModsSection inherits VerticalLayout {
 
     vertical-stretch: 0;
     alignment: start;
-    spacing: Theme.space-2;
+    spacing: Theme.space-2xs;
 
     SectionHeader {
         label: root.label;

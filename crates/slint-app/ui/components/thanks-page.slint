@@ -17,7 +17,7 @@ component PatronRow inherits Rectangle {
     background: transparent;
 
     HorizontalLayout {
-        spacing: Theme.space-8;
+        spacing: Theme.space-sm;
         alignment: start;
         cross-axis-alignment: center;
 
@@ -48,7 +48,7 @@ component PatronRow inherits Rectangle {
 
                 if !root.patron.has-avatar: Text {
                     text: root.patron.initials;
-                    font-size: Theme.font-12;
+                    font-size: Theme.font-sm;
                     font-weight: Theme.weight-bold;
                     horizontal-alignment: center;
                     vertical-alignment: center;
@@ -80,16 +80,16 @@ export component ThanksPage inherits Rectangle {
     HorizontalLayout {
         Sidebar {
             VerticalLayout {
-                padding-left: Theme.space-12;
-                padding-right: Theme.space-12;
-                spacing: Theme.space-6;
+                padding-left: Theme.space-md;
+                padding-right: Theme.space-md;
+                spacing: Theme.space-sm;
                 alignment: start;
 
                 LabeledDivider {
                     label: @tr("thanksPage" => "Patreon Leaderboard");
                     tooltip: root.leaderboard-tooltip;
-                    padding-left: Theme.space-8;
-                    padding-right: Theme.space-8;
+                    padding-left: Theme.space-sm;
+                    padding-right: Theme.space-sm;
                 }
 
                 for patron in root.patrons: PatronRow {
@@ -103,8 +103,8 @@ export component ThanksPage inherits Rectangle {
 
             ScrollView {
                 VerticalLayout {
-                    padding: Theme.space-20;
-                    spacing: Theme.space-16;
+                    padding: Theme.space-xl;
+                    spacing: Theme.space-lg;
                     alignment: start;
 
                     HorizontalLayout {
@@ -115,17 +115,17 @@ export component ThanksPage inherits Rectangle {
                             max-width: 540px;
 
                             HorizontalLayout {
-                                spacing: Theme.space-16;
+                                spacing: Theme.space-lg;
                                 alignment: start;
 
                                 Rectangle {
                                     width: 120px;
-                                    border-radius: Theme.radius-8;
+                                    border-radius: Theme.radius-md;
                                     background: Theme.background;
 
                                     VerticalLayout {
-                                        padding: Theme.space-12;
-                                        spacing: Theme.space-8;
+                                        padding: Theme.space-md;
+                                        spacing: Theme.space-sm;
                                         alignment: start;
                                         cross-axis-alignment: center;
 
@@ -145,7 +145,7 @@ export component ThanksPage inherits Rectangle {
 
                                         Text {
                                             text: "Raicuparta";
-                                            font-size: Theme.font-16;
+                                            font-size: Theme.font-lg;
                                             font-weight: Theme.weight-semibold;
                                         }
                                     }
@@ -153,29 +153,29 @@ export component ThanksPage inherits Rectangle {
 
                                 VerticalLayout {
                                     horizontal-stretch: 1;
-                                    spacing: Theme.space-12;
+                                    spacing: Theme.space-md;
                                     alignment: start;
 
                                     Rectangle {
                                         vertical-stretch: 0;
                                         border-width: Theme.border-width;
                                         border-color: Theme.border;
-                                        border-radius: Theme.radius-8;
+                                        border-radius: Theme.radius-md;
 
                                         intro-layout := VerticalLayout {
-                                            padding: Theme.space-16;
+                                            padding: Theme.space-lg;
 
                                             Text {
                                                 color: Theme.foreground;
                                                 text: root.intro;
-                                                font-size: Theme.font-16;
+                                                font-size: Theme.font-lg;
                                                 wrap: word-wrap;
                                             }
                                         }
                                     }
 
                                     VerticalLayout {
-                                        spacing: Theme.space-6;
+                                        spacing: Theme.space-sm;
                                         alignment: start;
 
                                         ExternalLink {

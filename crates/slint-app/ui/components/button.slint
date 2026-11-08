@@ -6,7 +6,7 @@ import { Icon, SvgIcon } from "svg-icon.slint";
 export component Button inherits BaseButton {
     in property <string> text: "";
     in property <Icon> icon: Icon.none;
-    in property <length> text-size: Theme.font-12;
+    in property <length> text-size: Theme.font-sm;
     in property <ActionState> state: ActionState.idle;
     in property <bool> reserve-icon-space: true;
 
@@ -36,7 +36,7 @@ export component Button inherits BaseButton {
     }
 
     HorizontalLayout {
-        padding-left: has-icon || reserve-icon-space ? Theme.space-6 : 0px;
+        padding-left: has-icon || reserve-icon-space ? Theme.space-sm : 0px;
         cross-axis-alignment: center;
 
         if has-icon || reserve-icon-space: SvgIcon {
@@ -46,9 +46,9 @@ export component Button inherits BaseButton {
         }
 
         if root.text != "": HorizontalLayout {
-            padding: Theme.space-4;
-            padding-left: Theme.space-6;
-            padding-right: Theme.space-6;
+            padding: Theme.space-xs;
+            padding-left: Theme.space-sm;
+            padding-right: Theme.space-sm;
 
             Text {
                 text: root.text;

@@ -8,16 +8,16 @@ export component SearchInput inherits Rectangle {
     callback edited(text: string);
 
     height: Theme.control-height;
-    border-radius: Theme.radius-4;
+    border-radius: Theme.radius-sm;
     border-width: Theme.border-width;
     border-color: input.has-focus ? Theme.primary : Theme.border;
     background: Theme.surface-background;
     forward-focus: input;
 
     HorizontalLayout {
-        padding-left: Theme.space-12;
-        padding-right: Theme.space-6;
-        spacing: Theme.space-4;
+        padding-left: Theme.space-md;
+        padding-right: Theme.space-sm;
+        spacing: Theme.space-xs;
         cross-axis-alignment: center;
 
         input-clip := Rectangle {
@@ -30,7 +30,7 @@ export component SearchInput inherits Rectangle {
                 height: 100%;
                 vertical-alignment: center;
                 text: root.placeholder-text;
-                font-size: Theme.font-14;
+                font-size: Theme.font-md;
                 color: Theme.dimmed-foreground;
             }
 
@@ -42,7 +42,7 @@ export component SearchInput inherits Rectangle {
                 height: 100%;
                 vertical-alignment: center;
                 single-line: true;
-                font-size: Theme.font-14;
+                font-size: Theme.font-md;
                 color: Theme.foreground;
                 text <=> root.text;
 
@@ -61,7 +61,7 @@ export component SearchInput inherits Rectangle {
         }
 
         if root.text != "" : ResetButton {
-            icon-size: Theme.font-14;
+            icon-size: Theme.font-md;
             tooltip: @tr("filterMenu" => "Clear search");
 
             clicked => {

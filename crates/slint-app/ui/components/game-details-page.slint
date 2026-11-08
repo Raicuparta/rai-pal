@@ -29,7 +29,7 @@ export component GameDetailsPage inherits Rectangle {
     ScrollView {
         VerticalLayout {
             alignment: start;
-            spacing: Theme.space-8;
+            spacing: Theme.space-sm;
 
             GameRowView {
                 vertical-stretch: 0;
@@ -44,8 +44,8 @@ export component GameDetailsPage inherits Rectangle {
 
             if !root.has-any-mods : HorizontalLayout {
                 height: self.preferred-height;
-                padding-left: Theme.space-8;
-                padding-right: Theme.space-8;
+                padding-left: Theme.space-sm;
+                padding-right: Theme.space-sm;
 
                 Text {
                     text: @tr("gameModal" => "Nothing! None of the available mods are of any use for this game. Try something else.");
@@ -64,12 +64,12 @@ export component GameDetailsPage inherits Rectangle {
             if root.game-row.installed : VerticalLayout {
                 alignment: start;
                 vertical-stretch: 0;
-                spacing: Theme.space-8;
+                spacing: Theme.space-sm;
 
                 if root.has-installed-mods : VerticalLayout {
                     alignment: start;
                     vertical-stretch: 0;
-                    spacing: Theme.space-4;
+                    spacing: Theme.space-xs;
 
                     ModsSection {
                         label: @tr("gameModal" => "Installed Mods");
@@ -77,8 +77,8 @@ export component GameDetailsPage inherits Rectangle {
                     }
 
                     HorizontalLayout {
-                        padding-left: Theme.space-8;
-                        padding-right: Theme.space-8;
+                        padding-left: Theme.space-sm;
+                        padding-right: Theme.space-sm;
                         alignment: start;
 
                         ActionButton {

@@ -13,14 +13,14 @@ export component Modal inherits Rectangle {
     in property <Icon> header-action-icon: Icon.none;
     in property <string> header-action-tooltip: "";
     in property <bool> header-action-enabled: true;
-    in property <length> content-spacing: Theme.space-10;
+    in property <length> content-spacing: Theme.space-md;
 
     callback closed;
     callback header-action-clicked;
 
     private property <length> modal-max-width: root.big ? 700px : 360px;
-    private property <length> modal-margin: Theme.space-32;
-    private property <length> modal-padding: Theme.space-20;
+    private property <length> modal-margin: Theme.space-2xl;
+    private property <length> modal-padding: Theme.space-xl;
 
     visible: root.open;
 
@@ -40,26 +40,26 @@ export component Modal inherits Rectangle {
         x: (parent.width - self.width) / 2;
         y: (parent.height - self.height) / 2;
         width: min(root.big ? root.modal-max-width : max(header.preferred-width, body-layout.preferred-width) + root.modal-padding * 2, root.modal-max-width, root.width - root.modal-margin * 2);
-        height: root.big ? root.height - root.modal-margin * 2 : min(header.preferred-height + body-layout.preferred-height + root.modal-padding * 2 + Theme.space-12, root.height - root.modal-margin * 2);
+        height: root.big ? root.height - root.modal-margin * 2 : min(header.preferred-height + body-layout.preferred-height + root.modal-padding * 2 + Theme.space-md, root.height - root.modal-margin * 2);
         background: Theme.background;
         border-width: Theme.border-width;
         border-color: Theme.border;
-        border-radius: Theme.radius-8;
+        border-radius: Theme.radius-md;
         clip: true;
 
         TouchArea { }
 
         VerticalLayout {
             padding: root.modal-padding;
-            spacing: Theme.space-12;
+            spacing: Theme.space-md;
 
             header := HorizontalLayout {
-                spacing: Theme.space-6;
+                spacing: Theme.space-sm;
                 cross-axis-alignment: center;
 
                 Text {
                     text: root.title;
-                    font-size: Theme.font-20;
+                    font-size: Theme.font-xl;
                     font-weight: Theme.weight-bold;
                     vertical-alignment: center;
                     overflow: elide;
@@ -81,7 +81,7 @@ export component Modal inherits Rectangle {
 
                 if root.show-close-button : IconButton {
                     icon: Icon.close;
-                    icon-size: Theme.font-20;
+                    icon-size: Theme.font-xl;
                     tooltip: root.close-tooltip;
 
                     clicked => {

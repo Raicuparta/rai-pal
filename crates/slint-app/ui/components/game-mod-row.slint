@@ -99,8 +99,8 @@ export component GameModRowView inherits Rectangle {
     }
 
     HorizontalLayout {
-        padding: Theme.space-6;
-        spacing: Theme.space-8;
+        padding: Theme.space-sm;
+        spacing: Theme.space-sm;
         cross-axis-alignment: center;
 
         ModSummaryView {
@@ -121,7 +121,7 @@ export component GameModRowView inherits Rectangle {
         if game-mod.can-show-actions: HorizontalLayout {
             horizontal-stretch: 0;
             alignment: end;
-            spacing: Theme.space-4;
+            spacing: Theme.space-xs;
             min-width: self.preferred-width;
 
             if game-mod.can-install: ActionButton {

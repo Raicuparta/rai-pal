@@ -7,23 +7,23 @@ export component SectionHeader inherits VerticalLayout {
 
     vertical-stretch: 0;
     alignment: start;
-    spacing: Theme.space-2;
+    spacing: Theme.space-2xs;
 
     LabeledDivider {
         label: root.label;
-        padding-left: Theme.space-8;
-        padding-right: Theme.space-8;
+        padding-left: Theme.space-sm;
+        padding-right: Theme.space-sm;
     }
 
     if root.description != "" : HorizontalLayout {
         height: self.preferred-height;
-        padding-left: Theme.space-8;
-        padding-right: Theme.space-8;
+        padding-left: Theme.space-sm;
+        padding-right: Theme.space-sm;
 
         Text {
             text: root.description;
             opacity: 0.5;
-            font-size: Theme.font-12;
+            font-size: Theme.font-sm;
             wrap: word-wrap;
             horizontal-stretch: 1;
         }

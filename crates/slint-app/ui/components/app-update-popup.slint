@@ -14,7 +14,7 @@ export component AppUpdatePopup inherits Modal {
     big: true;
     show-close-button: false;
     close-on-click-outside: false;
-    content-spacing: Theme.space-12;
+    content-spacing: Theme.space-md;
 
     Text {
         text: root.notes == "" ? @tr("appUpdate" => "(no changelog)") : root.notes;
@@ -22,7 +22,7 @@ export component AppUpdatePopup inherits Modal {
     }
 
     HorizontalLayout {
-        spacing: Theme.space-8;
+        spacing: Theme.space-sm;
 
         Button {
             text: @tr("appUpdate" => "Ignore (won't ask again until you restart Rai Pal)");

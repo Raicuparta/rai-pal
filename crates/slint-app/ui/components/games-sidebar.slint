@@ -31,7 +31,7 @@ export component GamesSidebar inherits Sidebar {
     callback filter-expanded-changed(group: string, expanded: bool);
 
     SidebarSection {
-        spacing: Theme.space-8;
+        spacing: Theme.space-sm;
 
         RefreshButton {
             refreshing: root.refreshing;
@@ -63,9 +63,9 @@ export component GamesSidebar inherits Sidebar {
     VerticalLayout {
         HorizontalLayout {
             vertical-stretch: 0;
-            padding-left: Theme.space-8;
-            padding-right: Theme.space-16;
-            spacing: Theme.space-4;
+            padding-left: Theme.space-sm;
+            padding-right: Theme.space-lg;
+            spacing: Theme.space-xs;
             cross-axis-alignment: center;
 
             IconButton {

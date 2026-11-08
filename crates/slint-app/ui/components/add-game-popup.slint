@@ -9,21 +9,21 @@ component SavedDirectoryRow inherits Rectangle {
     callback removed;
 
     HorizontalLayout {
-        spacing: Theme.space-6;
+        spacing: Theme.space-sm;
         cross-axis-alignment: center;
 
         Rectangle {
             horizontal-stretch: 1;
-            border-radius: Theme.radius-4;
+            border-radius: Theme.radius-sm;
             background: Theme.surface-background;
 
             Text {
                 text: root.path;
                 font-family: Fonts.monospace-family;
-                font-size: Theme.font-12;
+                font-size: Theme.font-sm;
                 vertical-alignment: center;
-                x: Theme.space-8;
-                width: parent.width - Theme.space-16;
+                x: Theme.space-sm;
+                width: parent.width - Theme.space-lg;
                 overflow: elide;
             }
         }
@@ -58,13 +58,13 @@ export component AddGamePopup inherits Modal {
 
     Text {
         text: @tr("manualGames" => "Note: you can also add your non-Steam games to Steam, and they will still be detected by Rai Pal.");
-        font-size: Theme.font-12;
+        font-size: Theme.font-sm;
         opacity: 0.7;
         wrap: word-wrap;
     }
 
     if root.phase == AddGamePhase.idle : VerticalLayout {
-        spacing: Theme.space-10;
+        spacing: Theme.space-md;
 
         Button {
             text: @tr("manualGames" => "Select game executable");
@@ -87,14 +87,14 @@ export component AddGamePopup inherits Modal {
 
         Text {
             text: @tr("manualGames" => "You can also just drop game executable files or entire folders anywhere on Rai Pal's window to add them to the library, even without opening this dialog.");
-            font-size: Theme.font-12;
+            font-size: Theme.font-sm;
             opacity: 0.7;
             wrap: word-wrap;
         }
     }
 
     if root.phase == AddGamePhase.scanning : VerticalLayout {
-        spacing: Theme.space-10;
+        spacing: Theme.space-md;
         alignment: start;
 
         Text {
@@ -110,7 +110,7 @@ export component AddGamePopup inherits Modal {
         Text {
             text: root.current-path;
             font-family: Fonts.monospace-family;
-            font-size: Theme.font-12;
+            font-size: Theme.font-sm;
             opacity: 0.7;
             overflow: elide;
         }
@@ -126,7 +126,7 @@ export component AddGamePopup inherits Modal {
     }
 
     if root.phase == AddGamePhase.confirming : VerticalLayout {
-        spacing: Theme.space-10;
+        spacing: Theme.space-md;
         alignment: start;
 
         Text {
@@ -135,7 +135,7 @@ export component AddGamePopup inherits Modal {
         }
 
         HorizontalLayout {
-            spacing: Theme.space-8;
+            spacing: Theme.space-sm;
 
             Button {
                 text: @tr("manualGames" => "Add folder");
@@ -157,7 +157,7 @@ export component AddGamePopup inherits Modal {
     }
 
     if root.phase == AddGamePhase.idle && root.directories.length > 0 : VerticalLayout {
-        spacing: Theme.space-8;
+        spacing: Theme.space-sm;
 
         Rectangle {
             height: Theme.border-width;
@@ -166,7 +166,7 @@ export component AddGamePopup inherits Modal {
 
         Text {
             text: @tr("manualGames" => "These directories will be scanned recursively every time Rai Pal refreshes its data. Large folders may make things significantly slower.");
-            font-size: Theme.font-12;
+            font-size: Theme.font-sm;
             opacity: 0.7;
             wrap: word-wrap;
         }

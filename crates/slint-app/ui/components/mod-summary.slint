@@ -6,19 +6,19 @@ component MetaItem inherits HorizontalLayout {
     in property <string> text;
     in property <string> tooltip: "";
 
-    spacing: Theme.space-2;
+    spacing: Theme.space-2xs;
     horizontal-stretch: 0;
     cross-axis-alignment: center;
 
     SvgIcon {
         icon: root.icon;
-        size: Theme.font-10;
+        size: Theme.font-xs;
         color: Theme.foreground;
     }
 
     Text {
         text: root.text;
-        font-size: Theme.font-11;
+        font-size: Theme.font-xs;
         color: Theme.foreground;
 
         if root.tooltip != "" : Tooltip {
@@ -44,7 +44,7 @@ export component ModSummaryView inherits HorizontalLayout {
 
     private property <string> deprecated-tooltip: @tr("modsPage" => "This mod is deprecated. You should uninstall it and install a newer alternative.");
 
-    spacing: Theme.space-8;
+    spacing: Theme.space-sm;
     cross-axis-alignment: center;
 
     if show-status : SvgIcon {
@@ -56,10 +56,10 @@ export component ModSummaryView inherits HorizontalLayout {
     VerticalLayout {
         horizontal-stretch: 1;
         alignment: start;
-        spacing: Theme.space-2;
+        spacing: Theme.space-2xs;
 
         HorizontalLayout {
-            spacing: Theme.space-6;
+            spacing: Theme.space-sm;
             cross-axis-alignment: center;
 
             Text {
@@ -70,9 +70,9 @@ export component ModSummaryView inherits HorizontalLayout {
             }
 
             if root.deprecated : Rectangle {
-                width: deprecated-content.preferred-width + Theme.space-8;
+                width: deprecated-content.preferred-width + Theme.space-sm;
                 height: 18px;
-                border-radius: Theme.radius-3;
+                border-radius: Theme.radius-sm;
                 background: Theme.deprecated-background;
 
                 Tooltip {
@@ -80,20 +80,20 @@ export component ModSummaryView inherits HorizontalLayout {
                 }
 
                 deprecated-content := HorizontalLayout {
-                    padding-left: Theme.space-4;
-                    padding-right: Theme.space-4;
-                    spacing: Theme.space-3;
+                    padding-left: Theme.space-xs;
+                    padding-right: Theme.space-xs;
+                    spacing: Theme.space-2xs;
                     alignment: center;
 
                     SvgIcon {
                         icon: Icon.deprecated;
-                        size: Theme.font-11;
+                        size: Theme.font-xs;
                         color: Theme.deprecated-foreground;
                     }
 
                     Text {
                         text: @tr("modsPage" => "Deprecated");
-                        font-size: Theme.font-10;
+                        font-size: Theme.font-xs;
                         font-weight: Theme.weight-bold;
                         color: Theme.deprecated-foreground;
                         vertical-alignment: center;
@@ -105,15 +105,15 @@ export component ModSummaryView inherits HorizontalLayout {
         if root.has-details : FlexboxLayout {
             height: self.preferred-height;
             opacity: 0.4;
-            spacing-horizontal: Theme.space-10;
-            spacing-vertical: Theme.space-2;
+            spacing-horizontal: Theme.space-md;
+            spacing-vertical: Theme.space-2xs;
             flex-wrap: wrap;
             alignment: start;
             cross-axis-alignment: center;
 
             if root.version-text != "" : Text {
                 text: root.version-text;
-                font-size: Theme.font-11;
+                font-size: Theme.font-xs;
                 color: Theme.foreground;
                 horizontal-stretch: 0;
             }
@@ -143,7 +143,7 @@ export component ModSummaryView inherits HorizontalLayout {
         if root.description != "" : Text {
             height: self.preferred-height;
             text: root.description;
-            font-size: Theme.font-12;
+            font-size: Theme.font-sm;
             opacity: 0.75;
             wrap: word-wrap;
             color: Theme.foreground;

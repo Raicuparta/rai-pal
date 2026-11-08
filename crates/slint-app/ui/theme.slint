@@ -8,33 +8,30 @@ export global Theme {
     out property <bool> dark: Palette.background.to-oklch().lightness < 0.5;
 
     out property <length> border-width: 1px;
-    out property <length> space-2: 2px;
-    out property <length> space-3: 3px;
-    out property <length> space-4: 4px;
-    out property <length> space-6: 6px;
-    out property <length> space-8: 8px;
-    out property <length> space-10: 10px;
-    out property <length> space-12: 12px;
-    out property <length> space-16: 16px;
-    out property <length> space-20: 20px;
-    out property <length> space-32: 32px;
 
-    out property <length> font-8: 8px;
-    out property <length> font-10: 10px;
-    out property <length> font-11: 11px;
-    out property <length> font-12: 12px;
-    out property <length> font-14: 14px;
-    out property <length> font-16: 16px;
-    out property <length> font-20: 20px;
+    // Spacing scale, 4px base with a 2px half-step for tight icon/text gaps.
+    out property <length> space-2xs: 2px;
+    out property <length> space-xs: 4px;
+    out property <length> space-sm: 8px;
+    out property <length> space-md: 12px;
+    out property <length> space-lg: 16px;
+    out property <length> space-xl: 24px;
+    out property <length> space-2xl: 32px;
+
+    out property <length> font-2xs: 8px;
+    out property <length> font-xs: 10px;
+    out property <length> font-sm: 12px;
+    out property <length> font-md: 14px;
+    out property <length> font-lg: 16px;
+    out property <length> font-xl: 20px;
 
     out property <int> weight-light: 300;
     out property <int> weight-normal: 400;
     out property <int> weight-semibold: 600;
     out property <int> weight-bold: 700;
 
-    out property <length> radius-3: 3px;
-    out property <length> radius-4: 4px;
-    out property <length> radius-8: 8px;
+    out property <length> radius-sm: 4px;
+    out property <length> radius-md: 8px;
 
     out property <length> control-height: 32px;
     out property <length> icon-size: 16px;

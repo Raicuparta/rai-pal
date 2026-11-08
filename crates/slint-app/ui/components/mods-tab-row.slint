@@ -18,12 +18,12 @@ export component ModsTabRowView inherits Rectangle {
     row-touch := TouchArea { }
 
     HorizontalLayout {
-        padding: Theme.space-6;
-        spacing: Theme.space-8;
+        padding: Theme.space-sm;
+        spacing: Theme.space-sm;
         cross-axis-alignment: center;
 
         if root.indented: Rectangle {
-            width: Theme.space-20;
+            width: Theme.space-xl;
         }
 
         ModSummaryView {
@@ -40,7 +40,7 @@ export component ModsTabRowView inherits Rectangle {
         HorizontalLayout {
             horizontal-stretch: 0;
             alignment: end;
-            spacing: Theme.space-4;
+            spacing: Theme.space-xs;
 
             if mod-data.can-run: ActionButton {
                 text: @tr("modModal" => "Run");
@@ -64,8 +64,8 @@ export component ModsTabRowView inherits Rectangle {
 
             VerticalLayout {
                 cross-axis-alignment: end;
-                spacing: Theme.space-6;
-                padding-right: Theme.space-12;
+                spacing: Theme.space-sm;
+                padding-right: Theme.space-md;
 
                 HorizontalLayout {
                     IconButton {
@@ -81,7 +81,7 @@ export component ModsTabRowView inherits Rectangle {
 
                 if mod-data.source-code != "": ExternalLink {
                     label: @tr("modModal" => "Website");
-                    text-size: Theme.font-12;
+                    text-size: Theme.font-sm;
                     url: mod-data.source-code;
                 }
             }

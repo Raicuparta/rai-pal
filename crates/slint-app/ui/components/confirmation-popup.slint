@@ -12,7 +12,7 @@ export component ConfirmationPopup inherits Modal {
     callback response(confirmed: bool);
 
     title: root.confirm-label;
-    content-spacing: Theme.space-12;
+    content-spacing: Theme.space-md;
 
     Text {
         text: root.text;
@@ -26,7 +26,7 @@ export component ConfirmationPopup inherits Modal {
 
     HorizontalLayout {
         alignment: center;
-        spacing: Theme.space-8;
+        spacing: Theme.space-sm;
 
         Button {
             text: @tr("commandButton" => "Cancel");

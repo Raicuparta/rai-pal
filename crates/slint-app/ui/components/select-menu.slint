@@ -20,15 +20,15 @@ export component SelectMenu inherits Rectangle {
     height: Theme.control-height;
     border-width: Theme.border-width;
     border-color: Theme.border;
-    border-radius: Theme.radius-4;
+    border-radius: Theme.radius-sm;
     background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : Theme.surface-background;
 
     private property <string> current-label: root.selected-index >= 0 && root.selected-index < root.options.length ? root.options[root.selected-index].label : "";
 
     HorizontalLayout {
-        padding-left: Theme.space-8;
-        padding-right: Theme.space-8;
-        spacing: Theme.space-4;
+        padding-left: Theme.space-sm;
+        padding-right: Theme.space-sm;
+        spacing: Theme.space-xs;
         cross-axis-alignment: center;
 
         if root.label != "": Text {
