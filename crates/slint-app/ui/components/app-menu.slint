@@ -89,124 +89,130 @@ export component AppMenu inherits Rectangle {
         x: root.width - Theme.menu-width;
         y: root.height;
 
-        PopupMenuItem {
-            checkable: true;
-            checked: !root.hide-game-thumbnails;
-            text: @tr("appDropdownMenu" => "Show game thumbnails on list");
-
-            clicked => {
-                root.hide-game-thumbnails-changed(!root.hide-game-thumbnails);
-                menu.close();
-            }
-        }
-
-        PopupMenuSeparator { }
-
-        PopupMenuItem {
-            text: "About...";
-
-            clicked => {
-                root.about-clicked();
-                menu.close();
-            }
-        }
-
-        PopupMenuSeparator { }
-
-        PopupMenuItem {
-            text: @tr("steamShortcut" => "Add Rai Pal to Steam library");
-            icon: Icon.steam;
-
-            clicked => {
-                root.steam-shortcut-clicked();
-                menu.close();
-            }
-        }
-
-        PopupMenuItem {
-            text: @tr("steamCache" => "Reset Steam cache");
-
-            clicked => {
-                root.steam-cache-clicked();
-                menu.close();
-            }
-        }
-
-        PopupMenuSeparator { }
-
-        PopupMenuItem {
-            text: @tr("appDropdownMenu" => "Reset Rai Pal settings");
-
-            clicked => {
-                root.reset-settings-clicked();
-                menu.close();
-            }
-        }
-
-        PopupMenuItem {
-            text: @tr("appDropdownMenu" => "Open Logs Folder");
-            icon: Icon.folder;
-
-            clicked => {
-                root.open-logs-folder-clicked();
-                menu.close();
-            }
-        }
-
-        PopupMenuSeparator { }
-
         VerticalLayout {
-            padding-left: Theme.space-sm;
-            padding-right: Theme.space-sm;
             padding-top: Theme.space-xs;
             padding-bottom: Theme.space-xs;
-            spacing: Theme.space-2xs;
 
-            Text {
-                text: @tr("appDropdownMenu" => "Language");
-                color: Theme.dimmed-foreground;
-                font-size: Theme.font-sm;
-            }
+            PopupMenuItem {
+                checkable: true;
+                checked: !root.hide-game-thumbnails;
+                text: @tr("appDropdownMenu" => "Show game thumbnails on list");
 
-            SelectMenu {
-                options: root.language-options;
-                selected-index: root.language-index();
-                icon: Icon.language;
-
-                selected(index) => {
-                    root.language-changed(root.language-options[index].value);
+                clicked => {
+                    root.hide-game-thumbnails-changed(!root.hide-game-thumbnails);
+                    menu.close();
                 }
             }
-        }
 
-        PopupMenuSeparator { }
+            PopupMenuSeparator { }
 
-        VerticalLayout {
-            padding-left: Theme.space-sm;
-            padding-right: Theme.space-sm;
-            padding-top: Theme.space-xs;
-            padding-bottom: Theme.space-xs;
-            spacing: Theme.space-2xs;
+            PopupMenuItem {
+                text: @tr("steamShortcut" => "Add Rai Pal to Steam library");
+                icon: Icon.steam;
 
-            Text {
-                text: @tr("appDropdownMenu" => "Color scheme");
-                color: Theme.dimmed-foreground;
-                font-size: Theme.font-sm;
+                clicked => {
+                    root.steam-shortcut-clicked();
+                    menu.close();
+                }
             }
 
-            SelectMenu {
-                options: root.color-scheme-options;
-                selected-index: root.color-scheme-index();
-                icon: Theme.dark ? Icon.dark-mode : Icon.light-mode;
+            PopupMenuItem {
+                text: @tr("steamCache" => "Reset Steam cache");
 
-                selected(index) => {
-                    if root.color-scheme-options[index].value == "light" {
-                        root.color-scheme-changed(AppColorScheme.light);
-                    } else if root.color-scheme-options[index].value == "dark" {
-                        root.color-scheme-changed(AppColorScheme.dark);
-                    } else {
-                        root.color-scheme-changed(AppColorScheme.auto);
+                clicked => {
+                    root.steam-cache-clicked();
+                    menu.close();
+                }
+            }
+
+            PopupMenuSeparator { }
+
+            PopupMenuItem {
+                text: @tr("appDropdownMenu" => "Reset Rai Pal settings");
+
+                clicked => {
+                    root.reset-settings-clicked();
+                    menu.close();
+                }
+            }
+
+            PopupMenuItem {
+                text: @tr("appDropdownMenu" => "Open Logs Folder");
+                icon: Icon.folder;
+
+                clicked => {
+                    root.open-logs-folder-clicked();
+                    menu.close();
+                }
+            }
+
+            PopupMenuSeparator { }
+
+            VerticalLayout {
+                padding-left: Theme.space-sm;
+                padding-right: Theme.space-sm;
+                padding-top: Theme.space-xs;
+                padding-bottom: Theme.space-xs;
+                spacing: Theme.space-2xs;
+
+                Text {
+                    text: @tr("appDropdownMenu" => "Language");
+                    color: Theme.dimmed-foreground;
+                    font-size: Theme.font-sm;
+                }
+
+                SelectMenu {
+                    options: root.language-options;
+                    selected-index: root.language-index();
+                    icon: Icon.language;
+
+                    selected(index) => {
+                        root.language-changed(root.language-options[index].value);
                     }
+                }
+            }
+
+            PopupMenuSeparator { }
+
+            VerticalLayout {
+                padding-left: Theme.space-sm;
+                padding-right: Theme.space-sm;
+                padding-top: Theme.space-xs;
+                padding-bottom: Theme.space-xs;
+                spacing: Theme.space-2xs;
+
+                Text {
+                    text: @tr("appDropdownMenu" => "Color scheme");
+                    color: Theme.dimmed-foreground;
+                    font-size: Theme.font-sm;
+                }
+
+                SelectMenu {
+                    options: root.color-scheme-options;
+                    selected-index: root.color-scheme-index();
+                    icon: Theme.dark ? Icon.dark-mode : Icon.light-mode;
+
+                    selected(index) => {
+                        if root.color-scheme-options[index].value == "light" {
+                            root.color-scheme-changed(AppColorScheme.light);
+                        } else if root.color-scheme-options[index].value == "dark" {
+                            root.color-scheme-changed(AppColorScheme.dark);
+                        } else {
+                            root.color-scheme-changed(AppColorScheme.auto);
+                        }
+                    }
+                }
+            }
+
+            PopupMenuSeparator { }
+
+            PopupMenuItem {
+                text: "About...";
+                icon: Icon.info;
+
+                clicked => {
+                    root.about-clicked();
+                    menu.close();
                 }
             }
         }
