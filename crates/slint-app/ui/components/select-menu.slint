@@ -10,7 +10,7 @@ export struct SelectOption {
 export component SelectMenu inherits Rectangle {
     in property <[SelectOption]> options;
     in-out property <int> selected-index: 0;
-    in property <Icon> icon: Icon.sort-menu;
+    in property <Icon> icon;
     in property <bool> enabled: true;
 
     callback selected(index: int);
@@ -30,6 +30,10 @@ export component SelectMenu inherits Rectangle {
         spacing: Theme.space-xs;
         cross-axis-alignment: center;
 
+        SvgIcon {
+            icon: root.icon;
+        }
+
         Text {
             text: root.current-label;
             horizontal-stretch: 1;
@@ -38,7 +42,7 @@ export component SelectMenu inherits Rectangle {
         }
 
         SvgIcon {
-            icon: root.icon;
+            icon: Icon.chevron-down;
             color: Theme.dimmed-foreground;
         }
     }

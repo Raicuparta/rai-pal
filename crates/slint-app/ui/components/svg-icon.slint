@@ -41,7 +41,7 @@ export enum Icon {
     reinstall,
     reset,
     settings,
-    sort-menu,
+    chevron-down,
     success,
     thanks,
     trophy,
@@ -65,6 +65,10 @@ export enum Icon {
     steam,
     xbox,
     rai,
+    language,
+    light-mode,
+    dark-mode,
+    sort,
 }
 
 export component SvgIcon inherits Image {
@@ -117,7 +121,7 @@ export component SvgIcon inherits Image {
         if icon == Icon.reinstall { return @image-url("../icons/ui/reinstall.svg"); }
         if icon == Icon.reset { return @image-url("../icons/ui/reset.svg"); }
         if icon == Icon.settings { return @image-url("../icons/ui/settings.svg"); }
-        if icon == Icon.sort-menu { return @image-url("../icons/ui/sort-menu.svg"); }
+        if icon == Icon.chevron-down { return @image-url("../icons/ui/chevron-down.svg"); }
         if icon == Icon.success { return @image-url("../icons/ui/success.svg"); }
         if icon == Icon.thanks { return @image-url("../icons/ui/thanks.svg"); }
         if icon == Icon.trophy { return @image-url("../icons/ui/trophy.svg"); }
@@ -141,6 +145,10 @@ export component SvgIcon inherits Image {
         if icon == Icon.steam { return @image-url("../icons/providers/steam.svg"); }
         if icon == Icon.xbox { return @image-url("../icons/providers/xbox.svg"); }
         if icon == Icon.rai { return @image-url("../icons/brands/rai.svg"); }
+        if icon == Icon.language { return @image-url("../icons/ui/language.svg"); }
+        if icon == Icon.light-mode { return @image-url("../icons/ui/light-mode.svg"); }
+        if icon == Icon.dark-mode { return @image-url("../icons/ui/dark-mode.svg"); }
+        if icon == Icon.sort { return @image-url("../icons/ui/sort.svg"); }
         return @image-url("");
     }
 }

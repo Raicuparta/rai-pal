@@ -14,3 +14,5 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - update the intro text.
 - colored buttons probably need a "subtle" mode or something like in tauri.
 - button size and icon spacing needs to be adjusted to match the tauri one better.
+- look for props that are exposed but never actually used and only the default is used.
+- look for things that are set in private properties and are only used once, just do them in place.

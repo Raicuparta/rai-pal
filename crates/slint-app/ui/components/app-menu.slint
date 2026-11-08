@@ -179,6 +179,7 @@ export component AppMenu inherits Rectangle {
             SelectMenu {
                 options: root.language-options;
                 selected-index: root.language-index();
+                icon: Icon.language;
 
                 selected(index) => {
                     root.language-changed(root.language-options[index].value);
@@ -204,6 +205,7 @@ export component AppMenu inherits Rectangle {
             SelectMenu {
                 options: root.color-scheme-options;
                 selected-index: root.color-scheme-index();
+                icon: Theme.dark ? Icon.dark-mode : Icon.light-mode;
 
                 selected(index) => {
                     if root.color-scheme-options[index].value == "light" {

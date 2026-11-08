@@ -1,5 +1,6 @@
 import { Theme } from "../theme.slint";
 import { SelectMenu, SelectOption } from "select-menu.slint";
+import { Icon } from "svg-icon.slint";
 
 export component SortMenu inherits Rectangle {
     in-out property <int> sort-index: 0;
@@ -21,6 +22,7 @@ export component SortMenu inherits Rectangle {
     SelectMenu {
         options: root.options;
         selected-index <=> root.sort-index;
+        icon: Icon.sort;
 
         selected(index) => {
             root.sort-index = index;
