@@ -20,8 +20,16 @@ export component SidebarAction inherits ListRow {
     private property <bool> shows-icon: root.has-icon || root.has-status || root.shows-spinner;
     private property <angle> spinner-angle: mod(animation-tick(), 1s) / 1s * 360deg;
     private property <image> display-icon: root.current-state == ActionState.success ? @image-url("../icons/ui/success.svg") : root.current-state == ActionState.error ? @image-url("../icons/ui/error.svg") : root.shows-spinner ? @image-url("../icons/ui/loading.svg") : root.icon;
-    private property <brush> content-color: !root.enabled ? Theme.dimmed-foreground : root.current-state == ActionState.success ? Theme.status-success : root.current-state == ActionState.error ? Theme.status-error : root.highlighted ? Theme.primary : Theme.strong-foreground;
+    private property <bool> needs-dark-ink: Theme.primary.to-oklch().lightness > 0.62;
+    private property <brush> highlighted-ink: root.needs-dark-ink ? Theme.strong-foreground-light : Theme.strong-foreground-dark;
+    private property <brush> highlighted-background: root.enabled ? Theme.primary : transparent;
+    private property <brush> highlighted-hover-background: root.needs-dark-ink ? Theme.primary.darker(0.15) : Theme.primary.brighter(0.4);
+    private property <brush> highlighted-pressed-background: root.needs-dark-ink ? Theme.primary.darker(0.3) : Theme.primary.brighter(0.7);
+    private property <brush> content-color: !root.enabled ? Theme.dimmed-foreground : root.current-state == ActionState.success ? Theme.status-success : root.current-state == ActionState.error ? Theme.status-error : root.highlighted ? root.highlighted-ink : Theme.strong-foreground;
 
+    background-color: root.highlighted ? root.highlighted-background : transparent;
+    hover-background: root.highlighted ? root.highlighted-hover-background : Theme.hover-background;
+    pressed-background: root.highlighted ? root.highlighted-pressed-background : Theme.pressed-background;
     content-padding-left: Theme.space-12;
     content-padding-right: Theme.space-12;
     content-padding-top: Theme.space-8;

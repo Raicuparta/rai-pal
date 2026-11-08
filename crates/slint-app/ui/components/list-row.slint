@@ -10,6 +10,9 @@ export component ListRow inherits Rectangle {
     in property <length> content-padding-top: Theme.space-6;
     in property <length> content-padding-bottom: Theme.space-6;
     in property <length> spacing: Theme.space-8;
+    in property <brush> background-color: transparent;
+    in property <brush> hover-background: Theme.hover-background;
+    in property <brush> pressed-background: Theme.pressed-background;
 
     out property <bool> hovered: row-touch.has-hover || root.extra-hovered;
 
@@ -17,7 +20,7 @@ export component ListRow inherits Rectangle {
 
     vertical-stretch: 0;
     min-height: Theme.control-height;
-    background: !root.enabled ? transparent : row-touch.pressed ? Theme.pressed-background : root.hovered ? Theme.hover-background : transparent;
+    background: !root.enabled ? transparent : row-touch.pressed ? root.pressed-background : root.hovered ? root.hover-background : root.background-color;
     forward-focus: focus-scope;
 
     accessible-role: button;

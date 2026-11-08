@@ -34,7 +34,7 @@ export component GameSidebar inherits Sidebar {
             }
         }
 
-        if root.provider-actions.length > 0 : VerticalLayout {
+        if root.provider-actions.length > 0: VerticalLayout {
             alignment: start;
             spacing: 0px;
 
@@ -48,7 +48,7 @@ export component GameSidebar inherits Sidebar {
                 }
             }
 
-            for action[index] in root.provider-actions : SidebarAction {
+            for action[index] in root.provider-actions: SidebarAction {
                 text: Tr.provider-command(action);
                 highlighted: index == 0;
                 action-id: "provider-action:" + action;
@@ -63,7 +63,7 @@ export component GameSidebar inherits Sidebar {
             }
         }
 
-        if root.has-exe-path : VerticalLayout {
+        if root.has-exe-path: VerticalLayout {
             alignment: start;
             spacing: 0px;
 
@@ -106,7 +106,7 @@ export component GameSidebar inherits Sidebar {
                 }
             }
 
-            if root.show-wine-folders : SidebarAction {
+            if root.show-wine-folders: SidebarAction {
                 text: @tr("gameModal" => "Wine Prefix");
                 action-id: "open-wine-prefix-folder";
 
@@ -115,7 +115,7 @@ export component GameSidebar inherits Sidebar {
                 }
             }
 
-            if root.show-wine-folders : SidebarAction {
+            if root.show-wine-folders: SidebarAction {
                 text: @tr("gameModal" => "Wine Binary");
                 action-id: "open-wine-binary-folder";
 
@@ -139,7 +139,7 @@ export component GameSidebar inherits Sidebar {
                 }
             }
 
-            if root.has-exe-path : SidebarAction {
+            if root.has-exe-path: SidebarAction {
                 text: @tr("gameModal" => "Refresh game");
                 icon: @image-url("../icons/ui/refresh.svg");
                 action-id: "refresh-game";
