@@ -8,7 +8,6 @@ component NotificationToast inherits Rectangle {
 
     callback dismissed(id: int);
 
-    width: 100%;
     background: Theme.background;
     border-width: Theme.border-width * 2;
     border-radius: Theme.radius-8;
@@ -51,20 +50,22 @@ component NotificationToast inherits Rectangle {
     }
 }
 
-export component NotificationsOverlay inherits Rectangle {
+export component NotificationsOverlay inherits HorizontalLayout {
     in property <[NotificationView]> notifications;
 
     callback dismissed(id: int);
 
-    VerticalLayout {
-        x: root.width - self.width - Theme.space-16;
-        y: root.height - self.height - Theme.space-16;
-        width: min(360px, root.width - Theme.space-16 * 2);
-        height: self.preferred-height;
-        spacing: Theme.space-6;
-        alignment: start;
+    width: 100%;
+    alignment: end;
 
-        for notification in root.notifications : NotificationToast {
+    VerticalLayout {
+        width: 400px;
+        height: 100%;
+        padding: Theme.space-16;
+        spacing: Theme.space-6;
+        alignment: end;
+
+        for notification in root.notifications: NotificationToast {
             notification: notification;
 
             dismissed(id) => {

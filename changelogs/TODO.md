@@ -13,3 +13,5 @@ This file is here for me to track things I wanna fix for the next release. If th
   - title above instead of inside the element.
 - update the intro text.
 - buttons in mods tab are too big.
+- "view" slint files are confusing, do they need to be separate from the main slint files?
+- toast notification timer says 5s but definitely taking way more than 5 seconds.
