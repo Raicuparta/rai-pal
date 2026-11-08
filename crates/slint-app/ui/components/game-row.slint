@@ -96,7 +96,6 @@ export component GameRowView inherits Rectangle {
 
         Rectangle {
             width: 130px;
-            // background: Branding.engine-background(game-row.engine-brand);
             clip: true;
 
             VerticalLayout {
@@ -104,13 +103,14 @@ export component GameRowView inherits Rectangle {
                 padding-left: Theme.space-8;
                 padding-right: Theme.space-8;
 
-                HorizontalLayout {
+                if (game-row.engine-brand != ""): HorizontalLayout {
                     alignment: center;
                     spacing: Theme.space-4;
                     cross-axis-alignment: center;
 
                     EngineIcon {
                         engine-brand: game-row.engine-brand;
+                        size: 12px;
                     }
 
                     Text {
@@ -126,7 +126,6 @@ export component GameRowView inherits Rectangle {
                     text: game-row.engine-version;
                     horizontal-alignment: center;
                     color: Theme.foreground;
-                    // opacity: 0.75;
                     font-family: Fonts.monospace-family;
                     font-size: Theme.font-10;
                     overflow: elide;
