@@ -1,9 +1,11 @@
 use std::{
 	rc::Rc,
 	sync::atomic::{AtomicI32, Ordering},
+	thread,
+	time::Duration,
 };
 
-use slint::Model;
+use slint::{ComponentHandle, Model};
 
 use crate::{MainWindow, NotificationKind, NotificationView, analytics};
 
@@ -39,13 +41,30 @@ fn show_async(
 }
 
 pub fn dismiss(window: &MainWindow, id: i32) {
-	let notifications = window
-		.get_notifications()
+	let notifications = window.get_notifications();
+
+	if !notifications.iter().any(|notification| notification.id == id) {
+		return;
+	}
+
+	let notifications = notifications
 		.iter()
 		.filter(|notification| notification.id != id)
 		.collect::<Vec<_>>();
 
 	window.set_notifications(Rc::new(slint::VecModel::from(notifications)).into());
+}
+
+fn schedule_dismiss(window: slint::Weak<MainWindow>, id: i32) {
+	thread::spawn(move || {
+		thread::sleep(Duration::from_secs(5));
+
+		crate::runtime::invoke_on_ui(move || {
+			if let Some(window) = window.upgrade() {
+				dismiss(&window, id);
+			}
+		});
+	});
 }
 
 fn show(window: &MainWindow, message: impl Into<slint::SharedString>, kind: NotificationKind) {
@@ -59,11 +78,14 @@ fn show(window: &MainWindow, message: impl Into<slint::SharedString>, kind: Noti
 		);
 	}
 
+	let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
 	notifications.push(NotificationView {
-		id: NEXT_ID.fetch_add(1, Ordering::Relaxed),
+		id,
 		message,
 		kind,
 	});
 
 	window.set_notifications(Rc::new(slint::VecModel::from(notifications)).into());
+
+	schedule_dismiss(window.as_weak(), id);
 }
