@@ -22,7 +22,7 @@ export component UserMenu inherits Rectangle {
             menu.show();
         }
 
-        if root.logged-in : Rectangle {
+        if root.logged-in: Rectangle {
             width: root.avatar-size;
             height: root.avatar-size;
             border-radius: root.avatar-size / 2;
@@ -38,13 +38,13 @@ export component UserMenu inherits Rectangle {
                 background: Theme.background;
                 clip: true;
 
-                if root.has-avatar : Image {
+                if root.has-avatar: Image {
                     source: root.avatar;
                     width: 100%;
                     height: 100%;
                 }
 
-                if !root.has-avatar : Text {
+                if !root.has-avatar: Text {
                     text: root.user-initials;
                     font-size: Theme.font-12;
                     font-weight: Theme.weight-bold;
@@ -55,7 +55,7 @@ export component UserMenu inherits Rectangle {
             }
         }
 
-        if !root.logged-in : SvgIcon {
+        if !root.logged-in: SvgIcon {
             source: @image-url("../icons/ui/account.svg");
             size: root.avatar-size;
             color: Theme.foreground;

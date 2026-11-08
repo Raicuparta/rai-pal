@@ -20,7 +20,7 @@ export component SidebarAction inherits ListRow {
     private property <bool> shows-icon: root.has-icon || root.has-status || root.shows-spinner;
     private property <angle> spinner-angle: mod(animation-tick(), 1s) / 1s * 360deg;
     private property <image> display-icon: root.current-state == ActionState.success ? @image-url("../icons/ui/success.svg") : root.current-state == ActionState.error ? @image-url("../icons/ui/error.svg") : root.shows-spinner ? @image-url("../icons/ui/loading.svg") : root.icon;
-    private property <brush> content-color: !root.enabled ? Theme.dimmed-foreground : root.current-state == ActionState.success ? Theme.status-success : root.current-state == ActionState.error ? Theme.status-error : root.highlighted ? Theme.primary : Theme.foreground;
+    private property <brush> content-color: !root.enabled ? Theme.dimmed-foreground : root.current-state == ActionState.success ? Theme.status-success : root.current-state == ActionState.error ? Theme.status-error : root.highlighted ? Theme.primary : Theme.strong-foreground;
 
     content-padding-left: Theme.space-12;
     content-padding-right: Theme.space-12;
@@ -59,7 +59,7 @@ export component SidebarAction inherits ListRow {
         width: Theme.icon-size;
         height: Theme.icon-size;
 
-        if root.shows-icon : SvgIcon {
+        if root.shows-icon: SvgIcon {
             width: 100%;
             height: 100%;
             source: root.display-icon;

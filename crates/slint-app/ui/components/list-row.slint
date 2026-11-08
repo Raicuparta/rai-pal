@@ -30,6 +30,7 @@ export component ListRow inherits Rectangle {
 
     row-touch := TouchArea {
         enabled: root.interactive;
+        mouse-cursor: pointer;
 
         clicked => {
             root.clicked();
@@ -57,12 +58,11 @@ export component ListRow inherits Rectangle {
                 root.clicked();
                 return accept;
             }
-
             return reject;
         }
     }
 
-    if root.tooltip != "" : Tooltip {
+    if root.tooltip != "": Tooltip {
         text: @markdown("\{root.tooltip}");
     }
 }

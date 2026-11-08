@@ -52,7 +52,7 @@ component FilterValueRow inherits ListRow {
             }
         }
 
-        if root.item.note-label-key != "" : Rectangle {
+        if root.item.note-label-key != "": Rectangle {
             x: check-box.preferred-width + Theme.space-4;
             y: (parent.height - self.height) / 2;
             width: 12px;
@@ -140,9 +140,10 @@ export component FilterGroupView inherits Rectangle {
                 text: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
                 font-weight: Theme.weight-bold;
                 overflow: elide;
+                color: Theme.strong-foreground;
             }
 
-            if root.group.has-locked : Rectangle {
+            if root.group.has-locked: Rectangle {
                 width: 6px;
                 height: 6px;
                 border-radius: 6px / 2;
@@ -159,11 +160,11 @@ export component FilterGroupView inherits Rectangle {
             }
         }
 
-        if root.group.expanded : VerticalLayout {
+        if root.group.expanded: VerticalLayout {
             alignment: start;
             spacing: 0px;
 
-            for value in root.group.values : FilterValueRow {
+            for value in root.group.values: FilterValueRow {
                 item: value;
 
                 toggled(checked) => {

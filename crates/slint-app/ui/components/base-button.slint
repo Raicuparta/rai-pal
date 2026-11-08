@@ -17,7 +17,7 @@ export component BaseButton inherits Rectangle {
     out property <brush> ink-color: root.enabled ? root.ink : root.ink.transparentize(0.75);
 
     private property <bool> needs-dark-ink: root.base-color.to-oklch().lightness > 0.62;
-    private property <brush> ink: root.needs-dark-ink ? #1a1b1e : #ffffff;
+    private property <brush> ink: root.needs-dark-ink ? Theme.strong-foreground-light : Theme.strong-foreground-dark;
     private property <brush> hover-fill: root.needs-dark-ink ? root.base-color.darker(0.15) : root.base-color.brighter(0.4);
     private property <brush> pressed-fill: root.needs-dark-ink ? root.base-color.darker(0.3) : root.base-color.brighter(0.7);
     private property <brush> fill: !root.enabled ? transparent : touch-area.pressed ? root.pressed-fill : touch-area.has-hover ? root.hover-fill : root.base-color;
@@ -43,6 +43,7 @@ export component BaseButton inherits Rectangle {
 
     touch-area := TouchArea {
         enabled: root.interactive;
+        mouse-cursor: pointer;
 
         clicked => {
             root.clicked();
@@ -61,12 +62,11 @@ export component BaseButton inherits Rectangle {
                 }
                 return accept;
             }
-
             return reject;
         }
     }
 
-    if root.tooltip != "" : Tooltip {
+    if root.tooltip != "": Tooltip {
         text: @markdown("\{root.tooltip}");
     }
 }

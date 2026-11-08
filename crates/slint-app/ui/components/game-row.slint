@@ -15,7 +15,6 @@ export component GameRowView inherits Rectangle {
 
     height: Theme.game-row-height;
     background: touch-area.has-hover ? Theme.hover-background : Theme.background;
-    property <brush> row-foreground: game-row.installed ? Theme.foreground : Theme.dimmed-foreground;
 
     HorizontalLayout {
         Rectangle {
@@ -40,7 +39,7 @@ export component GameRowView inherits Rectangle {
             }
         }
 
-        if root.show-thumbnail : Rectangle {
+        if root.show-thumbnail: Rectangle {
             width: 100px;
             clip: true;
             background: Branding.provider-background(game-row.provider-id);
@@ -54,7 +53,7 @@ export component GameRowView inherits Rectangle {
                 y: (parent.height - self.height) / 2;
             }
 
-            if game-row.has-thumbnail : Image {
+            if game-row.has-thumbnail: Image {
                 source: game-row.thumbnail;
                 width: 100%;
                 height: 100%;
@@ -72,12 +71,12 @@ export component GameRowView inherits Rectangle {
 
             Text {
                 text: game-row.title;
-                color: row-foreground;
-                font-weight: Theme.weight-bold;
+                color: game-row.installed ? Theme.strong-foreground : Theme.foreground;
+                font-weight: game-row.installed ? Theme.weight-bold : Theme.weight-normal;
                 wrap: word-wrap;
             }
 
-            for tag in game-row.tags : Rectangle {
+            for tag in game-row.tags: Rectangle {
                 width: tag-text.preferred-width + Theme.space-6;
                 height: tag-text.preferred-height + Theme.space-4;
                 background: Theme.tag-background;
@@ -111,18 +110,20 @@ export component GameRowView inherits Rectangle {
                     overflow: elide;
                 }
 
-                if game-row.engine-version != "" : Text {
+                if game-row.engine-version != "": Text {
                     text: game-row.engine-version;
                     horizontal-alignment: center;
-                    opacity: 0.75;
+                    color: Theme.foreground;
+                    // opacity: 0.75;
                     font-family: Fonts.monospace-family;
                     font-size: Theme.font-10;
                     overflow: elide;
                 }
 
-                if game-row.engine-details != "" : Text {
+                if game-row.engine-details != "": Text {
                     text: game-row.engine-details;
                     horizontal-alignment: center;
+                    color: Theme.foreground;
                     opacity: 0.5;
                     font-size: Theme.font-10;
                     overflow: elide;
@@ -133,12 +134,12 @@ export component GameRowView inherits Rectangle {
         VerticalLayout {
             width: 80px;
             alignment: center;
-            opacity: 0.75;
 
             Text {
                 text: game-row.release-day;
                 font-size: Theme.font-10;
                 horizontal-alignment: center;
+                color: Theme.foreground;
             }
 
             Text {
@@ -146,12 +147,14 @@ export component GameRowView inherits Rectangle {
                 font-size: Theme.font-10;
                 horizontal-alignment: center;
                 overflow: elide;
+                color: Theme.foreground;
             }
 
             Text {
                 text: game-row.release-year;
                 font-size: Theme.font-10;
                 horizontal-alignment: center;
+                color: Theme.foreground;
             }
         }
     }
@@ -163,6 +166,8 @@ export component GameRowView inherits Rectangle {
     }
 
     touch-area := TouchArea {
+        mouse-cursor: pointer;
+
         clicked => {
             root.selected(root.row-index);
         }

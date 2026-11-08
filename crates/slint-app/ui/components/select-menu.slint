@@ -53,6 +53,7 @@ export component SelectMenu inherits Rectangle {
 
     touch-area := TouchArea {
         enabled: root.enabled;
+        mouse-cursor: pointer;
 
         clicked => {
             menu.show();

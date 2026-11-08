@@ -54,6 +54,10 @@ export global Theme {
     out property <brush> pressed-background: dark ? #25262b : #e9ecef;
     out property <brush> border: dark ? #373a40 : #ced4da;
     out property <brush> foreground: dark ? #c1c2c5 : #000000;
+    // out property <brush> foreground: dark ? red : blue;
+    out property <brush> strong-foreground-light:  #000000;
+    out property <brush> strong-foreground-dark:  #ffffff;
+    out property <brush> strong-foreground: dark ? strong-foreground-dark : strong-foreground-light;
     out property <brush> dimmed-foreground: dark ? #909296 : #868e96;
     out property <brush> primary: Palette.accent-background;
 
