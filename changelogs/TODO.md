@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 
 # Do these now:
 
-- mod update button missing color. update should be green.
 - cursor wrong for checkbox part of checkbox row. should be pointer while hovering the whole row, including the checkbox part.
 - bug: can click through toast notifications.
 - bug: unchecking all filters not taking into account locked (shouldnt count locked as something that needs to be unchecked for the reset to happen, unchecking all unlocked items is what matters and should trigger the reset to check all that are unlocked).
@@ -29,3 +28,4 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - Mod tab action buttons were stretching vertically to match the taller debug/website column; the action row now centers its children, so buttons match the game details page.
 - Merged all nine `*-view.slint` data files into `app-types.slint` and deleted the separate files. They still aren't merged into the component files because the data structs share names with their components (`GameRowView` struct vs `GameRowView` component), and keeping data types in one importable file makes that boundary clearer. `action-state.slint` stays separate because it's a global/callback, not just data.
 - Notification expiry moved from the Slint `Timer` in the repeated toast element to a Rust timer keyed by notification id. Replacing the notifications model was recreating repeated toasts and restarting their timers, so they could live much longer than 5 seconds.
+- Mod Update buttons now use the success/green tint.

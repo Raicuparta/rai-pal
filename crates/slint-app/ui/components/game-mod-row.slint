@@ -148,6 +148,7 @@ export component GameModRowView inherits VerticalLayout {
             if game-mod.can-update: ActionButton {
                 text: @tr("gameModRow" => "Update");
                 icon: Icon.update;
+                tint: Theme.status-success;
                 action-id: "game-mod-install:" + game-mod.mod-id;
 
                 clicked => {
