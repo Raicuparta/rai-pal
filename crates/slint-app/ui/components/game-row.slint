@@ -3,6 +3,8 @@ import { GameRowView } from "../game-row-view.slint";
 import { Fonts, Theme } from "../theme.slint";
 import { ProviderIcon } from "provider-icon.slint";
 import { SvgIcon } from "svg-icon.slint";
+import { EngineIcon } from "engine-icon.slint";
+import { HorizontalBox } from "std-widgets.slint";
 
 export component GameRowView inherits Rectangle {
     in property <GameRowView> game-row;
@@ -94,7 +96,7 @@ export component GameRowView inherits Rectangle {
 
         Rectangle {
             width: 130px;
-            background: Branding.engine-background(game-row.engine-brand);
+            // background: Branding.engine-background(game-row.engine-brand);
             clip: true;
 
             VerticalLayout {
@@ -102,12 +104,22 @@ export component GameRowView inherits Rectangle {
                 padding-left: Theme.space-8;
                 padding-right: Theme.space-8;
 
-                Text {
-                    text: game-row.engine-brand == "" ? "-" : game-row.engine-brand.to-uppercase();
-                    color: Branding.engine-foreground(game-row.engine-brand);
-                    font-weight: Theme.weight-bold;
-                    horizontal-alignment: center;
-                    overflow: elide;
+                HorizontalLayout {
+                    alignment: center;
+                    spacing: Theme.space-4;
+                    cross-axis-alignment: center;
+
+                    EngineIcon {
+                        engine-brand: game-row.engine-brand;
+                    }
+
+                    Text {
+                        text: game-row.engine-brand == "" ? "-" : game-row.engine-brand.to-uppercase();
+                        color: Branding.engine-foreground(game-row.engine-brand);
+                        font-weight: Theme.weight-bold;
+                        horizontal-alignment: center;
+                        overflow: elide;
+                    }
                 }
 
                 if game-row.engine-version != "": Text {

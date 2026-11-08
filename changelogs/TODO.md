@@ -8,3 +8,4 @@ This file is here for me to track things I wanna fix for the next release. If th
 - Filters scrolling still always scrolls entire sidebar.
 - debug data currently missing a bunch of data. adding more buttons for game-mods maybe would be good.
 - the way the dark bool in theme.slint is set is insane, fix that.
+- light theme fallback thumbnail barely visible.

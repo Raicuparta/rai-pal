@@ -1,0 +1,26 @@
+import { Branding } from "../branding.slint";
+import { Theme } from "../theme.slint";
+import { SvgIcon } from "svg-icon.slint";
+
+export component EngineIcon inherits SvgIcon {
+    in property <string> engine-brand;
+
+    pure function icon-source(brand: string) -> image {
+        if brand == "Unity" {
+            return @image-url("../icons/engines/unity.svg");
+        }
+        if brand == "Unreal" {
+            return @image-url("../icons/engines/unreal.svg");
+        }
+        if brand == "Godot" {
+            return @image-url("../icons/engines/godot.svg");
+        }
+        if brand == "GameMaker" {
+            return @image-url("../icons/engines/gamemaker.svg");
+        }
+        return @image-url("");
+    }
+
+    source: root.icon-source(root.engine-brand);
+    color: Branding.engine-foreground(root.engine-brand);
+}
