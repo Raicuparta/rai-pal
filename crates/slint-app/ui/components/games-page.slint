@@ -16,6 +16,7 @@ export component GamesPage inherits Rectangle {
 
     property <length> list-content-y <=> game-list.content-y;
     property <length> list-visible-height <=> game-list.visible-height;
+    private property <length> row-height: Theme.game-row-height + Theme.border-width;
 
     function empty-message() -> string {
         if root.total-count == 0 {
@@ -35,8 +36,8 @@ export component GamesPage inherits Rectangle {
             return;
         }
 
-        let first = max(0, floor(-root.list-content-y / Theme.game-row-height));
-        let last = min(root.game-rows.length - 1, max(first, floor((-root.list-content-y + root.list-visible-height - Theme.border-width) / Theme.game-row-height)));
+        let first = max(0, floor(-root.list-content-y / root.row-height));
+        let last = min(root.game-rows.length - 1, max(first, floor((-root.list-content-y + root.list-visible-height - Theme.border-width) / root.row-height)));
 
         root.visible-range-changed(first, last);
     }

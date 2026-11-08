@@ -2,21 +2,26 @@ import { Branding } from "../branding.slint";
 import { GameRowView } from "../game-row-view.slint";
 import { Fonts, Theme } from "../theme.slint";
 import { ProviderIcon } from "provider-icon.slint";
+import { RowDivider } from "row-divider.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
 import { EngineIcon } from "engine-icon.slint";
 import { HorizontalBox, Palette } from "std-widgets.slint";
 
-export component GameRowView inherits Rectangle {
+export component GameRowView inherits VerticalLayout {
     in property <GameRowView> game-row;
     in property <int> row-index;
     in property <bool> show-thumbnail: true;
 
     callback selected(index: int);
 
-    height: Theme.game-row-height;
-    background: touch-area.has-hover ? Theme.hover-background : Theme.background;
+    alignment: start;
+    spacing: 0px;
 
-    HorizontalLayout {
+    content := Rectangle {
+        height: Theme.game-row-height;
+        background: touch-area.has-hover ? Theme.hover-background : Theme.background;
+
+        HorizontalLayout {
         cross-axis-alignment: center;
 
         Rectangle {
@@ -168,19 +173,16 @@ export component GameRowView inherits Rectangle {
                 color: Theme.foreground;
             }
         }
-    }
+        }
 
-    Rectangle {
-        y: parent.height - self.height;
-        height: 2px;
-        background: Theme.row-divider;
-    }
+        touch-area := TouchArea {
+            mouse-cursor: pointer;
 
-    touch-area := TouchArea {
-        mouse-cursor: pointer;
-
-        clicked => {
-            root.selected(root.row-index);
+            clicked => {
+                root.selected(root.row-index);
+            }
         }
     }
+
+    RowDivider { }
 }
