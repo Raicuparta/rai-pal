@@ -163,12 +163,20 @@ export component AppMenu inherits Rectangle {
 
         PopupMenuSeparator { }
 
-        HorizontalLayout {
-            padding-left: Theme.space-xs;
-            padding-right: Theme.space-xs;
+        VerticalLayout {
+            padding-left: Theme.space-sm;
+            padding-right: Theme.space-sm;
+            padding-top: Theme.space-xs;
+            padding-bottom: Theme.space-xs;
+            spacing: Theme.space-2xs;
+
+            Text {
+                text: @tr("appDropdownMenu" => "Language");
+                color: Theme.dimmed-foreground;
+                font-size: Theme.font-sm;
+            }
 
             SelectMenu {
-                label: @tr("appDropdownMenu" => "Language");
                 options: root.language-options;
                 selected-index: root.language-index();
 
@@ -180,12 +188,20 @@ export component AppMenu inherits Rectangle {
 
         PopupMenuSeparator { }
 
-        HorizontalLayout {
-            padding-left: Theme.space-xs;
-            padding-right: Theme.space-xs;
+        VerticalLayout {
+            padding-left: Theme.space-sm;
+            padding-right: Theme.space-sm;
+            padding-top: Theme.space-xs;
+            padding-bottom: Theme.space-xs;
+            spacing: Theme.space-2xs;
+
+            Text {
+                text: @tr("appDropdownMenu" => "Color scheme");
+                color: Theme.dimmed-foreground;
+                font-size: Theme.font-sm;
+            }
 
             SelectMenu {
-                label: @tr("appDropdownMenu" => "Color scheme");
                 options: root.color-scheme-options;
                 selected-index: root.color-scheme-index();
 

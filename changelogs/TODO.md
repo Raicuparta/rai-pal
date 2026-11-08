@@ -6,9 +6,6 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 
 # Do these now:
 
-- need to adjust styling for the dropdowns inside menus:
-  - some horizontal padding to align better with the other menu items.
-  - title above instead of inside the element, just like the tauri app.
 - mod action buttons in mods tab are too big, looks like they're filling the height or something? they should be made to look the same as in the game details page.
 - "view" slint files are confusing, do they need to be separate from the main slint files? seems like we could clean this up and merge some files. if not, explain it to me.
 - toast notification timer says 5s but definitely taking way more than 5 seconds to disappear.
@@ -31,3 +28,4 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - Theme sizes now use a t-shirt scale. Spacing is a 4px base (`2xs`=2, `xs`=4, `sm`=8, `md`=12, `lg`=16, `xl`=24, `2xl`=32). Merged old 3→2, 6→8, 10→12, 20→24; deleted unused sizes. Fonts are `2xs`=8, `xs`=10 (merged 10/11), `sm`=12, `md`=14, `lg`=16, `xl`=20. Radii are `sm`=4 (merged 3/4) and `md`=8. Kept semantic sizes like `control-height`, `icon-size`, and popup dimensions as-is.
 - Game rows now put their divider below the 60px content as a sibling `RowDivider`, so the border adds a pixel instead of clipping the row content. Updated the games list visible-range math to match.
 - Mod rows (game details and mods tab, including family headers) use the same `RowDivider` below their content.
+- App menu dropdowns now show their title above the select (like the Tauri app) instead of inside the control, with horizontal padding matching the surrounding menu items. Removed the now-unused `label` input from `SelectMenu`.

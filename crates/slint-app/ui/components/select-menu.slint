@@ -8,7 +8,6 @@ export struct SelectOption {
 }
 
 export component SelectMenu inherits Rectangle {
-    in property <string> label: "";
     in property <[SelectOption]> options;
     in-out property <int> selected-index: 0;
     in property <Icon> icon: Icon.sort-menu;
@@ -30,13 +29,6 @@ export component SelectMenu inherits Rectangle {
         padding-right: Theme.space-sm;
         spacing: Theme.space-xs;
         cross-axis-alignment: center;
-
-        if root.label != "": Text {
-            text: root.label;
-            color: Theme.dimmed-foreground;
-            vertical-alignment: center;
-            overflow: elide;
-        }
 
         Text {
             text: root.current-label;
