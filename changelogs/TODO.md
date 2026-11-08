@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 
 # Do these now:
 
-- "view" slint files are confusing, do they need to be separate from the main slint files? seems like we could clean this up and merge some files. if not, explain it to me.
 - toast notification timer says 5s but definitely taking way more than 5 seconds to disappear.
 - mod update button missing color. update should be green.
 - cursor wrong for checkbox part of checkbox row. should be pointer while hovering the whole row, including the checkbox part.
@@ -29,3 +28,4 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - Mod rows (game details and mods tab, including family headers) use the same `RowDivider` below their content.
 - App menu dropdowns now show their title above the select (like the Tauri app) instead of inside the control, with horizontal padding matching the surrounding menu items. Removed the now-unused `label` input from `SelectMenu`.
 - Mod tab action buttons were stretching vertically to match the taller debug/website column; the action row now centers its children, so buttons match the game details page.
+- Merged all nine `*-view.slint` data files into `app-types.slint` and deleted the separate files. They still aren't merged into the component files because the data structs share names with their components (`GameRowView` struct vs `GameRowView` component), and keeping data types in one importable file makes that boundary clearer. `action-state.slint` stays separate because it's a global/callback, not just data.

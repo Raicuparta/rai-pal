@@ -15,3 +15,133 @@ export enum AddGamePhase {
     scanning,
     confirming,
 }
+
+export enum DownloadPhase {
+    pending,
+    in-progress,
+    finished,
+    failed,
+}
+
+export enum NotificationKind {
+    error,
+    success,
+    info,
+}
+
+export struct DownloadItemView {
+    id: string,
+    name: string,
+    progress: float,
+    phase: DownloadPhase,
+}
+
+export struct FilterValueView {
+    value: string,
+    label-key: string,
+    label: string,
+    note-label-key: string,
+    enabled: bool,
+    locked: bool,
+}
+
+export struct FilterGroupView {
+    key: string,
+    label-key: string,
+    label: string,
+    values: [FilterValueView],
+    has-changes: bool,
+    has-locked: bool,
+    expanded: bool,
+}
+
+export struct GameModView {
+    mod-id: string,
+    title: string,
+    description: string,
+    family: string,
+    version-text: string,
+    release-date: string,
+    author: string,
+    engine-text: string,
+    installed: bool,
+    outdated: bool,
+    incompatible: bool,
+    deprecated: bool,
+    has-remote-config: bool,
+    show-status: bool,
+    can-install: bool,
+    can-update: bool,
+    can-run: bool,
+    can-show-actions: bool,
+    can-edit-config: bool,
+    can-open-mod-folder: bool,
+    can-download-config: bool,
+    can-reinstall: bool,
+    can-uninstall: bool,
+    has-installed-dependants: bool,
+}
+
+export struct GameRowView {
+    provider-id: string,
+    game-id: string,
+    title: string,
+    thumbnail: image,
+    has-thumbnail: bool,
+    installed: bool,
+    tags: [string],
+    loaded: bool,
+    engine-brand: string,
+    engine-version: string,
+    engine-details: string,
+    release-day: string,
+    release-month: string,
+    release-year: string,
+}
+
+export struct ModsTabModView {
+    id: string,
+    title: string,
+    description: string,
+    version-text: string,
+    release-date: string,
+    author: string,
+    engine-text: string,
+    deprecated: bool,
+    source-code: string,
+    can-run: bool,
+    can-install: bool,
+}
+
+export struct ModsTabItemView {
+    is-family: bool,
+    family-title: string,
+    family-description: string,
+    mods: [ModsTabModView],
+    single-mod: ModsTabModView,
+}
+
+export struct NotificationView {
+    id: int,
+    message: string,
+    kind: NotificationKind,
+}
+
+export struct PatronView {
+    ranking: int,
+    name: string,
+    initials: string,
+    has-avatar: bool,
+    avatar: image,
+}
+
+export struct PotentialModView {
+    title: string,
+    description: string,
+}
+
+export struct UrlModSourceView {
+    url: string,
+    enabled: bool,
+    is-default: bool,
+}
