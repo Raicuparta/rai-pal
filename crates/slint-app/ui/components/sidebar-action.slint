@@ -59,19 +59,24 @@ export component SidebarAction inherits ListRow {
         }
     }
 
-    SvgIcon {
-        icon: root.display-icon;
-        color: root.content-color;
-        transform-rotation: root.shows-spinner ? root.spinner-angle : 0deg;
-    }
+    HorizontalLayout {
+        padding-left: Theme.space-md;
+        spacing: Theme.space-sm;
 
-    Text {
-        text: root.text;
-        font-size: Theme.font-sm;
-        color: root.content-color;
-        vertical-alignment: center;
-        overflow: elide;
-        horizontal-stretch: 1;
-        font-weight: Theme.weight-semibold;
+        SvgIcon {
+            icon: root.display-icon;
+            color: root.content-color;
+            transform-rotation: root.shows-spinner ? root.spinner-angle : 0deg;
+        }
+
+        Text {
+            text: root.text;
+            font-size: Theme.font-sm;
+            color: root.content-color;
+            vertical-alignment: center;
+            overflow: elide;
+            horizontal-stretch: 1;
+            font-weight: Theme.weight-semibold;
+        }
     }
 }

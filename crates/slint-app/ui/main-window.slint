@@ -1,5 +1,18 @@
 import { Palette } from "std-widgets.slint";
-import { GameRowData, FilterGroupData, GameModData, PotentialModData, ModsTabItemData, PatronData, UrlModSourceData, NotificationData, DownloadItemData, AppColorScheme, AppTab, AddGamePhase } from "app-types.slint";
+import {
+    GameRowData,
+    FilterGroupData,
+    GameModData,
+    PotentialModData,
+    ModsTabItemData,
+    PatronData,
+    UrlModSourceData,
+    NotificationData,
+    DownloadItemData,
+    AppColorScheme,
+    AppTab,
+    AddGamePhase,
+} from "app-types.slint";
 import { GamesSidebar } from "components/games-sidebar.slint";
 import { GameSidebar } from "components/game-sidebar.slint";
 import { GameDetailsPopup } from "components/game-details-popup.slint";
@@ -314,10 +327,6 @@ export component MainWindow inherits Window {
                             root.steam-shortcut-open = true;
                         }
 
-                        add-game-clicked => {
-                            root.request-add-game();
-                        }
-
                         reset-settings-clicked => {
                             root.reset-settings();
                         }
@@ -434,6 +443,9 @@ export component MainWindow inherits Window {
                         filters-have-expanded: root.filters-have-expanded;
                         refreshing: root.refreshing;
                         refresh-task-names: root.refresh-task-names;
+                        add-game-clicked => {
+                            root.request-add-game();
+                        }
 
                         refresh-all => {
                             root.refresh-all();

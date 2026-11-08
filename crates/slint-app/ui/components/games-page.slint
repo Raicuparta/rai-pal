@@ -35,7 +35,6 @@ export component GamesPage inherits Rectangle {
             root.visible-range-changed(0, -1);
             return;
         }
-
         let first = max(0, floor(-root.list-content-y / root.row-height));
         let last = min(root.game-rows.length - 1, max(first, floor((-root.list-content-y + root.list-visible-height - Theme.border-width) / root.row-height)));
 
@@ -55,7 +54,7 @@ export component GamesPage inherits Rectangle {
         root.notify-visible-range();
     }
 
-    if root.game-rows.length == 0 : VerticalLayout {
+    if root.game-rows.length == 0: VerticalLayout {
         padding: Theme.space-xl;
         alignment: center;
 
@@ -66,7 +65,7 @@ export component GamesPage inherits Rectangle {
 
     game-list := ListView {
         visible: root.game-rows.length > 0;
-        for item[index] in root.game-rows : GameRow {
+        for item[index] in root.game-rows: GameRow {
             game-row: item;
             row-index: index;
             show-thumbnail: root.show-thumbnails;

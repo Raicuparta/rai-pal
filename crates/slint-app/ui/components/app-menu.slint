@@ -14,7 +14,6 @@ export component AppMenu inherits Rectangle {
     callback about-clicked;
     callback steam-cache-clicked;
     callback steam-shortcut-clicked;
-    callback add-game-clicked;
     callback reset-settings-clicked;
     callback open-logs-folder-clicked;
     callback hide-game-thumbnails-changed(hide: bool);
@@ -115,16 +114,8 @@ export component AppMenu inherits Rectangle {
         PopupMenuSeparator { }
 
         PopupMenuItem {
-            text: @tr("steamCache" => "Reset Steam cache");
-
-            clicked => {
-                root.steam-cache-clicked();
-                menu.close();
-            }
-        }
-
-        PopupMenuItem {
             text: @tr("steamShortcut" => "Add Rai Pal to Steam library");
+            icon: Icon.steam;
 
             clicked => {
                 root.steam-shortcut-clicked();
@@ -133,10 +124,10 @@ export component AppMenu inherits Rectangle {
         }
 
         PopupMenuItem {
-            text: @tr("manualGames" => "Add games");
+            text: @tr("steamCache" => "Reset Steam cache");
 
             clicked => {
-                root.add-game-clicked();
+                root.steam-cache-clicked();
                 menu.close();
             }
         }
@@ -154,6 +145,7 @@ export component AppMenu inherits Rectangle {
 
         PopupMenuItem {
             text: @tr("appDropdownMenu" => "Open Logs Folder");
+            icon: Icon.folder;
 
             clicked => {
                 root.open-logs-folder-clicked();
