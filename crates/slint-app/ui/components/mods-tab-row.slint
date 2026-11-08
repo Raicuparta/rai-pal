@@ -5,19 +5,23 @@ import { ActionButton } from "action-button.slint";
 import { ExternalLink } from "external-link.slint";
 import { IconButton } from "icon-button.slint";
 import { ModSummaryView } from "mod-summary.slint";
+import { RowDivider } from "row-divider.slint";
 import { Icon } from "svg-icon.slint";
 
-export component ModsTabRowView inherits Rectangle {
+export component ModsTabRowView inherits VerticalLayout {
     in property <ModsTabModView> mod-data;
     in property <bool> indented: false;
 
     callback debug-data(mod-id: string);
 
     vertical-stretch: 0;
+    alignment: start;
+    spacing: 0px;
 
-    row-touch := TouchArea { }
+    content := Rectangle {
+        height: row-layout.preferred-height;
 
-    HorizontalLayout {
+        row-layout := HorizontalLayout {
         padding: Theme.space-sm;
         spacing: Theme.space-sm;
         cross-axis-alignment: center;
@@ -87,4 +91,8 @@ export component ModsTabRowView inherits Rectangle {
             }
         }
     }
+
+    }
+
+    RowDivider { }
 }

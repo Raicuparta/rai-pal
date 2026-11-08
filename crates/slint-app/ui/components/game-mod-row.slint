@@ -5,9 +5,10 @@ import { ActionButton } from "action-button.slint";
 import { IconButton } from "icon-button.slint";
 import { ModSummaryView } from "mod-summary.slint";
 import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
+import { RowDivider } from "row-divider.slint";
 import { Icon } from "svg-icon.slint";
 
-export component GameModRowView inherits Rectangle {
+export component GameModRowView inherits VerticalLayout {
     in property <GameModView> game-mod;
 
     property <bool> interactive: !game-mod.incompatible;
@@ -16,7 +17,8 @@ export component GameModRowView inherits Rectangle {
     private property <length> menu-y: 0;
 
     vertical-stretch: 0;
-    background: interactive && row-touch.has-hover ? Theme.hover-background : transparent;
+    alignment: start;
+    spacing: 0px;
 
     menu := PopupMenu {
         x: root.menu-x;
@@ -88,20 +90,24 @@ export component GameModRowView inherits Rectangle {
         }
     }
 
-    row-touch := TouchArea {
-        pointer-event(event) => {
-            if event.kind == PointerEventKind.down && event.button == PointerEventButton.right {
-                root.menu-x = max(0px, min(row-touch.pressed-x, root.width - Theme.menu-width));
-                root.menu-y = row-touch.pressed-y;
-                menu.show();
+    content := Rectangle {
+        height: row-layout.preferred-height;
+        background: interactive && row-touch.has-hover ? Theme.hover-background : transparent;
+
+        row-touch := TouchArea {
+            pointer-event(event) => {
+                if event.kind == PointerEventKind.down && event.button == PointerEventButton.right {
+                    root.menu-x = max(0px, min(row-touch.pressed-x, root.width - Theme.menu-width));
+                    root.menu-y = row-touch.pressed-y;
+                    menu.show();
+                }
             }
         }
-    }
 
-    HorizontalLayout {
-        padding: Theme.space-sm;
-        spacing: Theme.space-sm;
-        cross-axis-alignment: center;
+        row-layout := HorizontalLayout {
+            padding: Theme.space-sm;
+            spacing: Theme.space-sm;
+            cross-axis-alignment: center;
 
         ModSummaryView {
             horizontal-stretch: 1;
@@ -173,4 +179,8 @@ export component GameModRowView inherits Rectangle {
             }
         }
     }
+
+    }
+
+    RowDivider { }
 }

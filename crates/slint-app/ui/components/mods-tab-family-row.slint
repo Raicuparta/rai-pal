@@ -1,6 +1,7 @@
 import { ModsTabItemView } from "../mods-tab-view.slint";
 import { Theme } from "../theme.slint";
 import { ModsTabRowView } from "mods-tab-row.slint";
+import { RowDivider } from "row-divider.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
 
 export component ModsTabFamilyRowView inherits Rectangle {
@@ -14,12 +15,16 @@ export component ModsTabFamilyRowView inherits Rectangle {
 
     VerticalLayout {
         alignment: start;
-        spacing: Theme.space-2xs;
+        spacing: 0px;
 
-        Rectangle {
-            background: header-touch.has-hover ? Theme.hover-background : transparent;
+        VerticalLayout {
+            alignment: start;
+            spacing: 0px;
 
-            HorizontalLayout {
+            Rectangle {
+                background: header-touch.has-hover ? Theme.hover-background : transparent;
+
+                HorizontalLayout {
                 padding: Theme.space-sm;
                 spacing: Theme.space-sm;
                 cross-axis-alignment: center;
@@ -52,13 +57,16 @@ export component ModsTabFamilyRowView inherits Rectangle {
                 }
             }
 
-            header-touch := TouchArea {
-                mouse-cursor: pointer;
+                header-touch := TouchArea {
+                    mouse-cursor: pointer;
 
-                clicked => {
-                    root.expanded = !root.expanded;
+                    clicked => {
+                        root.expanded = !root.expanded;
+                    }
                 }
             }
+
+            RowDivider { }
         }
 
         if root.expanded: VerticalLayout {
