@@ -43,7 +43,10 @@ fn show_async(
 pub fn dismiss(window: &MainWindow, id: i32) {
 	let notifications = window.get_notifications();
 
-	if !notifications.iter().any(|notification| notification.id == id) {
+	if !notifications
+		.iter()
+		.any(|notification| notification.id == id)
+	{
 		return;
 	}
 
@@ -79,11 +82,7 @@ fn show(window: &MainWindow, message: impl Into<slint::SharedString>, kind: Noti
 	}
 
 	let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
-	notifications.push(NotificationView {
-		id,
-		message,
-		kind,
-	});
+	notifications.push(NotificationView { id, message, kind });
 
 	window.set_notifications(Rc::new(slint::VecModel::from(notifications)).into());
 
