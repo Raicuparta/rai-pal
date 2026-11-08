@@ -35,6 +35,7 @@ export enum Icon {
     more,
     outdated,
     play,
+    play-exe,
     refresh,
     refreshing,
     reinstall,
@@ -109,6 +110,7 @@ export component SvgIcon inherits Image {
         if icon == Icon.more { return @image-url("../icons/ui/more.svg"); }
         if icon == Icon.outdated { return @image-url("../icons/ui/outdated.svg"); }
         if icon == Icon.play { return @image-url("../icons/ui/play.svg"); }
+        if icon == Icon.play-exe { return @image-url("../icons/ui/play-exe.svg"); }
         if icon == Icon.refresh { return @image-url("../icons/ui/refresh.svg"); }
         if icon == Icon.refreshing { return @image-url("../icons/ui/refreshing.svg"); }
         if icon == Icon.reinstall { return @image-url("../icons/ui/reinstall.svg"); }

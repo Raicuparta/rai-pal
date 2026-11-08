@@ -22,6 +22,16 @@ export component GameSidebar inherits Sidebar {
     callback debug-data;
     callback remove-game(confirmation-text: string, confirm-label: string);
 
+    pure function provider-command-icon(command: string) -> Icon {
+        if command == "StartViaProvider" {
+            return Icon.play;
+        }
+        if command == "StartViaExe" {
+            return Icon.play-exe;
+        }
+        return Icon.none;
+    }
+
     VerticalLayout {
         alignment: start;
         spacing: Theme.space-8;
@@ -51,6 +61,7 @@ export component GameSidebar inherits Sidebar {
 
             for action[index] in root.provider-actions: SidebarAction {
                 text: Tr.provider-command(action);
+                icon: root.provider-command-icon(action);
                 highlighted: index == 0;
                 action-id: "provider-action:" + action;
 
