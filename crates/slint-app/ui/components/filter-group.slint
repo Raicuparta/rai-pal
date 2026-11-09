@@ -7,6 +7,7 @@ import { IconButton } from "icon-button.slint";
 import { ListRow } from "list-row.slint";
 import { ResetButton } from "reset-button.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
+import { GamesActions } from "../actions.slint";
 
 component FilterValueRow inherits ListRow {
     in property <FilterValueData> item;
@@ -25,7 +26,7 @@ component FilterValueRow inherits ListRow {
         }
     }
 
-    checkbox-area := Rectangle {
+    Rectangle {
         horizontal-stretch: 1;
         height: 100%;
 
@@ -96,23 +97,17 @@ component FilterValueRow inherits ListRow {
 export component FilterGroup inherits Rectangle {
     in property <FilterGroupData> group;
 
-    callback toggled(value: string, checked: bool);
-    callback lock-toggled(value: string);
-    callback only(value: string);
-    callback reset;
-    callback expanded-changed(expanded: bool);
-
     VerticalLayout {
         alignment: start;
         spacing: Theme.border-width;
 
-        header := ListRow {
+        ListRow {
             extra-hovered: reset-button.hovered;
             spacing: Theme.space-xs;
             accessible-label: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
 
             clicked => {
-                root.expanded-changed(!root.group.expanded);
+                GamesActions.filter-expanded-changed(root.group.key, !root.group.expanded);
             }
 
             SvgIcon {
@@ -139,7 +134,7 @@ export component FilterGroup inherits Rectangle {
                 enabled: root.group.has-changes;
 
                 clicked => {
-                    root.reset();
+                    GamesActions.filter-reset(root.group.key);
                 }
             }
         }
@@ -149,15 +144,15 @@ export component FilterGroup inherits Rectangle {
                 item: value;
 
                 toggled(checked) => {
-                    root.toggled(value.value, checked);
+                    GamesActions.filter-toggled(root.group.key, value.value, checked);
                 }
 
                 lock-toggled => {
-                    root.lock-toggled(value.value);
+                    GamesActions.filter-lock-toggled(root.group.key, value.value);
                 }
 
                 only => {
-                    root.only(value.value);
+                    GamesActions.filter-only(root.group.key, value.value);
                 }
             }
         }

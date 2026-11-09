@@ -41,7 +41,9 @@ fn show_async(
 }
 
 pub fn dismiss(window: &MainWindow, id: i32) {
-	let notifications = window.get_notifications();
+	let notifications = window
+		.global::<crate::NotificationsState>()
+		.get_notifications();
 
 	if !notifications
 		.iter()
@@ -55,7 +57,9 @@ pub fn dismiss(window: &MainWindow, id: i32) {
 		.filter(|notification| notification.id != id)
 		.collect::<Vec<_>>();
 
-	window.set_notifications(Rc::new(slint::VecModel::from(notifications)).into());
+	window
+		.global::<crate::NotificationsState>()
+		.set_notifications(Rc::new(slint::VecModel::from(notifications)).into());
 }
 
 fn schedule_dismiss(window: slint::Weak<MainWindow>, id: i32) {
@@ -71,7 +75,11 @@ fn schedule_dismiss(window: slint::Weak<MainWindow>, id: i32) {
 }
 
 fn show(window: &MainWindow, message: impl Into<slint::SharedString>, kind: NotificationKind) {
-	let mut notifications = window.get_notifications().iter().collect::<Vec<_>>();
+	let mut notifications = window
+		.global::<crate::NotificationsState>()
+		.get_notifications()
+		.iter()
+		.collect::<Vec<_>>();
 	let message = message.into();
 
 	if kind == NotificationKind::Error {
@@ -84,7 +92,9 @@ fn show(window: &MainWindow, message: impl Into<slint::SharedString>, kind: Noti
 	let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
 	notifications.push(NotificationData { id, message, kind });
 
-	window.set_notifications(Rc::new(slint::VecModel::from(notifications)).into());
+	window
+		.global::<crate::NotificationsState>()
+		.set_notifications(Rc::new(slint::VecModel::from(notifications)).into());
 
 	schedule_dismiss(window.as_weak(), id);
 }

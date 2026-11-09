@@ -6,20 +6,20 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 
 # Do these now:
 
-# Do not do yet:
-
 - Filters scrolling still always scrolls entire sidebar.
 - debug data currently missing a bunch of data. adding more buttons for game-mods maybe would be good.
-- the way the dark bool in theme.slint is set is insane, fix that.
 - update the intro text.
 - colored buttons probably need a "subtle" mode or something like in tauri.
 - button size and icon spacing needs to be adjusted to match the tauri one better.
-- look for props that are exposed but never actually used and only the default is used.
-- look for things that are set in private properties and are only used once, just do them in place.
-- investigate callback drilling. does it have to be this way?
-- look for components that are named like navbar := Rectangle but the name is never used. no linter for unused variables in slint?
 - process name is still rai-pal-slint on appimage at least.
 - some modals have clipped titles (add to steam as example, i saw on deck)
 - maybe a bit too small on steam deck?
 
 # Report:
+
+- Refactored the Slint/Rust bridge from root MainWindow properties/callbacks to domain globals in `ui/state.slint` and `ui/actions.slint` (`AppState`, `UserState`, `Refresh`, `GamesState`, `SelectedGameState`, `ModsState`, `DownloadsState`, `NotificationsState`, `ThanksState`, `DebugState`, `AddGameState`, `ModSourcesState`, `SteamToolsState`, `UpdateState`, `ConfirmationState`, `AppActions`, `GamesActions`, `DialogActions`). Components talk to these directly; `main-window.slint` went from 726 to ~200 lines.
+- Removed the duplicated `has-*` mod flags; `GameDetailsPage` derives them from list lengths.
+- Popups/overlays now own their open/close state and actions instead of being wired through `MainWindow`. Reusable leaf widgets (`GameRow`, `Button`, `Modal`, etc.) keep props.
+- Cleaned up unused ids/imports and one-use props (`ProviderIcon` size, `Modal` content-spacing/close-tooltip/header-action-enabled, `NavButton` top/bottom padding, `SelectMenu` enabled, `SidebarAction` state).
+- Dark mode: when `Palette.color-scheme` is dark/light, `Theme.dark` uses that directly. When it is Unknown (auto), Slint's resolved system scheme (`SlintInternal.color-scheme`) is not exposed to app code, so `Theme.dark` falls back to the resolved `Palette.background` lightness only in that case.
+- Rust still has repetitive `window.global::<crate::...>()` call sites; left as-is to keep this change reviewable.

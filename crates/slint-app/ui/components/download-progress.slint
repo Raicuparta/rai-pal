@@ -1,18 +1,14 @@
 import { ProgressIndicator } from "std-widgets.slint";
-import { DownloadItemData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
 import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
+import { DownloadsState } from "../state.slint";
+import { AppActions } from "../actions.slint";
 
 export component DownloadProgress inherits Rectangle {
-    in property <[DownloadItemData]> items;
-    in property <float> overall-progress: 0;
-
-    callback clear-completed;
-
     width: Theme.control-height + Theme.space-sm;
     height: Theme.control-height;
-    visible: root.items.length > 0;
+    visible: DownloadsState.items.length > 0;
 
     private property <string> menu-tooltip: @tr("downloadStatusMenu" => "Downloads");
 
@@ -32,7 +28,7 @@ export component DownloadProgress inherits Rectangle {
             x: Theme.space-sm;
             width: parent.width - Theme.space-md;
             y: parent.height - Theme.space-sm;
-            progress: root.overall-progress;
+            progress: DownloadsState.overall-progress;
         }
 
         touch-area := TouchArea {
@@ -50,14 +46,14 @@ export component DownloadProgress inherits Rectangle {
             text: @tr("downloadStatusMenu" => "Clear completed");
 
             clicked => {
-                root.clear-completed();
+                AppActions.clear-downloads();
                 menu.close();
             }
         }
 
-        if root.items.length > 0 : PopupMenuSeparator { }
+        if DownloadsState.items.length > 0 : PopupMenuSeparator { }
 
-        for item in root.items : PopupMenuItem {
+        for item in DownloadsState.items : PopupMenuItem {
             enabled: false;
             text: "\{item.name}: \{round(item.progress)}%";
         }

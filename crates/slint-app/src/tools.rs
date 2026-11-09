@@ -24,9 +24,15 @@ pub fn reset_steam_cache(
 	selected_game: SelectedGameState,
 ) {
 	if let Some(window) = window.upgrade() {
-		window.set_steam_cache_running(true);
-		window.set_steam_cache_success(false);
-		window.set_steam_cache_error("".into());
+		window
+			.global::<crate::SteamToolsState>()
+			.set_cache_running(true);
+		window
+			.global::<crate::SteamToolsState>()
+			.set_cache_success(false);
+		window
+			.global::<crate::SteamToolsState>()
+			.set_cache_error("".into());
 	}
 
 	thread::spawn(move || {
@@ -39,11 +45,15 @@ pub fn reset_steam_cache(
 				return;
 			};
 
-			window.set_steam_cache_running(false);
+			window
+				.global::<crate::SteamToolsState>()
+				.set_cache_running(false);
 
 			match result {
 				Ok(()) => {
-					window.set_steam_cache_success(true);
+					window
+						.global::<crate::SteamToolsState>()
+						.set_cache_success(true);
 					start_query(
 						window.as_weak(),
 						database.clone(),
@@ -54,7 +64,9 @@ pub fn reset_steam_cache(
 					refresh::refresh_selected_game(&window, &database, &selected_game);
 				}
 				Err(err) => {
-					window.set_steam_cache_error(err.to_string().into());
+					window
+						.global::<crate::SteamToolsState>()
+						.set_cache_error(err.to_string().into());
 				}
 			}
 		});
@@ -63,9 +75,15 @@ pub fn reset_steam_cache(
 
 pub fn add_steam_shortcut(window: slint::Weak<MainWindow>) {
 	if let Some(window) = window.upgrade() {
-		window.set_steam_shortcut_running(true);
-		window.set_steam_shortcut_success(false);
-		window.set_steam_shortcut_error("".into());
+		window
+			.global::<crate::SteamToolsState>()
+			.set_shortcut_running(true);
+		window
+			.global::<crate::SteamToolsState>()
+			.set_shortcut_success(false);
+		window
+			.global::<crate::SteamToolsState>()
+			.set_shortcut_error("".into());
 	}
 
 	thread::spawn(move || {
@@ -76,11 +94,17 @@ pub fn add_steam_shortcut(window: slint::Weak<MainWindow>) {
 				return;
 			};
 
-			window.set_steam_shortcut_running(false);
+			window
+				.global::<crate::SteamToolsState>()
+				.set_shortcut_running(false);
 
 			match result {
-				Ok(()) => window.set_steam_shortcut_success(true),
-				Err(err) => window.set_steam_shortcut_error(err.to_string().into()),
+				Ok(()) => window
+					.global::<crate::SteamToolsState>()
+					.set_shortcut_success(true),
+				Err(err) => window
+					.global::<crate::SteamToolsState>()
+					.set_shortcut_error(err.to_string().into()),
 			}
 		});
 	});

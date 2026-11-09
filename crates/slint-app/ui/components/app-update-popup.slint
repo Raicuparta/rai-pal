@@ -1,23 +1,18 @@
 import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
+import { UpdateState } from "../state.slint";
+import { AppActions } from "../actions.slint";
 
 export component AppUpdatePopup inherits Modal {
-    in property <string> version;
-    in property <string> notes;
-    in property <bool> installing;
-
-    callback install-clicked;
-    callback ignore-clicked;
-
-    title: @tr("appUpdate" => "Rai Pal {0}", root.version);
+    open: UpdateState.open;
+    title: @tr("appUpdate" => "Rai Pal {0}", UpdateState.version);
     big: true;
     show-close-button: false;
     close-on-click-outside: false;
-    content-spacing: Theme.space-md;
 
     Text {
-        text: root.notes == "" ? @tr("appUpdate" => "(no changelog)") : root.notes;
+        text: UpdateState.notes == "" ? @tr("appUpdate" => "(no changelog)") : UpdateState.notes;
         wrap: word-wrap;
     }
 
@@ -26,22 +21,23 @@ export component AppUpdatePopup inherits Modal {
 
         Button {
             text: @tr("appUpdate" => "Ignore (won't ask again until you restart Rai Pal)");
-            enabled: !root.installing;
+            enabled: !UpdateState.installing;
             horizontal-stretch: 1;
 
             clicked => {
-                root.ignore-clicked();
+                UpdateState.open = false;
+                AppActions.ignore-update();
             }
         }
 
         Button {
             text: @tr("appUpdate" => "Update now");
-            enabled: !root.installing;
+            enabled: !UpdateState.installing;
             tint: Theme.primary;
             horizontal-stretch: 1;
 
             clicked => {
-                root.install-clicked();
+                AppActions.install-update();
             }
         }
     }

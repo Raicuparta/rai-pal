@@ -113,7 +113,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		.global::<ActionStates>()
 		.on_lookup(|id| action_state::lookup(id.as_str()));
 	i18n::apply_translation(initial_locale);
-	window.set_selected_language(
+	window.global::<crate::AppState>().set_selected_language(
 		settings
 			.borrow()
 			.override_language
@@ -121,33 +121,55 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			.unwrap_or_default()
 			.into(),
 	);
-	window.set_detected_language_name(
-		detected_locale
-			.map(i18n::native_name)
-			.unwrap_or_default()
-			.into(),
-	);
-	window.set_selected_color_scheme(app_color_scheme(settings.borrow().color_scheme));
-	window.set_hide_game_thumbnails(settings.borrow().hide_game_thumbnails);
+	window
+		.global::<crate::AppState>()
+		.set_detected_language_name(
+			detected_locale
+				.map(i18n::native_name)
+				.unwrap_or_default()
+				.into(),
+		);
+	window
+		.global::<crate::AppState>()
+		.set_selected_color_scheme(app_color_scheme(settings.borrow().color_scheme));
+	window
+		.global::<crate::AppState>()
+		.set_hide_game_thumbnails(settings.borrow().hide_game_thumbnails);
 	mods_tab::load(&window, &database);
-	window.set_app_version(env!("CARGO_PKG_VERSION").into());
+	window
+		.global::<crate::AppState>()
+		.set_app_version(env!("CARGO_PKG_VERSION").into());
 	user::load(window.as_weak());
 	if initial_tab == AppTab::Thanks {
 		thanks::load(window.as_weak());
 	}
-	window.set_search_text(initial_query.search.clone().into());
-	window.set_games_total_count(i32::try_from(games_total_count).unwrap_or_else(|err| {
-		log::warn!("Games count exceeds i32: {err}");
-		i32::MAX
-	}));
-	window.set_sort_index(sort_option_index(
-		initial_query.sort_by,
-		initial_query.sort_descending,
-	));
-	window.set_current_tab(initial_tab);
-	window.set_filters_have_expanded(initial_groups.iter().any(|group| group.expanded));
-	window.set_filter_groups(Rc::new(slint::VecModel::from(initial_groups)).into());
-	window.set_filters_have_changes(initial_have_changes);
+	window
+		.global::<crate::GamesState>()
+		.set_search_text(initial_query.search.clone().into());
+	window.global::<crate::GamesState>().set_total_count(
+		i32::try_from(games_total_count).unwrap_or_else(|err| {
+			log::warn!("Games count exceeds i32: {err}");
+			i32::MAX
+		}),
+	);
+	window
+		.global::<crate::GamesState>()
+		.set_sort_index(sort_option_index(
+			initial_query.sort_by,
+			initial_query.sort_descending,
+		));
+	window
+		.global::<crate::AppState>()
+		.set_current_tab(initial_tab);
+	window
+		.global::<crate::GamesState>()
+		.set_filters_have_expanded(initial_groups.iter().any(|group| group.expanded));
+	window
+		.global::<crate::GamesState>()
+		.set_filter_groups(Rc::new(slint::VecModel::from(initial_groups)).into());
+	window
+		.global::<crate::GamesState>()
+		.set_filters_have_changes(initial_have_changes);
 
 	let renderer_name = match window.window().set_rendering_notifier(|_, _| {}) {
 		Ok(()) => "FemtoVG (OpenGL)",
@@ -157,8 +179,12 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			"Unknown"
 		}
 	};
-	window.set_renderer_name(renderer_name.into());
-	window.set_platform_name(platform_name().into());
+	window
+		.global::<crate::AppState>()
+		.set_renderer_name(renderer_name.into());
+	window
+		.global::<crate::AppState>()
+		.set_platform_name(platform_name().into());
 	window
 		.global::<Fonts>()
 		.set_monospace_family(monospace_font_family().into());
@@ -170,29 +196,33 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 	let ui_window = window_weak.clone();
 	let ui_scheduler = scheduler.clone();
-	window.on_request_game(move |index| {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
+	window
+		.global::<crate::GamesActions>()
+		.on_request_game(move |index| {
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
 
-		let rows = window.get_game_rows();
-		enqueue_index(&ui_scheduler, &rows, index.max(0) as usize);
-	});
+			let rows = window.global::<crate::GamesState>().get_rows();
+			enqueue_index(&ui_scheduler, &rows, index.max(0) as usize);
+		});
 
 	let ui_window = window_weak.clone();
 	let ui_scheduler = scheduler.clone();
-	window.on_visible_range_changed(move |first, last| {
-		if last < 0 {
-			return;
-		}
+	window
+		.global::<crate::GamesActions>()
+		.on_visible_range_changed(move |first, last| {
+			if last < 0 {
+				return;
+			}
 
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
 
-		let rows = window.get_game_rows();
-		schedule_visible_range(&ui_scheduler, &rows, first.max(0) as usize, last as usize);
-	});
+			let rows = window.global::<crate::GamesState>().get_rows();
+			schedule_visible_range(&ui_scheduler, &rows, first.max(0) as usize, last as usize);
+		});
 
 	let selected_game: selected::SelectedGameState = Arc::new(Mutex::new(None));
 	let pending_confirmation = Rc::new(confirmation::PendingState::default());
@@ -202,7 +232,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_database = database.clone();
 	let ui_scheduler = scheduler.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_refresh_all(move || {
+	window.global::<crate::Refresh>().on_refresh_all(move || {
 		let Some(window) = ui_window.upgrade() else {
 			return;
 		};
@@ -217,550 +247,190 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let ui_window = window_weak.clone();
-	window.on_request_url_mod_sources(move || {
-		if let Some(window) = ui_window.upgrade() {
-			mod_sources::show(&window);
-		}
-	});
+	window
+		.global::<crate::DialogActions>()
+		.on_request_url_mod_sources(move || {
+			if let Some(window) = ui_window.upgrade() {
+				mod_sources::show(&window);
+			}
+		});
 
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_set_url_mod_source_enabled(move |url, enabled| {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
+	window
+		.global::<crate::DialogActions>()
+		.on_set_url_mod_source_enabled(move |url, enabled| {
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
 
-		mod_sources::set_enabled(
-			&window,
-			ui_database.clone(),
-			ui_selected_game.clone(),
-			url.to_string(),
-			enabled,
-		);
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_selected_game = selected_game.clone();
-	window.on_remove_url_mod_source(move |url| {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
-
-		mod_sources::remove(
-			&window,
-			ui_database.clone(),
-			ui_selected_game.clone(),
-			url.to_string(),
-		);
-	});
-
-	let ui_window = window_weak.clone();
-	window.on_add_url_mod_source(move |url| {
-		if let Some(window) = ui_window.upgrade() {
-			mod_sources::request_add(&window, url.to_string());
-		}
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_selected_game = selected_game.clone();
-	window.on_confirm_url_mod_source(move || {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
-
-		mod_sources::confirm_add(&window, ui_database.clone(), ui_selected_game.clone());
-	});
-
-	let ui_window = window_weak.clone();
-	window.on_cancel_url_mod_source(move || {
-		if let Some(window) = ui_window.upgrade() {
-			window.set_confirm_mod_source_loading(false);
-			window.set_confirm_mod_source_error("".into());
-			window.set_confirm_mod_source_mods(Default::default());
-			window.set_confirm_mod_source_saving(false);
-		}
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	let ui_settings = settings.clone();
-	let ui_selected_game = selected_game.clone();
-	window.on_reset_steam_cache(move || {
-		if let Some(window) = ui_window.upgrade()
-			&& !window.get_steam_cache_running()
-		{
-			tools::reset_steam_cache(
-				ui_window.clone(),
-				ui_database.clone(),
-				ui_scheduler.clone(),
-				ui_settings.borrow().games_query.clone(),
-				ui_selected_game.clone(),
-			);
-		}
-	});
-
-	let ui_window = window_weak.clone();
-	window.on_add_steam_shortcut(move || {
-		if let Some(window) = ui_window.upgrade()
-			&& !window.get_steam_shortcut_running()
-		{
-			tools::add_steam_shortcut(ui_window.clone());
-		}
-	});
-
-	let ui_window = window_weak.clone();
-	window.on_open_logs_folder(move || {
-		actions::open_logs_folder(ui_window.clone(), "open-logs-folder".to_string());
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	let ui_settings = settings.clone();
-	let ui_mod_families = mod_families.clone();
-	window.on_reset_settings(move || {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
-
-		let window_state = ui_settings.borrow().window_state;
-		let mut settings = AppSettings::default();
-		settings.window_state = window_state;
-		*ui_settings.borrow_mut() = settings;
-		persist_settings(&ui_settings);
-
-		let locale = i18n::effective_locale(&ui_settings.borrow(), detected_locale);
-		i18n::apply_translation(locale);
-
-		window.set_selected_language("".into());
-		window.set_selected_color_scheme(AppColorScheme::Auto);
-		window.set_hide_game_thumbnails(false);
-		window.set_search_text("".into());
-		window.set_sort_index(0);
-		window.set_current_tab(AppTab::Games);
-		ui_scheduler.set_thumbnails_enabled(true);
-
-		let groups = build_groups(
-			&ui_settings.borrow().games_query.filter,
-			&ui_mod_families,
-			&ui_settings.borrow().expanded_filters,
-		);
-		window.set_filters_have_changes(groups.iter().any(|group| group.has_changes));
-		window.set_filters_have_expanded(groups.iter().any(|group| group.expanded));
-		window.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
-
-		start_query(
-			ui_window.clone(),
-			ui_database.clone(),
-			ui_scheduler.clone(),
-			ui_settings.borrow().games_query.clone(),
-			Duration::ZERO,
-		);
-	});
-
-	let ui_window = window_weak.clone();
-	window.on_request_add_game(move || {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
-
-		window.set_current_tab(AppTab::Games);
-		window.invoke_tab_changed(AppTab::Games);
-		manual::show(&window);
-	});
-
-	let ui_window = window_weak.clone();
-	window.on_add_game_closed(move || {
-		if let Some(window) = ui_window.upgrade() {
-			manual::cancel_scan(&window);
-		}
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	let ui_settings = settings.clone();
-	window.on_select_game_executable(move || {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
-
-		manual::select_executable(
-			&window,
-			ui_database.clone(),
-			ui_scheduler.clone(),
-			ui_settings.borrow().games_query.clone(),
-		);
-	});
-
-	let ui_window = window_weak.clone();
-	window.on_select_game_directory(move || {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
-
-		manual::select_directory(&window);
-	});
-
-	let ui_window = window_weak.clone();
-	window.on_cancel_game_scan(move || {
-		if let Some(window) = ui_window.upgrade() {
-			manual::cancel_scan(&window);
-		}
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	let ui_settings = settings.clone();
-	window.on_confirm_game_directory(move || {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
-
-		manual::confirm_add_directory(
-			&window,
-			ui_database.clone(),
-			ui_scheduler.clone(),
-			ui_settings.borrow().games_query.clone(),
-		);
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	let ui_settings = settings.clone();
-	window.on_remove_game_directory(move |path| {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
-
-		manual::remove_directory(
-			&window,
-			ui_database.clone(),
-			ui_scheduler.clone(),
-			ui_settings.borrow().games_query.clone(),
-			path.to_string(),
-		);
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	let ui_settings = settings.clone();
-	let ui_pending_confirmation = pending_confirmation.clone();
-	let ui_selected_game = selected_game.clone();
-	window.on_remove_game(move |confirmation_text, confirm_label| {
-		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
-			return;
-		};
-
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
-
-		confirmation::request_remove_game(
-			&window,
-			&ui_settings,
-			&ui_pending_confirmation,
-			ui_database.clone(),
-			ui_scheduler.clone(),
-			ui_settings.borrow().games_query.clone(),
-			ui_selected_game.clone(),
-			game,
-			confirmation_text.to_string(),
-			confirm_label.to_string(),
-		);
-	});
-
-	let ui_window = window_weak.clone();
-	window.on_log_in(move || {
-		user::log_in(ui_window.clone());
-	});
-
-	let ui_window = window_weak.clone();
-	window.on_log_out(move || {
-		user::log_out(ui_window.clone());
-	});
-
-	let ui_window = window.as_weak();
-	window.on_dismiss_notification(move |id| {
-		if let Some(window) = ui_window.upgrade() {
-			notifications::dismiss(&window, id);
-		}
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_selected_game = selected_game.clone();
-	window.on_request_debug_data(move || {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
-		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
-			return;
-		};
-
-		match serde_json::to_string_pretty(&game) {
-			Ok(json) => window.set_details_json(json.into()),
-			Err(err) => notifications::error(&window, format!("Failed to serialize game: {err}")),
-		}
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	window.on_request_mod_debug_data(move |mod_id| {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
-
-		match ui_database.get_mod(mod_id.as_str()) {
-			Ok(game_mod) => match serde_json::to_string_pretty(&game_mod) {
-				Ok(json) => window.set_details_json(json.into()),
-				Err(err) => {
-					notifications::error(&window, format!("Failed to serialize mod: {err}"));
-				}
-			},
-			Err(err) => notifications::error(&window, format!("Failed to load mod: {err}")),
-		}
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_settings = settings.clone();
-	let ui_pending_confirmation = pending_confirmation.clone();
-	let ui_database = database.clone();
-	window.on_confirmation_response(move |confirmed| {
-		if let Some(window) = ui_window.upgrade() {
-			confirmation::respond(
+			mod_sources::set_enabled(
 				&window,
-				&ui_settings,
-				&ui_pending_confirmation,
 				ui_database.clone(),
-				confirmed,
+				ui_selected_game.clone(),
+				url.to_string(),
+				enabled,
 			);
-		}
-	});
-
-	let ui_settings = settings.clone();
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	window.on_search_changed(move |text| {
-		{
-			let mut settings = ui_settings.borrow_mut();
-			settings.games_query.search = text.to_string();
-		}
-		persist_settings(&ui_settings);
-
-		start_query(
-			ui_window.clone(),
-			ui_database.clone(),
-			ui_scheduler.clone(),
-			ui_settings.borrow().games_query.clone(),
-			Duration::from_millis(200),
-		);
-	});
-
-	let ui_settings = settings.clone();
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	window.on_sort_changed(move |index| {
-		{
-			let mut settings = ui_settings.borrow_mut();
-			let (sort_by, sort_descending) = sort_option_from_index(index);
-			settings.games_query.sort_by = sort_by;
-			settings.games_query.sort_descending = sort_descending;
-		}
-		persist_settings(&ui_settings);
-
-		start_query(
-			ui_window.clone(),
-			ui_database.clone(),
-			ui_scheduler.clone(),
-			ui_settings.borrow().games_query.clone(),
-			Duration::ZERO,
-		);
-	});
+		});
 
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	let ui_settings = settings.clone();
-	let ui_mod_families = mod_families.clone();
-	window.on_filter_toggled(move |group, value, checked| {
-		handle_filter_action(
-			&ui_window,
-			&ui_database,
-			&ui_scheduler,
-			&ui_settings,
-			&ui_mod_families,
-			group.as_str(),
-			value.as_str(),
-			FilterAction::Toggle(checked),
-		);
-	});
+	let ui_selected_game = selected_game.clone();
+	window
+		.global::<crate::DialogActions>()
+		.on_remove_url_mod_source(move |url| {
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
+
+			mod_sources::remove(
+				&window,
+				ui_database.clone(),
+				ui_selected_game.clone(),
+				url.to_string(),
+			);
+		});
 
 	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	let ui_settings = settings.clone();
-	let ui_mod_families = mod_families.clone();
-	window.on_filter_lock_toggled(move |group, value| {
-		handle_filter_action(
-			&ui_window,
-			&ui_database,
-			&ui_scheduler,
-			&ui_settings,
-			&ui_mod_families,
-			group.as_str(),
-			value.as_str(),
-			FilterAction::Lock,
-		);
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	let ui_settings = settings.clone();
-	let ui_mod_families = mod_families.clone();
-	window.on_filter_only(move |group, value| {
-		handle_filter_action(
-			&ui_window,
-			&ui_database,
-			&ui_scheduler,
-			&ui_settings,
-			&ui_mod_families,
-			group.as_str(),
-			value.as_str(),
-			FilterAction::Only,
-		);
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	let ui_settings = settings.clone();
-	let ui_mod_families = mod_families.clone();
-	window.on_filter_reset(move |group| {
-		reset_filter(
-			&ui_window,
-			&ui_database,
-			&ui_scheduler,
-			&ui_settings,
-			&ui_mod_families,
-			group.as_str(),
-		);
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	let ui_settings = settings.clone();
-	let ui_mod_families = mod_families.clone();
-	window.on_filters_reset(move || {
-		reset_filters(
-			&ui_window,
-			&ui_database,
-			&ui_scheduler,
-			&ui_settings,
-			&ui_mod_families,
-		);
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_settings = settings.clone();
-	let ui_mod_families = mod_families.clone();
-	window.on_filters_collapse_all(move || {
-		{
-			let mut settings = ui_settings.borrow_mut();
-			settings.expanded_filters.clear();
-		}
-		persist_settings(&ui_settings);
-		refresh_filter_groups(&ui_window, &ui_settings, &ui_mod_families);
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_settings = settings.clone();
-	let ui_mod_families = mod_families.clone();
-	window.on_filter_expanded_changed(move |group, expanded| {
-		{
-			let mut settings = ui_settings.borrow_mut();
-			if expanded {
-				settings.expanded_filters.insert(group.to_string());
-			} else {
-				settings.expanded_filters.remove(group.as_str());
+	window
+		.global::<crate::DialogActions>()
+		.on_add_url_mod_source(move |url| {
+			if let Some(window) = ui_window.upgrade() {
+				mod_sources::request_add(&window, url.to_string());
 			}
-		}
-		persist_settings(&ui_settings);
+		});
 
-		let groups = {
-			let settings = ui_settings.borrow();
-			build_groups(
-				&settings.games_query.filter,
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_selected_game = selected_game.clone();
+	window
+		.global::<crate::DialogActions>()
+		.on_confirm_url_mod_source(move || {
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
+
+			mod_sources::confirm_add(&window, ui_database.clone(), ui_selected_game.clone());
+		});
+
+	let ui_window = window_weak.clone();
+	window
+		.global::<crate::DialogActions>()
+		.on_cancel_url_mod_source(move || {
+			if let Some(window) = ui_window.upgrade() {
+				window
+					.global::<crate::ModSourcesState>()
+					.set_confirm_loading(false);
+				window
+					.global::<crate::ModSourcesState>()
+					.set_confirm_error("".into());
+				window
+					.global::<crate::ModSourcesState>()
+					.set_confirm_mods(Default::default());
+				window
+					.global::<crate::ModSourcesState>()
+					.set_confirm_saving(false);
+			}
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_selected_game = selected_game.clone();
+	window
+		.global::<crate::DialogActions>()
+		.on_reset_steam_cache(move || {
+			if let Some(window) = ui_window.upgrade()
+				&& !window
+					.global::<crate::SteamToolsState>()
+					.get_cache_running()
+			{
+				tools::reset_steam_cache(
+					ui_window.clone(),
+					ui_database.clone(),
+					ui_scheduler.clone(),
+					ui_settings.borrow().games_query.clone(),
+					ui_selected_game.clone(),
+				);
+			}
+		});
+
+	let ui_window = window_weak.clone();
+	window
+		.global::<crate::DialogActions>()
+		.on_add_steam_shortcut(move || {
+			if let Some(window) = ui_window.upgrade()
+				&& !window
+					.global::<crate::SteamToolsState>()
+					.get_shortcut_running()
+			{
+				tools::add_steam_shortcut(ui_window.clone());
+			}
+		});
+
+	let ui_window = window_weak.clone();
+	window
+		.global::<crate::AppActions>()
+		.on_open_logs_folder(move || {
+			actions::open_logs_folder(ui_window.clone(), "open-logs-folder".to_string());
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window
+		.global::<crate::AppActions>()
+		.on_reset_settings(move || {
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
+
+			let window_state = ui_settings.borrow().window_state;
+			let mut settings = AppSettings::default();
+			settings.window_state = window_state;
+			*ui_settings.borrow_mut() = settings;
+			persist_settings(&ui_settings);
+
+			let locale = i18n::effective_locale(&ui_settings.borrow(), detected_locale);
+			i18n::apply_translation(locale);
+
+			window
+				.global::<crate::AppState>()
+				.set_selected_language("".into());
+			window
+				.global::<crate::AppState>()
+				.set_selected_color_scheme(AppColorScheme::Auto);
+			window
+				.global::<crate::AppState>()
+				.set_hide_game_thumbnails(false);
+			window
+				.global::<crate::GamesState>()
+				.set_search_text("".into());
+			window.global::<crate::GamesState>().set_sort_index(0);
+			window
+				.global::<crate::AppState>()
+				.set_current_tab(AppTab::Games);
+			ui_scheduler.set_thumbnails_enabled(true);
+
+			let groups = build_groups(
+				&ui_settings.borrow().games_query.filter,
 				&ui_mod_families,
-				&settings.expanded_filters,
-			)
-		};
+				&ui_settings.borrow().expanded_filters,
+			);
+			window
+				.global::<crate::GamesState>()
+				.set_filters_have_changes(groups.iter().any(|group| group.has_changes));
+			window
+				.global::<crate::GamesState>()
+				.set_filters_have_expanded(groups.iter().any(|group| group.expanded));
+			window
+				.global::<crate::GamesState>()
+				.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
 
-		if let Some(window) = ui_window.upgrade() {
-			window.set_filters_have_expanded(groups.iter().any(|group| group.expanded));
-			window.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
-		}
-	});
-
-	let ui_settings = settings.clone();
-	let ui_window = window_weak.clone();
-	window.on_language_changed(move |value| {
-		let override_language = if value.is_empty() {
-			None
-		} else {
-			match i18n::locale_from_code(value.as_str()) {
-				Some(locale) => Some(locale),
-				None => {
-					log::error!("Invalid language selection {value}");
-					return;
-				}
-			}
-		};
-
-		{
-			let mut settings = ui_settings.borrow_mut();
-			settings.override_language = override_language;
-		}
-		persist_settings(&ui_settings);
-
-		let locale = i18n::effective_locale(&ui_settings.borrow(), detected_locale);
-		i18n::apply_translation(locale);
-
-		if let Some(window) = ui_window.upgrade() {
-			window.set_selected_language(value);
-		}
-	});
-
-	let ui_settings = settings.clone();
-	window.on_color_scheme_changed(move |value| {
-		ui_settings.borrow_mut().color_scheme = match value {
-			AppColorScheme::Dark => ColorScheme::Dark,
-			AppColorScheme::Light => ColorScheme::Light,
-			AppColorScheme::Auto => ColorScheme::Auto,
-		};
-		persist_settings(&ui_settings);
-	});
-
-	let ui_settings = settings.clone();
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	window.on_hide_game_thumbnails_changed(move |hide| {
-		ui_settings.borrow_mut().hide_game_thumbnails = hide;
-		persist_settings(&ui_settings);
-		ui_scheduler.set_thumbnails_enabled(!hide);
-
-		if !hide {
 			start_query(
 				ui_window.clone(),
 				ui_database.clone(),
@@ -768,72 +438,553 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				ui_settings.borrow().games_query.clone(),
 				Duration::ZERO,
 			);
-		}
+		});
+
+	let ui_window = window_weak.clone();
+	window
+		.global::<crate::DialogActions>()
+		.on_request_add_game(move || {
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
+
+			window
+				.global::<crate::AppState>()
+				.set_current_tab(AppTab::Games);
+			window
+				.global::<crate::AppActions>()
+				.invoke_tab_changed(AppTab::Games);
+			manual::show(&window);
+		});
+
+	let ui_window = window_weak.clone();
+	window
+		.global::<crate::DialogActions>()
+		.on_add_game_closed(move || {
+			if let Some(window) = ui_window.upgrade() {
+				manual::cancel_scan(&window);
+			}
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	window
+		.global::<crate::DialogActions>()
+		.on_select_game_executable(move || {
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
+
+			manual::select_executable(
+				&window,
+				ui_database.clone(),
+				ui_scheduler.clone(),
+				ui_settings.borrow().games_query.clone(),
+			);
+		});
+
+	let ui_window = window_weak.clone();
+	window
+		.global::<crate::DialogActions>()
+		.on_select_game_directory(move || {
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
+
+			manual::select_directory(&window);
+		});
+
+	let ui_window = window_weak.clone();
+	window
+		.global::<crate::DialogActions>()
+		.on_cancel_game_scan(move || {
+			if let Some(window) = ui_window.upgrade() {
+				manual::cancel_scan(&window);
+			}
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	window
+		.global::<crate::DialogActions>()
+		.on_confirm_game_directory(move || {
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
+
+			manual::confirm_add_directory(
+				&window,
+				ui_database.clone(),
+				ui_scheduler.clone(),
+				ui_settings.borrow().games_query.clone(),
+			);
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	window
+		.global::<crate::DialogActions>()
+		.on_remove_game_directory(move |path| {
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
+
+			manual::remove_directory(
+				&window,
+				ui_database.clone(),
+				ui_scheduler.clone(),
+				ui_settings.borrow().games_query.clone(),
+				path.to_string(),
+			);
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_pending_confirmation = pending_confirmation.clone();
+	let ui_selected_game = selected_game.clone();
+	window.global::<crate::GamesActions>().on_remove_game(
+		move |confirmation_text, confirm_label| {
+			let Some((_, game)) = get_selected_game(&ui_selected_game) else {
+				return;
+			};
+
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
+
+			confirmation::request_remove_game(
+				&window,
+				&ui_settings,
+				&ui_pending_confirmation,
+				ui_database.clone(),
+				ui_scheduler.clone(),
+				ui_settings.borrow().games_query.clone(),
+				ui_selected_game.clone(),
+				game,
+				confirmation_text.to_string(),
+				confirm_label.to_string(),
+			);
+		},
+	);
+
+	let ui_window = window_weak.clone();
+	window.global::<crate::AppActions>().on_log_in(move || {
+		user::log_in(ui_window.clone());
 	});
+
+	let ui_window = window_weak.clone();
+	window.global::<crate::AppActions>().on_log_out(move || {
+		user::log_out(ui_window.clone());
+	});
+
+	let ui_window = window.as_weak();
+	window
+		.global::<crate::AppActions>()
+		.on_dismiss_notification(move |id| {
+			if let Some(window) = ui_window.upgrade() {
+				notifications::dismiss(&window, id);
+			}
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_selected_game = selected_game.clone();
+	window
+		.global::<crate::GamesActions>()
+		.on_request_debug_data(move || {
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
+			let Some((_, game)) = get_selected_game(&ui_selected_game) else {
+				return;
+			};
+
+			match serde_json::to_string_pretty(&game) {
+				Ok(json) => window
+					.global::<crate::DebugState>()
+					.set_details_json(json.into()),
+				Err(err) => {
+					notifications::error(&window, format!("Failed to serialize game: {err}"))
+				}
+			}
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	window
+		.global::<crate::GamesActions>()
+		.on_request_mod_debug_data(move |mod_id| {
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
+
+			match ui_database.get_mod(mod_id.as_str()) {
+				Ok(game_mod) => match serde_json::to_string_pretty(&game_mod) {
+					Ok(json) => window
+						.global::<crate::DebugState>()
+						.set_details_json(json.into()),
+					Err(err) => {
+						notifications::error(&window, format!("Failed to serialize mod: {err}"));
+					}
+				},
+				Err(err) => notifications::error(&window, format!("Failed to load mod: {err}")),
+			}
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_settings = settings.clone();
+	let ui_pending_confirmation = pending_confirmation.clone();
+	let ui_database = database.clone();
+	window
+		.global::<crate::DialogActions>()
+		.on_confirmation_response(move |confirmed| {
+			if let Some(window) = ui_window.upgrade() {
+				confirmation::respond(
+					&window,
+					&ui_settings,
+					&ui_pending_confirmation,
+					ui_database.clone(),
+					confirmed,
+				);
+			}
+		});
 
 	let ui_settings = settings.clone();
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
-	window.on_tab_changed(move |tab| {
-		{
-			let mut settings = ui_settings.borrow_mut();
-			settings.selected_tab = core_tab(tab);
-		}
-		persist_settings(&ui_settings);
-
-		if let Some(window) = ui_window.upgrade() {
-			if tab == AppTab::Mods {
-				mods_tab::load(&window, &ui_database);
-			} else if tab == AppTab::Thanks && window.get_patrons().row_count() == 0 {
-				thanks::load(window.as_weak());
+	let ui_scheduler = scheduler.clone();
+	window
+		.global::<crate::GamesActions>()
+		.on_search_changed(move |text| {
+			{
+				let mut settings = ui_settings.borrow_mut();
+				settings.games_query.search = text.to_string();
 			}
-		}
-	});
+			persist_settings(&ui_settings);
+
+			start_query(
+				ui_window.clone(),
+				ui_database.clone(),
+				ui_scheduler.clone(),
+				ui_settings.borrow().games_query.clone(),
+				Duration::from_millis(200),
+			);
+		});
+
+	let ui_settings = settings.clone();
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	window
+		.global::<crate::GamesActions>()
+		.on_sort_changed(move |index| {
+			{
+				let mut settings = ui_settings.borrow_mut();
+				let (sort_by, sort_descending) = sort_option_from_index(index);
+				settings.games_query.sort_by = sort_by;
+				settings.games_query.sort_descending = sort_descending;
+			}
+			persist_settings(&ui_settings);
+
+			start_query(
+				ui_window.clone(),
+				ui_database.clone(),
+				ui_scheduler.clone(),
+				ui_settings.borrow().games_query.clone(),
+				Duration::ZERO,
+			);
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window
+		.global::<crate::GamesActions>()
+		.on_filter_toggled(move |group, value, checked| {
+			handle_filter_action(
+				&ui_window,
+				&ui_database,
+				&ui_scheduler,
+				&ui_settings,
+				&ui_mod_families,
+				group.as_str(),
+				value.as_str(),
+				FilterAction::Toggle(checked),
+			);
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window
+		.global::<crate::GamesActions>()
+		.on_filter_lock_toggled(move |group, value| {
+			handle_filter_action(
+				&ui_window,
+				&ui_database,
+				&ui_scheduler,
+				&ui_settings,
+				&ui_mod_families,
+				group.as_str(),
+				value.as_str(),
+				FilterAction::Lock,
+			);
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window
+		.global::<crate::GamesActions>()
+		.on_filter_only(move |group, value| {
+			handle_filter_action(
+				&ui_window,
+				&ui_database,
+				&ui_scheduler,
+				&ui_settings,
+				&ui_mod_families,
+				group.as_str(),
+				value.as_str(),
+				FilterAction::Only,
+			);
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window
+		.global::<crate::GamesActions>()
+		.on_filter_reset(move |group| {
+			reset_filter(
+				&ui_window,
+				&ui_database,
+				&ui_scheduler,
+				&ui_settings,
+				&ui_mod_families,
+				group.as_str(),
+			);
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window
+		.global::<crate::GamesActions>()
+		.on_filters_reset(move || {
+			reset_filters(
+				&ui_window,
+				&ui_database,
+				&ui_scheduler,
+				&ui_settings,
+				&ui_mod_families,
+			);
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window
+		.global::<crate::GamesActions>()
+		.on_filters_collapse_all(move || {
+			{
+				let mut settings = ui_settings.borrow_mut();
+				settings.expanded_filters.clear();
+			}
+			persist_settings(&ui_settings);
+			refresh_filter_groups(&ui_window, &ui_settings, &ui_mod_families);
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window
+		.global::<crate::GamesActions>()
+		.on_filter_expanded_changed(move |group, expanded| {
+			{
+				let mut settings = ui_settings.borrow_mut();
+				if expanded {
+					settings.expanded_filters.insert(group.to_string());
+				} else {
+					settings.expanded_filters.remove(group.as_str());
+				}
+			}
+			persist_settings(&ui_settings);
+
+			let groups = {
+				let settings = ui_settings.borrow();
+				build_groups(
+					&settings.games_query.filter,
+					&ui_mod_families,
+					&settings.expanded_filters,
+				)
+			};
+
+			if let Some(window) = ui_window.upgrade() {
+				window
+					.global::<crate::GamesState>()
+					.set_filters_have_expanded(groups.iter().any(|group| group.expanded));
+				window
+					.global::<crate::GamesState>()
+					.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
+			}
+		});
+
+	let ui_settings = settings.clone();
+	let ui_window = window_weak.clone();
+	window
+		.global::<crate::AppActions>()
+		.on_language_changed(move |value| {
+			let override_language = if value.is_empty() {
+				None
+			} else {
+				match i18n::locale_from_code(value.as_str()) {
+					Some(locale) => Some(locale),
+					None => {
+						log::error!("Invalid language selection {value}");
+						return;
+					}
+				}
+			};
+
+			{
+				let mut settings = ui_settings.borrow_mut();
+				settings.override_language = override_language;
+			}
+			persist_settings(&ui_settings);
+
+			let locale = i18n::effective_locale(&ui_settings.borrow(), detected_locale);
+			i18n::apply_translation(locale);
+
+			if let Some(window) = ui_window.upgrade() {
+				window
+					.global::<crate::AppState>()
+					.set_selected_language(value);
+			}
+		});
+
+	let ui_settings = settings.clone();
+	window
+		.global::<crate::AppActions>()
+		.on_color_scheme_changed(move |value| {
+			ui_settings.borrow_mut().color_scheme = match value {
+				AppColorScheme::Dark => ColorScheme::Dark,
+				AppColorScheme::Light => ColorScheme::Light,
+				AppColorScheme::Auto => ColorScheme::Auto,
+			};
+			persist_settings(&ui_settings);
+		});
+
+	let ui_settings = settings.clone();
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	window
+		.global::<crate::AppActions>()
+		.on_hide_game_thumbnails_changed(move |hide| {
+			ui_settings.borrow_mut().hide_game_thumbnails = hide;
+			persist_settings(&ui_settings);
+			ui_scheduler.set_thumbnails_enabled(!hide);
+
+			if !hide {
+				start_query(
+					ui_window.clone(),
+					ui_database.clone(),
+					ui_scheduler.clone(),
+					ui_settings.borrow().games_query.clone(),
+					Duration::ZERO,
+				);
+			}
+		});
+
+	let ui_settings = settings.clone();
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	window
+		.global::<crate::AppActions>()
+		.on_tab_changed(move |tab| {
+			{
+				let mut settings = ui_settings.borrow_mut();
+				settings.selected_tab = core_tab(tab);
+			}
+			persist_settings(&ui_settings);
+
+			if let Some(window) = ui_window.upgrade() {
+				if tab == AppTab::Mods {
+					mods_tab::load(&window, &ui_database);
+				} else if tab == AppTab::Thanks
+					&& window
+						.global::<crate::ThanksState>()
+						.get_patrons()
+						.row_count() == 0
+				{
+					thanks::load(window.as_weak());
+				}
+			}
+		});
 
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_select_game(move |index| {
-		let index = index.max(0) as usize;
+	window
+		.global::<crate::GamesActions>()
+		.on_select_game(move |index| {
+			let index = index.max(0) as usize;
 
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
 
-		let rows = window.get_game_rows();
-		let Some(row) = rows.row_data(index) else {
-			return;
-		};
+			let rows = window.global::<crate::GamesState>().get_rows();
+			let Some(row) = rows.row_data(index) else {
+				return;
+			};
 
-		let Some(provider_id) = row
-			.provider_id
-			.parse::<GameProviderId>()
-			.ok_or_log("Failed to parse game provider ID")
-		else {
-			return;
-		};
+			let Some(provider_id) = row
+				.provider_id
+				.parse::<GameProviderId>()
+				.ok_or_log("Failed to parse game provider ID")
+			else {
+				return;
+			};
 
-		let Some(game) = ui_database
-			.get_game(&provider_id, row.game_id.as_str())
-			.ok_or_log("Failed to load game")
-		else {
-			return;
-		};
+			let Some(game) = ui_database
+				.get_game(&provider_id, row.game_id.as_str())
+				.ok_or_log("Failed to load game")
+			else {
+				return;
+			};
 
-		if let Some(mut selected_game) = ui_selected_game
-			.lock()
-			.ok_or_log("Failed to lock selected game")
-		{
-			*selected_game = Some((index, game.clone()));
-		}
+			if let Some(mut selected_game) = ui_selected_game
+				.lock()
+				.ok_or_log("Failed to lock selected game")
+			{
+				*selected_game = Some((index, game.clone()));
+			}
 
-		selected::show(&window, &game, row);
-		mods::refresh_mods(&window, &ui_database, &game);
-	});
+			selected::show(&window, &game, row);
+			mods::refresh_mods(&window, &ui_database, &game);
+		});
 
 	let ui_window = window_weak.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_back(move || {
+	window.global::<crate::GamesActions>().on_back(move || {
 		if let Some(mut selected_game) = ui_selected_game
 			.lock()
 			.ok_or_log("Failed to lock selected game")
@@ -849,111 +1000,127 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_run_provider_action(move |value| {
-		let Some(action) = value
-			.parse::<ProviderCommandAction>()
-			.ok_or_log("Failed to parse provider action")
-		else {
-			return;
-		};
+	window
+		.global::<crate::GamesActions>()
+		.on_run_provider_action(move |value| {
+			let Some(action) = value
+				.parse::<ProviderCommandAction>()
+				.ok_or_log("Failed to parse provider action")
+			else {
+				return;
+			};
 
-		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
-			return;
-		};
+			let Some((_, game)) = get_selected_game(&ui_selected_game) else {
+				return;
+			};
 
-		analytics::send(
-			rai_pal_core::analytics::Event::ProviderCommand,
-			&[
-				("action", action.to_string()),
-				("game", game.display_title.clone()),
-			],
-		);
-
-		if let Some(window) = ui_window.upgrade() {
-			notifications::info(&window, "Running command... This might take a few seconds.");
-		}
-
-		actions::run_provider_action(
-			ui_database.clone(),
-			ui_window.clone(),
-			game,
-			action,
-			format!("provider-action:{value}"),
-		);
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_selected_game = selected_game.clone();
-	window.on_open_game_folder(move || {
-		if let Some((_, game)) = get_selected_game(&ui_selected_game) {
-			actions::open_game_folder(ui_window.clone(), "open-game-folder".to_string(), game);
-		}
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_selected_game = selected_game.clone();
-	window.on_open_game_mods_folder(move || {
-		if let Some((_, game)) = get_selected_game(&ui_selected_game) {
-			actions::open_game_mods_folder(
-				ui_window.clone(),
-				"open-game-mods-folder".to_string(),
-				game,
+			analytics::send(
+				rai_pal_core::analytics::Event::ProviderCommand,
+				&[
+					("action", action.to_string()),
+					("game", game.display_title.clone()),
+				],
 			);
-		}
-	});
+
+			if let Some(window) = ui_window.upgrade() {
+				notifications::info(&window, "Running command... This might take a few seconds.");
+			}
+
+			actions::run_provider_action(
+				ui_database.clone(),
+				ui_window.clone(),
+				game,
+				action,
+				format!("provider-action:{value}"),
+			);
+		});
 
 	let ui_window = window_weak.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_open_game_data_folder(move || {
-		if let Some((_, game)) = get_selected_game(&ui_selected_game) {
-			actions::open_game_data_folder(
-				ui_window.clone(),
-				"open-game-data-folder".to_string(),
-				game,
-			);
-		}
-	});
+	window
+		.global::<crate::GamesActions>()
+		.on_open_game_folder(move || {
+			if let Some((_, game)) = get_selected_game(&ui_selected_game) {
+				actions::open_game_folder(ui_window.clone(), "open-game-folder".to_string(), game);
+			}
+		});
 
 	let ui_window = window_weak.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_open_wine_prefix_folder(move || {
-		if let Some((_, game)) = get_selected_game(&ui_selected_game) {
-			actions::open_wine_prefix_folder(
-				ui_window.clone(),
-				"open-wine-prefix-folder".to_string(),
-				game,
-			);
-		}
-	});
+	window
+		.global::<crate::GamesActions>()
+		.on_open_game_mods_folder(move || {
+			if let Some((_, game)) = get_selected_game(&ui_selected_game) {
+				actions::open_game_mods_folder(
+					ui_window.clone(),
+					"open-game-mods-folder".to_string(),
+					game,
+				);
+			}
+		});
 
 	let ui_window = window_weak.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_open_wine_binary_folder(move || {
-		if let Some((_, game)) = get_selected_game(&ui_selected_game) {
-			actions::open_wine_binary_folder(
-				ui_window.clone(),
-				"open-wine-binary-folder".to_string(),
-				game,
-			);
-		}
-	});
+	window
+		.global::<crate::GamesActions>()
+		.on_open_game_data_folder(move || {
+			if let Some((_, game)) = get_selected_game(&ui_selected_game) {
+				actions::open_game_data_folder(
+					ui_window.clone(),
+					"open-game-data-folder".to_string(),
+					game,
+				);
+			}
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_selected_game = selected_game.clone();
+	window
+		.global::<crate::GamesActions>()
+		.on_open_wine_prefix_folder(move || {
+			if let Some((_, game)) = get_selected_game(&ui_selected_game) {
+				actions::open_wine_prefix_folder(
+					ui_window.clone(),
+					"open-wine-prefix-folder".to_string(),
+					game,
+				);
+			}
+		});
+
+	let ui_window = window_weak.clone();
+	let ui_selected_game = selected_game.clone();
+	window
+		.global::<crate::GamesActions>()
+		.on_open_wine_binary_folder(move || {
+			if let Some((_, game)) = get_selected_game(&ui_selected_game) {
+				actions::open_wine_binary_folder(
+					ui_window.clone(),
+					"open-wine-binary-folder".to_string(),
+					game,
+				);
+			}
+		});
 
 	let downloads = downloads::Tracker::new(window.as_weak());
 	let updater = Rc::new(updater::Updater::start(window.as_weak()));
 
 	let ui_window = window_weak.clone();
 	let ui_updater = updater.clone();
-	window.on_install_update(move || {
-		ui_updater.install(ui_window.clone());
-	});
+	window
+		.global::<crate::AppActions>()
+		.on_install_update(move || {
+			ui_updater.install(ui_window.clone());
+		});
 
 	let ui_window = window.as_weak();
 	let ui_updater = updater.clone();
-	window.on_ignore_update(move || {
-		if let Some(window) = ui_window.upgrade() {
-			ui_updater.ignore(&window);
-		}
-	});
+	window
+		.global::<crate::AppActions>()
+		.on_ignore_update(move || {
+			if let Some(window) = ui_window.upgrade() {
+				ui_updater.ignore(&window);
+			}
+		});
 
 	deep_links::register();
 	for argument in std::env::args().skip(1) {
@@ -1128,9 +1295,11 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		});
 
 	let ui_downloads = downloads.clone();
-	window.on_clear_downloads(move || {
-		ui_downloads.clear_completed();
-	});
+	window
+		.global::<crate::AppActions>()
+		.on_clear_downloads(move || {
+			ui_downloads.clear_completed();
+		});
 
 	window.global::<ModActions>().on_open_url(move |url| {
 		actions::open_url(url.to_string());
@@ -1246,66 +1415,73 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_refresh_game(move || {
-		let Some((index, game)) = get_selected_game(&ui_selected_game) else {
-			return;
-		};
-
-		let action_id = "refresh-game".to_string();
-		action_state::start(&ui_window, action_id.clone());
-
-		let database = ui_database.clone();
-		let window = ui_window.clone();
-		let ui_selected_game = ui_selected_game.clone();
-
-		thread::spawn(move || {
-			let mut game = game;
-
-			let result = (|| {
-				game.refresh_executable()?;
-				database.insert_game(&game);
-				database.refresh_installed_mods()?;
-				database.get_game(&game.provider_id, &game.game_id)
-			})();
-
-			let game = match result {
-				Ok(game) => game,
-				Err(err) => {
-					log::error!("Failed to refresh game: {err}");
-					action_state::finish(&window, &action_id, Err(err), "Failed to refresh game");
-					return;
-				}
+	window
+		.global::<crate::GamesActions>()
+		.on_refresh_game(move || {
+			let Some((index, game)) = get_selected_game(&ui_selected_game) else {
+				return;
 			};
 
-			let finish_window = window.clone();
-			crate::runtime::invoke_on_ui(move || {
-				let Some(window) = window.upgrade() else {
-					return;
+			let action_id = "refresh-game".to_string();
+			action_state::start(&ui_window, action_id.clone());
+
+			let database = ui_database.clone();
+			let window = ui_window.clone();
+			let ui_selected_game = ui_selected_game.clone();
+
+			thread::spawn(move || {
+				let mut game = game;
+
+				let result = (|| {
+					game.refresh_executable()?;
+					database.insert_game(&game);
+					database.refresh_installed_mods()?;
+					database.get_game(&game.provider_id, &game.game_id)
+				})();
+
+				let game = match result {
+					Ok(game) => game,
+					Err(err) => {
+						log::error!("Failed to refresh game: {err}");
+						action_state::finish(
+							&window,
+							&action_id,
+							Err(err),
+							"Failed to refresh game",
+						);
+						return;
+					}
 				};
 
-				if let Some(mut selected_game) = ui_selected_game
-					.lock()
-					.ok_or_log("Failed to lock selected game")
-				{
-					*selected_game = Some((index, game.clone()));
-				}
+				let finish_window = window.clone();
+				crate::runtime::invoke_on_ui(move || {
+					let Some(window) = window.upgrade() else {
+						return;
+					};
 
-				let rows = window.get_game_rows();
-				let mut row = rows.row_data(index).unwrap_or_default();
-				model::apply_game_to_row(&mut row, &game);
-				rows.set_row_data(index, row.clone());
-				selected::show(&window, &game, row);
-				mods::refresh_mods(&window, &database, &game);
+					if let Some(mut selected_game) = ui_selected_game
+						.lock()
+						.ok_or_log("Failed to lock selected game")
+					{
+						*selected_game = Some((index, game.clone()));
+					}
+
+					let rows = window.global::<crate::GamesState>().get_rows();
+					let mut row = rows.row_data(index).unwrap_or_default();
+					model::apply_game_to_row(&mut row, &game);
+					rows.set_row_data(index, row.clone());
+					selected::show(&window, &game, row);
+					mods::refresh_mods(&window, &database, &game);
+				});
+
+				action_state::finish(
+					&finish_window,
+					&action_id,
+					Ok::<(), rai_pal_core::result::Error>(()),
+					"",
+				);
 			});
-
-			action_state::finish(
-				&finish_window,
-				&action_id,
-				Ok::<(), rai_pal_core::result::Error>(()),
-				"",
-			);
 		});
-	});
 
 	let ui_window = window.as_weak();
 	let ui_database = database.clone();
@@ -1323,17 +1499,17 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			}
 			winit::event::WindowEvent::HoveredFile(_) => {
 				if let Some(window) = ui_window.upgrade() {
-					window.set_drop_highlight(true);
+					window.global::<crate::AppState>().set_drop_highlight(true);
 				}
 			}
 			winit::event::WindowEvent::HoveredFileCancelled => {
 				if let Some(window) = ui_window.upgrade() {
-					window.set_drop_highlight(false);
+					window.global::<crate::AppState>().set_drop_highlight(false);
 				}
 			}
 			winit::event::WindowEvent::DroppedFile(path) => {
 				if let Some(window) = ui_window.upgrade() {
-					window.set_drop_highlight(false);
+					window.global::<crate::AppState>().set_drop_highlight(false);
 					manual::add_dropped_paths(
 						&window,
 						ui_database.clone(),
@@ -1350,7 +1526,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let model = Rc::new(slint::VecModel::from(rows));
-	window.set_game_rows(model.into());
+	window.global::<crate::GamesState>().set_rows(model.into());
 	begin_refresh_all(&window, database, scheduler, &settings, &selected_game);
 	window.run()
 }
@@ -1370,16 +1546,21 @@ fn apply_window_state(window: &MainWindow, state: Option<WindowState>) {
 	// Gamescope (Steam Deck game mode) scales windows larger than its output for display,
 	// but pointer input stays in unscaled window coordinates, leaving the bottom/right part
 	// of the window unreachable. Never restore a size that doesn't fit the current monitor.
-	let monitor_size = window.window().with_winit_window(|winit_window| {
-		winit_window
-			.current_monitor()
-			.or_else(|| winit_window.primary_monitor())
-			.map(|monitor| monitor.size())
-	})
-	.flatten();
+	let monitor_size = window
+		.window()
+		.with_winit_window(|winit_window| {
+			winit_window
+				.current_monitor()
+				.or_else(|| winit_window.primary_monitor())
+				.map(|monitor| monitor.size())
+		})
+		.flatten();
 
 	let (width, height) = match monitor_size {
-		Some(monitor_size) => (state.width.min(monitor_size.width), state.height.min(monitor_size.height)),
+		Some(monitor_size) => (
+			state.width.min(monitor_size.width),
+			state.height.min(monitor_size.height),
+		),
 		None => (state.width, state.height),
 	};
 
@@ -1394,7 +1575,9 @@ fn apply_window_state(window: &MainWindow, state: Option<WindowState>) {
 	}
 
 	if width > 0 && height > 0 {
-		window.window().set_size(slint::PhysicalSize::new(width, height));
+		window
+			.window()
+			.set_size(slint::PhysicalSize::new(width, height));
 	}
 
 	let position = match monitor_size {
@@ -1461,9 +1644,15 @@ fn refresh_filter_groups(
 	};
 
 	if let Some(window) = window.upgrade() {
-		window.set_filters_have_changes(groups.iter().any(|group| group.has_changes));
-		window.set_filters_have_expanded(groups.iter().any(|group| group.expanded));
-		window.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
+		window
+			.global::<crate::GamesState>()
+			.set_filters_have_changes(groups.iter().any(|group| group.has_changes));
+		window
+			.global::<crate::GamesState>()
+			.set_filters_have_expanded(groups.iter().any(|group| group.expanded));
+		window
+			.global::<crate::GamesState>()
+			.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
 	}
 }
 
@@ -1615,12 +1804,12 @@ fn begin_refresh_all(
 	settings: &Rc<RefCell<AppSettings>>,
 	selected_game: &selected::SelectedGameState,
 ) {
-	if window.get_refreshing() {
+	if window.global::<crate::Refresh>().get_refreshing() {
 		return;
 	}
 
-	window.set_refreshing(true);
-	window.set_refresh_task_names("".into());
+	window.global::<crate::Refresh>().set_refreshing(true);
+	window.global::<crate::Refresh>().set_task_names("".into());
 
 	let query = settings.borrow().games_query.clone();
 	refresh::refresh_all(

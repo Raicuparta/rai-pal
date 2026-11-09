@@ -2,19 +2,23 @@ import { TextEdit } from "std-widgets.slint";
 import { Fonts, Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
 import { Icon } from "svg-icon.slint";
+import { DebugState } from "../state.slint";
 
 export component GameDetailsPopup inherits Modal {
-    in property <string> game-json;
-
-    private property <bool> copied: false;
-    private property <length> saved-scroll-y: 0;
-
+    open: DebugState.details-json != "";
     title: @tr("debugData" => "Debug data");
     big: true;
     header-action-icon: root.copied ? Icon.copied : Icon.copy;
     header-action-tooltip: @tr("debugData" => "Copy debug data");
 
-    copy-reset-timer := Timer {
+    private property <bool> copied: false;
+    private property <length> saved-scroll-y: 0;
+
+    closed => {
+        DebugState.details-json = "";
+    }
+
+    Timer {
         interval: 2s;
         running: root.copied;
 
@@ -33,7 +37,7 @@ export component GameDetailsPopup inherits Modal {
     }
 
     debug-text := TextEdit {
-        text: root.game-json;
+        text: DebugState.details-json;
         read-only: true;
         wrap: word-wrap;
         font-family: Fonts.monospace-family;

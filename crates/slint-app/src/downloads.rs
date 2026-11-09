@@ -1,3 +1,4 @@
+use slint::ComponentHandle as _;
 use std::{
 	rc::Rc,
 	sync::{Arc, Mutex},
@@ -209,8 +210,12 @@ impl Tracker {
 				})
 				.collect::<Vec<_>>();
 
-			window.set_download_progress(overall_progress);
-			window.set_downloads(Rc::new(slint::VecModel::from(rows)).into());
+			window
+				.global::<crate::DownloadsState>()
+				.set_overall_progress(overall_progress);
+			window
+				.global::<crate::DownloadsState>()
+				.set_items(Rc::new(slint::VecModel::from(rows)).into());
 		});
 	}
 

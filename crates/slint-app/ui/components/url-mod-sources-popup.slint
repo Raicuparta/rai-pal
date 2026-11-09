@@ -3,6 +3,8 @@ import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
 import { UrlModSourceData } from "../app-types.slint";
 import { Modal } from "modal.slint";
+import { ModSourcesState } from "../state.slint";
+import { DialogActions } from "../actions.slint";
 
 component UrlModSourceRow inherits Rectangle {
     in property <UrlModSourceData> source;
@@ -44,37 +46,32 @@ component UrlModSourceRow inherits Rectangle {
 }
 
 export component UrlModSourcesPopup inherits Modal {
-    in property <UrlModSourceData> default-source;
-    in property <[UrlModSourceData]> sources;
-    in property <bool> toggling;
-    in property <string> error;
-    in-out property <string> new-url: "";
-
-    callback add-source(url: string);
-    callback set-enabled(url: string, enabled: bool);
-    callback remove-source(url: string);
-
+    open: ModSourcesState.open;
     title: @tr("urlModSources" => "Mod Sources");
 
-    if root.default-source.url != "" : UrlModSourceRow {
-        source: root.default-source;
-        toggling: root.toggling;
+    closed => {
+        ModSourcesState.open = false;
+    }
+
+    if ModSourcesState.default-source.url != "" : UrlModSourceRow {
+        source: ModSourcesState.default-source;
+        toggling: ModSourcesState.toggling;
 
         toggled(enabled) => {
-            root.set-enabled(root.default-source.url, enabled);
+            DialogActions.set-url-mod-source-enabled(ModSourcesState.default-source.url, enabled);
         }
     }
 
-    for source in root.sources : UrlModSourceRow {
+    for source in ModSourcesState.sources : UrlModSourceRow {
         source: source;
-        toggling: root.toggling;
+        toggling: ModSourcesState.toggling;
 
         toggled(enabled) => {
-            root.set-enabled(source.url, enabled);
+            DialogActions.set-url-mod-source-enabled(source.url, enabled);
         }
 
         removed => {
-            root.remove-source(source.url);
+            DialogActions.remove-url-mod-source(source.url);
         }
     }
 
@@ -85,26 +82,26 @@ export component UrlModSourcesPopup inherits Modal {
 
         LineEdit {
             horizontal-stretch: 1;
-            text <=> root.new-url;
+            text <=> ModSourcesState.new-url;
             placeholder-text: "https://example.com/mods.json";
 
             accepted => {
-                root.add-source(root.new-url);
+                DialogActions.add-url-mod-source(ModSourcesState.new-url);
             }
         }
 
         Button {
             text: @tr("urlModSources" => "Add source");
-            enabled: root.new-url != "";
+            enabled: ModSourcesState.new-url != "";
 
             clicked => {
-                root.add-source(root.new-url);
+                DialogActions.add-url-mod-source(ModSourcesState.new-url);
             }
         }
     }
 
-    if root.error != "" : Text {
-        text: root.error;
+    if ModSourcesState.error != "" : Text {
+        text: ModSourcesState.error;
         color: red;
         wrap: word-wrap;
         font-size: Theme.font-sm;

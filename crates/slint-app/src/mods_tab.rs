@@ -1,3 +1,4 @@
+use slint::ComponentHandle as _;
 use std::rc::Rc;
 
 use rai_pal_core::{
@@ -16,9 +17,9 @@ pub fn load(window: &MainWindow, database: &DbMutex) {
 		Ok(groups) => groups,
 		Err(err) => {
 			notifications::error(window, format!("Failed to load mods: {err}"));
-			window.set_mods_tab_items(
-				Rc::new(slint::VecModel::from(Vec::<ModsTabItemData>::new())).into(),
-			);
+			window
+				.global::<crate::ModsState>()
+				.set_items(Rc::new(slint::VecModel::from(Vec::<ModsTabItemData>::new())).into());
 			return;
 		}
 	};
@@ -55,7 +56,9 @@ pub fn load(window: &MainWindow, database: &DbMutex) {
 		})
 		.collect::<Vec<_>>();
 
-	window.set_mods_tab_items(Rc::new(slint::VecModel::from(items)).into());
+	window
+		.global::<crate::ModsState>()
+		.set_items(Rc::new(slint::VecModel::from(items)).into());
 }
 
 fn mod_data(game_mod: Mod) -> ModsTabModData {

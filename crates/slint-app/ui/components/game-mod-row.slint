@@ -11,8 +11,6 @@ import { Icon } from "svg-icon.slint";
 export component GameModRow inherits VerticalLayout {
     in property <GameModData> game-mod;
 
-    property <bool> interactive: !game-mod.incompatible;
-    property <bool> has-dropdown-actions: game-mod.can-edit-config || game-mod.can-open-mod-folder || game-mod.can-download-config || game-mod.can-reinstall || game-mod.can-uninstall;
     private property <length> menu-x: 0;
     private property <length> menu-y: 0;
 
@@ -90,9 +88,9 @@ export component GameModRow inherits VerticalLayout {
         }
     }
 
-    content := Rectangle {
+    Rectangle {
         height: row-layout.preferred-height;
-        background: interactive && row-touch.has-hover ? Theme.hover-background : transparent;
+        background: !game-mod.incompatible && row-touch.has-hover ? Theme.hover-background : transparent;
 
         row-touch := TouchArea {
             pointer-event(event) => {
@@ -167,7 +165,7 @@ export component GameModRow inherits VerticalLayout {
             }
 
             actions-button := IconButton {
-                visible: root.has-dropdown-actions;
+                visible: game-mod.can-edit-config || game-mod.can-open-mod-folder || game-mod.can-download-config || game-mod.can-reinstall || game-mod.can-uninstall;
                 icon: Icon.more;
                 icon-size: 22px;
                 tooltip: @tr("gameModRow" => "Mod actions");

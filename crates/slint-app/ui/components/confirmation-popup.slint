@@ -2,26 +2,30 @@ import { CheckBox } from "std-widgets.slint";
 import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
+import { ConfirmationState } from "../state.slint";
+import { DialogActions } from "../actions.slint";
 
 export component ConfirmationPopup inherits Modal {
-    in property <string> text;
-    in property <string> confirm-label;
-    in property <bool> can-skip;
-    in-out property <bool> dont-ask-again: false;
+    open: ConfirmationState.open;
+    title: ConfirmationState.confirm-label;
 
-    callback response(confirmed: bool);
+    closed => {
+        root.respond(false);
+    }
 
-    title: root.confirm-label;
-    content-spacing: Theme.space-md;
+    function respond(confirmed: bool) {
+        ConfirmationState.open = false;
+        DialogActions.confirmation-response(confirmed);
+    }
 
     Text {
-        text: root.text;
+        text: ConfirmationState.text;
         wrap: word-wrap;
     }
 
-    if root.can-skip : CheckBox {
+    if ConfirmationState.can-skip : CheckBox {
         text: @tr("commandButton" => "Don't ask again");
-        checked <=> root.dont-ask-again;
+        checked <=> ConfirmationState.dont-ask-again;
     }
 
     HorizontalLayout {
@@ -32,16 +36,16 @@ export component ConfirmationPopup inherits Modal {
             text: @tr("commandButton" => "Cancel");
 
             clicked => {
-                root.response(false);
+                root.respond(false);
             }
         }
 
         Button {
-            text: root.confirm-label;
+            text: ConfirmationState.confirm-label;
             tint: Theme.primary;
 
             clicked => {
-                root.response(true);
+                root.respond(true);
             }
         }
     }

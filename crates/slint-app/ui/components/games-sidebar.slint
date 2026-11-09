@@ -1,4 +1,3 @@
-import { FilterGroupData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { FilterGroup } from "filter-group.slint";
 import { IconButton } from "icon-button.slint";
@@ -11,44 +10,19 @@ import { SortMenu } from "sort-menu.slint";
 import { Icon } from "svg-icon.slint";
 import { SidebarAction } from "sidebar-action.slint";
 import { RowDivider } from "row-divider.slint";
+import { GamesState } from "../state.slint";
+import { GamesActions, DialogActions } from "../actions.slint";
 
 export component GamesSidebar inherits Sidebar {
-    in property <bool> refreshing;
-    in property <string> refresh-task-names;
-    in-out property <string> search-text: "";
-    in-out property <int> sort-index: 0;
-    in property <[FilterGroupData]> filter-groups;
-    in property <bool> filters-have-changes;
-    in property <bool> filters-have-expanded;
-
-    callback refresh-all;
-    callback search-changed(text: string);
-    callback sort-changed(index: int);
-    callback filter-toggled(group: string, value: string, checked: bool);
-    callback filter-lock-toggled(group: string, value: string);
-    callback filter-only(group: string, value: string);
-    callback filter-reset(group: string);
-    callback filters-reset;
-    callback filters-collapse-all;
-    callback filter-expanded-changed(group: string, expanded: bool);
-    callback add-game-clicked;
-
     SidebarSection {
         spacing: Theme.space-sm;
 
-        RefreshButton {
-            refreshing: root.refreshing;
-            task-names: root.refresh-task-names;
-
-            clicked => {
-                root.refresh-all();
-            }
-        }
+        RefreshButton { }
     }
 
     SidebarAction {
         text: @tr("manualGames" => "Add games");
-        clicked => add-game-clicked();
+        clicked => DialogActions.request-add-game();
         icon: Icon.games;
     }
 
@@ -58,21 +32,15 @@ export component GamesSidebar inherits Sidebar {
         spacing: Theme.space-sm;
 
         SearchInput {
-            text <=> root.search-text;
+            text <=> GamesState.search-text;
             placeholder-text: @tr("filterMenu" => "Search...");
 
             edited(text) => {
-                root.search-changed(text);
+                GamesActions.search-changed(text);
             }
         }
 
-        SortMenu {
-            sort-index <=> root.sort-index;
-
-            sort-changed(index) => {
-                root.sort-changed(index);
-            }
-        }
+        SortMenu { }
     }
 
     VerticalLayout {
@@ -87,10 +55,10 @@ export component GamesSidebar inherits Sidebar {
             IconButton {
                 icon: Icon.collapse-all;
                 tooltip: @tr("filterMenu" => "Collapse all filters");
-                enabled: root.filters-have-expanded;
+                enabled: GamesState.filters-have-expanded;
 
                 clicked => {
-                    root.filters-collapse-all();
+                    GamesActions.filters-collapse-all();
                 }
             }
 
@@ -101,36 +69,16 @@ export component GamesSidebar inherits Sidebar {
 
             ResetButton {
                 tooltip: @tr("filterMenu" => "Reset all filters");
-                enabled: root.filters-have-changes;
+                enabled: GamesState.filters-have-changes;
 
                 clicked => {
-                    root.filters-reset();
+                    GamesActions.filters-reset();
                 }
             }
         }
 
-        for group in root.filter-groups: FilterGroup {
+        for group in GamesState.filter-groups: FilterGroup {
             group: group;
-
-            toggled(value, checked) => {
-                root.filter-toggled(group.key, value, checked);
-            }
-
-            lock-toggled(value) => {
-                root.filter-lock-toggled(group.key, value);
-            }
-
-            only(value) => {
-                root.filter-only(group.key, value);
-            }
-
-            reset => {
-                root.filter-reset(group.key);
-            }
-
-            expanded-changed(expanded) => {
-                root.filter-expanded-changed(group.key, expanded);
-            }
         }
     }
 }

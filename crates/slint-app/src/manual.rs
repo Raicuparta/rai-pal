@@ -34,7 +34,7 @@ static SCAN_GENERATION: AtomicU64 = AtomicU64::new(0);
 pub fn show(window: &MainWindow) {
 	reset_scan(window);
 	reload_directories(window);
-	window.set_add_game_open(true);
+	window.global::<crate::AddGameState>().set_open(true);
 }
 
 pub fn cancel_scan(window: &MainWindow) {
@@ -69,7 +69,7 @@ pub fn select_executable(
 
 			match result {
 				Ok(()) => {
-					window.set_add_game_open(false);
+					window.global::<crate::AddGameState>().set_open(false);
 					refresh_after_change(&window, database, scheduler, query);
 				}
 				Err(err) => {
@@ -102,8 +102,12 @@ pub fn select_directory(window: &MainWindow) {
 				};
 
 				reset_scan(&window);
-				window.set_scan_phase(AddGamePhase::Scanning);
-				window.set_scan_selected_path(path_text.into());
+				window
+					.global::<crate::AddGameState>()
+					.set_phase(AddGamePhase::Scanning);
+				window
+					.global::<crate::AddGameState>()
+					.set_selected_path(path_text.into());
 			}
 		});
 
@@ -123,9 +127,15 @@ pub fn select_directory(window: &MainWindow) {
 					return;
 				};
 
-				window.set_scan_scanned_dirs(progress.scanned_dirs as i32);
-				window.set_scan_executables_found(progress.executables_found as i32);
-				window.set_scan_current_path(progress.current_path.into());
+				window
+					.global::<crate::AddGameState>()
+					.set_scanned_dirs(progress.scanned_dirs as i32);
+				window
+					.global::<crate::AddGameState>()
+					.set_executables_found(progress.executables_found as i32);
+				window
+					.global::<crate::AddGameState>()
+					.set_current_path(progress.current_path.into());
 			});
 		});
 
@@ -140,10 +150,18 @@ pub fn select_directory(window: &MainWindow) {
 
 			match result {
 				Ok(result) => {
-					window.set_scan_games_count(result.games.len() as i32);
-					window.set_scan_duration_text(format!("{:.1}", result.duration_secs).into());
-					window.set_add_game_directory(path_text.into());
-					window.set_scan_phase(AddGamePhase::Confirming);
+					window
+						.global::<crate::AddGameState>()
+						.set_games_count(result.games.len() as i32);
+					window
+						.global::<crate::AddGameState>()
+						.set_duration_text(format!("{:.1}", result.duration_secs).into());
+					window
+						.global::<crate::AddGameState>()
+						.set_directory(path_text.into());
+					window
+						.global::<crate::AddGameState>()
+						.set_phase(AddGamePhase::Confirming);
 				}
 				Err(err) => {
 					reset_scan(&window);
@@ -160,7 +178,12 @@ pub fn confirm_add_directory(
 	scheduler: Arc<FetchScheduler>,
 	query: GamesQuery,
 ) {
-	let path = PathBuf::from(window.get_add_game_directory().to_string());
+	let path = PathBuf::from(
+		window
+			.global::<crate::AddGameState>()
+			.get_directory()
+			.to_string(),
+	);
 
 	if path.as_os_str().is_empty() {
 		return;
@@ -344,14 +367,26 @@ fn pick_directory() -> Option<PathBuf> {
 }
 
 fn reset_scan(window: &MainWindow) {
-	window.set_scan_phase(AddGamePhase::Idle);
-	window.set_scan_selected_path("".into());
-	window.set_scan_scanned_dirs(0);
-	window.set_scan_executables_found(0);
-	window.set_scan_current_path("".into());
-	window.set_scan_games_count(0);
-	window.set_scan_duration_text("".into());
-	window.set_add_game_directory("".into());
+	window
+		.global::<crate::AddGameState>()
+		.set_phase(AddGamePhase::Idle);
+	window
+		.global::<crate::AddGameState>()
+		.set_selected_path("".into());
+	window.global::<crate::AddGameState>().set_scanned_dirs(0);
+	window
+		.global::<crate::AddGameState>()
+		.set_executables_found(0);
+	window
+		.global::<crate::AddGameState>()
+		.set_current_path("".into());
+	window.global::<crate::AddGameState>().set_games_count(0);
+	window
+		.global::<crate::AddGameState>()
+		.set_duration_text("".into());
+	window
+		.global::<crate::AddGameState>()
+		.set_directory("".into());
 }
 
 fn reload_directories(window: &MainWindow) {
@@ -366,7 +401,9 @@ fn reload_directories(window: &MainWindow) {
 		}
 	};
 
-	window.set_manual_directories(Rc::new(slint::VecModel::from(directories)).into());
+	window
+		.global::<crate::AddGameState>()
+		.set_manual_directories(Rc::new(slint::VecModel::from(directories)).into());
 }
 
 fn refresh_after_change(

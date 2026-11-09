@@ -1,6 +1,7 @@
-import { ScrollView, ComboBox } from "std-widgets.slint";
+import { ScrollView } from "std-widgets.slint";
 import { Branding } from "../branding.slint";
 import { PatronData } from "../app-types.slint";
+import { ThanksState } from "../state.slint";
 import { Theme } from "../theme.slint";
 import { ExternalLink } from "external-link.slint";
 import { LabeledDivider } from "labeled-divider.slint";
@@ -30,7 +31,7 @@ component PatronRow inherits Rectangle {
             background: transparent;
             clip: true;
 
-            avatar-content := Rectangle {
+            Rectangle {
                 x: root.rank-border-width;
                 y: root.rank-border-width;
                 width: parent.width - root.rank-border-width * 2;
@@ -72,7 +73,6 @@ component PatronRow inherits Rectangle {
 }
 
 export component ThanksPage inherits Rectangle {
-    in property <[PatronData]> patrons;
 
     private property <string> intro: @tr("thanksPage" => "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io.");
     private property <string> leaderboard-tooltip: @tr("thanksPage" => "Ranked by total lifetime donation amount.") + " " + @tr("thanksPage" => "If you don't see yourself here, it's because your Patreon profile is private.");
@@ -92,7 +92,7 @@ export component ThanksPage inherits Rectangle {
                     padding-right: Theme.space-sm;
                 }
 
-                for patron in root.patrons: PatronRow {
+                for patron in ThanksState.patrons: PatronRow {
                     patron: patron;
                 }
             }
@@ -162,7 +162,7 @@ export component ThanksPage inherits Rectangle {
                                         border-color: Theme.border;
                                         border-radius: Theme.radius-md;
 
-                                        intro-layout := VerticalLayout {
+                                        VerticalLayout {
                                             padding: Theme.space-lg;
 
                                             Text {

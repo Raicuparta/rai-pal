@@ -1,21 +1,10 @@
 import { Palette } from "std-widgets.slint";
-import {
-    GameRowData,
-    FilterGroupData,
-    GameModData,
-    PotentialModData,
-    ModsTabItemData,
-    PatronData,
-    UrlModSourceData,
-    NotificationData,
-    DownloadItemData,
-    AppColorScheme,
-    AppTab,
-    AddGamePhase,
-} from "app-types.slint";
+import { ActionState, ActionStates } from "action-state.slint";
+import { AddGamePhase, AppColorScheme, AppTab } from "app-types.slint";
+import { Fonts } from "theme.slint";
+import { ModActions } from "actions.slint";
 import { GamesSidebar } from "components/games-sidebar.slint";
 import { GameSidebar } from "components/game-sidebar.slint";
-import { GameDetailsPopup } from "components/game-details-popup.slint";
 import { GamesPage } from "components/games-page.slint";
 import { GameDetailsPage } from "components/game-details-page.slint";
 import { NavTab } from "components/nav-tab.slint";
@@ -26,29 +15,46 @@ import { AboutPopup } from "components/about-popup.slint";
 import { ModsPage } from "components/mods-page.slint";
 import { ThanksPage } from "components/thanks-page.slint";
 import { UrlModSourcesPopup } from "components/url-mod-sources-popup.slint";
-import {
-    ConfirmModSourcePopup,
-} from "components/confirm-mod-source-popup.slint";
+import { ConfirmModSourcePopup } from "components/confirm-mod-source-popup.slint";
 import { SteamCachePopup } from "components/steam-cache-popup.slint";
 import { SteamShortcutPopup } from "components/steam-shortcut-popup.slint";
 import { AddGamePopup } from "components/add-game-popup.slint";
 import { AppUpdatePopup } from "components/app-update-popup.slint";
 import { ConfirmationPopup } from "components/confirmation-popup.slint";
 import { NotificationsOverlay } from "components/notifications.slint";
-import { Fonts, Theme } from "theme.slint";
-import { ModActions } from "actions.slint";
-import { ActionState, ActionStates } from "action-state.slint";
+import { GameDetailsPopup } from "components/game-details-popup.slint";
+import { AppState, SelectedGameState } from "state.slint";
+import { AppActions } from "actions.slint";
+import { Theme } from "theme.slint";
 import { Icon } from "components/svg-icon.slint";
 
 export {
     ActionState,
     ActionStates,
+    AddGamePhase,
     AppColorScheme,
     AppTab,
-    AddGamePhase,
     Fonts,
     ModActions,
 }
+export { AppState, UserState } from "state.slint";
+export {
+    Refresh,
+    GamesState,
+    SelectedGameState,
+    ModsState,
+    DownloadsState,
+    NotificationsState,
+    ThanksState,
+    DebugState,
+    AddGameState,
+    ModSourcesState,
+    SteamToolsState,
+    UpdateState,
+    ConfirmationState,
+} from "state.slint";
+export { AppActions, GamesActions, DialogActions } from "actions.slint";
+
 export component MainWindow inherits Window {
     title: root.window-title;
     in property <string> window-title: "Rai Pal";
@@ -61,150 +67,17 @@ export component MainWindow inherits Window {
 
     private property <length> content-max-width: 1140px;
     private property <bool> about-open: false;
+    private property <AppColorScheme> color-scheme: AppState.selected-color-scheme;
 
-    in property <[GameRowData]> game-rows;
-    in property <int> games-total-count: 0;
-    in property <[GameModData]> game-mods-installed;
-    in property <[GameModData]> game-mods-available;
-    in property <[GameModData]> game-mods-hidden;
-    in property <[GameModData]> game-mods-incompatible;
-    in property <[PotentialModData]> potential-mods;
-    in property <[ModsTabItemData]> mods-tab-items;
-    in property <[PatronData]> patrons;
-    in property <bool> has-any-mods: false;
-    in property <bool> has-installed-mods: false;
-    in property <bool> has-available-mods: false;
-    in property <bool> has-hidden-mods: false;
-    in property <bool> has-incompatible-mods: false;
-    in property <[FilterGroupData]> filter-groups;
-    in property <bool> filters-have-changes;
-    in property <bool> filters-have-expanded: false;
-    in-out property <bool> hide-game-thumbnails: false;
-    in-out property <bool> drop-highlight: false;
-    in-out property <string> selected-language: "";
-    in-out property <AppColorScheme> selected-color-scheme: auto;
-    in property <string> detected-language-name: "";
-    in-out property <string> search-text: "";
-    in-out property <int> sort-index: 0;
-    in-out property <string> details-json: "";
-    in property <string> app-version: "";
-    in property <string> renderer-name: "";
-    in property <string> platform-name: "";
-    in property <bool> user-logged-in: false;
-    in property <bool> user-busy: false;
-    in property <string> user-name: "";
-    in property <string> user-initials: "";
-    in property <bool> user-has-avatar: false;
-    in property <image> user-avatar;
-    in property <[NotificationData]> notifications;
-    in property <[DownloadItemData]> downloads;
-    in property <float> download-progress: 0;
-    in-out property <bool> refreshing: false;
-    in property <string> refresh-task-names: "";
-    in property <UrlModSourceData> default-url-mod-source;
-    in property <[UrlModSourceData]> url-mod-sources;
-    in property <bool> url-mod-sources-toggling: false;
-    in property <string> url-mod-sources-error: "";
-    in-out property <string> new-url-mod-source: "";
-    in-out property <bool> url-mod-sources-open: false;
-    in property <bool> confirm-mod-source-loading: false;
-    in property <string> confirm-mod-source-url: "";
-    in property <string> confirm-mod-source-error: "";
-    in property <[string]> confirm-mod-source-mods;
-    in property <bool> confirm-mod-source-saving: false;
-    in-out property <bool> confirm-mod-source-open: false;
-    in-out property <bool> steam-cache-open: false;
-    in-out property <bool> steam-cache-running: false;
-    in-out property <bool> steam-cache-success: false;
-    in-out property <string> steam-cache-error: "";
-    in-out property <bool> steam-shortcut-open: false;
-    in-out property <bool> steam-shortcut-running: false;
-    in-out property <bool> steam-shortcut-success: false;
-    in-out property <string> steam-shortcut-error: "";
-    in-out property <bool> confirmation-open: false;
-    in property <string> confirmation-text: "";
-    in property <string> confirmation-confirm-label: "";
-    in property <bool> confirmation-can-skip: false;
-    in-out property <bool> confirmation-dont-ask-again: false;
-    in-out property <bool> add-game-open: false;
-    in-out property <bool> update-open: false;
-    in property <string> update-version: "";
-    in property <string> update-notes: "";
-    in property <bool> update-installing: false;
-    in-out property <AddGamePhase> scan-phase: idle;
-    in property <string> scan-selected-path: "";
-    in property <int> scan-scanned-dirs: 0;
-    in property <int> scan-executables-found: 0;
-    in property <string> scan-current-path: "";
-    in property <int> scan-games-count: 0;
-    in property <string> scan-duration-text: "";
-    in-out property <string> add-game-directory: "";
-    in property <[string]> manual-directories;
+    function select-tab(tab: AppTab) {
+        AppState.current-tab = tab;
+        AppActions.tab-changed(tab);
+    }
 
-    in-out property <AppTab> current-tab: games;
-    in-out property <bool> game-selected: false;
-    in-out property <GameRowData> selected-game-row;
-    in property <string> selected-provider-id: "";
-    in property <bool> selected-has-exe-path: false;
-    in property <bool> selected-show-wine-folders: false;
-    in property <[string]> selected-provider-actions;
-
-    callback request-game(index: int);
-    callback refresh-all;
-    callback request-url-mod-sources;
-    callback set-url-mod-source-enabled(url: string, enabled: bool);
-    callback remove-url-mod-source(url: string);
-    callback add-url-mod-source(url: string);
-    callback confirm-url-mod-source;
-    callback cancel-url-mod-source;
-    callback reset-steam-cache;
-    callback add-steam-shortcut;
-    callback request-add-game;
-    callback reset-settings;
-    callback open-logs-folder;
-    callback add-game-closed;
-    callback install-update;
-    callback ignore-update;
-    callback select-game-executable;
-    callback select-game-directory;
-    callback cancel-game-scan;
-    callback confirm-game-directory;
-    callback remove-game-directory(path: string);
-    callback remove-game(confirmation-text: string, confirm-label: string);
-    callback log-in;
-    callback log-out;
-    callback dismiss-notification(id: int);
-    callback request-debug-data;
-    callback request-mod-debug-data(mod-id: string);
-    callback clear-downloads;
-    callback confirmation-response(confirmed: bool);
-    callback visible-range-changed(first: int, last: int);
-    callback search-changed(text: string);
-    callback sort-changed(index: int);
-    callback filter-toggled(group: string, value: string, checked: bool);
-    callback filter-lock-toggled(group: string, value: string);
-    callback filter-only(group: string, value: string);
-    callback filter-reset(group: string);
-    callback filters-reset;
-    callback filters-collapse-all;
-    callback filter-expanded-changed(group: string, expanded: bool);
-    callback tab-changed(tab: AppTab);
-    callback language-changed(value: string);
-    callback color-scheme-changed(value: AppColorScheme);
-    callback hide-game-thumbnails-changed(hide: bool);
-    callback select-game(index: int);
-    callback back;
-    callback run-provider-action(value: string);
-    callback open-game-folder;
-    callback open-game-mods-folder;
-    callback open-game-data-folder;
-    callback open-wine-prefix-folder;
-    callback open-wine-binary-folder;
-    callback refresh-game;
     function apply-color-scheme() {
-        if root.selected-color-scheme == AppColorScheme.dark {
+        if root.color-scheme == AppColorScheme.dark {
             Palette.color-scheme = ColorScheme.dark;
-        } else if root.selected-color-scheme == AppColorScheme.light {
+        } else if root.color-scheme == AppColorScheme.light {
             Palette.color-scheme = ColorScheme.light;
         } else {
             Palette.color-scheme = ColorScheme.unknown;
@@ -215,12 +88,12 @@ export component MainWindow inherits Window {
         root.apply-color-scheme();
     }
 
-    changed selected-color-scheme => {
+    changed color-scheme => {
         root.apply-color-scheme();
     }
 
     VerticalLayout {
-        navbar := Rectangle {
+        Rectangle {
             background: Theme.background;
             vertical-stretch: 0;
 
@@ -244,22 +117,20 @@ export component MainWindow inherits Window {
                     NavTab {
                         title: @tr("tab" => "Games");
                         icon: Icon.games;
-                        selected: root.current-tab == AppTab.games;
+                        selected: AppState.current-tab == AppTab.games;
 
                         clicked => {
-                            root.current-tab = AppTab.games;
-                            root.tab-changed(AppTab.games);
+                            root.select-tab(AppTab.games);
                         }
                     }
 
                     NavTab {
                         title: @tr("tab" => "Mods");
                         icon: Icon.mods;
-                        selected: root.current-tab == AppTab.mods;
+                        selected: AppState.current-tab == AppTab.mods;
 
                         clicked => {
-                            root.current-tab = AppTab.mods;
-                            root.tab-changed(AppTab.mods);
+                            root.select-tab(AppTab.mods);
                         }
                     }
 
@@ -267,11 +138,10 @@ export component MainWindow inherits Window {
                         title: @tr("tab" => "Thanks");
                         icon: Icon.thanks;
                         icon-color: #c92a2a;
-                        selected: root.current-tab == AppTab.thanks;
+                        selected: AppState.current-tab == AppTab.thanks;
 
                         clicked => {
-                            root.current-tab = AppTab.thanks;
-                            root.tab-changed(AppTab.thanks);
+                            root.select-tab(AppTab.thanks);
                         }
                     }
 
@@ -279,74 +149,13 @@ export component MainWindow inherits Window {
                         horizontal-stretch: 1;
                     }
 
-                    DownloadProgress {
-                        items: root.downloads;
-                        overall-progress: root.download-progress;
+                    DownloadProgress { }
 
-                        clear-completed => {
-                            root.clear-downloads();
-                        }
-                    }
-
-                    UserMenu {
-                        logged-in: root.user-logged-in;
-                        busy: root.user-busy;
-                        user-name: root.user-name;
-                        user-initials: root.user-initials;
-                        has-avatar: root.user-has-avatar;
-                        avatar: root.user-avatar;
-
-                        log-in => {
-                            root.log-in();
-                        }
-
-                        log-out => {
-                            root.log-out();
-                        }
-                    }
+                    UserMenu { }
 
                     AppMenu {
-                        selected-language: root.selected-language;
-                        hide-game-thumbnails: root.hide-game-thumbnails;
-                        selected-color-scheme: root.selected-color-scheme;
-                        detected-language-name: root.detected-language-name;
-
                         about-clicked => {
                             root.about-open = true;
-                        }
-
-                        steam-cache-clicked => {
-                            root.steam-cache-success = false;
-                            root.steam-cache-error = "";
-                            root.steam-cache-open = true;
-                        }
-
-                        steam-shortcut-clicked => {
-                            root.steam-shortcut-success = false;
-                            root.steam-shortcut-error = "";
-                            root.steam-shortcut-open = true;
-                        }
-
-                        reset-settings-clicked => {
-                            root.reset-settings();
-                        }
-
-                        open-logs-folder-clicked => {
-                            root.open-logs-folder();
-                        }
-
-                        language-changed(value) => {
-                            root.language-changed(value);
-                        }
-
-                        color-scheme-changed(value) => {
-                            root.selected-color-scheme = value;
-                            root.color-scheme-changed(value);
-                        }
-
-                        hide-game-thumbnails-changed(value) => {
-                            root.hide-game-thumbnails = value;
-                            root.hide-game-thumbnails-changed(value);
                         }
                     }
                 }
@@ -355,372 +164,74 @@ export component MainWindow inherits Window {
 
         Rectangle {
             Rectangle {
-                visible: root.current-tab == AppTab.games;
+                visible: AppState.current-tab == AppTab.games;
                 width: min(parent.width, root.content-max-width);
                 x: (parent.width - self.width) / 2;
 
                 HorizontalLayout {
-                    visible: root.game-selected;
+                    visible: SelectedGameState.active;
 
-                    GameSidebar {
-                        visible: root.game-selected;
-                        provider-id: root.selected-provider-id;
-                        has-exe-path: root.selected-has-exe-path;
-                        show-wine-folders: root.selected-show-wine-folders;
-                        provider-actions: root.selected-provider-actions;
+                    GameSidebar { }
 
-                        back => {
-                            root.back();
-                        }
-
-                        run-provider-action(value) => {
-                            root.run-provider-action(value);
-                        }
-
-                        open-game-folder => {
-                            root.open-game-folder();
-                        }
-
-                        open-game-mods-folder => {
-                            root.open-game-mods-folder();
-                        }
-
-                        open-game-data-folder => {
-                            root.open-game-data-folder();
-                        }
-
-                        open-wine-prefix-folder => {
-                            root.open-wine-prefix-folder();
-                        }
-
-                        open-wine-binary-folder => {
-                            root.open-wine-binary-folder();
-                        }
-
-                        refresh-game => {
-                            root.refresh-game();
-                        }
-
-                        debug-data => {
-                            root.request-debug-data();
-                        }
-
-                        remove-game(confirmation-text, confirm-label) => {
-                            root.remove-game(confirmation-text, confirm-label);
-                        }
-                    }
-
-                    GameDetailsPage {
-                        visible: root.game-selected;
-                        game-row: root.selected-game-row;
-                        game-mods-installed: root.game-mods-installed;
-                        game-mods-available: root.game-mods-available;
-                        game-mods-hidden: root.game-mods-hidden;
-                        game-mods-incompatible: root.game-mods-incompatible;
-                        potential-mods: root.potential-mods;
-                        has-any-mods: root.has-any-mods;
-                        has-installed-mods: root.has-installed-mods;
-                        has-available-mods: root.has-available-mods;
-                        has-hidden-mods: root.has-hidden-mods;
-                        has-incompatible-mods: root.has-incompatible-mods;
-                        show-thumbnail: !root.hide-game-thumbnails;
-
-                        back => {
-                            root.back();
-                        }
-                    }
+                    GameDetailsPage { }
                 }
 
                 HorizontalLayout {
-                    visible: !root.game-selected;
+                    visible: !SelectedGameState.active;
 
-                    GamesSidebar {
-                        visible: !root.game-selected;
-                        search-text <=> root.search-text;
-                        sort-index <=> root.sort-index;
-                        filter-groups: root.filter-groups;
-                        filters-have-changes: root.filters-have-changes;
-                        filters-have-expanded: root.filters-have-expanded;
-                        refreshing: root.refreshing;
-                        refresh-task-names: root.refresh-task-names;
-                        add-game-clicked => {
-                            root.request-add-game();
-                        }
+                    GamesSidebar { }
 
-                        refresh-all => {
-                            root.refresh-all();
-                        }
-
-                        search-changed(text) => {
-                            root.search-changed(text);
-                        }
-
-                        sort-changed(index) => {
-                            root.sort-changed(index);
-                        }
-
-                        filter-toggled(group, value, checked) => {
-                            root.filter-toggled(group, value, checked);
-                        }
-
-                        filter-lock-toggled(group, value) => {
-                            root.filter-lock-toggled(group, value);
-                        }
-
-                        filter-only(group, value) => {
-                            root.filter-only(group, value);
-                        }
-
-                        filter-reset(group) => {
-                            root.filter-reset(group);
-                        }
-
-                        filters-reset => {
-                            root.filters-reset();
-                        }
-
-                        filters-collapse-all => {
-                            root.filters-collapse-all();
-                        }
-
-                        filter-expanded-changed(group, expanded) => {
-                            root.filter-expanded-changed(group, expanded);
-                        }
-                    }
-
-                    GamesPage {
-                        visible: !root.game-selected;
-                        game-rows: root.game-rows;
-                        show-thumbnails: !root.hide-game-thumbnails;
-                        total-count: root.games-total-count;
-                        refreshing: root.refreshing;
-
-                        request-game(index) => {
-                            root.request-game(index);
-                        }
-
-                        visible-range-changed(first, last) => {
-                            root.visible-range-changed(first, last);
-                        }
-
-                        select-game(index) => {
-                            root.select-game(index);
-                        }
-                    }
+                    GamesPage { }
                 }
             }
 
             Rectangle {
-                visible: root.current-tab == AppTab.mods;
+                visible: AppState.current-tab == AppTab.mods;
                 width: min(parent.width, root.content-max-width);
                 x: (parent.width - self.width) / 2;
 
-                ModsPage {
-                    items: root.mods-tab-items;
-                    refreshing: root.refreshing;
-                    refresh-task-names: root.refresh-task-names;
-
-                    refresh-all => {
-                        root.refresh-all();
-                    }
-
-                    open-url-mod-sources => {
-                        root.request-url-mod-sources();
-                    }
-
-                    debug-data(mod-id) => {
-                        root.request-mod-debug-data(mod-id);
-                    }
-                }
+                ModsPage { }
             }
 
             Rectangle {
-                visible: root.current-tab == AppTab.thanks;
+                visible: AppState.current-tab == AppTab.thanks;
                 width: min(parent.width, root.content-max-width);
                 x: (parent.width - self.width) / 2;
 
-                ThanksPage {
-                    patrons: root.patrons;
-                }
+                ThanksPage { }
             }
         }
     }
 
-    NotificationsOverlay {
-        notifications: root.notifications;
+    NotificationsOverlay { }
 
-        dismissed(id) => {
-            root.dismiss-notification(id);
-        }
-    }
-
-    if root.drop-highlight: Rectangle {
+    if AppState.drop-highlight: Rectangle {
         border-width: Theme.border-width * 2;
         border-color: Theme.highlight;
         background: transparent;
     }
 
-    confirmation-popup := ConfirmationPopup {
-        open: root.confirmation-open;
-        text: root.confirmation-text;
-        confirm-label: root.confirmation-confirm-label;
-        can-skip: root.confirmation-can-skip;
-        dont-ask-again <=> root.confirmation-dont-ask-again;
+    ConfirmationPopup { }
 
-        response(confirmed) => {
-            root.confirmation-open = false;
-            root.confirmation-response(confirmed);
-        }
+    GameDetailsPopup { }
 
-        closed => {
-            root.confirmation-open = false;
-            root.confirmation-response(false);
-        }
-    }
-
-    details-popup := GameDetailsPopup {
-        open: root.details-json != "";
-        game-json: root.details-json;
-
-        closed => {
-            root.details-json = "";
-        }
-    }
-
-    about-popup := AboutPopup {
+    AboutPopup {
         open: root.about-open;
-        app-version: root.app-version;
-        renderer-name: root.renderer-name;
-        platform-name: root.platform-name;
 
         closed => {
             root.about-open = false;
         }
     }
 
-    steam-shortcut-popup := SteamShortcutPopup {
-        open: root.steam-shortcut-open;
-        running: root.steam-shortcut-running;
-        success: root.steam-shortcut-success;
-        error: root.steam-shortcut-error;
+    SteamShortcutPopup { }
 
-        add-clicked => {
-            root.add-steam-shortcut();
-        }
+    AppUpdatePopup { }
 
-        closed => {
-            root.steam-shortcut-open = false;
-        }
-    }
+    AddGamePopup { }
 
-    app-update-popup := AppUpdatePopup {
-        open: root.update-open;
-        version: root.update-version;
-        notes: root.update-notes;
-        installing: root.update-installing;
+    SteamCachePopup { }
 
-        install-clicked => {
-            root.install-update();
-        }
+    UrlModSourcesPopup { }
 
-        ignore-clicked => {
-            root.update-open = false;
-            root.ignore-update();
-        }
-    }
-
-    add-game-popup := AddGamePopup {
-        open: root.add-game-open;
-        phase: root.scan-phase;
-        selected-path: root.scan-selected-path;
-        scanned-dirs: root.scan-scanned-dirs;
-        executables-found: root.scan-executables-found;
-        current-path: root.scan-current-path;
-        games-count: root.scan-games-count;
-        duration-text: root.scan-duration-text;
-        directories: root.manual-directories;
-
-        select-executable => {
-            root.select-game-executable();
-        }
-
-        select-directory => {
-            root.select-game-directory();
-        }
-
-        cancel-scan => {
-            root.cancel-game-scan();
-        }
-
-        confirm-directory => {
-            root.confirm-game-directory();
-        }
-
-        remove-directory(path) => {
-            root.remove-game-directory(path);
-        }
-
-        closed => {
-            root.add-game-closed();
-            root.add-game-open = false;
-        }
-    }
-
-    steam-cache-popup := SteamCachePopup {
-        open: root.steam-cache-open;
-        running: root.steam-cache-running;
-        success: root.steam-cache-success;
-        error: root.steam-cache-error;
-
-        reset-clicked => {
-            root.reset-steam-cache();
-        }
-
-        closed => {
-            root.steam-cache-open = false;
-        }
-    }
-
-    url-mod-sources-popup := UrlModSourcesPopup {
-        open: root.url-mod-sources-open;
-        default-source: root.default-url-mod-source;
-        sources: root.url-mod-sources;
-        toggling: root.url-mod-sources-toggling;
-        error: root.url-mod-sources-error;
-        new-url <=> root.new-url-mod-source;
-
-        add-source(url) => {
-            root.add-url-mod-source(url);
-        }
-
-        set-enabled(url, enabled) => {
-            root.set-url-mod-source-enabled(url, enabled);
-        }
-
-        remove-source(url) => {
-            root.remove-url-mod-source(url);
-        }
-
-        closed => {
-            root.url-mod-sources-open = false;
-        }
-    }
-
-    confirm-mod-source-popup := ConfirmModSourcePopup {
-        open: root.confirm-mod-source-open;
-        url: root.confirm-mod-source-url;
-        loading: root.confirm-mod-source-loading;
-        error: root.confirm-mod-source-error;
-        mods: root.confirm-mod-source-mods;
-        saving: root.confirm-mod-source-saving;
-
-        confirm => {
-            root.confirm-url-mod-source();
-        }
-
-        closed => {
-            root.confirm-mod-source-open = false;
-            root.cancel-url-mod-source();
-        }
-    }
+    ConfirmModSourcePopup { }
 }

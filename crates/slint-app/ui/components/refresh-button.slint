@@ -1,15 +1,16 @@
 import { Theme } from "../theme.slint";
 import { Tr } from "../translations.slint";
-import { SidebarAction } from "sidebar-action.slint";
 import { Icon } from "svg-icon.slint";
 import { Button } from "button.slint";
+import { Refresh } from "../state.slint";
 
 export component RefreshButton inherits Button {
-    in property <bool> refreshing;
-    in property <string> task-names;
-
-    text: root.refreshing ? Tr.refresh-loading(root.task-names) : @tr("refresh" => "Refresh");
-    icon: root.refreshing ? Icon.refreshing : Icon.refresh;
+    text: Refresh.refreshing ? Tr.refresh-loading(Refresh.task-names) : @tr("refresh" => "Refresh");
+    icon: Refresh.refreshing ? Icon.refreshing : Icon.refresh;
     tint: Theme.primary;
-    enabled: !root.refreshing;
+    enabled: !Refresh.refreshing;
+
+    clicked => {
+        Refresh.refresh-all();
+    }
 }

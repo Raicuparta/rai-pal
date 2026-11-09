@@ -1,3 +1,4 @@
+use slint::ComponentHandle as _;
 use std::{rc::Rc, thread};
 
 use rai_pal_core::result::LogErrExt;
@@ -43,7 +44,9 @@ pub fn load(window: slint::Weak<MainWindow>) {
 				})
 				.collect::<Vec<_>>();
 
-			window.set_patrons(Rc::new(slint::VecModel::from(patrons)).into());
+			window
+				.global::<crate::ThanksState>()
+				.set_patrons(Rc::new(slint::VecModel::from(patrons)).into());
 		});
 	});
 }

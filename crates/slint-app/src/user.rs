@@ -1,3 +1,4 @@
+use slint::ComponentHandle as _;
 use std::{path::Path, thread};
 
 use rai_pal_core::{
@@ -16,11 +17,11 @@ pub fn log_in(window: slint::Weak<MainWindow>) {
 		return;
 	};
 
-	if handle.get_user_busy() {
+	if handle.global::<crate::UserState>().get_busy() {
 		return;
 	}
 
-	handle.set_user_busy(true);
+	handle.global::<crate::UserState>().set_busy(true);
 	drop(handle);
 
 	thread::spawn(move || {
@@ -42,11 +43,11 @@ pub fn log_out(window: slint::Weak<MainWindow>) {
 		return;
 	};
 
-	if handle.get_user_busy() {
+	if handle.global::<crate::UserState>().get_busy() {
 		return;
 	}
 
-	handle.set_user_busy(true);
+	handle.global::<crate::UserState>().set_busy(true);
 	drop(handle);
 
 	thread::spawn(move || {
@@ -73,7 +74,7 @@ fn apply_result(window: slint::Weak<MainWindow>, result: Result<AuthState, Strin
 			return;
 		};
 
-		window.set_user_busy(false);
+		window.global::<crate::UserState>().set_busy(false);
 
 		match result {
 			Ok(state) => apply_state(&window, &state),
@@ -94,13 +95,21 @@ fn apply_state(window: &MainWindow, state: &AuthState) {
 			slint::Image::load_from_path(path).ok_or_log("Failed to load user avatar")
 		});
 
-	window.set_user_logged_in(state.is_logged_in);
-	window.set_user_name(state.user_name.clone().unwrap_or_default().into());
-	window.set_user_initials(
+	window
+		.global::<crate::UserState>()
+		.set_logged_in(state.is_logged_in);
+	window
+		.global::<crate::UserState>()
+		.set_name(state.user_name.clone().unwrap_or_default().into());
+	window.global::<crate::UserState>().set_initials(
 		text::initials(state.user_name.as_deref().unwrap_or_default())
 			.unwrap_or_default()
 			.into(),
 	);
-	window.set_user_has_avatar(avatar.is_some());
-	window.set_user_avatar(avatar.unwrap_or_default());
+	window
+		.global::<crate::UserState>()
+		.set_has_avatar(avatar.is_some());
+	window
+		.global::<crate::UserState>()
+		.set_avatar(avatar.unwrap_or_default());
 }

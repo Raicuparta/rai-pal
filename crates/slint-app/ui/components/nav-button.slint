@@ -3,8 +3,6 @@ import { Theme } from "../theme.slint";
 export component NavButton inherits Rectangle {
     in property <length> content-padding-left: Theme.space-md;
     in property <length> content-padding-right: Theme.space-md;
-    in property <length> content-padding-top: Theme.space-md;
-    in property <length> content-padding-bottom: Theme.space-md;
     in property <length> content-spacing: 0px;
     in property <bool> selected;
 
@@ -17,8 +15,8 @@ export component NavButton inherits Rectangle {
     HorizontalLayout {
         padding-left: root.content-padding-left;
         padding-right: root.content-padding-right;
-        padding-top: root.content-padding-top;
-        padding-bottom: root.content-padding-bottom;
+        padding-top: Theme.space-md;
+        padding-bottom: Theme.space-md;
         spacing: root.content-spacing;
         cross-axis-alignment: center;
 

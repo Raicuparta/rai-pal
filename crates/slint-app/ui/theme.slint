@@ -5,7 +5,11 @@ export global Fonts {
 }
 
 export global Theme {
-    out property <bool> dark: Palette.background.to-oklch().lightness < 0.5;
+    // Palette.color-scheme is Unknown in auto mode, so fall back to the resolved palette there.
+    out property <bool> dark:
+        Palette.color-scheme == ColorScheme.dark ? true
+        : Palette.color-scheme == ColorScheme.light ? false
+        : Palette.background.to-oklch().lightness < 0.5;
 
     out property <length> border-width: 1px;
 

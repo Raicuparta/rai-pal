@@ -2,11 +2,11 @@ import { NotificationData, NotificationKind } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { IconButton } from "icon-button.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
+import { NotificationsState } from "../state.slint";
+import { AppActions } from "../actions.slint";
 
 component NotificationToast inherits Rectangle {
     in property <NotificationData> notification;
-
-    callback dismissed(id: int);
 
     background: Theme.background;
     border-width: Theme.border-width * 2;
@@ -37,17 +37,13 @@ component NotificationToast inherits Rectangle {
             tooltip: @tr("debugData" => "Close");
 
             clicked => {
-                root.dismissed(root.notification.id);
+                AppActions.dismiss-notification(root.notification.id);
             }
         }
     }
 }
 
 export component NotificationsOverlay inherits HorizontalLayout {
-    in property <[NotificationData]> notifications;
-
-    callback dismissed(id: int);
-
     width: 100%;
     alignment: end;
 
@@ -58,12 +54,8 @@ export component NotificationsOverlay inherits HorizontalLayout {
         spacing: Theme.space-sm;
         alignment: end;
 
-        for notification in root.notifications: NotificationToast {
+        for notification in NotificationsState.notifications: NotificationToast {
             notification: notification;
-
-            dismissed(id) => {
-                root.dismissed(id);
-            }
         }
     }
 }

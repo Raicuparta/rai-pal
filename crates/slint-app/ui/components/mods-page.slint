@@ -1,6 +1,5 @@
 import { ScrollView } from "std-widgets.slint";
 import { ModActions } from "../actions.slint";
-import { ModsTabItemData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { ModsTabRow } from "mods-tab-row.slint";
 import { ModsTabFamilyRow } from "mods-tab-family-row.slint";
@@ -8,28 +7,14 @@ import { RefreshButton } from "refresh-button.slint";
 import { Sidebar, SidebarSection } from "sidebar.slint";
 import { SidebarAction } from "sidebar-action.slint";
 import { Icon } from "svg-icon.slint";
+import { ModsState } from "../state.slint";
+import { DialogActions } from "../actions.slint";
 
 export component ModsPage inherits Rectangle {
-    in property <[ModsTabItemData]> items;
-    in property <bool> refreshing;
-    in property <string> refresh-task-names;
-
-    callback refresh-all;
-    callback open-url-mod-sources;
-    callback debug-data(mod-id: string);
-
     HorizontalLayout {
         Sidebar {
             SidebarSection {
-
-                RefreshButton {
-                    refreshing: root.refreshing;
-                    task-names: root.refresh-task-names;
-
-                    clicked => {
-                        root.refresh-all();
-                    }
-                }
+                RefreshButton { }
             }
 
             VerticalLayout {
@@ -38,7 +23,7 @@ export component ModsPage inherits Rectangle {
                     icon: Icon.mod-sources;
 
                     clicked => {
-                        root.open-url-mod-sources();
+                        DialogActions.request-url-mod-sources();
                     }
                 }
 
@@ -58,30 +43,22 @@ export component ModsPage inherits Rectangle {
         Rectangle {
             horizontal-stretch: 1;
 
-            content-scroll := ScrollView {
+            ScrollView {
                 VerticalLayout {
                     alignment: start;
                     spacing: 0px;
 
-                    for item in root.items: VerticalLayout {
+                    for item in ModsState.items: VerticalLayout {
                         alignment: start;
                         vertical-stretch: 0;
                         spacing: 0px;
 
                         if item.is-family: ModsTabFamilyRow {
                             item: item;
-
-                            debug-data(mod-id) => {
-                                root.debug-data(mod-id);
-                            }
                         }
 
                         if !item.is-family: ModsTabRow {
                             mod-data: item.single-mod;
-
-                            debug-data(mod-id) => {
-                                root.debug-data(mod-id);
-                            }
                         }
                     }
                 }

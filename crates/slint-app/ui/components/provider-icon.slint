@@ -4,10 +4,9 @@ import { Icon, SvgIcon } from "svg-icon.slint";
 
 export component ProviderIcon inherits Rectangle {
     in property <string> provider-id;
-    in property <length> icon-size: Theme.space-lg;
 
-    width: root.icon-size;
-    height: root.icon-size;
+    width: Theme.space-lg;
+    height: Theme.space-lg;
 
     pure function icon-source(id: string) -> Icon {
         if id == "Amazon" {
@@ -36,7 +35,7 @@ export component ProviderIcon inherits Rectangle {
 
     SvgIcon {
         icon: root.icon-source(root.provider-id);
-        size: root.icon-size;
+        size: Theme.space-lg;
         color: Branding.provider-foreground(root.provider-id);
     }
 }

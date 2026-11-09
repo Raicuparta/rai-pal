@@ -1,3 +1,4 @@
+use slint::ComponentHandle as _;
 use std::{
 	collections::HashMap,
 	fs,
@@ -92,7 +93,7 @@ impl Updater {
 		};
 
 		if let Some(window) = window.upgrade() {
-			window.set_update_installing(true);
+			window.global::<crate::UpdateState>().set_installing(true);
 		}
 
 		thread::spawn(move || {
@@ -107,7 +108,7 @@ impl Updater {
 						return;
 					};
 
-					window.set_update_installing(false);
+					window.global::<crate::UpdateState>().set_installing(false);
 					notifications::error(&window, format!("Failed to install app update: {err}"));
 				});
 
@@ -124,7 +125,7 @@ impl Updater {
 			}
 			Err(err) => log::warn!("Failed to lock pending update: {err}"),
 		}
-		window.set_update_open(false);
+		window.global::<crate::UpdateState>().set_open(false);
 	}
 }
 
@@ -171,10 +172,14 @@ fn check_for_update(
 						return;
 					}
 
-					window.set_update_version(release.version.clone().into());
-					window.set_update_notes(release.notes.clone().into());
-					window.set_update_installing(false);
-					window.set_update_open(true);
+					window
+						.global::<crate::UpdateState>()
+						.set_version(release.version.clone().into());
+					window
+						.global::<crate::UpdateState>()
+						.set_notes(release.notes.clone().into());
+					window.global::<crate::UpdateState>().set_installing(false);
+					window.global::<crate::UpdateState>().set_open(true);
 					*pending = Some(release);
 				}
 				Ok(None) => {}

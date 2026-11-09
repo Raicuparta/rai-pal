@@ -1,3 +1,4 @@
+use slint::ComponentHandle as _;
 use std::{sync::Arc, thread, time::Duration};
 
 use rai_pal_core::{
@@ -58,14 +59,14 @@ pub fn start_query(
 			let rows = make_rows(&response.game_ids);
 			ui_scheduler.begin_query();
 
-			window.set_games_total_count(i32::try_from(response.total_count).unwrap_or_else(
-				|err| {
+			window.global::<crate::GamesState>().set_total_count(
+				i32::try_from(response.total_count).unwrap_or_else(|err| {
 					log::warn!("Games count exceeds i32: {err}");
 					i32::MAX
-				},
-			));
+				}),
+			);
 			let model = std::rc::Rc::new(slint::VecModel::from(rows));
-			window.set_game_rows(model.into());
+			window.global::<crate::GamesState>().set_rows(model.into());
 		});
 	});
 }

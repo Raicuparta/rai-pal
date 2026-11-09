@@ -1,29 +1,15 @@
 import { ScrollView } from "std-widgets.slint";
 import { ModActions } from "../actions.slint";
-import { GameRowData, GameModData, PotentialModData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { ActionButton } from "action-button.slint";
 import { GameRow } from "game-row.slint";
 import { ModsSection } from "mods-section.slint";
 import { PotentialModsSection } from "potential-mods-section.slint";
 import { Icon } from "svg-icon.slint";
+import { AppState, SelectedGameState } from "../state.slint";
+import { GamesActions } from "../actions.slint";
 
 export component GameDetailsPage inherits Rectangle {
-    in property <GameRowData> game-row;
-    in property <[GameModData]> game-mods-installed;
-    in property <[GameModData]> game-mods-available;
-    in property <[GameModData]> game-mods-hidden;
-    in property <[GameModData]> game-mods-incompatible;
-    in property <[PotentialModData]> potential-mods;
-    in property <bool> has-any-mods;
-    in property <bool> has-installed-mods;
-    in property <bool> has-available-mods;
-    in property <bool> has-hidden-mods;
-    in property <bool> has-incompatible-mods;
-    in property <bool> show-thumbnail: true;
-
-    callback back;
-
     ScrollView {
         VerticalLayout {
             alignment: start;
@@ -31,16 +17,16 @@ export component GameDetailsPage inherits Rectangle {
 
             GameRow {
                 vertical-stretch: 0;
-                game-row: root.game-row;
+                game-row: SelectedGameState.row;
                 row-index: 0;
-                show-thumbnail: root.show-thumbnail;
+                show-thumbnail: !AppState.hide-game-thumbnails;
 
                 selected(index) => {
-                    root.back();
+                    GamesActions.back();
                 }
             }
 
-            if !root.has-any-mods : HorizontalLayout {
+            if SelectedGameState.mods-installed.length + SelectedGameState.mods-available.length + SelectedGameState.mods-hidden.length + SelectedGameState.mods-incompatible.length + SelectedGameState.potential-mods.length == 0 : HorizontalLayout {
                 height: self.preferred-height;
                 padding-left: Theme.space-sm;
                 padding-right: Theme.space-sm;
@@ -53,25 +39,25 @@ export component GameDetailsPage inherits Rectangle {
                 }
             }
 
-            if !root.game-row.installed && root.has-any-mods : PotentialModsSection {
+            if !SelectedGameState.row.installed && SelectedGameState.potential-mods.length > 0 : PotentialModsSection {
                 label: @tr("gameModal" => "Potentially compatible mods");
                 description: @tr("gameModal" => "Install this game to see more detailed information about which mods are compatible");
-                mods: root.potential-mods;
+                mods: SelectedGameState.potential-mods;
             }
 
-            if root.game-row.installed : VerticalLayout {
+            if SelectedGameState.row.installed : VerticalLayout {
                 alignment: start;
                 vertical-stretch: 0;
                 spacing: Theme.space-sm;
 
-                if root.has-installed-mods : VerticalLayout {
+                if SelectedGameState.mods-installed.length > 0 : VerticalLayout {
                     alignment: start;
                     vertical-stretch: 0;
                     spacing: Theme.space-xs;
 
                     ModsSection {
                         label: @tr("gameModal" => "Installed Mods");
-                        mods: root.game-mods-installed;
+                        mods: SelectedGameState.mods-installed;
                     }
 
                     HorizontalLayout {
@@ -96,21 +82,21 @@ export component GameDetailsPage inherits Rectangle {
                     }
                 }
 
-                if root.has-available-mods : ModsSection {
+                if SelectedGameState.mods-available.length > 0 : ModsSection {
                     label: @tr("gameModal" => "Available Mods");
-                    mods: root.game-mods-available;
+                    mods: SelectedGameState.mods-available;
                 }
 
-                if root.has-hidden-mods : ModsSection {
+                if SelectedGameState.mods-hidden.length > 0 : ModsSection {
                     label: @tr("gameModal" => "Other things");
                     description: @tr("gameModal" => "These are mostly dependencies and other stuff that you don't usually need to mess with directly.");
-                    mods: root.game-mods-hidden;
+                    mods: SelectedGameState.mods-hidden;
                 }
 
-                if root.has-incompatible-mods : ModsSection {
+                if SelectedGameState.mods-incompatible.length > 0 : ModsSection {
                     label: @tr("gameModal" => "Incompatible Mods");
                     description: @tr("gameModal" => "The mods listed here can't be installed because they aren't compatible with this game's engine version.");
-                    mods: root.game-mods-incompatible;
+                    mods: SelectedGameState.mods-incompatible;
                 }
             }
         }

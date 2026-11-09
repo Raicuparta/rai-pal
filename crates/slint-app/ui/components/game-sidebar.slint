@@ -5,24 +5,10 @@ import { SidebarAction } from "sidebar-action.slint";
 import { Sidebar, SidebarSection } from "sidebar.slint";
 import { Icon } from "svg-icon.slint";
 import { Button } from "button.slint";
+import { SelectedGameState } from "../state.slint";
+import { GamesActions } from "../actions.slint";
 
 export component GameSidebar inherits Sidebar {
-    in property <string> provider-id;
-    in property <bool> has-exe-path;
-    in property <bool> show-wine-folders;
-    in property <[string]> provider-actions;
-
-    callback back;
-    callback run-provider-action(value: string);
-    callback open-game-folder;
-    callback open-game-mods-folder;
-    callback open-game-data-folder;
-    callback open-wine-prefix-folder;
-    callback open-wine-binary-folder;
-    callback refresh-game;
-    callback debug-data;
-    callback remove-game(confirmation-text: string, confirm-label: string);
-
     pure function provider-command-icon(command: string) -> Icon {
         if command == "StartViaProvider" {
             return Icon.play;
@@ -43,12 +29,12 @@ export component GameSidebar inherits Sidebar {
                 icon: Icon.back;
 
                 clicked => {
-                    root.back();
+                    GamesActions.back();
                 }
             }
         }
 
-        if root.provider-actions.length > 0: VerticalLayout {
+        if SelectedGameState.provider-actions.length > 0: VerticalLayout {
             alignment: start;
             spacing: 0px;
 
@@ -57,12 +43,12 @@ export component GameSidebar inherits Sidebar {
                 padding-bottom: Theme.space-xs;
 
                 LabeledDivider {
-                    label: root.provider-id;
+                    label: SelectedGameState.provider-id;
                     horizontal-stretch: 1;
                 }
             }
 
-            for action[index] in root.provider-actions: SidebarAction {
+            for action[index] in SelectedGameState.provider-actions: SidebarAction {
                 text: Tr.provider-command(action);
                 icon: root.provider-command-icon(action);
                 highlighted: index == 0;
@@ -70,15 +56,18 @@ export component GameSidebar inherits Sidebar {
 
                 clicked => {
                     if action == "Delete" {
-                        root.remove-game(@tr("gameModal" => "Are you sure you want to remove this game from Rai Pal?"), @tr("gameModal" => "Remove from Rai Pal"));
+                        GamesActions.remove-game(
+                            @tr("gameModal" => "Are you sure you want to remove this game from Rai Pal?"),
+                            @tr("gameModal" => "Remove from Rai Pal"),
+                        );
                     } else {
-                        root.run-provider-action(action);
+                        GamesActions.run-provider-action(action);
                     }
                 }
             }
         }
 
-        if root.has-exe-path: VerticalLayout {
+        if SelectedGameState.has-exe-path: VerticalLayout {
             alignment: start;
             spacing: 0px;
 
@@ -98,7 +87,7 @@ export component GameSidebar inherits Sidebar {
                 action-id: "open-game-folder";
 
                 clicked => {
-                    root.open-game-folder();
+                    GamesActions.open-game-folder();
                 }
             }
 
@@ -108,7 +97,7 @@ export component GameSidebar inherits Sidebar {
                 action-id: "open-game-mods-folder";
 
                 clicked => {
-                    root.open-game-mods-folder();
+                    GamesActions.open-game-mods-folder();
                 }
             }
 
@@ -117,25 +106,25 @@ export component GameSidebar inherits Sidebar {
                 action-id: "open-game-data-folder";
 
                 clicked => {
-                    root.open-game-data-folder();
+                    GamesActions.open-game-data-folder();
                 }
             }
 
-            if root.show-wine-folders: SidebarAction {
+            if SelectedGameState.show-wine-folders: SidebarAction {
                 text: @tr("gameModal" => "Wine Prefix");
                 action-id: "open-wine-prefix-folder";
 
                 clicked => {
-                    root.open-wine-prefix-folder();
+                    GamesActions.open-wine-prefix-folder();
                 }
             }
 
-            if root.show-wine-folders: SidebarAction {
+            if SelectedGameState.show-wine-folders: SidebarAction {
                 text: @tr("gameModal" => "Wine Binary");
                 action-id: "open-wine-binary-folder";
 
                 clicked => {
-                    root.open-wine-binary-folder();
+                    GamesActions.open-wine-binary-folder();
                 }
             }
         }
@@ -154,13 +143,13 @@ export component GameSidebar inherits Sidebar {
                 }
             }
 
-            if root.has-exe-path: SidebarAction {
+            if SelectedGameState.has-exe-path: SidebarAction {
                 text: @tr("gameModal" => "Refresh game");
                 icon: Icon.refresh;
                 action-id: "refresh-game";
 
                 clicked => {
-                    root.refresh-game();
+                    GamesActions.refresh-game();
                 }
             }
 
@@ -169,7 +158,7 @@ export component GameSidebar inherits Sidebar {
                 icon: Icon.bug;
 
                 clicked => {
-                    root.debug-data();
+                    GamesActions.request-debug-data();
                 }
             }
         }

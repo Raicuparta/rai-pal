@@ -5,7 +5,6 @@ import { ProviderIcon } from "provider-icon.slint";
 import { RowDivider } from "row-divider.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
 import { EngineIcon } from "engine-icon.slint";
-import { HorizontalBox, Palette } from "std-widgets.slint";
 
 export component GameRow inherits VerticalLayout {
     in property <GameRowData> game-row;
@@ -17,7 +16,7 @@ export component GameRow inherits VerticalLayout {
     alignment: start;
     spacing: 0px;
 
-    content := Rectangle {
+    Rectangle {
         height: Theme.game-row-height;
         background: touch-area.has-hover ? Theme.hover-background : Theme.background;
 
@@ -35,7 +34,6 @@ export component GameRow inherits VerticalLayout {
 
                 ProviderIcon {
                     provider-id: game-row.provider-id;
-                    icon-size: Theme.space-lg;
                 }
 
                 SvgIcon {

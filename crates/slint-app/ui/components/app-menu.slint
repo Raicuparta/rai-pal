@@ -4,27 +4,17 @@ import { NavButton } from "nav-button.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
 import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
 import { SelectMenu, SelectOption } from "select-menu.slint";
+import { AppState, SteamToolsState } from "../state.slint";
+import { AppActions } from "../actions.slint";
 
 export component AppMenu inherits Rectangle {
-    in property <string> selected-language: "";
-    in property <AppColorScheme> selected-color-scheme: auto;
-    in property <string> detected-language-name: "";
-    in property <bool> hide-game-thumbnails: false;
-
     callback about-clicked;
-    callback steam-cache-clicked;
-    callback steam-shortcut-clicked;
-    callback reset-settings-clicked;
-    callback open-logs-folder-clicked;
-    callback hide-game-thumbnails-changed(hide: bool);
-    callback language-changed(value: string);
-    callback color-scheme-changed(value: AppColorScheme);
 
     private property <string> menu-tooltip: @tr("appDropdownMenu" => "App menu");
-    private property <bool> has-auto-language: root.detected-language-name != "";
+    private property <bool> has-auto-language: AppState.detected-language-name != "";
     private property <[SelectOption]> language-options: root.has-auto-language ? [
         {
-            label: @tr("appDropdownMenu" => "Auto-detected - {0}", root.detected-language-name),
+            label: @tr("appDropdownMenu" => "Auto-detected - {0}", AppState.detected-language-name),
             value: ""
         },
         { label: "English (US)", value: "en" },
@@ -54,22 +44,22 @@ export component AppMenu inherits Rectangle {
     ];
 
     pure function language-index() -> int {
-        if root.selected-language == "" { return 0; }
-        if root.selected-language == "en" { return root.has-auto-language ? 1 : 0; }
-        if root.selected-language == "de" { return root.has-auto-language ? 2 : 1; }
-        if root.selected-language == "es" { return root.has-auto-language ? 3 : 2; }
-        if root.selected-language == "fr" { return root.has-auto-language ? 4 : 3; }
-        if root.selected-language == "ja" { return root.has-auto-language ? 5 : 4; }
-        if root.selected-language == "ko" { return root.has-auto-language ? 6 : 5; }
-        if root.selected-language == "pt" { return root.has-auto-language ? 7 : 6; }
-        if root.selected-language == "zh" { return root.has-auto-language ? 8 : 7; }
-        if root.selected-language == "wa" { return root.has-auto-language ? 9 : 8; }
+        if AppState.selected-language == "" { return 0; }
+        if AppState.selected-language == "en" { return root.has-auto-language ? 1 : 0; }
+        if AppState.selected-language == "de" { return root.has-auto-language ? 2 : 1; }
+        if AppState.selected-language == "es" { return root.has-auto-language ? 3 : 2; }
+        if AppState.selected-language == "fr" { return root.has-auto-language ? 4 : 3; }
+        if AppState.selected-language == "ja" { return root.has-auto-language ? 5 : 4; }
+        if AppState.selected-language == "ko" { return root.has-auto-language ? 6 : 5; }
+        if AppState.selected-language == "pt" { return root.has-auto-language ? 7 : 6; }
+        if AppState.selected-language == "zh" { return root.has-auto-language ? 8 : 7; }
+        if AppState.selected-language == "wa" { return root.has-auto-language ? 9 : 8; }
         return 0;
     }
 
     pure function color-scheme-index() -> int {
-        if root.selected-color-scheme == AppColorScheme.dark { return 1; }
-        if root.selected-color-scheme == AppColorScheme.light { return 2; }
+        if AppState.selected-color-scheme == AppColorScheme.dark { return 1; }
+        if AppState.selected-color-scheme == AppColorScheme.light { return 2; }
         return 0;
     }
 
@@ -95,11 +85,12 @@ export component AppMenu inherits Rectangle {
 
             PopupMenuItem {
                 checkable: true;
-                checked: !root.hide-game-thumbnails;
+                checked: !AppState.hide-game-thumbnails;
                 text: @tr("appDropdownMenu" => "Show game thumbnails on list");
 
                 clicked => {
-                    root.hide-game-thumbnails-changed(!root.hide-game-thumbnails);
+                    AppState.hide-game-thumbnails = !AppState.hide-game-thumbnails;
+                    AppActions.hide-game-thumbnails-changed(AppState.hide-game-thumbnails);
                     menu.close();
                 }
             }
@@ -111,7 +102,9 @@ export component AppMenu inherits Rectangle {
                 icon: Icon.steam;
 
                 clicked => {
-                    root.steam-shortcut-clicked();
+                    SteamToolsState.shortcut-success = false;
+                    SteamToolsState.shortcut-error = "";
+                    SteamToolsState.shortcut-open = true;
                     menu.close();
                 }
             }
@@ -120,7 +113,9 @@ export component AppMenu inherits Rectangle {
                 text: @tr("steamCache" => "Reset Steam cache");
 
                 clicked => {
-                    root.steam-cache-clicked();
+                    SteamToolsState.cache-success = false;
+                    SteamToolsState.cache-error = "";
+                    SteamToolsState.cache-open = true;
                     menu.close();
                 }
             }
@@ -131,7 +126,7 @@ export component AppMenu inherits Rectangle {
                 text: @tr("appDropdownMenu" => "Reset Rai Pal settings");
 
                 clicked => {
-                    root.reset-settings-clicked();
+                    AppActions.reset-settings();
                     menu.close();
                 }
             }
@@ -141,7 +136,7 @@ export component AppMenu inherits Rectangle {
                 icon: Icon.folder;
 
                 clicked => {
-                    root.open-logs-folder-clicked();
+                    AppActions.open-logs-folder();
                     menu.close();
                 }
             }
@@ -167,7 +162,8 @@ export component AppMenu inherits Rectangle {
                     icon: Icon.language;
 
                     selected(index) => {
-                        root.language-changed(root.language-options[index].value);
+                        AppState.selected-language = root.language-options[index].value;
+                        AppActions.language-changed(AppState.selected-language);
                     }
                 }
             }
@@ -194,12 +190,13 @@ export component AppMenu inherits Rectangle {
 
                     selected(index) => {
                         if root.color-scheme-options[index].value == "light" {
-                            root.color-scheme-changed(AppColorScheme.light);
+                            AppState.selected-color-scheme = AppColorScheme.light;
                         } else if root.color-scheme-options[index].value == "dark" {
-                            root.color-scheme-changed(AppColorScheme.dark);
+                            AppState.selected-color-scheme = AppColorScheme.dark;
                         } else {
-                            root.color-scheme-changed(AppColorScheme.auto);
+                            AppState.selected-color-scheme = AppColorScheme.auto;
                         }
+                        AppActions.color-scheme-changed(AppState.selected-color-scheme);
                     }
                 }
             }

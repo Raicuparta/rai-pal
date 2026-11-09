@@ -1,30 +1,30 @@
 import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
+import { SteamToolsState } from "../state.slint";
+import { DialogActions } from "../actions.slint";
 
 export component SteamShortcutPopup inherits Modal {
-    in property <bool> running;
-    in property <bool> success;
-    in property <string> error;
-
-    callback add-clicked;
-
+    open: SteamToolsState.shortcut-open;
     title: @tr("steamShortcut" => "Add Rai Pal to Steam Library");
-    content-spacing: Theme.space-md;
+
+    closed => {
+        SteamToolsState.shortcut-open = false;
+    }
 
     Text {
         text: @tr("steamShortcut" => "This is especially useful on Steam Deck, to be able to launch Rai Pal in Game Mode. You'll have to restart Steam after doing this.");
         wrap: word-wrap;
     }
 
-    if root.success : Text {
+    if SteamToolsState.shortcut-success : Text {
         text: @tr("steamShortcut" => "Rai Pal has been added to your Steam library. Restart Steam to see it.");
         color: Theme.status-success;
         wrap: word-wrap;
     }
 
-    if root.error != "" : Text {
-        text: root.error;
+    if SteamToolsState.shortcut-error != "" : Text {
+        text: SteamToolsState.shortcut-error;
         color: red;
         wrap: word-wrap;
     }
@@ -34,12 +34,12 @@ export component SteamShortcutPopup inherits Modal {
 
         Button {
             text: @tr("steamShortcut" => "Add Rai Pal to Steam library");
-            enabled: !root.running;
+            enabled: !SteamToolsState.shortcut-running;
             tint: Theme.primary;
             horizontal-stretch: 1;
 
             clicked => {
-                root.add-clicked();
+                DialogActions.add-steam-shortcut();
             }
         }
     }

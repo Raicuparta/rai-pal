@@ -137,11 +137,19 @@ fn request(
 
 	*pending.0.borrow_mut() = Some(PendingConfirmation { action, skip_id });
 
-	window.set_confirmation_text(confirmation_text.into());
-	window.set_confirmation_confirm_label(confirm_label.into());
-	window.set_confirmation_can_skip(can_skip);
-	window.set_confirmation_dont_ask_again(false);
-	window.set_confirmation_open(true);
+	window
+		.global::<crate::ConfirmationState>()
+		.set_text(confirmation_text.into());
+	window
+		.global::<crate::ConfirmationState>()
+		.set_confirm_label(confirm_label.into());
+	window
+		.global::<crate::ConfirmationState>()
+		.set_can_skip(can_skip);
+	window
+		.global::<crate::ConfirmationState>()
+		.set_dont_ask_again(false);
+	window.global::<crate::ConfirmationState>().set_open(true);
 }
 
 pub fn respond(
@@ -151,7 +159,7 @@ pub fn respond(
 	database: Arc<DbMutex>,
 	confirmed: bool,
 ) {
-	window.set_confirmation_open(false);
+	window.global::<crate::ConfirmationState>().set_open(false);
 
 	let Some(pending) = pending.0.borrow_mut().take() else {
 		return;
@@ -161,7 +169,11 @@ pub fn respond(
 		return;
 	}
 
-	if !pending.skip_id.is_empty() && window.get_confirmation_dont_ask_again() {
+	if !pending.skip_id.is_empty()
+		&& window
+			.global::<crate::ConfirmationState>()
+			.get_dont_ask_again()
+	{
 		let dialog_id = format!("skip-confirm-{}", pending.skip_id);
 		settings.borrow_mut().skip_confirm_dialogs.insert(dialog_id);
 		persist_settings(settings);

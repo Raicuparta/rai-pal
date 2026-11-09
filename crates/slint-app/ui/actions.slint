@@ -1,3 +1,65 @@
+import { AppColorScheme, AppTab } from "app-types.slint";
+
+export global AppActions {
+    callback reset-settings;
+    callback open-logs-folder;
+    callback install-update;
+    callback ignore-update;
+    callback log-in;
+    callback log-out;
+    callback dismiss-notification(id: int);
+    callback clear-downloads;
+    callback tab-changed(tab: AppTab);
+    callback language-changed(value: string);
+    callback color-scheme-changed(value: AppColorScheme);
+    callback hide-game-thumbnails-changed(hide: bool);
+}
+
+export global GamesActions {
+    callback request-game(index: int);
+    callback visible-range-changed(first: int, last: int);
+    callback select-game(index: int);
+    callback back;
+    callback search-changed(text: string);
+    callback sort-changed(index: int);
+    callback filter-toggled(group: string, value: string, checked: bool);
+    callback filter-lock-toggled(group: string, value: string);
+    callback filter-only(group: string, value: string);
+    callback filter-reset(group: string);
+    callback filters-reset;
+    callback filters-collapse-all;
+    callback filter-expanded-changed(group: string, expanded: bool);
+    callback refresh-game;
+    callback run-provider-action(value: string);
+    callback open-game-folder;
+    callback open-game-mods-folder;
+    callback open-game-data-folder;
+    callback open-wine-prefix-folder;
+    callback open-wine-binary-folder;
+    callback remove-game(confirmation-text: string, confirm-label: string);
+    callback request-debug-data;
+    callback request-mod-debug-data(mod-id: string);
+}
+
+export global DialogActions {
+    callback request-url-mod-sources;
+    callback set-url-mod-source-enabled(url: string, enabled: bool);
+    callback remove-url-mod-source(url: string);
+    callback add-url-mod-source(url: string);
+    callback confirm-url-mod-source;
+    callback cancel-url-mod-source;
+    callback reset-steam-cache;
+    callback add-steam-shortcut;
+    callback request-add-game;
+    callback add-game-closed;
+    callback select-game-executable;
+    callback select-game-directory;
+    callback cancel-game-scan;
+    callback confirm-game-directory;
+    callback remove-game-directory(path: string);
+    callback confirmation-response(confirmed: bool);
+}
+
 export global ModActions {
     callback request-install(mod-id: string, confirmation-text: string, confirm-label: string, skip-id: string);
     callback uninstall(mod-id: string);

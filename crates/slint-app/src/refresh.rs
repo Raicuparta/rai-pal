@@ -72,8 +72,8 @@ pub fn refresh_all(
 				return;
 			};
 
-			window.set_refreshing(false);
-			window.set_refresh_task_names("".into());
+			window.global::<crate::Refresh>().set_refreshing(false);
+			window.global::<crate::Refresh>().set_task_names("".into());
 			mods_tab::load(&window, &database);
 			start_query(
 				window.as_weak(),
@@ -120,8 +120,10 @@ fn publish_tasks(window: &slint::Weak<MainWindow>, tasks: &[String]) {
 			return;
 		};
 
-		window.set_refreshing(active);
-		window.set_refresh_task_names(names.into());
+		window.global::<crate::Refresh>().set_refreshing(active);
+		window
+			.global::<crate::Refresh>()
+			.set_task_names(names.into());
 	});
 }
 
@@ -145,7 +147,7 @@ pub(crate) fn refresh_selected_game(
 		return;
 	};
 
-	let mut row = window.get_selected_game_row();
+	let mut row = window.global::<crate::SelectedGameState>().get_row();
 	crate::model::apply_game_to_row(&mut row, &updated_game);
 	selected::show(window, &updated_game, row);
 	mods::refresh_mods(window, database, &updated_game);

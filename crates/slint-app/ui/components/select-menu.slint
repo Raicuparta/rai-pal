@@ -11,7 +11,6 @@ export component SelectMenu inherits Rectangle {
     in property <[SelectOption]> options;
     in-out property <int> selected-index: 0;
     in property <Icon> icon;
-    in property <bool> enabled: true;
 
     callback selected(index: int);
 
@@ -48,7 +47,6 @@ export component SelectMenu inherits Rectangle {
     }
 
     touch-area := TouchArea {
-        enabled: root.enabled;
         mouse-cursor: pointer;
 
         clicked => {

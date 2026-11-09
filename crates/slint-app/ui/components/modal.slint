@@ -9,11 +9,8 @@ export component Modal inherits Rectangle {
     in property <bool> open;
     in property <bool> close-on-click-outside: true;
     in property <bool> show-close-button: true;
-    in property <string> close-tooltip: @tr("debugData" => "Close");
     in property <Icon> header-action-icon: Icon.none;
     in property <string> header-action-tooltip: "";
-    in property <bool> header-action-enabled: true;
-    in property <length> content-spacing: Theme.space-md;
 
     callback closed;
     callback header-action-clicked;
@@ -36,7 +33,7 @@ export component Modal inherits Rectangle {
         }
     }
 
-    card := Rectangle {
+    Rectangle {
         x: (parent.width - self.width) / 2;
         y: (parent.height - self.height) / 2;
         width: min(root.big ? root.modal-max-width : max(header.preferred-width, body-layout.preferred-width) + root.modal-padding * 2, root.modal-max-width, root.width - root.modal-margin * 2);
@@ -71,7 +68,6 @@ export component Modal inherits Rectangle {
 
                 if root.header-action-icon != Icon.none : IconButton {
                     icon: root.header-action-icon;
-                    enabled: root.header-action-enabled;
                     tooltip: root.header-action-tooltip;
 
                     clicked => {
@@ -82,7 +78,7 @@ export component Modal inherits Rectangle {
                 if root.show-close-button : IconButton {
                     icon: Icon.close;
                     icon-size: Theme.font-xl;
-                    tooltip: root.close-tooltip;
+                    tooltip: @tr("debugData" => "Close");
 
                     clicked => {
                         root.closed();
@@ -98,7 +94,7 @@ export component Modal inherits Rectangle {
                     height: max(self.preferred-height, body-scroll.visible-height);
                     alignment: start;
                     cross-axis-alignment: stretch;
-                    spacing: root.content-spacing;
+                    spacing: Theme.space-md;
                     @children
                 }
             }

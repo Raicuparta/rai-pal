@@ -26,7 +26,7 @@ export component Button inherits BaseButton {
         root.long-loading = false;
     }
 
-    loading-timer := Timer {
+    Timer {
         interval: 500ms;
         running: root.state == ActionState.loading && !root.long-loading;
 

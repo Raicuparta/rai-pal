@@ -27,7 +27,6 @@ struct LoadedMods {
 	hidden: Vec<GameModData>,
 	incompatible: Vec<GameModData>,
 	potential: Vec<PotentialModData>,
-	has_any_mods: bool,
 }
 
 pub fn refresh_mods(window: &MainWindow, database: &Arc<DbMutex>, game: &Game) {
@@ -72,8 +71,12 @@ fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex
 				return;
 			};
 
-			if !window.get_game_selected()
-				|| window.get_selected_game_row().game_id.to_string() != game.game_id
+			if !window.global::<crate::SelectedGameState>().get_active()
+				|| window
+					.global::<crate::SelectedGameState>()
+					.get_row()
+					.game_id
+					.to_string() != game.game_id
 			{
 				return;
 			}
@@ -97,17 +100,21 @@ fn apply_mods(
 			return;
 		}
 	};
-
-	window.set_has_any_mods(loaded.has_any_mods);
-	window.set_has_installed_mods(!loaded.installed.is_empty());
-	window.set_has_available_mods(!loaded.available.is_empty());
-	window.set_has_hidden_mods(!loaded.hidden.is_empty());
-	window.set_has_incompatible_mods(!loaded.incompatible.is_empty());
-	window.set_game_mods_installed(Rc::new(slint::VecModel::from(loaded.installed)).into());
-	window.set_game_mods_available(Rc::new(slint::VecModel::from(loaded.available)).into());
-	window.set_game_mods_hidden(Rc::new(slint::VecModel::from(loaded.hidden)).into());
-	window.set_game_mods_incompatible(Rc::new(slint::VecModel::from(loaded.incompatible)).into());
-	window.set_potential_mods(Rc::new(slint::VecModel::from(loaded.potential)).into());
+	window
+		.global::<crate::SelectedGameState>()
+		.set_mods_installed(Rc::new(slint::VecModel::from(loaded.installed)).into());
+	window
+		.global::<crate::SelectedGameState>()
+		.set_mods_available(Rc::new(slint::VecModel::from(loaded.available)).into());
+	window
+		.global::<crate::SelectedGameState>()
+		.set_mods_hidden(Rc::new(slint::VecModel::from(loaded.hidden)).into());
+	window
+		.global::<crate::SelectedGameState>()
+		.set_mods_incompatible(Rc::new(slint::VecModel::from(loaded.incompatible)).into());
+	window
+		.global::<crate::SelectedGameState>()
+		.set_potential_mods(Rc::new(slint::VecModel::from(loaded.potential)).into());
 }
 
 pub fn install_mod(
@@ -411,15 +418,12 @@ fn load_mods(
 		.into_iter()
 		.map(|entry| row_data(entry, game))
 		.collect::<Vec<_>>();
-	let has_any_mods = !installed.is_empty() || !available.is_empty() || !incompatible.is_empty();
-
 	Ok(LoadedMods {
 		installed,
 		available,
 		hidden,
 		incompatible,
 		potential: list.potential.into_iter().map(potential_row_data).collect(),
-		has_any_mods,
 	})
 }
 
@@ -689,8 +693,12 @@ fn refresh_after_action(window: &slint::Weak<MainWindow>, database: &Arc<DbMutex
 			return;
 		};
 
-		if !window.get_game_selected()
-			|| window.get_selected_game_row().game_id.to_string() != game.game_id
+		if !window.global::<crate::SelectedGameState>().get_active()
+			|| window
+				.global::<crate::SelectedGameState>()
+				.get_row()
+				.game_id
+				.to_string() != game.game_id
 		{
 			return;
 		}

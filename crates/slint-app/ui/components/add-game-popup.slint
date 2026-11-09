@@ -2,6 +2,8 @@ import { Button } from "button.slint";
 import { AddGamePhase } from "../app-types.slint";
 import { Fonts, Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
+import { AddGameState } from "../state.slint";
+import { DialogActions } from "../actions.slint";
 
 component SavedDirectoryRow inherits Rectangle {
     in property <string> path;
@@ -39,22 +41,13 @@ component SavedDirectoryRow inherits Rectangle {
 }
 
 export component AddGamePopup inherits Modal {
-    in property <AddGamePhase> phase: idle;
-    in property <string> selected-path;
-    in property <int> scanned-dirs;
-    in property <int> executables-found;
-    in property <string> current-path;
-    in property <int> games-count;
-    in property <string> duration-text;
-    in property <[string]> directories;
-
-    callback select-executable;
-    callback select-directory;
-    callback cancel-scan;
-    callback confirm-directory;
-    callback remove-directory(path: string);
-
+    open: AddGameState.open;
     title: @tr("manualGames" => "Manually Added Games");
+
+    closed => {
+        AddGameState.open = false;
+        DialogActions.add-game-closed();
+    }
 
     Text {
         text: @tr("manualGames" => "Note: you can also add your non-Steam games to Steam, and they will still be detected by Rai Pal.");
@@ -63,7 +56,7 @@ export component AddGamePopup inherits Modal {
         wrap: word-wrap;
     }
 
-    if root.phase == AddGamePhase.idle : VerticalLayout {
+    if AddGameState.phase == AddGamePhase.idle : VerticalLayout {
         spacing: Theme.space-md;
 
         Button {
@@ -72,7 +65,7 @@ export component AddGamePopup inherits Modal {
             height: Theme.control-height;
 
             clicked => {
-                root.select-executable();
+                DialogActions.select-game-executable();
             }
         }
 
@@ -81,7 +74,7 @@ export component AddGamePopup inherits Modal {
             height: Theme.control-height;
 
             clicked => {
-                root.select-directory();
+                DialogActions.select-game-directory();
             }
         }
 
@@ -93,22 +86,22 @@ export component AddGamePopup inherits Modal {
         }
     }
 
-    if root.phase == AddGamePhase.scanning : VerticalLayout {
+    if AddGameState.phase == AddGamePhase.scanning : VerticalLayout {
         spacing: Theme.space-md;
         alignment: start;
 
         Text {
-            text: @tr("manualGames" => "Scanning {0}...", root.selected-path);
+            text: @tr("manualGames" => "Scanning {0}...", AddGameState.selected-path);
             font-weight: Theme.weight-bold;
             wrap: word-wrap;
         }
 
         Text {
-            text: @tr("manualGames" => "Scanned {0} directories, found {1} executables", root.scanned-dirs, root.executables-found);
+            text: @tr("manualGames" => "Scanned {0} directories, found {1} executables", AddGameState.scanned-dirs, AddGameState.executables-found);
         }
 
         Text {
-            text: root.current-path;
+            text: AddGameState.current-path;
             font-family: Fonts.monospace-family;
             font-size: Theme.font-sm;
             opacity: 0.7;
@@ -120,17 +113,17 @@ export component AddGamePopup inherits Modal {
             height: Theme.control-height;
 
             clicked => {
-                root.cancel-scan();
+                DialogActions.cancel-game-scan();
             }
         }
     }
 
-    if root.phase == AddGamePhase.confirming : VerticalLayout {
+    if AddGameState.phase == AddGamePhase.confirming : VerticalLayout {
         spacing: Theme.space-md;
         alignment: start;
 
         Text {
-            text: @tr("manualGames" => "Found {0} executables in {1} seconds. Add this folder to Rai Pal?", root.games-count, root.duration-text);
+            text: @tr("manualGames" => "Found {0} executables in {1} seconds. Add this folder to Rai Pal?", AddGameState.games-count, AddGameState.duration-text);
             wrap: word-wrap;
         }
 
@@ -142,7 +135,7 @@ export component AddGamePopup inherits Modal {
                 tint: Theme.primary;
 
                 clicked => {
-                    root.confirm-directory();
+                    DialogActions.confirm-game-directory();
                 }
             }
 
@@ -150,13 +143,13 @@ export component AddGamePopup inherits Modal {
                 text: @tr("manualGames" => "Cancel");
 
                 clicked => {
-                    root.cancel-scan();
+                    DialogActions.cancel-game-scan();
                 }
             }
         }
     }
 
-    if root.phase == AddGamePhase.idle && root.directories.length > 0 : VerticalLayout {
+    if AddGameState.phase == AddGamePhase.idle && AddGameState.manual-directories.length > 0 : VerticalLayout {
         spacing: Theme.space-sm;
 
         Rectangle {
@@ -171,11 +164,11 @@ export component AddGamePopup inherits Modal {
             wrap: word-wrap;
         }
 
-        for directory in root.directories : SavedDirectoryRow {
+        for directory in AddGameState.manual-directories : SavedDirectoryRow {
             path: directory;
 
             removed => {
-                root.remove-directory(directory);
+                DialogActions.remove-game-directory(directory);
             }
         }
     }
