@@ -5,6 +5,9 @@
 			"initialization_options": {
 				"check": {
 					"command": "clippy"
+				},
+				"cargo": {
+					"targetDir": "target/zed"
 				}
 			}
 		}

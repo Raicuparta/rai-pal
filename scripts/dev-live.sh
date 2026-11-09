@@ -8,4 +8,8 @@ export SLINT_LIVE_PREVIEW=1
 export SLINT_EMIT_DEBUG_INFO=1
 export SLINT_MCP_PORT="${SLINT_MCP_PORT:-9315}"
 
+# Use a build directory specific to this feature set so its incremental artifacts
+# are not invalidated by dev.sh, release builds, or rust-analyzer.
+export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$ROOT_DIR/target/dev-live}"
+
 exec cargo run -p rai-pal-slint --features slint/live-preview,slint/mcp "$@"
