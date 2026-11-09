@@ -2,8 +2,16 @@ import { Theme } from "../theme.slint";
 import { NavButton } from "nav-button.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
 import { PopupMenu, PopupMenuItem } from "menu.slint";
-import { UserState } from "../state.slint";
 import { AppActions } from "../actions.slint";
+
+export global UserState {
+    in property <bool> logged-in: false;
+    in property <bool> busy: false;
+    in property <string> name: "";
+    in property <string> initials: "";
+    in property <bool> has-avatar: false;
+    in property <image> avatar;
+}
 
 export component UserMenu inherits Rectangle {
     private property <string> menu-tooltip: @tr("userMenu" => "User menu");

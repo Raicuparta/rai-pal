@@ -1,5 +1,6 @@
 import { ScrollView } from "std-widgets.slint";
 import { ModActions } from "../actions.slint";
+import { ModsTabItemData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { ModsTabRow } from "mods-tab-row.slint";
 import { ModsTabFamilyRow } from "mods-tab-family-row.slint";
@@ -7,8 +8,11 @@ import { RefreshButton } from "refresh-button.slint";
 import { Sidebar, SidebarSection } from "sidebar.slint";
 import { SidebarAction } from "sidebar-action.slint";
 import { Icon } from "svg-icon.slint";
-import { ModsState } from "../state.slint";
 import { DialogActions } from "../actions.slint";
+
+export global ModsState {
+    in property <[ModsTabItemData]> items;
+}
 
 export component ModsPage inherits Rectangle {
     HorizontalLayout {

@@ -37,22 +37,16 @@ export {
     Fonts,
     ModActions,
 }
-export { AppState, UserState } from "state.slint";
-export {
-    Refresh,
-    GamesState,
-    SelectedGameState,
-    ModsState,
-    DownloadsState,
-    NotificationsState,
-    ThanksState,
-    DebugState,
-    AddGameState,
-    ModSourcesState,
-    SteamToolsState,
-    UpdateState,
-    ConfirmationState,
-} from "state.slint";
+export { AppState, Refresh, GamesState, SelectedGameState, ModSourcesState, SteamToolsState } from "state.slint";
+export { UserState } from "components/user-menu.slint";
+export { ModsState } from "components/mods-page.slint";
+export { DownloadsState } from "components/download-progress.slint";
+export { NotificationsState } from "components/notifications.slint";
+export { ThanksState } from "components/thanks-page.slint";
+export { DebugState } from "components/game-details-popup.slint";
+export { AddGameState } from "components/add-game-popup.slint";
+export { UpdateState } from "components/app-update-popup.slint";
+export { ConfirmationState } from "components/confirmation-popup.slint";
 export { AppActions, GamesActions, DialogActions } from "actions.slint";
 
 export component MainWindow inherits Window {

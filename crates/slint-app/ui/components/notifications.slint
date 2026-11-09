@@ -2,8 +2,11 @@ import { NotificationData, NotificationKind } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { IconButton } from "icon-button.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
-import { NotificationsState } from "../state.slint";
 import { AppActions } from "../actions.slint";
+
+export global NotificationsState {
+    in property <[NotificationData]> notifications;
+}
 
 component NotificationToast inherits Rectangle {
     in property <NotificationData> notification;

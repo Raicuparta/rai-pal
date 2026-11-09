@@ -1,12 +1,15 @@
 import { ScrollView } from "std-widgets.slint";
 import { Branding } from "../branding.slint";
 import { PatronData } from "../app-types.slint";
-import { ThanksState } from "../state.slint";
 import { Theme } from "../theme.slint";
 import { ExternalLink } from "external-link.slint";
 import { LabeledDivider } from "labeled-divider.slint";
 import { Sidebar } from "sidebar.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
+
+export global ThanksState {
+    in property <[PatronData]> patrons;
+}
 
 component PatronRow inherits Rectangle {
     in property <PatronData> patron;

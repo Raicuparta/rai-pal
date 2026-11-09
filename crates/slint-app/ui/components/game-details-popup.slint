@@ -2,7 +2,10 @@ import { TextEdit } from "std-widgets.slint";
 import { Fonts, Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
 import { Icon } from "svg-icon.slint";
-import { DebugState } from "../state.slint";
+
+export global DebugState {
+    in-out property <string> details-json: "";
+}
 
 export component GameDetailsPopup inherits Modal {
     open: DebugState.details-json != "";

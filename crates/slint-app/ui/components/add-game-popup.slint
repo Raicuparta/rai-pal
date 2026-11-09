@@ -2,8 +2,20 @@ import { Button } from "button.slint";
 import { AddGamePhase } from "../app-types.slint";
 import { Fonts, Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
-import { AddGameState } from "../state.slint";
 import { DialogActions } from "../actions.slint";
+
+export global AddGameState {
+    in-out property <bool> open: false;
+    in property <AddGamePhase> phase: idle;
+    in property <string> selected-path: "";
+    in property <int> scanned-dirs: 0;
+    in property <int> executables-found: 0;
+    in property <string> current-path: "";
+    in property <int> games-count: 0;
+    in property <string> duration-text: "";
+    in-out property <string> directory: "";
+    in property <[string]> manual-directories;
+}
 
 component SavedDirectoryRow inherits Rectangle {
     in property <string> path;

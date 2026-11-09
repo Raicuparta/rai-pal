@@ -1,9 +1,14 @@
 import { ProgressIndicator } from "std-widgets.slint";
+import { DownloadItemData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
 import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
-import { DownloadsState } from "../state.slint";
 import { AppActions } from "../actions.slint";
+
+export global DownloadsState {
+    in property <[DownloadItemData]> items;
+    in property <float> overall-progress: 0;
+}
 
 export component DownloadProgress inherits Rectangle {
     width: Theme.control-height + Theme.space-sm;

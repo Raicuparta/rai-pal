@@ -1,8 +1,14 @@
 import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
-import { UpdateState } from "../state.slint";
 import { AppActions } from "../actions.slint";
+
+export global UpdateState {
+    in-out property <bool> open: false;
+    in property <string> version: "";
+    in property <string> notes: "";
+    in property <bool> installing: false;
+}
 
 export component AppUpdatePopup inherits Modal {
     open: UpdateState.open;

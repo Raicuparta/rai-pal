@@ -1,14 +1,9 @@
 import {
-    AddGamePhase,
     AppColorScheme,
     AppTab,
-    DownloadItemData,
     FilterGroupData,
     GameModData,
     GameRowData,
-    ModsTabItemData,
-    NotificationData,
-    PatronData,
     PotentialModData,
     UrlModSourceData,
 } from "app-types.slint";
@@ -24,15 +19,6 @@ export global AppState {
     in property <string> detected-language-name: "";
     in-out property <bool> hide-game-thumbnails: false;
     in-out property <bool> drop-highlight: false;
-}
-
-export global UserState {
-    in property <bool> logged-in: false;
-    in property <bool> busy: false;
-    in property <string> name: "";
-    in property <string> initials: "";
-    in property <bool> has-avatar: false;
-    in property <image> avatar;
 }
 
 export global Refresh {
@@ -66,40 +52,6 @@ export global SelectedGameState {
     in property <[PotentialModData]> potential-mods;
 }
 
-export global ModsState {
-    in property <[ModsTabItemData]> items;
-}
-
-export global DownloadsState {
-    in property <[DownloadItemData]> items;
-    in property <float> overall-progress: 0;
-}
-
-export global NotificationsState {
-    in property <[NotificationData]> notifications;
-}
-
-export global ThanksState {
-    in property <[PatronData]> patrons;
-}
-
-export global DebugState {
-    in-out property <string> details-json: "";
-}
-
-export global AddGameState {
-    in-out property <bool> open: false;
-    in property <AddGamePhase> phase: idle;
-    in property <string> selected-path: "";
-    in property <int> scanned-dirs: 0;
-    in property <int> executables-found: 0;
-    in property <string> current-path: "";
-    in property <int> games-count: 0;
-    in property <string> duration-text: "";
-    in-out property <string> directory: "";
-    in property <[string]> manual-directories;
-}
-
 export global ModSourcesState {
     in-out property <bool> open: false;
     in property <UrlModSourceData> default-source;
@@ -126,19 +78,4 @@ export global SteamToolsState {
     in-out property <bool> shortcut-running: false;
     in-out property <bool> shortcut-success: false;
     in-out property <string> shortcut-error: "";
-}
-
-export global UpdateState {
-    in-out property <bool> open: false;
-    in property <string> version: "";
-    in property <string> notes: "";
-    in property <bool> installing: false;
-}
-
-export global ConfirmationState {
-    in-out property <bool> open: false;
-    in property <string> text: "";
-    in property <string> confirm-label: "";
-    in property <bool> can-skip: false;
-    in-out property <bool> dont-ask-again: false;
 }
