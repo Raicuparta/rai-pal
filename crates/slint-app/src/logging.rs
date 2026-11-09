@@ -16,7 +16,11 @@ struct Logger {
 
 impl log::Log for Logger {
 	fn enabled(&self, metadata: &Metadata) -> bool {
-		metadata.level() <= self.level
+		if metadata.level() > self.level {
+			return false;
+		}
+
+		metadata.level() <= LevelFilter::Info || metadata.target().starts_with("rai_pal")
 	}
 
 	fn log(&self, record: &Record) {
