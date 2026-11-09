@@ -1,6 +1,8 @@
 import { ActionKind } from "../action-state.slint";
 import { ScrollView } from "std-widgets.slint";
-import { ModActions } from "../actions.slint";
+import { DialogActions, ModActions } from "../actions.slint";
+import { UrlModSourcesPopup } from "url-mod-sources-popup.slint";
+import { ConfirmModSourcePopup } from "confirm-mod-source-popup.slint";
 import { ModsTabItemData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { ModsTabRow } from "mods-tab-row.slint";
@@ -15,7 +17,7 @@ export global ModsState {
 }
 
 export component ModsPage inherits Rectangle {
-    callback open-url-mod-sources-clicked;
+    private property <bool> url-mod-sources-open: false;
 
     HorizontalLayout {
         Sidebar {
@@ -29,7 +31,8 @@ export component ModsPage inherits Rectangle {
                     icon: Icon.mod-sources;
 
                     clicked => {
-                        root.open-url-mod-sources-clicked();
+                        root.url-mod-sources-open = true;
+                        DialogActions.request-url-mod-sources();
                     }
                 }
 
@@ -70,5 +73,19 @@ export component ModsPage inherits Rectangle {
                 }
             }
         }
+    }
+    UrlModSourcesPopup {
+        x: -root.absolute-position.x;
+        y: -root.absolute-position.y;
+        open: root.url-mod-sources-open;
+
+        closed => {
+            root.url-mod-sources-open = false;
+        }
+    }
+
+    ConfirmModSourcePopup {
+        x: -root.absolute-position.x;
+        y: -root.absolute-position.y;
     }
 }

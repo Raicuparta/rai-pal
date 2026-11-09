@@ -1,5 +1,6 @@
 import { TextEdit } from "std-widgets.slint";
 import { Fonts, Theme } from "../theme.slint";
+import { IconButton } from "icon-button.slint";
 import { Modal } from "modal.slint";
 import { Icon } from "svg-icon.slint";
 
@@ -7,19 +8,14 @@ export global DebugState {
     in-out property <string> details-json: "";
 }
 
-export component GameDetailsPopup inherits Modal {
-    open: DebugState.details-json != "";
-    title: @tr("debugData" => "Debug data");
-    big: true;
-    header-action-icon: root.copied ? Icon.copied : Icon.copy;
-    header-action-tooltip: @tr("debugData" => "Copy debug data");
+component DebugDataView inherits VerticalLayout {
+    in property <string> text;
 
     private property <bool> copied: false;
     private property <length> saved-scroll-y: 0;
 
-    closed => {
-        DebugState.details-json = "";
-    }
+    vertical-stretch: 1;
+    spacing: Theme.space-xs;
 
     Timer {
         interval: 2s;
@@ -30,22 +26,45 @@ export component GameDetailsPopup inherits Modal {
         }
     }
 
-    header-action-clicked => {
-        root.saved-scroll-y = debug-text.content-y;
-        debug-text.select-all();
-        debug-text.copy();
-        debug-text.clear-selection();
-        debug-text.content-y = root.saved-scroll-y;
-        root.copied = true;
+    HorizontalLayout {
+        alignment: end;
+
+        IconButton {
+            icon: root.copied ? Icon.copied : Icon.copy;
+            tooltip: @tr("debugData" => "Copy debug data");
+
+            clicked => {
+                root.saved-scroll-y = debug-text.content-y;
+                debug-text.select-all();
+                debug-text.copy();
+                debug-text.clear-selection();
+                debug-text.content-y = root.saved-scroll-y;
+                root.copied = true;
+            }
+        }
     }
 
     debug-text := TextEdit {
-        text: DebugState.details-json;
+        text: root.text;
         read-only: true;
         wrap: word-wrap;
         font-family: Fonts.monospace-family;
         font-size: Theme.font-sm;
         width: 100%;
-        height: 100%;
+        vertical-stretch: 1;
+    }
+}
+
+export component GameDetailsPopup inherits Modal {
+    open: DebugState.details-json != "";
+    title: @tr("debugData" => "Debug data");
+    big: true;
+
+    closed => {
+        DebugState.details-json = "";
+    }
+
+    DebugDataView {
+        text: DebugState.details-json;
     }
 }

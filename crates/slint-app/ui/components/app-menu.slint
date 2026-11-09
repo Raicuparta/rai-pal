@@ -6,12 +6,15 @@ import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
 import { SelectMenu, SelectOption } from "select-menu.slint";
 import { AppSettings } from "../settings.slint";
 import { AppActions } from "../actions.slint";
+import { SteamCachePopup, SteamCacheState } from "steam-cache-popup.slint";
+import { SteamShortcutPopup, SteamShortcutState } from "steam-shortcut-popup.slint";
+import { AboutPopup } from "about-popup.slint";
+import { ActionState } from "../action-state.slint";
 
 export component AppMenu inherits Rectangle {
-    callback about-clicked;
-    callback steam-cache-clicked;
-    callback steam-shortcut-clicked;
-
+    private property <bool> about-open: false;
+    private property <bool> steam-cache-open: false;
+    private property <bool> steam-shortcut-open: false;
     private property <string> menu-tooltip: @tr("appDropdownMenu" => "App menu");
     private property <bool> has-auto-language: AppSettings.detected-language-name != "";
     private property <[SelectOption]> language-options: root.has-auto-language ? [
@@ -104,7 +107,9 @@ export component AppMenu inherits Rectangle {
                 icon: Icon.steam;
 
                 clicked => {
-                    root.steam-shortcut-clicked();
+                    SteamShortcutState.state = ActionState.idle;
+                    SteamShortcutState.error = "";
+                    root.steam-shortcut-open = true;
                     menu.close();
                 }
             }
@@ -113,7 +118,9 @@ export component AppMenu inherits Rectangle {
                 text: @tr("steamCache" => "Reset Steam cache");
 
                 clicked => {
-                    root.steam-cache-clicked();
+                    SteamCacheState.state = ActionState.idle;
+                    SteamCacheState.error = "";
+                    root.steam-cache-open = true;
                     menu.close();
                 }
             }
@@ -206,7 +213,7 @@ export component AppMenu inherits Rectangle {
                 icon: Icon.info;
 
                 clicked => {
-                    root.about-clicked();
+                    root.about-open = true;
                     menu.close();
                 }
             }
@@ -215,5 +222,35 @@ export component AppMenu inherits Rectangle {
 
     Tooltip {
         text: @markdown("\{root.menu-tooltip}");
+    }
+
+    AboutPopup {
+        x: -root.absolute-position.x;
+        y: -root.absolute-position.y;
+        open: root.about-open;
+
+        closed => {
+            root.about-open = false;
+        }
+    }
+
+    SteamCachePopup {
+        x: -root.absolute-position.x;
+        y: -root.absolute-position.y;
+        open: root.steam-cache-open;
+
+        closed => {
+            root.steam-cache-open = false;
+        }
+    }
+
+    SteamShortcutPopup {
+        x: -root.absolute-position.x;
+        y: -root.absolute-position.y;
+        open: root.steam-shortcut-open;
+
+        closed => {
+            root.steam-shortcut-open = false;
+        }
     }
 }

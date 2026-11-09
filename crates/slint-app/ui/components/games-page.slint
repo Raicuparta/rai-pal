@@ -2,14 +2,35 @@ import { ListView } from "std-widgets.slint";
 import { Theme } from "../theme.slint";
 import { GameRow } from "game-row.slint";
 import { MessageState } from "message-state.slint";
-import { GameRowData } from "../app-types.slint";
+import { GameRowData, FilterGroupData } from "../app-types.slint";
 import { AppSettings } from "../settings.slint";
-import { Refresh } from "refresh-button.slint";
+import { Refresh, RefreshButton } from "refresh-button.slint";
 import { GamesActions } from "../actions.slint";
+import { AddGamePopup } from "add-game-popup.slint";
+import { IconButton } from "icon-button.slint";
+import { LabeledDivider } from "labeled-divider.slint";
+import { ResetButton } from "reset-button.slint";
+import { FilterGroup } from "filter-group.slint";
+import { Sidebar, SidebarSection } from "sidebar.slint";
+import { SidebarAction } from "sidebar-action.slint";
+import { RowDivider } from "row-divider.slint";
+import { SearchInput } from "search-input.slint";
+import { SortMenu } from "sort-menu.slint";
+import { AddGameState } from "add-game-popup.slint";
+import { DialogActions, GamesActions } from "../actions.slint";
+import { Icon } from "svg-icon.slint";
 
 export global GamesList {
     in property <[GameRowData]> rows;
     in property <int> total-count: 0;
+}
+
+export global GamesQuery {
+    in-out property <string> search-text: "";
+    in-out property <int> sort-index: 0;
+    in property <[FilterGroupData]> filter-groups;
+    in property <bool> filters-have-changes: false;
+    in property <bool> filters-have-expanded: false;
 }
 
 export component GamesPage inherits Rectangle {
@@ -54,29 +75,116 @@ export component GamesPage inherits Rectangle {
         root.notify-visible-range();
     }
 
-    if GamesList.rows.length == 0: VerticalLayout {
-        padding: Theme.space-xl;
-        alignment: center;
+    HorizontalLayout {
+        Sidebar {
 
-        MessageState {
-            message: root.empty-message();
-        }
-    }
+            SidebarSection {
+                spacing: Theme.space-sm;
 
-    game-list := ListView {
-        visible: GamesList.rows.length > 0;
-        for item[index] in GamesList.rows: GameRow {
-            game-row: item;
-            row-index: index;
-            show-thumbnail: !AppSettings.hide-game-thumbnails;
-
-            selected(index) => {
-                GamesActions.select-game(index);
+                RefreshButton { }
             }
 
-            init => {
-                GamesActions.request-game(index);
+            SidebarAction {
+                text: @tr("manualGames" => "Add games");
+                clicked => {
+                    AddGameState.open = true;
+                    DialogActions.request-add-game();
+                }
+                icon: Icon.games;
+            }
+
+            RowDivider { }
+
+            SidebarSection {
+                spacing: Theme.space-sm;
+
+                SearchInput {
+                    text <=> GamesQuery.search-text;
+                    placeholder-text: @tr("filterMenu" => "Search...");
+
+                    edited(text) => {
+                        GamesActions.search-changed(text);
+                    }
+                }
+
+                SortMenu {
+                    sort-index <=> GamesQuery.sort-index;
+
+                    sort-changed(index) => {
+                        GamesActions.sort-changed(index);
+                    }
+                }
+            }
+
+            VerticalLayout {
+                HorizontalLayout {
+                    vertical-stretch: 0;
+                    padding-left: Theme.space-sm;
+                    padding-right: Theme.space-lg;
+                    padding-bottom: Theme.space-xs;
+                    spacing: Theme.space-xs;
+                    cross-axis-alignment: center;
+
+                    IconButton {
+                        icon: Icon.collapse-all;
+                        tooltip: @tr("filterMenu" => "Collapse all filters");
+                        enabled: GamesQuery.filters-have-expanded;
+
+                        clicked => {
+                            GamesActions.filters-collapse-all();
+                        }
+                    }
+
+                    LabeledDivider {
+                        label: @tr("filterMenu" => "Filters");
+                        horizontal-stretch: 1;
+                    }
+
+                    ResetButton {
+                        tooltip: @tr("filterMenu" => "Reset all filters");
+                        enabled: GamesQuery.filters-have-changes;
+
+                        clicked => {
+                            GamesActions.filters-reset();
+                        }
+                    }
+                }
+
+                for group in GamesQuery.filter-groups: FilterGroup {
+                    group: group;
+                }
             }
         }
+
+        Rectangle {
+            if GamesList.rows.length == 0: VerticalLayout {
+                padding: Theme.space-xl;
+                alignment: center;
+
+                MessageState {
+                    message: root.empty-message();
+                }
+            }
+
+            game-list := ListView {
+                visible: GamesList.rows.length > 0;
+                for item[index] in GamesList.rows: GameRow {
+                    game-row: item;
+                    row-index: index;
+                    show-thumbnail: !AppSettings.hide-game-thumbnails;
+
+                    selected(index) => {
+                        GamesActions.select-game(index);
+                    }
+
+                    init => {
+                        GamesActions.request-game(index);
+                    }
+                }
+            }
+        }
+
     }
+
+    AddGamePopup { }
 }

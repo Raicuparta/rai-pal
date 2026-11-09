@@ -4,6 +4,7 @@ import { ModActions } from "../actions.slint";
 import { Theme } from "../theme.slint";
 import { ActionButton } from "action-button.slint";
 import { GameRow } from "game-row.slint";
+import { GameSidebar } from "game-sidebar.slint";
 import { ModsSection } from "mods-section.slint";
 import { PotentialModsSection } from "potential-mods-section.slint";
 import { Icon } from "svg-icon.slint";
@@ -18,9 +19,11 @@ export global GameMods {
     in property <[PotentialModData]> potential;
 }
 
-export component GameDetailsPage inherits Rectangle {
+export component GameDetailsPage inherits HorizontalLayout {
     in property <GameRowData> game-row;
     in property <bool> show-thumbnail: true;
+
+    GameSidebar { }
 
     ScrollView {
         VerticalLayout {

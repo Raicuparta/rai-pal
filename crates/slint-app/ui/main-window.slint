@@ -1,31 +1,28 @@
 import { Palette } from "std-widgets.slint";
 import { ActionState, ActionStates } from "action-state.slint";
-import { AddGamePhase, AppColorScheme, AppTab, GameRowData } from "app-types.slint";
+import {
+    AddGamePhase,
+    AppColorScheme,
+    AppTab,
+    GameRowData,
+} from "app-types.slint";
 import { Fonts } from "theme.slint";
 import { ModActions } from "actions.slint";
-import { GamesSidebar } from "components/games-sidebar.slint";
-import { GameSidebar } from "components/game-sidebar.slint";
 import { GamesPage } from "components/games-page.slint";
 import { GameDetailsPage } from "components/game-details-page.slint";
 import { NavTab } from "components/nav-tab.slint";
 import { AppMenu } from "components/app-menu.slint";
 import { UserMenu } from "components/user-menu.slint";
 import { DownloadProgress } from "components/download-progress.slint";
-import { AboutPopup } from "components/about-popup.slint";
 import { ModsPage } from "components/mods-page.slint";
 import { ThanksPage } from "components/thanks-page.slint";
-import { UrlModSourcesPopup } from "components/url-mod-sources-popup.slint";
-import { ConfirmModSourcePopup } from "components/confirm-mod-source-popup.slint";
-import { SteamCachePopup, SteamCacheState } from "components/steam-cache-popup.slint";
-import { SteamShortcutPopup, SteamShortcutState } from "components/steam-shortcut-popup.slint";
-import { AddGamePopup } from "components/add-game-popup.slint";
 import { AppUpdatePopup } from "components/app-update-popup.slint";
 import { ConfirmationPopup } from "components/confirmation-popup.slint";
 import { NotificationsOverlay } from "components/notifications.slint";
 import { GameDetailsPopup } from "components/game-details-popup.slint";
-import { AddGameState } from "components/add-game-popup.slint";
 import { AppSettings } from "settings.slint";
-import { AppActions, DialogActions } from "actions.slint";
+import { Viewport } from "components/modal.slint";
+import { AppActions } from "actions.slint";
 import { Theme } from "theme.slint";
 import { Icon } from "components/svg-icon.slint";
 
@@ -39,10 +36,10 @@ export {
     ModActions,
 }
 export { AppInfo } from "components/about-popup.slint";
+export { Viewport } from "components/modal.slint";
 export { AppSettings } from "settings.slint";
 export { Refresh } from "components/refresh-button.slint";
-export { GamesList } from "components/games-page.slint";
-export { GamesQuery } from "components/games-sidebar.slint";
+export { GamesList, GamesQuery } from "components/games-page.slint";
 export { GameSidebarState } from "components/game-sidebar.slint";
 export { GameMods } from "components/game-details-page.slint";
 export { UserState } from "components/user-menu.slint";
@@ -53,7 +50,9 @@ export { ThanksState } from "components/thanks-page.slint";
 export { DebugState } from "components/game-details-popup.slint";
 export { AddGameState } from "components/add-game-popup.slint";
 export { ModSourcesState } from "components/url-mod-sources-popup.slint";
-export { ConfirmModSourceState } from "components/confirm-mod-source-popup.slint";
+export {
+    ConfirmModSourceState,
+} from "components/confirm-mod-source-popup.slint";
 export { SteamCacheState } from "components/steam-cache-popup.slint";
 export { SteamShortcutState } from "components/steam-shortcut-popup.slint";
 export { UpdateState } from "components/app-update-popup.slint";
@@ -75,10 +74,6 @@ export component MainWindow inherits Window {
     background: Theme.background;
 
     private property <length> content-max-width: 1140px;
-    private property <bool> about-open: false;
-    private property <bool> url-mod-sources-open: false;
-    private property <bool> steam-cache-open: false;
-    private property <bool> steam-shortcut-open: false;
     private property <AppColorScheme> color-scheme: AppSettings.selected-color-scheme;
 
     function select-tab(tab: AppTab) {
@@ -96,20 +91,28 @@ export component MainWindow inherits Window {
         }
     }
 
-    function open-steam-cache() {
-        SteamCacheState.state = ActionState.idle;
-        SteamCacheState.error = "";
-        root.steam-cache-open = true;
-    }
-
-    function open-steam-shortcut() {
-        SteamShortcutState.state = ActionState.idle;
-        SteamShortcutState.error = "";
-        root.steam-shortcut-open = true;
-    }
-
     init => {
+        Viewport.width = root.width;
+        Viewport.height = root.height;
         root.apply-color-scheme();
+    }
+
+    changed width => {
+        Viewport.width = root.width;
+    }
+
+    changed height => {
+        Viewport.height = root.height;
+    }
+
+    Timer {
+        interval: 100ms;
+        running: Viewport.width == 0 || Viewport.height == 0;
+
+        triggered => {
+            Viewport.width = root.width;
+            Viewport.height = root.height;
+        }
     }
 
     changed color-scheme => {
@@ -177,19 +180,7 @@ export component MainWindow inherits Window {
 
                     UserMenu { }
 
-                    AppMenu {
-                        about-clicked => {
-                            root.about-open = true;
-                        }
-
-                        steam-cache-clicked => {
-                            root.open-steam-cache();
-                        }
-
-                        steam-shortcut-clicked => {
-                            root.open-steam-shortcut();
-                        }
-                    }
+                    AppMenu { }
                 }
             }
         }
@@ -200,28 +191,14 @@ export component MainWindow inherits Window {
                 width: min(parent.width, root.content-max-width);
                 x: (parent.width - self.width) / 2;
 
-                HorizontalLayout {
+                GameDetailsPage {
                     visible: root.game-selected;
-
-                    GameSidebar { }
-
-                    GameDetailsPage {
-                        game-row: root.selected-game-row;
-                        show-thumbnail: !AppSettings.hide-game-thumbnails;
-                    }
+                    game-row: root.selected-game-row;
+                    show-thumbnail: !AppSettings.hide-game-thumbnails;
                 }
 
-                HorizontalLayout {
+                GamesPage {
                     visible: !root.game-selected;
-
-                    GamesSidebar {
-                        add-game-clicked => {
-                            AddGameState.open = true;
-                            DialogActions.request-add-game();
-                        }
-                    }
-
-                    GamesPage { }
                 }
             }
 
@@ -230,12 +207,7 @@ export component MainWindow inherits Window {
                 width: min(parent.width, root.content-max-width);
                 x: (parent.width - self.width) / 2;
 
-                ModsPage {
-                    open-url-mod-sources-clicked => {
-                        root.url-mod-sources-open = true;
-                        DialogActions.request-url-mod-sources();
-                    }
-                }
+                ModsPage { }
             }
 
             Rectangle {
@@ -260,41 +232,5 @@ export component MainWindow inherits Window {
 
     GameDetailsPopup { }
 
-    AboutPopup {
-        open: root.about-open;
-
-        closed => {
-            root.about-open = false;
-        }
-    }
-
-    SteamShortcutPopup {
-        open: root.steam-shortcut-open;
-
-        closed => {
-            root.steam-shortcut-open = false;
-        }
-    }
-
     AppUpdatePopup { }
-
-    AddGamePopup { }
-
-    SteamCachePopup {
-        open: root.steam-cache-open;
-
-        closed => {
-            root.steam-cache-open = false;
-        }
-    }
-
-    UrlModSourcesPopup {
-        open: root.url-mod-sources-open;
-
-        closed => {
-            root.url-mod-sources-open = false;
-        }
-    }
-
-    ConfirmModSourcePopup { }
 }
