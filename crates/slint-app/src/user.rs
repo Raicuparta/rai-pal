@@ -17,11 +17,13 @@ pub fn log_in(window: slint::Weak<MainWindow>) {
 		return;
 	};
 
-	if handle.global::<crate::UserState>().get_busy() {
+	if handle.global::<crate::UserState>().get_state() == crate::ActionState::Loading {
 		return;
 	}
 
-	handle.global::<crate::UserState>().set_busy(true);
+	handle
+		.global::<crate::UserState>()
+		.set_state(crate::ActionState::Loading);
 	drop(handle);
 
 	thread::spawn(move || {
@@ -43,11 +45,13 @@ pub fn log_out(window: slint::Weak<MainWindow>) {
 		return;
 	};
 
-	if handle.global::<crate::UserState>().get_busy() {
+	if handle.global::<crate::UserState>().get_state() == crate::ActionState::Loading {
 		return;
 	}
 
-	handle.global::<crate::UserState>().set_busy(true);
+	handle
+		.global::<crate::UserState>()
+		.set_state(crate::ActionState::Loading);
 	drop(handle);
 
 	thread::spawn(move || {
@@ -74,7 +78,9 @@ fn apply_result(window: slint::Weak<MainWindow>, result: Result<AuthState, Strin
 			return;
 		};
 
-		window.global::<crate::UserState>().set_busy(false);
+		window
+			.global::<crate::UserState>()
+			.set_state(crate::ActionState::Idle);
 
 		match result {
 			Ok(state) => apply_state(&window, &state),

@@ -1,45 +1,53 @@
 import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
-import { ModSourcesState } from "../state.slint";
+import { ActionState } from "../action-state.slint";
 import { DialogActions } from "../actions.slint";
 
+export global ConfirmModSourceState {
+    in-out property <bool> open: false;
+    in property <string> url: "";
+    in property <ActionState> state: idle;
+    in property <string> error: "";
+    in property <[string]> mods;
+}
+
 export component ConfirmModSourcePopup inherits Modal {
-    open: ModSourcesState.confirm-open;
+    open: ConfirmModSourceState.open;
     title: @tr("urlModSources" => "Confirm Mod Source");
 
     closed => {
-        ModSourcesState.confirm-open = false;
+        ConfirmModSourceState.open = false;
         DialogActions.cancel-url-mod-source();
     }
 
     Text {
-        text: ModSourcesState.confirm-url;
+        text: ConfirmModSourceState.url;
         font-size: Theme.font-sm;
         opacity: 0.7;
         wrap: word-wrap;
     }
 
-    if ModSourcesState.confirm-loading : Text {
+    if ConfirmModSourceState.state == ActionState.loading && ConfirmModSourceState.mods.length == 0 : Text {
         text: @tr("urlModSources" => "Loading mods...");
     }
 
-    if ModSourcesState.confirm-error != "" : Text {
-        text: ModSourcesState.confirm-error;
+    if ConfirmModSourceState.error != "" : Text {
+        text: ConfirmModSourceState.error;
         color: red;
         font-size: Theme.font-sm;
         wrap: word-wrap;
     }
 
-    if !ModSourcesState.confirm-loading && ModSourcesState.confirm-error == "" : VerticalLayout {
+    if (ConfirmModSourceState.state != ActionState.loading || ConfirmModSourceState.mods.length > 0) && ConfirmModSourceState.error == "" : VerticalLayout {
         spacing: Theme.space-2xs;
         alignment: start;
 
         Text {
-            text: @tr("urlModSources" => "{0} mods found in this source", ModSourcesState.confirm-mods.length);
+            text: @tr("urlModSources" => "{0} mods found in this source", ConfirmModSourceState.mods.length);
         }
 
-        for mod-title in ModSourcesState.confirm-mods : Text {
+        for mod-title in ConfirmModSourceState.mods : Text {
             text: mod-title;
             font-size: Theme.font-sm;
             wrap: word-wrap;
@@ -52,7 +60,7 @@ export component ConfirmModSourcePopup inherits Modal {
 
         Button {
             text: @tr("urlModSources" => "Cancel");
-            enabled: !ModSourcesState.confirm-saving;
+            enabled: ConfirmModSourceState.state != ActionState.loading || ConfirmModSourceState.mods.length == 0;
 
             clicked => {
                 root.closed();
@@ -61,7 +69,7 @@ export component ConfirmModSourcePopup inherits Modal {
 
         Button {
             text: @tr("urlModSources" => "Add Source");
-            enabled: !ModSourcesState.confirm-loading && ModSourcesState.confirm-error == "" && !ModSourcesState.confirm-saving;
+            enabled: ConfirmModSourceState.state != ActionState.loading && ConfirmModSourceState.error == "";
 
             clicked => {
                 DialogActions.confirm-url-mod-source();

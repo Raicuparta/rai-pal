@@ -24,8 +24,8 @@ use slint::{
 };
 
 use crate::{
-	ActionStates, AppColorScheme, AppTab, Fonts, MainWindow, ModActions, action_state, actions,
-	analytics, confirmation, deep_links, downloads,
+	ActionKind, ActionStates, AppColorScheme, AppTab, Fonts, MainWindow, ModActions, action_state,
+	actions, analytics, confirmation, deep_links, downloads,
 	fetch::spawn_fetchers,
 	filters::{
 		apply_filter_action, build_groups, load_mod_families, reset_all_filters, reset_filter_group,
@@ -111,9 +111,9 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	apply_window_state(&window, settings.borrow().window_state);
 	window
 		.global::<ActionStates>()
-		.on_lookup(|id| action_state::lookup(id.as_str()));
+		.on_lookup(action_state::lookup);
 	i18n::apply_translation(initial_locale);
-	window.global::<crate::AppState>().set_selected_language(
+	window.global::<crate::AppSettings>().set_selected_language(
 		settings
 			.borrow()
 			.override_language
@@ -122,7 +122,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			.into(),
 	);
 	window
-		.global::<crate::AppState>()
+		.global::<crate::AppSettings>()
 		.set_detected_language_name(
 			detected_locale
 				.map(i18n::native_name)
@@ -130,45 +130,43 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				.into(),
 		);
 	window
-		.global::<crate::AppState>()
+		.global::<crate::AppSettings>()
 		.set_selected_color_scheme(app_color_scheme(settings.borrow().color_scheme));
 	window
-		.global::<crate::AppState>()
+		.global::<crate::AppSettings>()
 		.set_hide_game_thumbnails(settings.borrow().hide_game_thumbnails);
 	mods_tab::load(&window, &database);
 	window
-		.global::<crate::AppState>()
-		.set_app_version(env!("CARGO_PKG_VERSION").into());
+		.global::<crate::AppInfo>()
+		.set_version(env!("CARGO_PKG_VERSION").into());
 	user::load(window.as_weak());
 	if initial_tab == AppTab::Thanks {
 		thanks::load(window.as_weak());
 	}
 	window
-		.global::<crate::GamesState>()
+		.global::<crate::GamesQuery>()
 		.set_search_text(initial_query.search.clone().into());
-	window.global::<crate::GamesState>().set_total_count(
+	window.global::<crate::GamesList>().set_total_count(
 		i32::try_from(games_total_count).unwrap_or_else(|err| {
 			log::warn!("Games count exceeds i32: {err}");
 			i32::MAX
 		}),
 	);
 	window
-		.global::<crate::GamesState>()
+		.global::<crate::GamesQuery>()
 		.set_sort_index(sort_option_index(
 			initial_query.sort_by,
 			initial_query.sort_descending,
 		));
+	window.set_current_tab(initial_tab);
 	window
-		.global::<crate::AppState>()
-		.set_current_tab(initial_tab);
-	window
-		.global::<crate::GamesState>()
+		.global::<crate::GamesQuery>()
 		.set_filters_have_expanded(initial_groups.iter().any(|group| group.expanded));
 	window
-		.global::<crate::GamesState>()
+		.global::<crate::GamesQuery>()
 		.set_filter_groups(Rc::new(slint::VecModel::from(initial_groups)).into());
 	window
-		.global::<crate::GamesState>()
+		.global::<crate::GamesQuery>()
 		.set_filters_have_changes(initial_have_changes);
 
 	let renderer_name = match window.window().set_rendering_notifier(|_, _| {}) {
@@ -180,11 +178,11 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		}
 	};
 	window
-		.global::<crate::AppState>()
-		.set_renderer_name(renderer_name.into());
+		.global::<crate::AppInfo>()
+		.set_renderer(renderer_name.into());
 	window
-		.global::<crate::AppState>()
-		.set_platform_name(platform_name().into());
+		.global::<crate::AppInfo>()
+		.set_platform(platform_name().into());
 	window
 		.global::<Fonts>()
 		.set_monospace_family(monospace_font_family().into());
@@ -203,7 +201,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				return;
 			};
 
-			let rows = window.global::<crate::GamesState>().get_rows();
+			let rows = window.global::<crate::GamesList>().get_rows();
 			enqueue_index(&ui_scheduler, &rows, index.max(0) as usize);
 		});
 
@@ -220,7 +218,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				return;
 			};
 
-			let rows = window.global::<crate::GamesState>().get_rows();
+			let rows = window.global::<crate::GamesList>().get_rows();
 			schedule_visible_range(&ui_scheduler, &rows, first.max(0) as usize, last as usize);
 		});
 
@@ -320,17 +318,17 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		.on_cancel_url_mod_source(move || {
 			if let Some(window) = ui_window.upgrade() {
 				window
-					.global::<crate::ModSourcesState>()
-					.set_confirm_loading(false);
+					.global::<crate::ConfirmModSourceState>()
+					.set_state(crate::ActionState::Success);
 				window
-					.global::<crate::ModSourcesState>()
-					.set_confirm_error("".into());
+					.global::<crate::ConfirmModSourceState>()
+					.set_error("".into());
 				window
-					.global::<crate::ModSourcesState>()
-					.set_confirm_mods(Default::default());
+					.global::<crate::ConfirmModSourceState>()
+					.set_mods(Default::default());
 				window
-					.global::<crate::ModSourcesState>()
-					.set_confirm_saving(false);
+					.global::<crate::ConfirmModSourceState>()
+					.set_state(crate::ActionState::Idle);
 			}
 		});
 
@@ -343,9 +341,8 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		.global::<crate::DialogActions>()
 		.on_reset_steam_cache(move || {
 			if let Some(window) = ui_window.upgrade()
-				&& !window
-					.global::<crate::SteamToolsState>()
-					.get_cache_running()
+				&& window.global::<crate::SteamCacheState>().get_state()
+					!= crate::ActionState::Loading
 			{
 				tools::reset_steam_cache(
 					ui_window.clone(),
@@ -362,9 +359,8 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		.global::<crate::DialogActions>()
 		.on_add_steam_shortcut(move || {
 			if let Some(window) = ui_window.upgrade()
-				&& !window
-					.global::<crate::SteamToolsState>()
-					.get_shortcut_running()
+				&& window.global::<crate::SteamShortcutState>().get_state()
+					!= crate::ActionState::Loading
 			{
 				tools::add_steam_shortcut(ui_window.clone());
 			}
@@ -374,7 +370,10 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	window
 		.global::<crate::AppActions>()
 		.on_open_logs_folder(move || {
-			actions::open_logs_folder(ui_window.clone(), "open-logs-folder".to_string());
+			actions::open_logs_folder(
+				ui_window.clone(),
+				action_state::key(ActionKind::OpenLogsFolder, ""),
+			);
 		});
 
 	let ui_window = window_weak.clone();
@@ -399,21 +398,19 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			i18n::apply_translation(locale);
 
 			window
-				.global::<crate::AppState>()
+				.global::<crate::AppSettings>()
 				.set_selected_language("".into());
 			window
-				.global::<crate::AppState>()
+				.global::<crate::AppSettings>()
 				.set_selected_color_scheme(AppColorScheme::Auto);
 			window
-				.global::<crate::AppState>()
+				.global::<crate::AppSettings>()
 				.set_hide_game_thumbnails(false);
 			window
-				.global::<crate::GamesState>()
+				.global::<crate::GamesQuery>()
 				.set_search_text("".into());
-			window.global::<crate::GamesState>().set_sort_index(0);
-			window
-				.global::<crate::AppState>()
-				.set_current_tab(AppTab::Games);
+			window.global::<crate::GamesQuery>().set_sort_index(0);
+			window.set_current_tab(AppTab::Games);
 			ui_scheduler.set_thumbnails_enabled(true);
 
 			let groups = build_groups(
@@ -422,13 +419,13 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				&ui_settings.borrow().expanded_filters,
 			);
 			window
-				.global::<crate::GamesState>()
+				.global::<crate::GamesQuery>()
 				.set_filters_have_changes(groups.iter().any(|group| group.has_changes));
 			window
-				.global::<crate::GamesState>()
+				.global::<crate::GamesQuery>()
 				.set_filters_have_expanded(groups.iter().any(|group| group.expanded));
 			window
-				.global::<crate::GamesState>()
+				.global::<crate::GamesQuery>()
 				.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
 
 			start_query(
@@ -448,9 +445,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				return;
 			};
 
-			window
-				.global::<crate::AppState>()
-				.set_current_tab(AppTab::Games);
+			window.set_current_tab(AppTab::Games);
 			window
 				.global::<crate::AppActions>()
 				.invoke_tab_changed(AppTab::Games);
@@ -838,10 +833,10 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 			if let Some(window) = ui_window.upgrade() {
 				window
-					.global::<crate::GamesState>()
+					.global::<crate::GamesQuery>()
 					.set_filters_have_expanded(groups.iter().any(|group| group.expanded));
 				window
-					.global::<crate::GamesState>()
+					.global::<crate::GamesQuery>()
 					.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
 			}
 		});
@@ -874,7 +869,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 			if let Some(window) = ui_window.upgrade() {
 				window
-					.global::<crate::AppState>()
+					.global::<crate::AppSettings>()
 					.set_selected_language(value);
 			}
 		});
@@ -951,7 +946,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				return;
 			};
 
-			let rows = window.global::<crate::GamesState>().get_rows();
+			let rows = window.global::<crate::GamesList>().get_rows();
 			let Some(row) = rows.row_data(index) else {
 				return;
 			};
@@ -1031,7 +1026,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				ui_window.clone(),
 				game,
 				action,
-				format!("provider-action:{value}"),
+				action_state::key(ActionKind::ProviderAction, value.clone()),
 			);
 		});
 
@@ -1041,7 +1036,11 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		.global::<crate::GamesActions>()
 		.on_open_game_folder(move || {
 			if let Some((_, game)) = get_selected_game(&ui_selected_game) {
-				actions::open_game_folder(ui_window.clone(), "open-game-folder".to_string(), game);
+				actions::open_game_folder(
+					ui_window.clone(),
+					action_state::key(ActionKind::OpenGameFolder, ""),
+					game,
+				);
 			}
 		});
 
@@ -1053,7 +1052,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			if let Some((_, game)) = get_selected_game(&ui_selected_game) {
 				actions::open_game_mods_folder(
 					ui_window.clone(),
-					"open-game-mods-folder".to_string(),
+					action_state::key(ActionKind::OpenGameModsFolder, ""),
 					game,
 				);
 			}
@@ -1067,7 +1066,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			if let Some((_, game)) = get_selected_game(&ui_selected_game) {
 				actions::open_game_data_folder(
 					ui_window.clone(),
-					"open-game-data-folder".to_string(),
+					action_state::key(ActionKind::OpenGameDataFolder, ""),
 					game,
 				);
 			}
@@ -1081,7 +1080,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			if let Some((_, game)) = get_selected_game(&ui_selected_game) {
 				actions::open_wine_prefix_folder(
 					ui_window.clone(),
-					"open-wine-prefix-folder".to_string(),
+					action_state::key(ActionKind::OpenWinePrefixFolder, ""),
 					game,
 				);
 			}
@@ -1095,7 +1094,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			if let Some((_, game)) = get_selected_game(&ui_selected_game) {
 				actions::open_wine_binary_folder(
 					ui_window.clone(),
-					"open-wine-binary-folder".to_string(),
+					action_state::key(ActionKind::OpenWineBinaryFolder, ""),
 					game,
 				);
 			}
@@ -1311,7 +1310,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		.on_open_local_mods_folder(move || {
 			actions::open_local_mods_folder(
 				ui_window.clone(),
-				"open-local-mods-folder".to_string(),
+				action_state::key(ActionKind::OpenLocalModsFolder, ""),
 			);
 		});
 
@@ -1422,7 +1421,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				return;
 			};
 
-			let action_id = "refresh-game".to_string();
+			let action_id = action_state::key(ActionKind::RefreshGame, "");
 			action_state::start(&ui_window, action_id.clone());
 
 			let database = ui_database.clone();
@@ -1445,7 +1444,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 						log::error!("Failed to refresh game: {err}");
 						action_state::finish(
 							&window,
-							&action_id,
+							action_id.clone(),
 							Err(err),
 							"Failed to refresh game",
 						);
@@ -1466,7 +1465,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 						*selected_game = Some((index, game.clone()));
 					}
 
-					let rows = window.global::<crate::GamesState>().get_rows();
+					let rows = window.global::<crate::GamesList>().get_rows();
 					let mut row = rows.row_data(index).unwrap_or_default();
 					model::apply_game_to_row(&mut row, &game);
 					rows.set_row_data(index, row.clone());
@@ -1476,7 +1475,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 				action_state::finish(
 					&finish_window,
-					&action_id,
+					action_id.clone(),
 					Ok::<(), rai_pal_core::result::Error>(()),
 					"",
 				);
@@ -1499,17 +1498,17 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			}
 			winit::event::WindowEvent::HoveredFile(_) => {
 				if let Some(window) = ui_window.upgrade() {
-					window.global::<crate::AppState>().set_drop_highlight(true);
+					window.set_drop_highlight(true);
 				}
 			}
 			winit::event::WindowEvent::HoveredFileCancelled => {
 				if let Some(window) = ui_window.upgrade() {
-					window.global::<crate::AppState>().set_drop_highlight(false);
+					window.set_drop_highlight(false);
 				}
 			}
 			winit::event::WindowEvent::DroppedFile(path) => {
 				if let Some(window) = ui_window.upgrade() {
-					window.global::<crate::AppState>().set_drop_highlight(false);
+					window.set_drop_highlight(false);
 					manual::add_dropped_paths(
 						&window,
 						ui_database.clone(),
@@ -1526,7 +1525,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let model = Rc::new(slint::VecModel::from(rows));
-	window.global::<crate::GamesState>().set_rows(model.into());
+	window.global::<crate::GamesList>().set_rows(model.into());
 	begin_refresh_all(&window, database, scheduler, &settings, &selected_game);
 	window.run()
 }
@@ -1645,13 +1644,13 @@ fn refresh_filter_groups(
 
 	if let Some(window) = window.upgrade() {
 		window
-			.global::<crate::GamesState>()
+			.global::<crate::GamesQuery>()
 			.set_filters_have_changes(groups.iter().any(|group| group.has_changes));
 		window
-			.global::<crate::GamesState>()
+			.global::<crate::GamesQuery>()
 			.set_filters_have_expanded(groups.iter().any(|group| group.expanded));
 		window
-			.global::<crate::GamesState>()
+			.global::<crate::GamesQuery>()
 			.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
 	}
 }

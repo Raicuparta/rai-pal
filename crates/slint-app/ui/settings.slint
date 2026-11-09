@@ -1,0 +1,8 @@
+import { AppColorScheme } from "app-types.slint";
+
+export global AppSettings {
+    in-out property <string> selected-language: "";
+    in-out property <AppColorScheme> selected-color-scheme: auto;
+    in property <string> detected-language-name: "";
+    in-out property <bool> hide-game-thumbnails: false;
+}

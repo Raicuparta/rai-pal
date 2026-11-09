@@ -1,6 +1,6 @@
 import { Palette } from "std-widgets.slint";
 import { ActionState, ActionStates } from "action-state.slint";
-import { AddGamePhase, AppColorScheme, AppTab } from "app-types.slint";
+import { AddGamePhase, AppColorScheme, AppTab, GameRowData } from "app-types.slint";
 import { Fonts } from "theme.slint";
 import { ModActions } from "actions.slint";
 import { GamesSidebar } from "components/games-sidebar.slint";
@@ -16,15 +16,16 @@ import { ModsPage } from "components/mods-page.slint";
 import { ThanksPage } from "components/thanks-page.slint";
 import { UrlModSourcesPopup } from "components/url-mod-sources-popup.slint";
 import { ConfirmModSourcePopup } from "components/confirm-mod-source-popup.slint";
-import { SteamCachePopup } from "components/steam-cache-popup.slint";
-import { SteamShortcutPopup } from "components/steam-shortcut-popup.slint";
+import { SteamCachePopup, SteamCacheState } from "components/steam-cache-popup.slint";
+import { SteamShortcutPopup, SteamShortcutState } from "components/steam-shortcut-popup.slint";
 import { AddGamePopup } from "components/add-game-popup.slint";
 import { AppUpdatePopup } from "components/app-update-popup.slint";
 import { ConfirmationPopup } from "components/confirmation-popup.slint";
 import { NotificationsOverlay } from "components/notifications.slint";
 import { GameDetailsPopup } from "components/game-details-popup.slint";
-import { AppState, SelectedGameState } from "state.slint";
-import { AppActions } from "actions.slint";
+import { AddGameState } from "components/add-game-popup.slint";
+import { AppSettings } from "settings.slint";
+import { AppActions, DialogActions } from "actions.slint";
 import { Theme } from "theme.slint";
 import { Icon } from "components/svg-icon.slint";
 
@@ -37,7 +38,13 @@ export {
     Fonts,
     ModActions,
 }
-export { AppState, Refresh, GamesState, SelectedGameState, ModSourcesState, SteamToolsState } from "state.slint";
+export { AppInfo } from "components/about-popup.slint";
+export { AppSettings } from "settings.slint";
+export { Refresh } from "components/refresh-button.slint";
+export { GamesList } from "components/games-page.slint";
+export { GamesQuery } from "components/games-sidebar.slint";
+export { GameSidebarState } from "components/game-sidebar.slint";
+export { GameMods } from "components/game-details-page.slint";
 export { UserState } from "components/user-menu.slint";
 export { ModsState } from "components/mods-page.slint";
 export { DownloadsState } from "components/download-progress.slint";
@@ -45,6 +52,10 @@ export { NotificationsState } from "components/notifications.slint";
 export { ThanksState } from "components/thanks-page.slint";
 export { DebugState } from "components/game-details-popup.slint";
 export { AddGameState } from "components/add-game-popup.slint";
+export { ModSourcesState } from "components/url-mod-sources-popup.slint";
+export { ConfirmModSourceState } from "components/confirm-mod-source-popup.slint";
+export { SteamCacheState } from "components/steam-cache-popup.slint";
+export { SteamShortcutState } from "components/steam-shortcut-popup.slint";
 export { UpdateState } from "components/app-update-popup.slint";
 export { ConfirmationState } from "components/confirmation-popup.slint";
 export { AppActions, GamesActions, DialogActions } from "actions.slint";
@@ -52,6 +63,10 @@ export { AppActions, GamesActions, DialogActions } from "actions.slint";
 export component MainWindow inherits Window {
     title: root.window-title;
     in property <string> window-title: "Rai Pal";
+    in-out property <AppTab> current-tab: games;
+    in-out property <bool> drop-highlight: false;
+    in-out property <bool> game-selected: false;
+    in-out property <GameRowData> selected-game-row;
     icon: @image-url("../graphics/icon.png");
     preferred-width: 1100px;
     preferred-height: 700px;
@@ -61,10 +76,13 @@ export component MainWindow inherits Window {
 
     private property <length> content-max-width: 1140px;
     private property <bool> about-open: false;
-    private property <AppColorScheme> color-scheme: AppState.selected-color-scheme;
+    private property <bool> url-mod-sources-open: false;
+    private property <bool> steam-cache-open: false;
+    private property <bool> steam-shortcut-open: false;
+    private property <AppColorScheme> color-scheme: AppSettings.selected-color-scheme;
 
     function select-tab(tab: AppTab) {
-        AppState.current-tab = tab;
+        root.current-tab = tab;
         AppActions.tab-changed(tab);
     }
 
@@ -76,6 +94,18 @@ export component MainWindow inherits Window {
         } else {
             Palette.color-scheme = ColorScheme.unknown;
         }
+    }
+
+    function open-steam-cache() {
+        SteamCacheState.state = ActionState.idle;
+        SteamCacheState.error = "";
+        root.steam-cache-open = true;
+    }
+
+    function open-steam-shortcut() {
+        SteamShortcutState.state = ActionState.idle;
+        SteamShortcutState.error = "";
+        root.steam-shortcut-open = true;
     }
 
     init => {
@@ -111,7 +141,7 @@ export component MainWindow inherits Window {
                     NavTab {
                         title: @tr("tab" => "Games");
                         icon: Icon.games;
-                        selected: AppState.current-tab == AppTab.games;
+                        selected: root.current-tab == AppTab.games;
 
                         clicked => {
                             root.select-tab(AppTab.games);
@@ -121,7 +151,7 @@ export component MainWindow inherits Window {
                     NavTab {
                         title: @tr("tab" => "Mods");
                         icon: Icon.mods;
-                        selected: AppState.current-tab == AppTab.mods;
+                        selected: root.current-tab == AppTab.mods;
 
                         clicked => {
                             root.select-tab(AppTab.mods);
@@ -132,7 +162,7 @@ export component MainWindow inherits Window {
                         title: @tr("tab" => "Thanks");
                         icon: Icon.thanks;
                         icon-color: #c92a2a;
-                        selected: AppState.current-tab == AppTab.thanks;
+                        selected: root.current-tab == AppTab.thanks;
 
                         clicked => {
                             root.select-tab(AppTab.thanks);
@@ -151,6 +181,14 @@ export component MainWindow inherits Window {
                         about-clicked => {
                             root.about-open = true;
                         }
+
+                        steam-cache-clicked => {
+                            root.open-steam-cache();
+                        }
+
+                        steam-shortcut-clicked => {
+                            root.open-steam-shortcut();
+                        }
                     }
                 }
             }
@@ -158,37 +196,50 @@ export component MainWindow inherits Window {
 
         Rectangle {
             Rectangle {
-                visible: AppState.current-tab == AppTab.games;
+                visible: root.current-tab == AppTab.games;
                 width: min(parent.width, root.content-max-width);
                 x: (parent.width - self.width) / 2;
 
                 HorizontalLayout {
-                    visible: SelectedGameState.active;
+                    visible: root.game-selected;
 
                     GameSidebar { }
 
-                    GameDetailsPage { }
+                    GameDetailsPage {
+                        game-row: root.selected-game-row;
+                        show-thumbnail: !AppSettings.hide-game-thumbnails;
+                    }
                 }
 
                 HorizontalLayout {
-                    visible: !SelectedGameState.active;
+                    visible: !root.game-selected;
 
-                    GamesSidebar { }
+                    GamesSidebar {
+                        add-game-clicked => {
+                            AddGameState.open = true;
+                            DialogActions.request-add-game();
+                        }
+                    }
 
                     GamesPage { }
                 }
             }
 
             Rectangle {
-                visible: AppState.current-tab == AppTab.mods;
+                visible: root.current-tab == AppTab.mods;
                 width: min(parent.width, root.content-max-width);
                 x: (parent.width - self.width) / 2;
 
-                ModsPage { }
+                ModsPage {
+                    open-url-mod-sources-clicked => {
+                        root.url-mod-sources-open = true;
+                        DialogActions.request-url-mod-sources();
+                    }
+                }
             }
 
             Rectangle {
-                visible: AppState.current-tab == AppTab.thanks;
+                visible: root.current-tab == AppTab.thanks;
                 width: min(parent.width, root.content-max-width);
                 x: (parent.width - self.width) / 2;
 
@@ -199,7 +250,7 @@ export component MainWindow inherits Window {
 
     NotificationsOverlay { }
 
-    if AppState.drop-highlight: Rectangle {
+    if root.drop-highlight: Rectangle {
         border-width: Theme.border-width * 2;
         border-color: Theme.highlight;
         background: transparent;
@@ -217,15 +268,33 @@ export component MainWindow inherits Window {
         }
     }
 
-    SteamShortcutPopup { }
+    SteamShortcutPopup {
+        open: root.steam-shortcut-open;
+
+        closed => {
+            root.steam-shortcut-open = false;
+        }
+    }
 
     AppUpdatePopup { }
 
     AddGamePopup { }
 
-    SteamCachePopup { }
+    SteamCachePopup {
+        open: root.steam-cache-open;
 
-    UrlModSourcesPopup { }
+        closed => {
+            root.steam-cache-open = false;
+        }
+    }
+
+    UrlModSourcesPopup {
+        open: root.url-mod-sources-open;
+
+        closed => {
+            root.url-mod-sources-open = false;
+        }
+    }
 
     ConfirmModSourcePopup { }
 }

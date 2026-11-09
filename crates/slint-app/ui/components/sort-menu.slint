@@ -1,10 +1,13 @@
 import { Theme } from "../theme.slint";
 import { SelectMenu, SelectOption } from "select-menu.slint";
 import { Icon } from "svg-icon.slint";
-import { GamesState } from "../state.slint";
-import { GamesActions } from "../actions.slint";
+
 
 export component SortMenu inherits Rectangle {
+    in-out property <int> sort-index: 0;
+
+    callback sort-changed(index: int);
+
     horizontal-stretch: 1;
     height: Theme.control-height;
 
@@ -19,12 +22,12 @@ export component SortMenu inherits Rectangle {
 
     SelectMenu {
         options: root.options;
-        selected-index <=> GamesState.sort-index;
+        selected-index <=> root.sort-index;
         icon: Icon.sort;
 
         selected(index) => {
-            GamesState.sort-index = index;
-            GamesActions.sort-changed(index);
+            root.sort-index = index;
+            root.sort-changed(index);
         }
     }
 }

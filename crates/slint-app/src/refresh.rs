@@ -147,7 +147,7 @@ pub(crate) fn refresh_selected_game(
 		return;
 	};
 
-	let mut row = window.global::<crate::SelectedGameState>().get_row();
+	let mut row = window.get_selected_game_row();
 	crate::model::apply_game_to_row(&mut row, &updated_game);
 	selected::show(window, &updated_game, row);
 	mods::refresh_mods(window, database, &updated_game);

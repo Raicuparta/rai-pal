@@ -1,3 +1,4 @@
+import { ActionKind } from "../action-state.slint";
 import { ModActions, GamesActions } from "../actions.slint";
 import { ModsTabModData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
@@ -48,7 +49,7 @@ export component ModsTabRow inherits VerticalLayout {
             if mod-data.can-run: ActionButton {
                 text: @tr("modModal" => "Run");
                 icon: Icon.play;
-                action-id: "standalone-run:" + mod-data.id;
+                action-key: { kind: ActionKind.standalone-run, target: mod-data.id };
 
                 clicked => {
                     ModActions.run-standalone(mod-data.id);
@@ -58,7 +59,7 @@ export component ModsTabRow inherits VerticalLayout {
             if mod-data.can-install: ActionButton {
                 text: @tr("modModal" => "Download");
                 icon: Icon.download;
-                action-id: "standalone-install:" + mod-data.id;
+                action-key: { kind: ActionKind.standalone-install, target: mod-data.id };
 
                 clicked => {
                     ModActions.install-standalone(mod-data.id);

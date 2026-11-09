@@ -2,12 +2,13 @@ import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
 import { AppActions } from "../actions.slint";
+import { ActionState } from "../action-state.slint";
 
 export global UpdateState {
     in-out property <bool> open: false;
     in property <string> version: "";
     in property <string> notes: "";
-    in property <bool> installing: false;
+    in property <ActionState> state: idle;
 }
 
 export component AppUpdatePopup inherits Modal {
@@ -27,7 +28,7 @@ export component AppUpdatePopup inherits Modal {
 
         Button {
             text: @tr("appUpdate" => "Ignore (won't ask again until you restart Rai Pal)");
-            enabled: !UpdateState.installing;
+            enabled: UpdateState.state != ActionState.loading;
             horizontal-stretch: 1;
 
             clicked => {
@@ -38,7 +39,7 @@ export component AppUpdatePopup inherits Modal {
 
         Button {
             text: @tr("appUpdate" => "Update now");
-            enabled: !UpdateState.installing;
+            enabled: UpdateState.state != ActionState.loading;
             tint: Theme.primary;
             horizontal-stretch: 1;
 

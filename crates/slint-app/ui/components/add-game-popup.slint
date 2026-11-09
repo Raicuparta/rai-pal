@@ -54,12 +54,13 @@ component SavedDirectoryRow inherits Rectangle {
 
 export component AddGamePopup inherits Modal {
     open: AddGameState.open;
-    title: @tr("manualGames" => "Manually Added Games");
 
     closed => {
         AddGameState.open = false;
         DialogActions.add-game-closed();
     }
+    title: @tr("manualGames" => "Manually Added Games");
+
 
     Text {
         text: @tr("manualGames" => "Note: you can also add your non-Steam games to Steam, and they will still be detected by Rai Pal.");

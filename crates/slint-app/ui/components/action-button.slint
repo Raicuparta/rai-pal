@@ -1,15 +1,15 @@
-import { ActionState, ActionStates } from "../action-state.slint";
+import { ActionKind, ActionKey, ActionState, ActionStates } from "../action-state.slint";
 import { Button } from "button.slint";
 
 export component ActionButton inherits Button {
-    in property <string> action-id: "";
+    in property <ActionKey> action-key: { kind: ActionKind.none, target: "" };
 
     private property <ActionState> action-state: ActionState.idle;
     private property <int> state-version: ActionStates.version;
 
     state: root.action-state;
 
-    changed action-id => {
+    changed action-key => {
         root.update-state();
     }
 
@@ -22,6 +22,6 @@ export component ActionButton inherits Button {
     }
 
     function update-state() {
-        root.action-state = ActionStates.lookup(root.action-id);
+        root.action-state = ActionStates.lookup(root.action-key);
     }
 }

@@ -59,14 +59,14 @@ pub fn start_query(
 			let rows = make_rows(&response.game_ids);
 			ui_scheduler.begin_query();
 
-			window.global::<crate::GamesState>().set_total_count(
+			window.global::<crate::GamesList>().set_total_count(
 				i32::try_from(response.total_count).unwrap_or_else(|err| {
 					log::warn!("Games count exceeds i32: {err}");
 					i32::MAX
 				}),
 			);
 			let model = std::rc::Rc::new(slint::VecModel::from(rows));
-			window.global::<crate::GamesState>().set_rows(model.into());
+			window.global::<crate::GamesList>().set_rows(model.into());
 		});
 	});
 }

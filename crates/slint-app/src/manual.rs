@@ -32,9 +32,9 @@ use crate::{
 static SCAN_GENERATION: AtomicU64 = AtomicU64::new(0);
 
 pub fn show(window: &MainWindow) {
+	window.global::<crate::AddGameState>().set_open(true);
 	reset_scan(window);
 	reload_directories(window);
-	window.global::<crate::AddGameState>().set_open(true);
 }
 
 pub fn cancel_scan(window: &MainWindow) {

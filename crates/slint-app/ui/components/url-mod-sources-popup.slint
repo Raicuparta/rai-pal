@@ -3,8 +3,16 @@ import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
 import { UrlModSourceData } from "../app-types.slint";
 import { Modal } from "modal.slint";
-import { ModSourcesState } from "../state.slint";
+import { ActionState } from "../action-state.slint";
 import { DialogActions } from "../actions.slint";
+
+export global ModSourcesState {
+    in property <UrlModSourceData> default-source;
+    in property <[UrlModSourceData]> sources;
+    in property <ActionState> state: idle;
+    in property <string> error: "";
+    in-out property <string> new-url: "";
+}
 
 component UrlModSourceRow inherits Rectangle {
     in property <UrlModSourceData> source;
@@ -46,16 +54,12 @@ component UrlModSourceRow inherits Rectangle {
 }
 
 export component UrlModSourcesPopup inherits Modal {
-    open: ModSourcesState.open;
     title: @tr("urlModSources" => "Mod Sources");
 
-    closed => {
-        ModSourcesState.open = false;
-    }
 
     if ModSourcesState.default-source.url != "" : UrlModSourceRow {
         source: ModSourcesState.default-source;
-        toggling: ModSourcesState.toggling;
+        toggling: ModSourcesState.state == ActionState.loading;
 
         toggled(enabled) => {
             DialogActions.set-url-mod-source-enabled(ModSourcesState.default-source.url, enabled);
@@ -64,7 +68,7 @@ export component UrlModSourcesPopup inherits Modal {
 
     for source in ModSourcesState.sources : UrlModSourceRow {
         source: source;
-        toggling: ModSourcesState.toggling;
+        toggling: ModSourcesState.state == ActionState.loading;
 
         toggled(enabled) => {
             DialogActions.set-url-mod-source-enabled(source.url, enabled);

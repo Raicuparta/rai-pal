@@ -1,6 +1,6 @@
 use std::{sync::Arc, thread};
 
-use crate::{MainWindow, action_state, analytics, downloads::Tracker};
+use crate::{ActionKey, ActionKind, MainWindow, action_state, analytics, downloads::Tracker};
 
 use rai_pal_core::{
 	app_paths,
@@ -21,7 +21,7 @@ pub fn run_provider_action(
 	window: slint::Weak<MainWindow>,
 	game: Game,
 	action: ProviderCommandAction,
-	action_id: String,
+	action_id: ActionKey,
 ) {
 	spawn_action(window, action_id, "Failed to run game action", move || {
 		let provider_command = game
@@ -38,13 +38,13 @@ pub fn run_provider_action(
 	});
 }
 
-pub fn open_game_folder(window: slint::Weak<MainWindow>, action_id: String, game: Game) {
+pub fn open_game_folder(window: slint::Weak<MainWindow>, action_id: ActionKey, game: Game) {
 	spawn_action(window, action_id, "Failed to open game folder", move || {
 		game.open_game_folder()
 	});
 }
 
-pub fn open_game_mods_folder(window: slint::Weak<MainWindow>, action_id: String, game: Game) {
+pub fn open_game_mods_folder(window: slint::Weak<MainWindow>, action_id: ActionKey, game: Game) {
 	spawn_action(
 		window,
 		action_id,
@@ -53,7 +53,7 @@ pub fn open_game_mods_folder(window: slint::Weak<MainWindow>, action_id: String,
 	);
 }
 
-pub fn open_game_data_folder(window: slint::Weak<MainWindow>, action_id: String, game: Game) {
+pub fn open_game_data_folder(window: slint::Weak<MainWindow>, action_id: ActionKey, game: Game) {
 	spawn_action(
 		window,
 		action_id,
@@ -62,7 +62,7 @@ pub fn open_game_data_folder(window: slint::Weak<MainWindow>, action_id: String,
 	);
 }
 
-pub fn open_wine_prefix_folder(window: slint::Weak<MainWindow>, action_id: String, game: Game) {
+pub fn open_wine_prefix_folder(window: slint::Weak<MainWindow>, action_id: ActionKey, game: Game) {
 	spawn_action(
 		window,
 		action_id,
@@ -75,7 +75,7 @@ pub fn open_wine_prefix_folder(window: slint::Weak<MainWindow>, action_id: Strin
 	);
 }
 
-pub fn open_wine_binary_folder(window: slint::Weak<MainWindow>, action_id: String, game: Game) {
+pub fn open_wine_binary_folder(window: slint::Weak<MainWindow>, action_id: ActionKey, game: Game) {
 	spawn_action(
 		window,
 		action_id,
@@ -91,7 +91,7 @@ pub fn open_wine_binary_folder(window: slint::Weak<MainWindow>, action_id: Strin
 pub fn run_standalone_mod(database: Arc<DbMutex>, window: slint::Weak<MainWindow>, mod_id: String) {
 	analytics::send_mod(rai_pal_core::analytics::Event::RunMod, &mod_id, None);
 
-	let action_id = format!("standalone-run:{mod_id}");
+	let action_id = action_state::key(ActionKind::StandaloneRun, mod_id.clone());
 
 	spawn_action(
 		window,
@@ -113,7 +113,7 @@ pub fn install_standalone_mod(
 ) {
 	analytics::send_mod(rai_pal_core::analytics::Event::InstallMod, &mod_id, None);
 
-	let action_id = format!("standalone-install:{mod_id}");
+	let action_id = action_state::key(ActionKind::StandaloneInstall, mod_id.clone());
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
@@ -124,7 +124,7 @@ pub fn install_standalone_mod(
 		else {
 			action_state::finish(
 				&window,
-				&action_id,
+				action_id.clone(),
 				Err("Failed to create async runtime"),
 				format!("Failed to install mod {mod_id}"),
 			);
@@ -136,7 +136,7 @@ pub fn install_standalone_mod(
 			Err(err) => {
 				action_state::finish(
 					&window,
-					&action_id,
+					action_id.clone(),
 					Err(err),
 					format!("Failed to install mod {mod_id}"),
 				);
@@ -160,7 +160,7 @@ pub fn install_standalone_mod(
 				downloads.finish_steps(&steps);
 				action_state::finish(
 					&window,
-					&action_id,
+					action_id.clone(),
 					Ok::<(), rai_pal_core::result::Error>(()),
 					"",
 				);
@@ -169,7 +169,7 @@ pub fn install_standalone_mod(
 				downloads.fail_steps(&steps);
 				action_state::finish(
 					&window,
-					&action_id,
+					action_id.clone(),
 					Err(err),
 					format!("Failed to install mod {mod_id}"),
 				);
@@ -178,7 +178,7 @@ pub fn install_standalone_mod(
 	});
 }
 
-pub fn open_local_mods_folder(window: slint::Weak<MainWindow>, action_id: String) {
+pub fn open_local_mods_folder(window: slint::Weak<MainWindow>, action_id: ActionKey) {
 	spawn_action(
 		window,
 		action_id,
@@ -187,7 +187,7 @@ pub fn open_local_mods_folder(window: slint::Weak<MainWindow>, action_id: String
 	);
 }
 
-pub fn open_logs_folder(window: slint::Weak<MainWindow>, action_id: String) {
+pub fn open_logs_folder(window: slint::Weak<MainWindow>, action_id: ActionKey) {
 	spawn_action(window, action_id, "Failed to open logs folder", || {
 		app_paths::logs_path()?.open_folder_or_parent()
 	});
@@ -203,7 +203,7 @@ pub fn open_url(url: String) {
 
 fn spawn_action(
 	window: slint::Weak<MainWindow>,
-	action_id: String,
+	action_id: ActionKey,
 	error_context: impl Into<String>,
 	action: impl FnOnce() -> Result + Send + 'static,
 ) {
@@ -212,6 +212,6 @@ fn spawn_action(
 
 	thread::spawn(move || {
 		let result = action();
-		action_state::finish(&window, &action_id, result, error_context);
+		action_state::finish(&window, action_id, result, error_context);
 	});
 }

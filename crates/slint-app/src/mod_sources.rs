@@ -16,7 +16,6 @@ pub fn show(window: &MainWindow) {
 		.global::<crate::ModSourcesState>()
 		.set_error("".into());
 	load_sources(window);
-	window.global::<crate::ModSourcesState>().set_open(true);
 }
 
 fn load_sources(window: &MainWindow) {
@@ -56,23 +55,20 @@ pub fn request_add(window: &MainWindow, url: String) {
 	}
 
 	window
-		.global::<crate::ModSourcesState>()
-		.set_confirm_url(url.clone().into());
+		.global::<crate::ConfirmModSourceState>()
+		.set_url(url.clone().into());
 	window
-		.global::<crate::ModSourcesState>()
-		.set_confirm_mods(Rc::new(slint::VecModel::from(Vec::<slint::SharedString>::new())).into());
+		.global::<crate::ConfirmModSourceState>()
+		.set_mods(Rc::new(slint::VecModel::from(Vec::<slint::SharedString>::new())).into());
 	window
-		.global::<crate::ModSourcesState>()
-		.set_confirm_loading(true);
+		.global::<crate::ConfirmModSourceState>()
+		.set_state(crate::ActionState::Loading);
 	window
-		.global::<crate::ModSourcesState>()
-		.set_confirm_error("".into());
+		.global::<crate::ConfirmModSourceState>()
+		.set_error("".into());
 	window
-		.global::<crate::ModSourcesState>()
-		.set_confirm_saving(false);
-	window
-		.global::<crate::ModSourcesState>()
-		.set_confirm_open(true);
+		.global::<crate::ConfirmModSourceState>()
+		.set_open(true);
 
 	let window = window.as_weak();
 
@@ -84,10 +80,6 @@ pub fn request_add(window: &MainWindow, url: String) {
 				return;
 			};
 
-			window
-				.global::<crate::ModSourcesState>()
-				.set_confirm_loading(false);
-
 			match result {
 				Ok(mods) => {
 					let titles = mods
@@ -95,13 +87,19 @@ pub fn request_add(window: &MainWindow, url: String) {
 						.map(|game_mod| slint::SharedString::from(game_mod.title))
 						.collect::<Vec<_>>();
 					window
-						.global::<crate::ModSourcesState>()
-						.set_confirm_mods(Rc::new(slint::VecModel::from(titles)).into());
+						.global::<crate::ConfirmModSourceState>()
+						.set_mods(Rc::new(slint::VecModel::from(titles)).into());
+					window
+						.global::<crate::ConfirmModSourceState>()
+						.set_state(crate::ActionState::Success);
 				}
 				Err(err) => {
 					window
-						.global::<crate::ModSourcesState>()
-						.set_confirm_error(err.into());
+						.global::<crate::ConfirmModSourceState>()
+						.set_error(err.into());
+					window
+						.global::<crate::ConfirmModSourceState>()
+						.set_state(crate::ActionState::Error);
 				}
 			}
 		});
@@ -110,24 +108,23 @@ pub fn request_add(window: &MainWindow, url: String) {
 
 pub fn confirm_add(window: &MainWindow, database: Arc<DbMutex>, selected_game: SelectedGameState) {
 	let url = window
-		.global::<crate::ModSourcesState>()
-		.get_confirm_url()
+		.global::<crate::ConfirmModSourceState>()
+		.get_url()
 		.to_string();
 
 	if url.is_empty()
-		|| window
-			.global::<crate::ModSourcesState>()
-			.get_confirm_saving()
+		|| (window.global::<crate::ConfirmModSourceState>().get_state()
+			== crate::ActionState::Loading)
 	{
 		return;
 	}
 
 	window
-		.global::<crate::ModSourcesState>()
-		.set_confirm_saving(true);
+		.global::<crate::ConfirmModSourceState>()
+		.set_state(crate::ActionState::Loading);
 	window
-		.global::<crate::ModSourcesState>()
-		.set_confirm_error("".into());
+		.global::<crate::ConfirmModSourceState>()
+		.set_error("".into());
 
 	let window = window.as_weak();
 	let database_for_refresh = database.clone();
@@ -146,21 +143,23 @@ pub fn confirm_add(window: &MainWindow, database: Arc<DbMutex>, selected_game: S
 				return;
 			};
 
-			window
-				.global::<crate::ModSourcesState>()
-				.set_confirm_saving(false);
-
 			if let Err(err) = result {
 				window
-					.global::<crate::ModSourcesState>()
-					.set_confirm_error(err.to_string().into());
+					.global::<crate::ConfirmModSourceState>()
+					.set_error(err.to_string().into());
+				window
+					.global::<crate::ConfirmModSourceState>()
+					.set_state(crate::ActionState::Error);
 				return;
 			}
 
 			window
-				.global::<crate::ModSourcesState>()
-				.set_confirm_open(false);
-			window.global::<crate::ModSourcesState>().set_open(false);
+				.global::<crate::ConfirmModSourceState>()
+				.set_state(crate::ActionState::Idle);
+			window
+				.global::<crate::ConfirmModSourceState>()
+				.set_open(false);
+
 			window
 				.global::<crate::ModSourcesState>()
 				.set_new_url("".into());
@@ -177,11 +176,13 @@ pub fn set_enabled(
 	url: String,
 	enabled: bool,
 ) {
-	if window.global::<crate::ModSourcesState>().get_toggling() {
+	if window.global::<crate::ModSourcesState>().get_state() == crate::ActionState::Loading {
 		return;
 	}
 
-	window.global::<crate::ModSourcesState>().set_toggling(true);
+	window
+		.global::<crate::ModSourcesState>()
+		.set_state(crate::ActionState::Loading);
 	window
 		.global::<crate::ModSourcesState>()
 		.set_error("".into());
@@ -203,14 +204,17 @@ pub fn set_enabled(
 				return;
 			};
 
-			window
-				.global::<crate::ModSourcesState>()
-				.set_toggling(false);
-
 			if let Err(err) = result {
 				window
 					.global::<crate::ModSourcesState>()
 					.set_error(err.to_string().into());
+				window
+					.global::<crate::ModSourcesState>()
+					.set_state(crate::ActionState::Error);
+			} else {
+				window
+					.global::<crate::ModSourcesState>()
+					.set_state(crate::ActionState::Idle);
 			}
 
 			load_sources(&window);
@@ -225,11 +229,13 @@ pub fn remove(
 	selected_game: SelectedGameState,
 	url: String,
 ) {
-	if window.global::<crate::ModSourcesState>().get_toggling() {
+	if window.global::<crate::ModSourcesState>().get_state() == crate::ActionState::Loading {
 		return;
 	}
 
-	window.global::<crate::ModSourcesState>().set_toggling(true);
+	window
+		.global::<crate::ModSourcesState>()
+		.set_state(crate::ActionState::Loading);
 	window
 		.global::<crate::ModSourcesState>()
 		.set_error("".into());
@@ -253,7 +259,7 @@ pub fn remove(
 
 			window
 				.global::<crate::ModSourcesState>()
-				.set_toggling(false);
+				.set_state(crate::ActionState::Idle);
 
 			if let Err(err) = result {
 				window

@@ -10,10 +10,20 @@ import { SortMenu } from "sort-menu.slint";
 import { Icon } from "svg-icon.slint";
 import { SidebarAction } from "sidebar-action.slint";
 import { RowDivider } from "row-divider.slint";
-import { GamesState } from "../state.slint";
-import { GamesActions, DialogActions } from "../actions.slint";
+import { FilterGroupData } from "../app-types.slint";
+import { GamesActions } from "../actions.slint";
+
+export global GamesQuery {
+    in-out property <string> search-text: "";
+    in-out property <int> sort-index: 0;
+    in property <[FilterGroupData]> filter-groups;
+    in property <bool> filters-have-changes: false;
+    in property <bool> filters-have-expanded: false;
+}
 
 export component GamesSidebar inherits Sidebar {
+    callback add-game-clicked;
+
     SidebarSection {
         spacing: Theme.space-sm;
 
@@ -22,7 +32,9 @@ export component GamesSidebar inherits Sidebar {
 
     SidebarAction {
         text: @tr("manualGames" => "Add games");
-        clicked => DialogActions.request-add-game();
+        clicked => {
+            root.add-game-clicked();
+        }
         icon: Icon.games;
     }
 
@@ -32,7 +44,7 @@ export component GamesSidebar inherits Sidebar {
         spacing: Theme.space-sm;
 
         SearchInput {
-            text <=> GamesState.search-text;
+            text <=> GamesQuery.search-text;
             placeholder-text: @tr("filterMenu" => "Search...");
 
             edited(text) => {
@@ -40,7 +52,13 @@ export component GamesSidebar inherits Sidebar {
             }
         }
 
-        SortMenu { }
+        SortMenu {
+            sort-index <=> GamesQuery.sort-index;
+
+            sort-changed(index) => {
+                GamesActions.sort-changed(index);
+            }
+        }
     }
 
     VerticalLayout {
@@ -55,7 +73,7 @@ export component GamesSidebar inherits Sidebar {
             IconButton {
                 icon: Icon.collapse-all;
                 tooltip: @tr("filterMenu" => "Collapse all filters");
-                enabled: GamesState.filters-have-expanded;
+                enabled: GamesQuery.filters-have-expanded;
 
                 clicked => {
                     GamesActions.filters-collapse-all();
@@ -69,7 +87,7 @@ export component GamesSidebar inherits Sidebar {
 
             ResetButton {
                 tooltip: @tr("filterMenu" => "Reset all filters");
-                enabled: GamesState.filters-have-changes;
+                enabled: GamesQuery.filters-have-changes;
 
                 clicked => {
                     GamesActions.filters-reset();
@@ -77,7 +95,7 @@ export component GamesSidebar inherits Sidebar {
             }
         }
 
-        for group in GamesState.filter-groups: FilterGroup {
+        for group in GamesQuery.filter-groups: FilterGroup {
             group: group;
         }
     }

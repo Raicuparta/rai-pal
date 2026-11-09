@@ -1,3 +1,4 @@
+import { ActionKind } from "../action-state.slint";
 import { ModActions } from "../actions.slint";
 import { GameModData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
@@ -131,7 +132,7 @@ export component GameModRow inherits VerticalLayout {
             if game-mod.can-install: ActionButton {
                 text: @tr("gameModRow" => "Install");
                 icon: Icon.install;
-                action-id: "game-mod-install:" + game-mod.mod-id;
+                action-key: { kind: ActionKind.game-mod-install, target: game-mod.mod-id };
 
                 clicked => {
                     ModActions.request-install(
@@ -147,7 +148,7 @@ export component GameModRow inherits VerticalLayout {
                 text: @tr("gameModRow" => "Update");
                 icon: Icon.update;
                 tint: Theme.status-success;
-                action-id: "game-mod-install:" + game-mod.mod-id;
+                action-key: { kind: ActionKind.game-mod-install, target: game-mod.mod-id };
 
                 clicked => {
                     ModActions.update(game-mod.mod-id);
@@ -157,7 +158,7 @@ export component GameModRow inherits VerticalLayout {
             if game-mod.can-run: ActionButton {
                 text: @tr("gameModRow" => "Run");
                 icon: Icon.play;
-                action-id: "game-mod-run:" + game-mod.mod-id;
+                action-key: { kind: ActionKind.game-mod-run, target: game-mod.mod-id };
 
                 clicked => {
                     ModActions.run(game-mod.mod-id);

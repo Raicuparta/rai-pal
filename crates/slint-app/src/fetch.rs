@@ -239,7 +239,7 @@ fn spawn_worker(
 					return;
 				};
 
-				let rows = window.global::<crate::GamesState>().get_rows();
+				let rows = window.global::<crate::GamesList>().get_rows();
 				let Some(mut row) = rows.row_data(result.index) else {
 					return;
 				};
@@ -302,7 +302,7 @@ fn spawn_image_worker(scheduler: Arc<FetchScheduler>, window: slint::Weak<MainWi
 							return;
 						};
 
-						let rows = window.global::<crate::GamesState>().get_rows();
+						let rows = window.global::<crate::GamesList>().get_rows();
 						let image = image.into_slint_image();
 
 						for index in indices {

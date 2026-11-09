@@ -4,17 +4,19 @@ import { NavButton } from "nav-button.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
 import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
 import { SelectMenu, SelectOption } from "select-menu.slint";
-import { AppState, SteamToolsState } from "../state.slint";
+import { AppSettings } from "../settings.slint";
 import { AppActions } from "../actions.slint";
 
 export component AppMenu inherits Rectangle {
     callback about-clicked;
+    callback steam-cache-clicked;
+    callback steam-shortcut-clicked;
 
     private property <string> menu-tooltip: @tr("appDropdownMenu" => "App menu");
-    private property <bool> has-auto-language: AppState.detected-language-name != "";
+    private property <bool> has-auto-language: AppSettings.detected-language-name != "";
     private property <[SelectOption]> language-options: root.has-auto-language ? [
         {
-            label: @tr("appDropdownMenu" => "Auto-detected - {0}", AppState.detected-language-name),
+            label: @tr("appDropdownMenu" => "Auto-detected - {0}", AppSettings.detected-language-name),
             value: ""
         },
         { label: "English (US)", value: "en" },
@@ -44,22 +46,22 @@ export component AppMenu inherits Rectangle {
     ];
 
     pure function language-index() -> int {
-        if AppState.selected-language == "" { return 0; }
-        if AppState.selected-language == "en" { return root.has-auto-language ? 1 : 0; }
-        if AppState.selected-language == "de" { return root.has-auto-language ? 2 : 1; }
-        if AppState.selected-language == "es" { return root.has-auto-language ? 3 : 2; }
-        if AppState.selected-language == "fr" { return root.has-auto-language ? 4 : 3; }
-        if AppState.selected-language == "ja" { return root.has-auto-language ? 5 : 4; }
-        if AppState.selected-language == "ko" { return root.has-auto-language ? 6 : 5; }
-        if AppState.selected-language == "pt" { return root.has-auto-language ? 7 : 6; }
-        if AppState.selected-language == "zh" { return root.has-auto-language ? 8 : 7; }
-        if AppState.selected-language == "wa" { return root.has-auto-language ? 9 : 8; }
+        if AppSettings.selected-language == "" { return 0; }
+        if AppSettings.selected-language == "en" { return root.has-auto-language ? 1 : 0; }
+        if AppSettings.selected-language == "de" { return root.has-auto-language ? 2 : 1; }
+        if AppSettings.selected-language == "es" { return root.has-auto-language ? 3 : 2; }
+        if AppSettings.selected-language == "fr" { return root.has-auto-language ? 4 : 3; }
+        if AppSettings.selected-language == "ja" { return root.has-auto-language ? 5 : 4; }
+        if AppSettings.selected-language == "ko" { return root.has-auto-language ? 6 : 5; }
+        if AppSettings.selected-language == "pt" { return root.has-auto-language ? 7 : 6; }
+        if AppSettings.selected-language == "zh" { return root.has-auto-language ? 8 : 7; }
+        if AppSettings.selected-language == "wa" { return root.has-auto-language ? 9 : 8; }
         return 0;
     }
 
     pure function color-scheme-index() -> int {
-        if AppState.selected-color-scheme == AppColorScheme.dark { return 1; }
-        if AppState.selected-color-scheme == AppColorScheme.light { return 2; }
+        if AppSettings.selected-color-scheme == AppColorScheme.dark { return 1; }
+        if AppSettings.selected-color-scheme == AppColorScheme.light { return 2; }
         return 0;
     }
 
@@ -85,12 +87,12 @@ export component AppMenu inherits Rectangle {
 
             PopupMenuItem {
                 checkable: true;
-                checked: !AppState.hide-game-thumbnails;
+                checked: !AppSettings.hide-game-thumbnails;
                 text: @tr("appDropdownMenu" => "Show game thumbnails on list");
 
                 clicked => {
-                    AppState.hide-game-thumbnails = !AppState.hide-game-thumbnails;
-                    AppActions.hide-game-thumbnails-changed(AppState.hide-game-thumbnails);
+                    AppSettings.hide-game-thumbnails = !AppSettings.hide-game-thumbnails;
+                    AppActions.hide-game-thumbnails-changed(AppSettings.hide-game-thumbnails);
                     menu.close();
                 }
             }
@@ -102,9 +104,7 @@ export component AppMenu inherits Rectangle {
                 icon: Icon.steam;
 
                 clicked => {
-                    SteamToolsState.shortcut-success = false;
-                    SteamToolsState.shortcut-error = "";
-                    SteamToolsState.shortcut-open = true;
+                    root.steam-shortcut-clicked();
                     menu.close();
                 }
             }
@@ -113,9 +113,7 @@ export component AppMenu inherits Rectangle {
                 text: @tr("steamCache" => "Reset Steam cache");
 
                 clicked => {
-                    SteamToolsState.cache-success = false;
-                    SteamToolsState.cache-error = "";
-                    SteamToolsState.cache-open = true;
+                    root.steam-cache-clicked();
                     menu.close();
                 }
             }
@@ -162,8 +160,8 @@ export component AppMenu inherits Rectangle {
                     icon: Icon.language;
 
                     selected(index) => {
-                        AppState.selected-language = root.language-options[index].value;
-                        AppActions.language-changed(AppState.selected-language);
+                        AppSettings.selected-language = root.language-options[index].value;
+                        AppActions.language-changed(AppSettings.selected-language);
                     }
                 }
             }
@@ -190,13 +188,13 @@ export component AppMenu inherits Rectangle {
 
                     selected(index) => {
                         if root.color-scheme-options[index].value == "light" {
-                            AppState.selected-color-scheme = AppColorScheme.light;
+                            AppSettings.selected-color-scheme = AppColorScheme.light;
                         } else if root.color-scheme-options[index].value == "dark" {
-                            AppState.selected-color-scheme = AppColorScheme.dark;
+                            AppSettings.selected-color-scheme = AppColorScheme.dark;
                         } else {
-                            AppState.selected-color-scheme = AppColorScheme.auto;
+                            AppSettings.selected-color-scheme = AppColorScheme.auto;
                         }
-                        AppActions.color-scheme-changed(AppState.selected-color-scheme);
+                        AppActions.color-scheme-changed(AppSettings.selected-color-scheme);
                     }
                 }
             }

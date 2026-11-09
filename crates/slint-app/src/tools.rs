@@ -25,14 +25,11 @@ pub fn reset_steam_cache(
 ) {
 	if let Some(window) = window.upgrade() {
 		window
-			.global::<crate::SteamToolsState>()
-			.set_cache_running(true);
+			.global::<crate::SteamCacheState>()
+			.set_state(crate::ActionState::Loading);
 		window
-			.global::<crate::SteamToolsState>()
-			.set_cache_success(false);
-		window
-			.global::<crate::SteamToolsState>()
-			.set_cache_error("".into());
+			.global::<crate::SteamCacheState>()
+			.set_error("".into());
 	}
 
 	thread::spawn(move || {
@@ -45,15 +42,11 @@ pub fn reset_steam_cache(
 				return;
 			};
 
-			window
-				.global::<crate::SteamToolsState>()
-				.set_cache_running(false);
-
 			match result {
 				Ok(()) => {
 					window
-						.global::<crate::SteamToolsState>()
-						.set_cache_success(true);
+						.global::<crate::SteamCacheState>()
+						.set_state(crate::ActionState::Success);
 					start_query(
 						window.as_weak(),
 						database.clone(),
@@ -65,8 +58,11 @@ pub fn reset_steam_cache(
 				}
 				Err(err) => {
 					window
-						.global::<crate::SteamToolsState>()
-						.set_cache_error(err.to_string().into());
+						.global::<crate::SteamCacheState>()
+						.set_error(err.to_string().into());
+					window
+						.global::<crate::SteamCacheState>()
+						.set_state(crate::ActionState::Error);
 				}
 			}
 		});
@@ -76,14 +72,11 @@ pub fn reset_steam_cache(
 pub fn add_steam_shortcut(window: slint::Weak<MainWindow>) {
 	if let Some(window) = window.upgrade() {
 		window
-			.global::<crate::SteamToolsState>()
-			.set_shortcut_running(true);
+			.global::<crate::SteamShortcutState>()
+			.set_state(crate::ActionState::Loading);
 		window
-			.global::<crate::SteamToolsState>()
-			.set_shortcut_success(false);
-		window
-			.global::<crate::SteamToolsState>()
-			.set_shortcut_error("".into());
+			.global::<crate::SteamShortcutState>()
+			.set_error("".into());
 	}
 
 	thread::spawn(move || {
@@ -94,17 +87,18 @@ pub fn add_steam_shortcut(window: slint::Weak<MainWindow>) {
 				return;
 			};
 
-			window
-				.global::<crate::SteamToolsState>()
-				.set_shortcut_running(false);
-
 			match result {
 				Ok(()) => window
-					.global::<crate::SteamToolsState>()
-					.set_shortcut_success(true),
-				Err(err) => window
-					.global::<crate::SteamToolsState>()
-					.set_shortcut_error(err.to_string().into()),
+					.global::<crate::SteamShortcutState>()
+					.set_state(crate::ActionState::Success),
+				Err(err) => {
+					window
+						.global::<crate::SteamShortcutState>()
+						.set_error(err.to_string().into());
+					window
+						.global::<crate::SteamShortcutState>()
+						.set_state(crate::ActionState::Error);
+				}
 			}
 		});
 	});

@@ -3,10 +3,11 @@ import { NavButton } from "nav-button.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
 import { PopupMenu, PopupMenuItem } from "menu.slint";
 import { AppActions } from "../actions.slint";
+import { ActionState } from "../action-state.slint";
 
 export global UserState {
     in property <bool> logged-in: false;
-    in property <bool> busy: false;
+    in property <ActionState> state: idle;
     in property <string> name: "";
     in property <string> initials: "";
     in property <bool> has-avatar: false;
@@ -73,7 +74,7 @@ export component UserMenu inherits Rectangle {
 
         if UserState.logged-in: PopupMenuItem {
             text: @tr("userMenu" => "Log out");
-            enabled: !UserState.busy;
+            enabled: UserState.state != ActionState.loading;
 
             clicked => {
                 AppActions.log-out();
@@ -83,7 +84,7 @@ export component UserMenu inherits Rectangle {
 
         if !UserState.logged-in: PopupMenuItem {
             text: @tr("userMenu" => "Sign in with Discord");
-            enabled: !UserState.busy;
+            enabled: UserState.state != ActionState.loading;
 
             clicked => {
                 AppActions.log-in();

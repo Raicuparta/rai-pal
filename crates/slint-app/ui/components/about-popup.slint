@@ -1,18 +1,23 @@
 import { Modal } from "modal.slint";
-import { AppState } from "../state.slint";
+
+export global AppInfo {
+    in property <string> version: "";
+    in property <string> renderer: "";
+    in property <string> platform: "";
+}
 
 export component AboutPopup inherits Modal {
     title: "About Rai Pal";
 
     Text {
-        text: "Version: \{AppState.app-version}";
+        text: "Version: \{AppInfo.version}";
     }
 
     Text {
-        text: "Rendering backend: \{AppState.renderer-name}";
+        text: "Rendering backend: \{AppInfo.renderer}";
     }
 
     Text {
-        text: "Platform: \{AppState.platform-name}";
+        text: "Platform: \{AppInfo.platform}";
     }
 }

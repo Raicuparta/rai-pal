@@ -10,9 +10,9 @@ use std::{
 };
 
 use rai_pal_core::result::LogErrExt;
-use slint::{ComponentHandle, Weak};
+use slint::{ComponentHandle, SharedString, Weak};
 
-use crate::{ActionState, ActionStates, MainWindow, notifications};
+use crate::{ActionKey, ActionKind, ActionState, ActionStates, MainWindow, notifications};
 
 const SUCCESS_DURATION: Duration = Duration::from_secs(1);
 const ERROR_DURATION: Duration = Duration::from_secs(2);
@@ -21,37 +21,45 @@ static STATES: LazyLock<Mutex<HashMap<String, ActionState>>> =
 	LazyLock::new(|| Mutex::new(HashMap::new()));
 static VERSION: AtomicI32 = AtomicI32::new(1);
 
-pub fn lookup(id: &str) -> ActionState {
+pub fn key(kind: ActionKind, target: impl Into<SharedString>) -> ActionKey {
+	ActionKey {
+		kind,
+		target: target.into(),
+	}
+}
+
+fn storage_key(key: &ActionKey) -> String {
+	format!("{:?}:{}", key.kind, key.target)
+}
+
+pub fn lookup(key: ActionKey) -> ActionState {
 	STATES
 		.lock()
 		.ok_or_log("Failed to lock action states")
-		.and_then(|states| states.get(id).copied())
+		.and_then(|states| states.get(&storage_key(&key)).copied())
 		.unwrap_or(ActionState::Idle)
 }
 
-pub fn start(window: &Weak<MainWindow>, id: impl Into<String>) {
+pub fn start(window: &Weak<MainWindow>, key: ActionKey) {
 	let window = window.clone();
-	let id = id.into();
 
 	crate::runtime::invoke_on_ui(move || {
 		if let Some(window) = window.upgrade() {
-			set(&window, &id, ActionState::Loading);
+			set(&window, &key, ActionState::Loading);
 		}
 	});
 }
 
 pub fn finish<E: Display>(
 	window: &Weak<MainWindow>,
-	id: impl Into<String>,
+	key: ActionKey,
 	result: std::result::Result<(), E>,
 	error_context: impl Into<String>,
 ) {
-	let id = id.into();
-
 	match result {
 		Ok(()) => {
-			set_async(window, &id, ActionState::Success);
-			schedule_reset(window.clone(), id, ActionState::Success, SUCCESS_DURATION);
+			set_async(window, &key, ActionState::Success);
+			schedule_reset(window.clone(), key, ActionState::Success, SUCCESS_DURATION);
 		}
 		Err(err) => {
 			let error_context = error_context.into();
@@ -62,24 +70,29 @@ pub fn finish<E: Display>(
 			};
 
 			notifications::error_async(window, message);
-			set_async(window, &id, ActionState::Error);
-			schedule_reset(window.clone(), id, ActionState::Error, ERROR_DURATION);
+			set_async(window, &key, ActionState::Error);
+			schedule_reset(window.clone(), key, ActionState::Error, ERROR_DURATION);
 		}
 	}
 }
 
-fn set_async(window: &Weak<MainWindow>, id: &str, state: ActionState) {
+fn set_async(window: &Weak<MainWindow>, key: &ActionKey, state: ActionState) {
 	let window = window.clone();
-	let id = id.to_string();
+	let key = key.clone();
 
 	crate::runtime::invoke_on_ui(move || {
 		if let Some(window) = window.upgrade() {
-			set(&window, &id, state);
+			set(&window, &key, state);
 		}
 	});
 }
 
-fn schedule_reset(window: Weak<MainWindow>, id: String, state: ActionState, duration: Duration) {
+fn schedule_reset(
+	window: Weak<MainWindow>,
+	key: ActionKey,
+	state: ActionState,
+	duration: Duration,
+) {
 	thread::spawn(move || {
 		thread::sleep(duration);
 
@@ -88,23 +101,24 @@ fn schedule_reset(window: Weak<MainWindow>, id: String, state: ActionState, dura
 				return;
 			};
 
-			if lookup(&id) == state {
-				set(&window, &id, ActionState::Idle);
+			if lookup(key.clone()) == state {
+				set(&window, &key, ActionState::Idle);
 			}
 		});
 	});
 }
 
-fn set(window: &MainWindow, id: &str, state: ActionState) {
+fn set(window: &MainWindow, key: &ActionKey, state: ActionState) {
 	{
 		let Some(mut states) = STATES.lock().ok_or_log("Failed to lock action states") else {
 			return;
 		};
 
+		let storage_key = storage_key(key);
 		if state == ActionState::Idle {
-			states.remove(id);
+			states.remove(&storage_key);
 		} else {
-			states.insert(id.to_string(), state);
+			states.insert(storage_key, state);
 		}
 	}
 

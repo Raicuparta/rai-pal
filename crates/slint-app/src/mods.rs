@@ -16,8 +16,8 @@ use rai_pal_core::{
 use slint::ComponentHandle;
 
 use crate::{
-	GameModData, MainWindow, PotentialModData, action_state, downloads::Tracker, notifications,
-	runtime,
+	ActionKind, GameModData, MainWindow, PotentialModData, action_state, downloads::Tracker,
+	notifications, runtime,
 };
 
 #[derive(Default)]
@@ -71,12 +71,8 @@ fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex
 				return;
 			};
 
-			if !window.global::<crate::SelectedGameState>().get_active()
-				|| window
-					.global::<crate::SelectedGameState>()
-					.get_row()
-					.game_id
-					.to_string() != game.game_id
+			if !window.get_game_selected()
+				|| window.get_selected_game_row().game_id.to_string() != game.game_id
 			{
 				return;
 			}
@@ -101,20 +97,20 @@ fn apply_mods(
 		}
 	};
 	window
-		.global::<crate::SelectedGameState>()
-		.set_mods_installed(Rc::new(slint::VecModel::from(loaded.installed)).into());
+		.global::<crate::GameMods>()
+		.set_installed(Rc::new(slint::VecModel::from(loaded.installed)).into());
 	window
-		.global::<crate::SelectedGameState>()
-		.set_mods_available(Rc::new(slint::VecModel::from(loaded.available)).into());
+		.global::<crate::GameMods>()
+		.set_available(Rc::new(slint::VecModel::from(loaded.available)).into());
 	window
-		.global::<crate::SelectedGameState>()
-		.set_mods_hidden(Rc::new(slint::VecModel::from(loaded.hidden)).into());
+		.global::<crate::GameMods>()
+		.set_hidden(Rc::new(slint::VecModel::from(loaded.hidden)).into());
 	window
-		.global::<crate::SelectedGameState>()
-		.set_mods_incompatible(Rc::new(slint::VecModel::from(loaded.incompatible)).into());
+		.global::<crate::GameMods>()
+		.set_incompatible(Rc::new(slint::VecModel::from(loaded.incompatible)).into());
 	window
-		.global::<crate::SelectedGameState>()
-		.set_potential_mods(Rc::new(slint::VecModel::from(loaded.potential)).into());
+		.global::<crate::GameMods>()
+		.set_potential(Rc::new(slint::VecModel::from(loaded.potential)).into());
 }
 
 pub fn install_mod(
@@ -124,7 +120,7 @@ pub fn install_mod(
 	mod_id: String,
 	downloads: Tracker,
 ) {
-	let action_id = format!("game-mod-install:{mod_id}");
+	let action_id = action_state::key(ActionKind::GameModInstall, mod_id.clone());
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
@@ -139,7 +135,7 @@ pub fn install_mod(
 				log::error!("Failed to prepare mod install {mod_id}: {err}");
 				action_state::finish(
 					&window,
-					&action_id,
+					action_id.clone(),
 					Err(err),
 					format!("Failed to install mod {mod_id}"),
 				);
@@ -168,7 +164,7 @@ pub fn install_mod(
 			downloads.fail_steps(&steps);
 			action_state::finish(
 				&window,
-				&action_id,
+				action_id.clone(),
 				Err(err),
 				format!("Failed to install mod {mod_id}"),
 			);
@@ -179,7 +175,7 @@ pub fn install_mod(
 		refresh_after_action(&window, &database, &game);
 		action_state::finish(
 			&window,
-			&action_id,
+			action_id.clone(),
 			Ok::<(), rai_pal_core::result::Error>(()),
 			"",
 		);
@@ -192,7 +188,7 @@ pub fn download_mod_config(
 	game: Game,
 	mod_id: String,
 ) {
-	let action_id = format!("game-mod-download-config:{mod_id}");
+	let action_id = action_state::key(ActionKind::GameModDownloadConfig, mod_id.clone());
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
@@ -214,7 +210,7 @@ pub fn download_mod_config(
 			log::error!("Failed to download config for mod {mod_id}: {err}");
 			action_state::finish(
 				&window,
-				&action_id,
+				action_id.clone(),
 				Err(err),
 				format!("Failed to download config for mod {mod_id}"),
 			);
@@ -224,7 +220,7 @@ pub fn download_mod_config(
 		refresh_after_action(&window, &database, &game);
 		action_state::finish(
 			&window,
-			&action_id,
+			action_id.clone(),
 			Ok::<(), rai_pal_core::result::Error>(()),
 			"",
 		);
@@ -237,7 +233,7 @@ pub fn uninstall_mod(
 	game: Game,
 	mod_id: String,
 ) {
-	let action_id = format!("game-mod-uninstall:{mod_id}");
+	let action_id = action_state::key(ActionKind::GameModUninstall, mod_id.clone());
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
@@ -259,7 +255,7 @@ pub fn uninstall_mod(
 			log::error!("Failed to uninstall mod {mod_id}: {err}");
 			action_state::finish(
 				&window,
-				&action_id,
+				action_id.clone(),
 				Err(err),
 				format!("Failed to uninstall mod {mod_id}"),
 			);
@@ -269,7 +265,7 @@ pub fn uninstall_mod(
 		refresh_after_action(&window, &database, &game);
 		action_state::finish(
 			&window,
-			&action_id,
+			action_id.clone(),
 			Ok::<(), rai_pal_core::result::Error>(()),
 			"",
 		);
@@ -277,7 +273,7 @@ pub fn uninstall_mod(
 }
 
 pub fn uninstall_all_mods(database: Arc<DbMutex>, window: slint::Weak<MainWindow>, game: Game) {
-	let action_id = "game-mod-uninstall-all".to_string();
+	let action_id = action_state::key(ActionKind::GameModUninstallAll, "");
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
@@ -300,7 +296,7 @@ pub fn uninstall_all_mods(database: Arc<DbMutex>, window: slint::Weak<MainWindow
 			log::error!("Failed to uninstall all mods: {err}");
 			action_state::finish(
 				&window,
-				&action_id,
+				action_id.clone(),
 				Err(err),
 				"Failed to uninstall all mods",
 			);
@@ -310,7 +306,7 @@ pub fn uninstall_all_mods(database: Arc<DbMutex>, window: slint::Weak<MainWindow
 		refresh_after_action(&window, &database, &game);
 		action_state::finish(
 			&window,
-			&action_id,
+			action_id.clone(),
 			Ok::<(), rai_pal_core::result::Error>(()),
 			"",
 		);
@@ -323,7 +319,7 @@ pub fn run_mod(
 	game: Game,
 	mod_id: String,
 ) {
-	let action_id = format!("game-mod-run:{mod_id}");
+	let action_id = action_state::key(ActionKind::GameModRun, mod_id.clone());
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
@@ -333,7 +329,7 @@ pub fn run_mod(
 
 		action_state::finish(
 			&window,
-			&action_id,
+			action_id.clone(),
 			result,
 			format!("Failed to run mod {mod_id}"),
 		);
@@ -346,7 +342,7 @@ pub fn open_mod_folder(
 	game: Game,
 	mod_id: String,
 ) {
-	let action_id = format!("game-mod-open-folder:{mod_id}");
+	let action_id = action_state::key(ActionKind::GameModOpenFolder, mod_id.clone());
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
@@ -356,7 +352,7 @@ pub fn open_mod_folder(
 
 		action_state::finish(
 			&window,
-			&action_id,
+			action_id.clone(),
 			result,
 			format!("Failed to open mod folder {mod_id}"),
 		);
@@ -371,9 +367,9 @@ pub fn configure_mod(
 	open_folder: bool,
 ) {
 	let action_id = if open_folder {
-		format!("game-mod-configure-folder:{mod_id}")
+		action_state::key(ActionKind::GameModConfigureFolder, mod_id.clone())
 	} else {
-		format!("game-mod-configure:{mod_id}")
+		action_state::key(ActionKind::GameModConfigure, mod_id.clone())
 	};
 	action_state::start(&window, action_id.clone());
 
@@ -384,7 +380,7 @@ pub fn configure_mod(
 
 		action_state::finish(
 			&window,
-			&action_id,
+			action_id.clone(),
 			result,
 			format!("Failed to configure mod {mod_id}"),
 		);
@@ -693,12 +689,8 @@ fn refresh_after_action(window: &slint::Weak<MainWindow>, database: &Arc<DbMutex
 			return;
 		};
 
-		if !window.global::<crate::SelectedGameState>().get_active()
-			|| window
-				.global::<crate::SelectedGameState>()
-				.get_row()
-				.game_id
-				.to_string() != game.game_id
+		if !window.get_game_selected()
+			|| window.get_selected_game_row().game_id.to_string() != game.game_id
 		{
 			return;
 		}

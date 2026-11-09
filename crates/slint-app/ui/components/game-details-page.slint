@@ -1,3 +1,4 @@
+import { ActionKind } from "../action-state.slint";
 import { ScrollView } from "std-widgets.slint";
 import { ModActions } from "../actions.slint";
 import { Theme } from "../theme.slint";
@@ -6,10 +7,21 @@ import { GameRow } from "game-row.slint";
 import { ModsSection } from "mods-section.slint";
 import { PotentialModsSection } from "potential-mods-section.slint";
 import { Icon } from "svg-icon.slint";
-import { AppState, SelectedGameState } from "../state.slint";
+import { GameModData, GameRowData, PotentialModData } from "../app-types.slint";
 import { GamesActions } from "../actions.slint";
 
+export global GameMods {
+    in property <[GameModData]> installed;
+    in property <[GameModData]> available;
+    in property <[GameModData]> hidden;
+    in property <[GameModData]> incompatible;
+    in property <[PotentialModData]> potential;
+}
+
 export component GameDetailsPage inherits Rectangle {
+    in property <GameRowData> game-row;
+    in property <bool> show-thumbnail: true;
+
     ScrollView {
         VerticalLayout {
             alignment: start;
@@ -17,16 +29,16 @@ export component GameDetailsPage inherits Rectangle {
 
             GameRow {
                 vertical-stretch: 0;
-                game-row: SelectedGameState.row;
+                game-row: root.game-row;
                 row-index: 0;
-                show-thumbnail: !AppState.hide-game-thumbnails;
+                show-thumbnail: root.show-thumbnail;
 
                 selected(index) => {
                     GamesActions.back();
                 }
             }
 
-            if SelectedGameState.mods-installed.length + SelectedGameState.mods-available.length + SelectedGameState.mods-hidden.length + SelectedGameState.mods-incompatible.length + SelectedGameState.potential-mods.length == 0 : HorizontalLayout {
+            if GameMods.installed.length + GameMods.available.length + GameMods.hidden.length + GameMods.incompatible.length + GameMods.potential.length == 0 : HorizontalLayout {
                 height: self.preferred-height;
                 padding-left: Theme.space-sm;
                 padding-right: Theme.space-sm;
@@ -39,25 +51,25 @@ export component GameDetailsPage inherits Rectangle {
                 }
             }
 
-            if !SelectedGameState.row.installed && SelectedGameState.potential-mods.length > 0 : PotentialModsSection {
+            if !root.game-row.installed && GameMods.potential.length > 0 : PotentialModsSection {
                 label: @tr("gameModal" => "Potentially compatible mods");
                 description: @tr("gameModal" => "Install this game to see more detailed information about which mods are compatible");
-                mods: SelectedGameState.potential-mods;
+                mods: GameMods.potential;
             }
 
-            if SelectedGameState.row.installed : VerticalLayout {
+            if root.game-row.installed : VerticalLayout {
                 alignment: start;
                 vertical-stretch: 0;
                 spacing: Theme.space-sm;
 
-                if SelectedGameState.mods-installed.length > 0 : VerticalLayout {
+                if GameMods.installed.length > 0 : VerticalLayout {
                     alignment: start;
                     vertical-stretch: 0;
                     spacing: Theme.space-xs;
 
                     ModsSection {
                         label: @tr("gameModal" => "Installed Mods");
-                        mods: SelectedGameState.mods-installed;
+                        mods: GameMods.installed;
                     }
 
                     HorizontalLayout {
@@ -69,7 +81,7 @@ export component GameDetailsPage inherits Rectangle {
                             vertical-stretch: 0;
                             text: @tr("gameModal" => "Uninstall all mods");
                             icon: Icon.uninstall;
-                            action-id: "game-mod-uninstall-all";
+                            action-key: { kind: ActionKind.game-mod-uninstall-all, target: "" };
                             tint: Theme.danger;
 
                             clicked => {
@@ -82,21 +94,21 @@ export component GameDetailsPage inherits Rectangle {
                     }
                 }
 
-                if SelectedGameState.mods-available.length > 0 : ModsSection {
+                if GameMods.available.length > 0 : ModsSection {
                     label: @tr("gameModal" => "Available Mods");
-                    mods: SelectedGameState.mods-available;
+                    mods: GameMods.available;
                 }
 
-                if SelectedGameState.mods-hidden.length > 0 : ModsSection {
+                if GameMods.hidden.length > 0 : ModsSection {
                     label: @tr("gameModal" => "Other things");
                     description: @tr("gameModal" => "These are mostly dependencies and other stuff that you don't usually need to mess with directly.");
-                    mods: SelectedGameState.mods-hidden;
+                    mods: GameMods.hidden;
                 }
 
-                if SelectedGameState.mods-incompatible.length > 0 : ModsSection {
+                if GameMods.incompatible.length > 0 : ModsSection {
                     label: @tr("gameModal" => "Incompatible Mods");
                     description: @tr("gameModal" => "The mods listed here can't be installed because they aren't compatible with this game's engine version.");
-                    mods: SelectedGameState.mods-incompatible;
+                    mods: GameMods.incompatible;
                 }
             }
         }

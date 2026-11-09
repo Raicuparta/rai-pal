@@ -93,7 +93,9 @@ impl Updater {
 		};
 
 		if let Some(window) = window.upgrade() {
-			window.global::<crate::UpdateState>().set_installing(true);
+			window
+				.global::<crate::UpdateState>()
+				.set_state(crate::ActionState::Loading);
 		}
 
 		thread::spawn(move || {
@@ -108,7 +110,9 @@ impl Updater {
 						return;
 					};
 
-					window.global::<crate::UpdateState>().set_installing(false);
+					window
+						.global::<crate::UpdateState>()
+						.set_state(crate::ActionState::Idle);
 					notifications::error(&window, format!("Failed to install app update: {err}"));
 				});
 
@@ -178,7 +182,9 @@ fn check_for_update(
 					window
 						.global::<crate::UpdateState>()
 						.set_notes(release.notes.clone().into());
-					window.global::<crate::UpdateState>().set_installing(false);
+					window
+						.global::<crate::UpdateState>()
+						.set_state(crate::ActionState::Idle);
 					window.global::<crate::UpdateState>().set_open(true);
 					*pending = Some(release);
 				}
