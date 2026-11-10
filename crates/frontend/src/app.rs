@@ -123,9 +123,11 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	main_window
 		.global::<crate::AppInfo>()
 		.set_platform(window_state::platform_name().into());
-	main_window
-		.global::<Fonts>()
-		.set_monospace_family(window_state::monospace_font_family().into());
+	if let Some(monospace_family) = window_state::monospace_font_family() {
+		main_window
+			.global::<Fonts>()
+			.set_monospace_family(monospace_family.into());
+	}
 
 	let window_weak = main_window.as_weak();
 	let scheduler = spawn_fetchers(&app_database, &window_weak);
