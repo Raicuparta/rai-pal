@@ -7,20 +7,25 @@ export component NavTab inherits NavButton {
     in property <Icon> icon: Icon.none;
     in property <brush> icon-color: Theme.foreground;
 
-    content-padding-left: Theme.space-lg;
-    content-padding-right: Theme.space-lg;
-    content-spacing: Theme.space-md;
+    HorizontalLayout {
+        padding-top: Theme.space-md;
+        padding-bottom: Theme.space-md;
+        padding-left: Theme.space-lg;
+        padding-right: Theme.space-lg;
+        spacing: Theme.space-md;
+        cross-axis-alignment: center;
 
-    SvgIcon {
-        icon: root.icon;
-        size: 24px;
-        color: root.icon-color;
-    }
+        SvgIcon {
+            icon: root.icon;
+            size: 24px;
+            color: root.icon-color;
+        }
 
-    Text {
-        text: root.title;
-        color: Theme.foreground;
-        vertical-alignment: center;
-        horizontal-alignment: center;
+        Text {
+            text: root.title;
+            color: Theme.foreground;
+            vertical-alignment: center;
+            horizontal-alignment: center;
+        }
     }
 }

@@ -5,7 +5,6 @@ export component ListRow inherits Rectangle {
     in property <bool> interactive: root.enabled;
     in property <bool> extra-hovered: false;
     in property <string> tooltip: "";
-    in property <length> spacing: Theme.space-sm;
     in property <brush> background-color: transparent;
     in property <brush> hover-background: Theme.hover-background;
     in property <brush> pressed-background: Theme.pressed-background;
@@ -40,7 +39,7 @@ export component ListRow inherits Rectangle {
         padding-right: Theme.space-lg;
         padding-top: Theme.space-xs;
         padding-bottom: Theme.space-xs;
-        spacing: root.spacing;
+        spacing: Theme.space-sm;
         cross-axis-alignment: center;
 
         @children

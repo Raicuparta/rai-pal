@@ -29,7 +29,6 @@ export component SidebarAction inherits ListRow {
     background-color: root.highlighted ? root.highlighted-background : transparent;
     hover-background: root.highlighted ? root.highlighted-hover-background : Theme.hover-background;
     pressed-background: root.highlighted ? root.highlighted-pressed-background : Theme.pressed-background;
-    spacing: Theme.space-sm;
     interactive: root.enabled && root.current-state != ActionState.loading;
     accessible-label: root.text;
 

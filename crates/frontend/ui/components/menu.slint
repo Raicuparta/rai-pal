@@ -6,7 +6,6 @@ import { Icon, SvgIcon } from "svg_icon.slint";
 
 export component PopupMenu inherits PopupWindow {
     in property <length> menu-width: Theme.menu-width;
-    in property <length> max-menu-height: 600px;
 
     close-policy: PopupClosePolicy.close-on-click-outside;
     width: root.menu-width;
@@ -14,7 +13,7 @@ export component PopupMenu inherits PopupWindow {
 
     menu-surface := Rectangle {
         width: 100%;
-        height: min(menu-layout.preferred-height + Theme.border-width * 2, root.max-menu-height);
+        height: min(menu-layout.preferred-height + Theme.border-width * 2, 600px);
         background: Theme.background;
         border-width: Theme.border-width;
         border-color: Theme.border;

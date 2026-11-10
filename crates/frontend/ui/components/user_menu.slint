@@ -23,43 +23,48 @@ export component UserMenu inherits Rectangle {
             menu.show();
         }
 
-        if UserState.logged-in: Rectangle {
-            width: root.avatar-size;
-            height: root.avatar-size;
-            border-radius: root.avatar-size / 2;
-            background: Theme.foreground;
-            clip: true;
+        HorizontalLayout {
+            padding: Theme.space-md;
+            cross-axis-alignment: center;
 
-            Rectangle {
-                x: Theme.border-width * 2;
-                y: Theme.border-width * 2;
-                width: root.avatar-size - Theme.border-width * 4;
-                height: root.avatar-size - Theme.border-width * 4;
-                border-radius: (root.avatar-size - Theme.border-width * 4) / 2;
-                background: Theme.background;
+            if UserState.logged-in: Rectangle {
+                width: root.avatar-size;
+                height: root.avatar-size;
+                border-radius: root.avatar-size / 2;
+                background: Theme.foreground;
                 clip: true;
 
-                if UserState.has-avatar: Image {
-                    source: UserState.avatar;
-                    width: 100%;
-                    height: 100%;
-                }
+                Rectangle {
+                    x: Theme.border-width * 2;
+                    y: Theme.border-width * 2;
+                    width: root.avatar-size - Theme.border-width * 4;
+                    height: root.avatar-size - Theme.border-width * 4;
+                    border-radius: (root.avatar-size - Theme.border-width * 4) / 2;
+                    background: Theme.background;
+                    clip: true;
 
-                if !UserState.has-avatar: Text {
-                    text: UserState.initials;
-                    font-size: Theme.font-sm;
-                    font-weight: Theme.weight-bold;
-                    color: Theme.foreground;
-                    horizontal-alignment: center;
-                    vertical-alignment: center;
+                    if UserState.has-avatar: Image {
+                        source: UserState.avatar;
+                        width: 100%;
+                        height: 100%;
+                    }
+
+                    if !UserState.has-avatar: Text {
+                        text: UserState.initials;
+                        font-size: Theme.font-sm;
+                        font-weight: Theme.weight-bold;
+                        color: Theme.foreground;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
                 }
             }
-        }
 
-        if !UserState.logged-in: SvgIcon {
-            icon: Icon.account;
-            size: root.avatar-size;
-            color: Theme.foreground;
+            if !UserState.logged-in: SvgIcon {
+                icon: Icon.account;
+                size: root.avatar-size;
+                color: Theme.foreground;
+            }
         }
     }
 

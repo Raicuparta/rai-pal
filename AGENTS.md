@@ -52,6 +52,7 @@ Read `.agents/skills/slint/SKILL.md` and the relevant
   compatible with existing app data.
 - Use `in`/`out`/`in-out` deliberately. A callback that only reads or only
   writes state should not be routed through a component that does neither.
+- Avoid adding props just to tune styling of the content of a component that accepts children, like adjusting spacing, padding, etc. It's better to let the parent component add an extra wrapper component to control these things.
 - Give custom interactive components `accessible-role` and `accessible-label`
   (and default actions where applicable).
 - Mark user-visible strings with `@tr`, and use `{}` placeholders instead of
