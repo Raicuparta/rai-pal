@@ -1,7 +1,6 @@
 use rai_pal_backend::app_settings::{AppSettings, WindowState};
 use slint::{
 	ComponentHandle as _,
-	fontique_011::fontique::GenericFamily,
 	winit_030::{EventResult, WinitWindowAccessor, winit},
 };
 
@@ -155,19 +154,6 @@ pub fn fix_gamescope_scale_factor() {
 	unsafe {
 		std::env::set_var("SLINT_SCALE_FACTOR", "1");
 	}
-}
-
-/// The system's default monospace family, or `None` when the system has no monospace font.
-pub fn monospace_font_family() -> Option<String> {
-	let mut collection = slint::fontique_011::shared_collection();
-	let family_id = collection.generic_families(GenericFamily::Monospace).next();
-	let family = family_id
-		.and_then(|family_id| collection.family_name(family_id))
-		.map(ToString::to_string);
-
-	log::info!("Using monospace font family: {family:?}");
-
-	family
 }
 
 pub fn platform_name() -> String {

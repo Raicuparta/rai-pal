@@ -26,7 +26,7 @@ chrono = { version = "0.4.44", default-features = false, features = [
   "std",
   "clock",
 ] }
-slint = { version = "1.18.1", features = ["unstable-winit-030", "unstable-fontique-011"] }
+slint = { version = "1.18.1", features = ["unstable-winit-030"] }
 sys-locale = "0.3.2"
 image = { version = "0.25", default-features = false, features = [
   "png",

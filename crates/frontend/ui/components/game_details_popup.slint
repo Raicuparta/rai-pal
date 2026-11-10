@@ -1,5 +1,5 @@
 import { TextEdit } from "std-widgets.slint";
-import { Fonts, Theme } from "../theme.slint";
+import { Theme } from "../theme.slint";
 import { IconButton } from "icon_button.slint";
 import { Modal } from "modal.slint";
 import { Icon } from "svg_icon.slint";
@@ -48,7 +48,6 @@ component DebugDataView inherits VerticalLayout {
         text: root.text;
         read-only: true;
         wrap: word-wrap;
-        font-family: Fonts.monospace-family;
         font-size: Theme.font-sm;
         width: 100%;
         vertical-stretch: 1;

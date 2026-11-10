@@ -7,7 +7,7 @@ use rai_pal_backend::{
 use slint::{ComponentHandle, winit_030::WinitWindowAccessor};
 
 use crate::{
-	AppColorScheme, AppTab, Fonts, MainWindow, action_state, analytics,
+	AppColorScheme, AppTab, MainWindow, action_state, analytics,
 	commands::{CommandHandler, os_integration, query::load_game_ids, settings::sort_option_index},
 	fetch::spawn_fetchers,
 	filters::{build_groups, load_mod_families},
@@ -123,11 +123,6 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	main_window
 		.global::<crate::AppInfo>()
 		.set_platform(window_state::platform_name().into());
-	if let Some(monospace_family) = window_state::monospace_font_family() {
-		main_window
-			.global::<Fonts>()
-			.set_monospace_family(monospace_family.into());
-	}
 
 	let window_weak = main_window.as_weak();
 	let scheduler = spawn_fetchers(&app_database, &window_weak);

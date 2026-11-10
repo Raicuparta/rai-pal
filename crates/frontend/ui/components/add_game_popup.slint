@@ -1,6 +1,6 @@
 import { Button } from "button.slint";
 import { AddGamePhase } from "../app_types.slint";
-import { Fonts, Theme } from "../theme.slint";
+import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
 import { DialogActions } from "../actions.slint";
 
@@ -33,7 +33,6 @@ component SavedDirectoryRow inherits Rectangle {
 
             Text {
                 text: root.path;
-                font-family: Fonts.monospace-family;
                 font-size: Theme.font-sm;
                 vertical-alignment: center;
                 x: Theme.space-sm;
@@ -115,7 +114,6 @@ export component AddGamePopup inherits Modal {
 
         Text {
             text: AddGameState.current-path;
-            font-family: Fonts.monospace-family;
             font-size: Theme.font-sm;
             opacity: 0.7;
             overflow: elide;

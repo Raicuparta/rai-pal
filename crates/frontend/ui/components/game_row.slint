@@ -1,6 +1,6 @@
 import { Branding } from "../branding.slint";
 import { GameRowData } from "../app_types.slint";
-import { Fonts, Theme } from "../theme.slint";
+import { Theme } from "../theme.slint";
 import { ProviderIcon } from "provider_icon.slint";
 import { RowDivider } from "row_divider.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
@@ -129,7 +129,6 @@ export component GameRow inherits VerticalLayout {
                     text: game-row.engine-version;
                     horizontal-alignment: center;
                     color: Theme.foreground;
-                    font-family: Fonts.monospace-family;
                     font-size: Theme.font-xs;
                     overflow: elide;
                 }
