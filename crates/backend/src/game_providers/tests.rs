@@ -1,9 +1,6 @@
 #![allow(clippy::unwrap_used)]
 
-use std::{
-	fs,
-	path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 use crate::{
 	game::Game,
@@ -39,7 +36,7 @@ fn fixture(name: &str) -> PathBuf {
 
 fn expected_games(root: &Path) -> Vec<String> {
 	let path = root.join("expected.json");
-	let json = fs::read_to_string(&path).unwrap_or_else(|error| {
+	let json = fs_err::read_to_string(&path).unwrap_or_else(|error| {
 		panic!(
 			"failed to read expected games from `{}`: {error}",
 			path.display()
@@ -62,7 +59,7 @@ where
 	let mut games = Vec::new();
 	parser
 		.parse_games(&root, &mut |game| games.push(game))
-		.expect("provider parse failed");
+		.unwrap_or_else(|error| panic!("provider parse failed: {error}"));
 	(root, games)
 }
 
@@ -109,7 +106,7 @@ fn itch_database_basic() {
 	let mut games = Vec::new();
 	Itch {}
 		.parse_games(&db_path, &mut |game| games.push(game))
-		.expect("provider parse failed");
+		.unwrap_or_else(|error| panic!("provider parse failed: {error}"));
 	assert_expected_games(&root, &games);
 }
 
@@ -150,7 +147,7 @@ fn gog_with_installed() {
 	let mut games = Vec::new();
 	Gog {}
 		.parse_games(&source, &mut |game| games.push(game))
-		.expect("provider parse failed");
+		.unwrap_or_else(|error| panic!("provider parse failed: {error}"));
 	assert_expected_games(&root, &games);
 }
 
@@ -164,6 +161,6 @@ fn gog_without_installed() {
 	let mut games = Vec::new();
 	Gog {}
 		.parse_games(&source, &mut |game| games.push(game))
-		.expect("provider parse failed");
+		.unwrap_or_else(|error| panic!("provider parse failed: {error}"));
 	assert_expected_games(&root, &games);
 }

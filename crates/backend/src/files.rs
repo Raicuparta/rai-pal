@@ -74,7 +74,7 @@ pub fn extract(archive_path: &Path, target_path: &Path, on_progress: &impl Fn(u6
 		if !outpath.starts_with(target_path) {
 			return Err(io::Error::new(
 				io::ErrorKind::InvalidData,
-				format!("Zip file contains path escaping target: {}", name),
+				format!("Zip file contains path escaping target: {name}"),
 			)
 			.into());
 		}

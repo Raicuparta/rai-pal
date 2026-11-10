@@ -1,3 +1,7 @@
+// Build scripts aren't shipped with the app, so the stricter runtime lints
+// around filesystem errors and panics don't apply here.
+#![allow(clippy::disallowed_methods, clippy::unwrap_used)]
+
 use std::{
 	fs,
 	path::{Path, PathBuf},

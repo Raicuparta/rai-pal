@@ -32,11 +32,11 @@ fn storage_key(key: &ActionKey) -> String {
 	format!("{:?}:{}", key.kind, key.target)
 }
 
-pub fn lookup(key: ActionKey) -> ActionState {
+pub fn lookup(key: &ActionKey) -> ActionState {
 	STATES
 		.lock()
 		.ok_or_log("Failed to lock action states")
-		.and_then(|states| states.get(&storage_key(&key)).copied())
+		.and_then(|states| states.get(&storage_key(key)).copied())
 		.unwrap_or(ActionState::Idle)
 }
 
@@ -101,7 +101,7 @@ fn schedule_reset(
 				return;
 			};
 
-			if lookup(key.clone()) == state {
+			if lookup(&key) == state {
 				set(&window, &key, ActionState::Idle);
 			}
 		});

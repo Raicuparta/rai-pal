@@ -1,6 +1,6 @@
 use rai_pal_backend::app_settings::{AppLocale, AppSettings};
 
-pub fn locale_code(locale: AppLocale) -> &'static str {
+pub const fn locale_code(locale: AppLocale) -> &'static str {
 	match locale {
 		AppLocale::EnUs => "en",
 		AppLocale::DeDe => "de",
@@ -14,7 +14,7 @@ pub fn locale_code(locale: AppLocale) -> &'static str {
 	}
 }
 
-pub fn native_name(locale: AppLocale) -> &'static str {
+pub const fn native_name(locale: AppLocale) -> &'static str {
 	match locale {
 		AppLocale::EnUs => "English (US)",
 		AppLocale::DeDe => "Deutsch (Deutschland)",
@@ -64,8 +64,8 @@ pub fn apply_translation(locale: AppLocale) {
 
 	if let Err(err) = slint::select_bundled_translation(code) {
 		log::error!("Failed to select translation {code}: {err}");
-		if let Err(err) = slint::select_bundled_translation("en") {
-			log::warn!("Failed to select fallback translation: {err}");
+		if let Err(fallback_err) = slint::select_bundled_translation("en") {
+			log::warn!("Failed to select fallback translation: {fallback_err}");
 		}
 	}
 

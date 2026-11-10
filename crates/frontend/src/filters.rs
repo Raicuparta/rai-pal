@@ -1,4 +1,4 @@
-use std::{collections::HashSet, hash::Hash, str::FromStr};
+use std::{collections::HashSet, hash::Hash, rc::Rc, str::FromStr};
 
 use rai_pal_backend::{
 	architecture::Architecture,
@@ -150,7 +150,7 @@ fn item_data(
 	value: &str,
 	label_key: &str,
 	label: &str,
-	item: FilterItem,
+	item: &FilterItem,
 	note_label_key: &str,
 ) -> FilterValueData {
 	FilterValueData {
@@ -184,7 +184,7 @@ fn group_data(
 		key: key.as_str().into(),
 		label_key: label_key.into(),
 		label: label.into(),
-		values: values.as_slice().into(),
+		values: Rc::new(slint::VecModel::from(values)).into(),
 		has_changes,
 		has_locked,
 		expanded: expanded_filters.contains(key.as_str()),
@@ -202,7 +202,7 @@ fn value<T: Eq + Hash + ToString>(
 		&value,
 		label_key,
 		label,
-		group.item(Some(key)),
+		&group.item(Some(key)),
 		value_note_label_key(&value),
 	)
 }
@@ -212,9 +212,13 @@ fn unknown_value<T: Eq + Hash>(
 	label_key: &str,
 	label: &str,
 ) -> FilterValueData {
-	item_data("", label_key, label, group.item(None), "")
+	item_data("", label_key, label, &group.item(None), "")
 }
 
+#[expect(
+	clippy::too_many_arguments,
+	reason = "the filter group needs its labels, values, and grouping metadata"
+)]
 fn build_group<T: Eq + Hash>(
 	key: FilterGroupKey,
 	label_key: &str,
@@ -248,7 +252,7 @@ fn build_mod_family_group(
 				family,
 				"",
 				family,
-				filter.mod_families.item(Some(family)),
+				&filter.mod_families.item(Some(family)),
 				"",
 			)
 		})

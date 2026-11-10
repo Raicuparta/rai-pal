@@ -170,8 +170,7 @@ impl ModDatabase for DbMutex {
 	}
 
 	fn get_mod(&self, mod_id: &str) -> Result<Mod> {
-		Ok(self
-			.lock_db()?
+		self.lock_db()?
 			.prepare_cached(
 				r"
 			SELECT
@@ -233,7 +232,7 @@ impl ModDatabase for DbMutex {
 				})
 			})
 			.optional()?
-			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?)
+			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))
 	}
 
 	fn get_installed_mod(
@@ -996,6 +995,7 @@ fn try_insert_mod_families(
 	}
 
 	transaction.commit()?;
+	drop(connection);
 
 	Ok(())
 }

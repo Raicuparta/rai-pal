@@ -31,7 +31,7 @@ struct LoadedMods {
 
 pub fn refresh_mods(window: &MainWindow, database: &Arc<DbMutex>, game: &Game) {
 	apply_mods(window, database, game, &HashSet::new());
-	refresh_remote_configs(window.as_weak(), database.clone(), game.clone());
+	refresh_remote_configs(window.as_weak(), Arc::clone(database), game.clone());
 }
 
 fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex>, game: Game) {
@@ -63,7 +63,7 @@ fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex
 			.map(|game_mod| game_mod.id)
 			.collect::<HashSet<_>>();
 
-		let database = database.clone();
+		let database = Arc::clone(&database);
 		let game = game.clone();
 
 		crate::runtime::invoke_on_ui(move || {
@@ -72,7 +72,7 @@ fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex
 			};
 
 			if !window.get_game_selected()
-				|| window.get_selected_game_row().game_id.to_string() != game.game_id
+				|| window.get_selected_game_row().game_id.as_str() != game.game_id.as_str()
 			{
 				return;
 			}
@@ -507,11 +507,11 @@ fn version_text(info: &ModInfo, game_mod: &Mod) -> String {
 	parts.join(" ➔ ")
 }
 
-pub(crate) fn release_date_display(game_mod: &Mod) -> String {
+pub fn release_date_display(game_mod: &Mod) -> String {
 	crate::model::ReleaseDate::parse(game_mod.release_date()).display_short()
 }
 
-pub(crate) fn download_version(game_mod: &Mod) -> String {
+pub fn download_version(game_mod: &Mod) -> String {
 	game_mod
 		.download
 		.as_ref()
@@ -519,7 +519,7 @@ pub(crate) fn download_version(game_mod: &Mod) -> String {
 		.unwrap_or_default()
 }
 
-pub(crate) fn engine_text(game_mod: &Mod) -> String {
+pub fn engine_text(game_mod: &Mod) -> String {
 	let mut parts = Vec::new();
 
 	if let Some(engine) = game_mod.engine {
@@ -681,7 +681,7 @@ fn collect_deps_to_install(
 
 fn refresh_after_action(window: &slint::Weak<MainWindow>, database: &Arc<DbMutex>, game: &Game) {
 	let window = window.clone();
-	let database = database.clone();
+	let database = Arc::clone(database);
 	let game = game.clone();
 
 	crate::runtime::invoke_on_ui(move || {
@@ -690,7 +690,7 @@ fn refresh_after_action(window: &slint::Weak<MainWindow>, database: &Arc<DbMutex
 		};
 
 		if !window.get_game_selected()
-			|| window.get_selected_game_row().game_id.to_string() != game.game_id
+			|| window.get_selected_game_row().game_id.as_str() != game.game_id.as_str()
 		{
 			return;
 		}

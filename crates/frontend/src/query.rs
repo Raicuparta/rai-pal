@@ -36,7 +36,7 @@ pub fn start_query(
 		}
 
 		let result = load_game_ids(&database, query);
-		let ui_scheduler = scheduler.clone();
+		let ui_scheduler = Arc::clone(&scheduler);
 
 		crate::runtime::invoke_on_ui(move || {
 			if ui_scheduler.generation() != query_generation {

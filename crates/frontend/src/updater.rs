@@ -1,7 +1,8 @@
+use fs_err as fs;
+use rai_pal_backend::path_extensions::AsValidStr;
 use slint::ComponentHandle as _;
 use std::{
 	collections::HashMap,
-	fs,
 	path::{Path, PathBuf},
 	sync::{
 		Arc, Mutex,
@@ -25,7 +26,7 @@ use crate::{MainWindow, fetch, notifications};
 const LATEST_JSON_URL: &str =
 	"https://github.com/Raicuparta/rai-pal/releases/latest/download/latest.json";
 const PUBLIC_KEY: &str = "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNGMzI5QUM1RjMwMjM0OTMKUldTVE5BTHp4Wm95UDcvaWgyKzRENVkzZVc2K1JTOEhidUR4OFVENWVqemloUWRmZDllbzJGaSsK";
-const CHECK_INTERVAL: Duration = Duration::from_secs(120);
+const CHECK_INTERVAL: Duration = Duration::from_mins(2);
 
 #[derive(Clone)]
 struct Release {
@@ -62,10 +63,8 @@ impl Updater {
 		let checking = Arc::new(AtomicBool::new(false));
 
 		let check = {
-			let window = window.clone();
-			let pending = pending.clone();
-			let ignored = ignored.clone();
-			let checking = checking.clone();
+			let pending = Arc::clone(&pending);
+			let ignored = Arc::clone(&ignored);
 
 			move || check_for_update(&window, &pending, &ignored, &checking)
 		};
@@ -73,7 +72,7 @@ impl Updater {
 		check();
 
 		let timer = Timer::default();
-		timer.start(TimerMode::Repeated, CHECK_INTERVAL, move || check());
+		timer.start(TimerMode::Repeated, CHECK_INTERVAL, check);
 
 		Self {
 			pending,
@@ -148,9 +147,9 @@ fn check_for_update(
 	}
 
 	let window = window.clone();
-	let pending = pending.clone();
-	let ignored = ignored.clone();
-	let checking = checking.clone();
+	let pending = Arc::clone(pending);
+	let ignored = Arc::clone(ignored);
+	let checking = Arc::clone(checking);
 
 	thread::spawn(move || {
 		let result = fetch_update();
@@ -230,7 +229,7 @@ fn fetch_update() -> Result<Option<Release>, String> {
 	}))
 }
 
-fn platform_key() -> Option<&'static str> {
+const fn platform_key() -> Option<&'static str> {
 	if cfg!(all(target_os = "linux", target_arch = "x86_64")) {
 		Some("linux-x86_64")
 	} else if cfg!(all(target_os = "windows", target_arch = "x86_64")) {
@@ -242,7 +241,7 @@ fn platform_key() -> Option<&'static str> {
 
 fn download_and_verify(release: &Release) -> Result<Vec<u8>, String> {
 	let bytes = reqwest::blocking::Client::builder()
-		.timeout(Duration::from_secs(600))
+		.timeout(Duration::from_mins(10))
 		.build()
 		.map_err(|err| err.to_string())?
 		.get(&release.url)
@@ -309,7 +308,7 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 	let temp_path = parent.join(format!(".{file_name}.update"));
 
 	fs::write(&temp_path, bytes).map_err(|err| err.to_string())?;
-	fs::set_permissions(&temp_path, fs::Permissions::from_mode(0o755))
+	fs::set_permissions(&temp_path, std::fs::Permissions::from_mode(0o755))
 		.map_err(|err| err.to_string())?;
 	fs::rename(&temp_path, &target).map_err(|err| err.to_string())?;
 
@@ -322,7 +321,7 @@ fn spawn_relaunch(target: &Path) -> Result<(), String> {
 	use std::process::Command;
 
 	let pid = std::process::id();
-	let target = shell_quote(target);
+	let target = shell_quote(target)?;
 	let script = format!("while kill -0 {pid} 2>/dev/null; do sleep 0.1; done; exec {target}");
 	Command::new("sh")
 		.args(["-c", &script])
@@ -332,8 +331,9 @@ fn spawn_relaunch(target: &Path) -> Result<(), String> {
 }
 
 #[cfg(target_os = "linux")]
-fn shell_quote(path: &Path) -> String {
-	format!("'{}'", path.to_string_lossy().replace('\'', "'\\''"))
+fn shell_quote(path: &Path) -> Result<String, String> {
+	let path = path.try_to_str().map_err(|err| err.to_string())?;
+	Ok(format!("'{}'", path.replace('\'', "'\\''")))
 }
 
 #[cfg(target_os = "windows")]

@@ -108,7 +108,7 @@ pub fn get_wine_prefix_path(game_id: &str) -> Result<PathBuf> {
 		return Ok(prefix);
 	}
 
-	Ok(default_wine_prefix()?)
+	default_wine_prefix()
 }
 
 fn read_wine_prefix(relative_path: &str, game_id: Option<&str>) -> Result<Option<PathBuf>> {
@@ -116,14 +116,18 @@ fn read_wine_prefix(relative_path: &str, game_id: Option<&str>) -> Result<Option
 		return Ok(None);
 	};
 
-	let prefix = match game_id {
-		Some(game_id) => config
-			.get(game_id)
-			.and_then(|settings| settings.get("winePrefix")),
-		None => config
-			.get("defaultSettings")
-			.and_then(|settings| settings.get("winePrefix")),
-	};
+	let prefix = game_id.map_or_else(
+		|| {
+			config
+				.get("defaultSettings")
+				.and_then(|settings| settings.get("winePrefix"))
+		},
+		|game_id| {
+			config
+				.get(game_id)
+				.and_then(|settings| settings.get("winePrefix"))
+		},
+	);
 
 	let Some(prefix) = prefix
 		.and_then(Value::as_str)

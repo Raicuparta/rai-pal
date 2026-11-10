@@ -43,12 +43,12 @@ pub fn cancel_scan(window: &MainWindow) {
 }
 
 pub fn select_executable(
-	window: &MainWindow,
+	main_window: &MainWindow,
 	database: Arc<DbMutex>,
 	scheduler: Arc<FetchScheduler>,
 	query: GamesQuery,
 ) {
-	let window_weak = window.as_weak();
+	let window_weak = main_window.as_weak();
 
 	thread::spawn(move || {
 		let Some(path) = pick_executable() else {
@@ -80,10 +80,10 @@ pub fn select_executable(
 	});
 }
 
-pub fn select_directory(window: &MainWindow) {
+pub fn select_directory(main_window: &MainWindow) {
 	let generation = SCAN_GENERATION.fetch_add(1, Ordering::SeqCst) + 1;
-	let window_weak = window.as_weak();
-	let progress_window = window.as_weak();
+	let window_weak = main_window.as_weak();
+	let progress_window = main_window.as_weak();
 
 	thread::spawn(move || {
 		let Some(path) = pick_directory() else {
@@ -129,10 +129,12 @@ pub fn select_directory(window: &MainWindow) {
 
 				window
 					.global::<crate::AddGameState>()
-					.set_scanned_dirs(progress.scanned_dirs as i32);
+					.set_scanned_dirs(i32::try_from(progress.scanned_dirs).unwrap_or(i32::MAX));
 				window
 					.global::<crate::AddGameState>()
-					.set_executables_found(progress.executables_found as i32);
+					.set_executables_found(
+						i32::try_from(progress.executables_found).unwrap_or(i32::MAX),
+					);
 				window
 					.global::<crate::AddGameState>()
 					.set_current_path(progress.current_path.into());
@@ -152,7 +154,7 @@ pub fn select_directory(window: &MainWindow) {
 				Ok(result) => {
 					window
 						.global::<crate::AddGameState>()
-						.set_games_count(result.games.len() as i32);
+						.set_games_count(i32::try_from(result.games.len()).unwrap_or(i32::MAX));
 					window
 						.global::<crate::AddGameState>()
 						.set_duration_text(format!("{:.1}", result.duration_secs).into());
@@ -173,13 +175,13 @@ pub fn select_directory(window: &MainWindow) {
 }
 
 pub fn confirm_add_directory(
-	window: &MainWindow,
+	main_window: &MainWindow,
 	database: Arc<DbMutex>,
 	scheduler: Arc<FetchScheduler>,
 	query: GamesQuery,
 ) {
 	let path = PathBuf::from(
-		window
+		main_window
 			.global::<crate::AddGameState>()
 			.get_directory()
 			.to_string(),
@@ -189,7 +191,7 @@ pub fn confirm_add_directory(
 		return;
 	}
 
-	let window_weak = window.as_weak();
+	let window_weak = main_window.as_weak();
 
 	thread::spawn(move || {
 		let result = runtime::block_on(async {
@@ -223,13 +225,13 @@ pub fn confirm_add_directory(
 }
 
 pub fn remove_directory(
-	window: &MainWindow,
+	main_window: &MainWindow,
 	database: Arc<DbMutex>,
 	scheduler: Arc<FetchScheduler>,
 	query: GamesQuery,
 	path: String,
 ) {
-	let window_weak = window.as_weak();
+	let window_weak = main_window.as_weak();
 
 	thread::spawn(move || {
 		let path = PathBuf::from(path);
@@ -260,14 +262,14 @@ pub fn remove_directory(
 }
 
 pub fn remove_game(
-	window: &MainWindow,
+	main_window: &MainWindow,
 	database: Arc<DbMutex>,
 	scheduler: Arc<FetchScheduler>,
 	query: GamesQuery,
 	selected_game: crate::selected::SelectedGameState,
 	game: Game,
 ) {
-	let window_weak = window.as_weak();
+	let window_weak = main_window.as_weak();
 
 	thread::spawn(move || {
 		let result = runtime::block_on(async {
@@ -309,13 +311,13 @@ pub fn remove_game(
 }
 
 pub fn add_dropped_paths(
-	window: &MainWindow,
+	main_window: &MainWindow,
 	database: Arc<DbMutex>,
 	scheduler: Arc<FetchScheduler>,
 	query: GamesQuery,
 	paths: Vec<PathBuf>,
 ) {
-	let window_weak = window.as_weak();
+	let window_weak = main_window.as_weak();
 
 	thread::spawn(move || {
 		let result = runtime::block_on(async {

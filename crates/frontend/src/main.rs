@@ -1,6 +1,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-slint::include_modules!();
+// Slint generates a large amount of code that we don't control; don't lint it.
+#[allow(clippy::all, clippy::pedantic, clippy::nursery, clippy::restriction)]
+mod generated {
+	slint::include_modules!();
+}
+
+pub use generated::*;
 
 mod action_state;
 mod actions;

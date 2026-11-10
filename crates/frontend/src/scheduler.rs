@@ -28,6 +28,7 @@ pub struct ThumbnailJob {
 	pub url: String,
 }
 
+#[derive(Clone, Copy)]
 pub enum ThumbnailOutcome {
 	Success,
 	Cancelled,
@@ -65,7 +66,7 @@ pub struct FetchScheduler {
 }
 
 impl FetchScheduler {
-	fn index_in_visible_margin(state: &SchedulerState, index: usize) -> bool {
+	const fn index_in_visible_margin(state: &SchedulerState, index: usize) -> bool {
 		if !state.has_visible_range {
 			return true;
 		}
@@ -76,7 +77,7 @@ impl FetchScheduler {
 		index >= start && index <= end
 	}
 
-	fn index_is_visible(state: &SchedulerState, index: usize) -> bool {
+	const fn index_is_visible(state: &SchedulerState, index: usize) -> bool {
 		state.has_visible_range && index >= state.visible_first && index <= state.visible_last
 	}
 
@@ -123,7 +124,7 @@ impl FetchScheduler {
 				return ThumbnailEligibility::Ready;
 			}
 
-			let remaining = THUMBNAIL_VISIBLE_DELAY - elapsed;
+			let remaining = THUMBNAIL_VISIBLE_DELAY.saturating_sub(elapsed);
 			waiting = Some(waiting.map_or(remaining, |current: Duration| current.min(remaining)));
 		}
 

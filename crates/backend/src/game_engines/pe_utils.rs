@@ -63,11 +63,8 @@ pub fn try_read_export_dll_name<'a>(
 	let exp_dir_bytes = file_bytes.get(export_offset..exp_dir_end)?;
 	let name_offset_in_struct = std::mem::offset_of!(IMAGE_EXPORT_DIRECTORY, Name);
 	let name_rva_bytes = exp_dir_bytes.get(name_offset_in_struct..name_offset_in_struct + 4)?;
-	let Some(name_rva_bytes) =
-		<[u8; 4]>::try_from(name_rva_bytes).ok_or_log("Failed to convert PE export name RVA")
-	else {
-		return None;
-	};
+	let name_rva_bytes =
+		<[u8; 4]>::try_from(name_rva_bytes).ok_or_log("Failed to convert PE export name RVA")?;
 	let name_rva = u32::from_le_bytes(name_rva_bytes);
 
 	let name_offset = rva_to_file_offset(sections, name_rva)?;

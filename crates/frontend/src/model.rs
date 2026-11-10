@@ -93,7 +93,7 @@ pub fn make_rows(game_ids: &[GameId]) -> Vec<GameRowData> {
 			thumbnail: slint::Image::default(),
 			has_thumbnail: false,
 			installed: false,
-			tags: Default::default(),
+			tags: slint::ModelRc::default(),
 			loaded: false,
 			engine_brand: "".into(),
 			engine_version: "".into(),
@@ -110,7 +110,7 @@ pub fn reset_row(row: &mut GameRowData) {
 	row.thumbnail = slint::Image::default();
 	row.has_thumbnail = false;
 	row.installed = false;
-	row.tags = Default::default();
+	row.tags = slint::ModelRc::default();
 	row.loaded = false;
 	row.engine_brand = "".into();
 	row.engine_version = "".into();

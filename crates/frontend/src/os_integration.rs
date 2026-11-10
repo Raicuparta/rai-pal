@@ -42,7 +42,7 @@ pub fn handle(
 	match action {
 		"add-mod-source" => {
 			if let Some(source_url) = query.get("url") {
-				mod_sources::request_add(window, source_url.clone());
+				mod_sources::request_add(window, source_url);
 			}
 		}
 		"install-mod" => dispatch_mod_action(
@@ -111,13 +111,19 @@ fn dispatch_mod_action(
 
 	match action {
 		ModAction::Install => {
-			mods::install_mod(database.clone(), window, game, mod_id, downloads.clone());
+			mods::install_mod(
+				Arc::clone(database),
+				window,
+				game,
+				mod_id,
+				downloads.clone(),
+			);
 		}
 		ModAction::Uninstall => {
-			mods::uninstall_mod(database.clone(), window, game, mod_id);
+			mods::uninstall_mod(Arc::clone(database), window, game, mod_id);
 		}
 		ModAction::Run => {
-			mods::run_mod(database.clone(), window, game, mod_id);
+			mods::run_mod(Arc::clone(database), window, game, mod_id);
 		}
 	}
 
@@ -134,7 +140,9 @@ pub fn register() {
 
 #[cfg(target_os = "linux")]
 fn register_linux() {
-	use std::{fs, process::Command};
+	use std::process::Command;
+
+	use fs_err as fs;
 
 	let Some(dirs) =
 		app_paths::base_dirs().ok_or_log("Failed to get base dirs for deep link registration")

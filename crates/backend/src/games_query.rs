@@ -27,7 +27,7 @@ pub struct FilterItem {
 }
 
 impl FilterItem {
-	fn default_item() -> Self {
+	const fn default_item() -> Self {
 		Self {
 			enabled: true,
 			locked: false,
@@ -68,7 +68,7 @@ impl FilterGroupKey {
 		Self::Architectures,
 	];
 
-	pub fn as_str(self) -> &'static str {
+	pub const fn as_str(self) -> &'static str {
 		match self {
 			Self::Installed => "installed",
 			Self::Engines => "engines",
@@ -112,17 +112,19 @@ impl<T: Hash + Eq> Default for FilterGroup<T> {
 
 impl<T: Hash + Eq> FilterGroup<T> {
 	pub fn item(&self, key: Option<&T>) -> FilterItem {
-		match key {
-			Some(key) => self
-				.known
-				.get(key)
-				.cloned()
-				.unwrap_or_else(FilterItem::default_item),
-			None => self
-				.unknown
-				.clone()
-				.unwrap_or_else(FilterItem::default_item),
-		}
+		key.map_or_else(
+			|| {
+				self.unknown
+					.clone()
+					.unwrap_or_else(FilterItem::default_item)
+			},
+			|key| {
+				self.known
+					.get(key)
+					.cloned()
+					.unwrap_or_else(FilterItem::default_item)
+			},
+		)
 	}
 
 	pub fn has_locked(&self) -> bool {

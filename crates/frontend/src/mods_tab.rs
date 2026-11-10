@@ -46,7 +46,7 @@ pub fn load(window: &MainWindow, database: &DbMutex) {
 					is_family: false,
 					family_title: "".into(),
 					family_description: "".into(),
-					mods: Default::default(),
+					mods: slint::ModelRc::default(),
 					single_mod: mods
 						.into_iter()
 						.next()

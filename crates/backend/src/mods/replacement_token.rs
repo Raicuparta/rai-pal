@@ -94,8 +94,9 @@ pub fn replace_tokens(base_string: &str, game_option: Option<&Game>, game_mod: &
 				|| Ok(String::new()),
 				|provider_command| match provider_command {
 					ProviderCommandKind::Path(_, args) => Ok(args.join(" ")),
-					ProviderCommandKind::String(_) => Ok(String::new()),
-					ProviderCommandKind::Delete => Ok(String::new()),
+					ProviderCommandKind::String(_) | ProviderCommandKind::Delete => {
+						Ok(String::new())
+					}
 				},
 			)
 		});

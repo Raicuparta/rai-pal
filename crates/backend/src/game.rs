@@ -127,12 +127,12 @@ impl Game {
 		if let Some(existing_command) = self
 			.provider_commands
 			.iter_mut()
-			.find(|command| command.action == action)
+			.find(|existing| existing.action == action)
 		{
 			*existing_command = command;
 		} else {
 			self.provider_commands.push(command);
-			self.provider_commands.sort_by_key(|command| command.action);
+			self.provider_commands.sort_by_key(|sorted| sorted.action);
 		}
 
 		self
@@ -145,10 +145,10 @@ impl Game {
 	}
 
 	pub fn full_title(&self) -> String {
-		match &self.title_discriminator {
-			Some(discriminator) => format!("{} ({})", self.display_title, discriminator),
-			None => self.display_title.clone(),
-		}
+		self.title_discriminator.as_ref().map_or_else(
+			|| self.display_title.clone(),
+			|discriminator| format!("{} ({})", self.display_title, discriminator),
+		)
 	}
 
 	pub fn add_supported_os(&mut self, os: OperatingSystem) -> &mut Self {

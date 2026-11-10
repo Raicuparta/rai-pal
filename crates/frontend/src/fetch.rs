@@ -35,11 +35,11 @@ static HTTP_CLIENT: LazyLock<reqwest::blocking::Client> = LazyLock::new(|| {
 		})
 });
 
-pub(crate) fn http_client() -> &'static reqwest::blocking::Client {
+pub fn http_client() -> &'static reqwest::blocking::Client {
 	&HTTP_CLIENT
 }
 
-pub(crate) struct FetchedImage {
+pub struct FetchedImage {
 	pub width: u32,
 	pub height: u32,
 	pub pixels: Vec<u8>,
@@ -63,7 +63,7 @@ struct FetchResult {
 	game: Result<Game, String>,
 }
 
-pub(crate) enum ImageFetchOutcome {
+pub enum ImageFetchOutcome {
 	Fetched(FetchedImage),
 	Cancelled,
 	Failed,
@@ -75,7 +75,7 @@ enum ImageBytesOutcome {
 	Failed,
 }
 
-pub(crate) fn fetch_image(url: &str, max_width: u32, max_height: u32) -> Option<FetchedImage> {
+pub fn fetch_image(url: &str, max_width: u32, max_height: u32) -> Option<FetchedImage> {
 	match fetch_image_bytes_cancellable(url, || true) {
 		ImageBytesOutcome::Fetched(bytes) => decode_image(&bytes, max_width, max_height),
 		ImageBytesOutcome::Cancelled | ImageBytesOutcome::Failed => None,
@@ -221,7 +221,7 @@ fn spawn_worker(
 		while let Some(request) = scheduler.take_next() {
 			let result = fetch_game(&database, &request);
 			let window = window.clone();
-			let ui_scheduler = scheduler.clone();
+			let ui_scheduler = Arc::clone(&scheduler);
 			let index = result.index;
 
 			let sent = slint::invoke_from_event_loop(move || {
@@ -275,7 +275,7 @@ fn spawn_worker(
 fn spawn_image_worker(scheduler: Arc<FetchScheduler>, window: slint::Weak<MainWindow>) {
 	thread::spawn(move || {
 		while let Some(job) = scheduler.take_next_thumbnail() {
-			let cancel_scheduler = scheduler.clone();
+			let cancel_scheduler = Arc::clone(&scheduler);
 			let cancel_job = job.clone();
 			let outcome = fetch_thumbnail_cached(
 				&job.url,
@@ -287,7 +287,7 @@ fn spawn_image_worker(scheduler: Arc<FetchScheduler>, window: slint::Weak<MainWi
 			match outcome {
 				ImageFetchOutcome::Fetched(image) => {
 					let window = window.clone();
-					let ui_scheduler = scheduler.clone();
+					let ui_scheduler = Arc::clone(&scheduler);
 					let ui_job = job.clone();
 
 					let sent = slint::invoke_from_event_loop(move || {
@@ -338,19 +338,19 @@ fn spawn_image_worker(scheduler: Arc<FetchScheduler>, window: slint::Weak<MainWi
 }
 
 pub fn spawn_fetchers(
-	database: Arc<DbMutex>,
-	window: slint::Weak<MainWindow>,
+	database: &Arc<DbMutex>,
+	window: &slint::Weak<MainWindow>,
 ) -> Arc<FetchScheduler> {
 	let scheduler = Arc::new(FetchScheduler::default());
 
 	thread::spawn(image_cache::prune);
 
 	for _ in 0..WORKER_COUNT {
-		spawn_worker(scheduler.clone(), database.clone(), window.clone());
+		spawn_worker(Arc::clone(&scheduler), Arc::clone(database), window.clone());
 	}
 
 	for _ in 0..IMAGE_WORKER_COUNT {
-		spawn_image_worker(scheduler.clone(), window.clone());
+		spawn_image_worker(Arc::clone(&scheduler), window.clone());
 	}
 
 	scheduler

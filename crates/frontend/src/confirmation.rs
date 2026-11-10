@@ -21,6 +21,7 @@ struct PendingConfirmation {
 #[derive(Default)]
 pub struct PendingState(RefCell<Option<PendingConfirmation>>);
 
+#[expect(clippy::too_many_arguments)]
 pub fn request_install(
 	window: &MainWindow,
 	settings: &Rc<RefCell<AppSettings>>,
@@ -38,13 +39,19 @@ pub fn request_install(
 		settings,
 		pending,
 		database,
-		Box::new(move |window, database| {
+		Box::new(move |dialog_window, dialog_database| {
 			analytics::send_mod(
 				rai_pal_backend::analytics::Event::InstallMod,
 				&mod_id,
 				Some(&game),
 			);
-			mods::install_mod(database, window.as_weak(), game, mod_id, downloads);
+			mods::install_mod(
+				dialog_database,
+				dialog_window.as_weak(),
+				game,
+				mod_id,
+				downloads,
+			);
 		}),
 		confirmation_text,
 		confirm_label,
@@ -66,8 +73,8 @@ pub fn request_uninstall_all(
 		settings,
 		pending,
 		database,
-		Box::new(move |window, database| {
-			mods::uninstall_all_mods(database, window.as_weak(), game);
+		Box::new(move |dialog_window, dialog_database| {
+			mods::uninstall_all_mods(dialog_database, dialog_window.as_weak(), game);
 		}),
 		confirmation_text,
 		confirm_label,
@@ -88,16 +95,16 @@ pub fn request_remove_game(
 	confirmation_text: String,
 	confirm_label: String,
 ) {
-	let action_database = database.clone();
+	let action_database = Arc::clone(&database);
 
 	request(
 		window,
 		settings,
 		pending,
 		database,
-		Box::new(move |window, _| {
+		Box::new(move |dialog_window, _| {
 			crate::manual::remove_game(
-				window,
+				dialog_window,
 				action_database,
 				scheduler,
 				query,
@@ -111,6 +118,7 @@ pub fn request_remove_game(
 	);
 }
 
+#[expect(clippy::too_many_arguments)]
 fn request(
 	window: &MainWindow,
 	settings: &Rc<RefCell<AppSettings>>,

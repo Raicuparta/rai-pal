@@ -263,7 +263,7 @@ fn parse_shortcuts_file(bytes: &[u8]) -> Result<(u32, Vec<ShortcutSummary>)> {
 			match field_name.parse::<u32>() {
 				Ok(index) => max_index = max_index.max(index),
 				Err(err) => {
-					log::debug!("Steam shortcut key {field_name} is not a numeric index: {err}")
+					log::debug!("Steam shortcut key {field_name} is not a numeric index: {err}");
 				}
 			}
 

@@ -49,7 +49,7 @@ pub fn reset_steam_cache(
 						.set_state(crate::ActionState::Success);
 					start_query(
 						window.as_weak(),
-						database.clone(),
+						Arc::clone(&database),
 						scheduler,
 						query,
 						Duration::ZERO,
@@ -142,7 +142,7 @@ fn write_steam_artwork() -> Result<PathBuf> {
 	let artwork_dir = app_paths::temp_dir("steam-artwork")?;
 
 	for (file_name, bytes) in STEAM_ARTWORK {
-		std::fs::write(artwork_dir.join(file_name), bytes)?;
+		fs_err::write(artwork_dir.join(file_name), bytes)?;
 	}
 
 	Ok(artwork_dir)

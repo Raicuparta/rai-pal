@@ -44,7 +44,7 @@ fn load_sources(window: &MainWindow) {
 		.set_sources(Rc::new(slint::VecModel::from(sources)).into());
 }
 
-pub fn request_add(window: &MainWindow, url: String) {
+pub fn request_add(window: &MainWindow, url: &str) {
 	let url = url.trim().to_string();
 
 	if url.is_empty() {
@@ -127,7 +127,7 @@ pub fn confirm_add(window: &MainWindow, database: Arc<DbMutex>, selected_game: S
 		.set_error("".into());
 
 	let window = window.as_weak();
-	let database_for_refresh = database.clone();
+	let database_for_refresh = Arc::clone(&database);
 
 	thread::spawn(move || {
 		let result = url_mod_provider::add_url_mod_source(url.clone());
@@ -170,25 +170,25 @@ pub fn confirm_add(window: &MainWindow, database: Arc<DbMutex>, selected_game: S
 }
 
 pub fn set_enabled(
-	window: &MainWindow,
+	main_window: &MainWindow,
 	database: Arc<DbMutex>,
 	selected_game: SelectedGameState,
 	url: String,
 	enabled: bool,
 ) {
-	if window.global::<crate::ModSourcesState>().get_state() == crate::ActionState::Loading {
+	if main_window.global::<crate::ModSourcesState>().get_state() == crate::ActionState::Loading {
 		return;
 	}
 
-	window
+	main_window
 		.global::<crate::ModSourcesState>()
 		.set_state(crate::ActionState::Loading);
-	window
+	main_window
 		.global::<crate::ModSourcesState>()
 		.set_error("".into());
 
-	let window_weak = window.as_weak();
-	let database_for_refresh = database.clone();
+	let window_weak = main_window.as_weak();
+	let database_for_refresh = Arc::clone(&database);
 
 	thread::spawn(move || {
 		let result = url_mod_provider::set_url_mod_source_enabled(&url, enabled);
@@ -224,24 +224,24 @@ pub fn set_enabled(
 }
 
 pub fn remove(
-	window: &MainWindow,
+	main_window: &MainWindow,
 	database: Arc<DbMutex>,
 	selected_game: SelectedGameState,
 	url: String,
 ) {
-	if window.global::<crate::ModSourcesState>().get_state() == crate::ActionState::Loading {
+	if main_window.global::<crate::ModSourcesState>().get_state() == crate::ActionState::Loading {
 		return;
 	}
 
-	window
+	main_window
 		.global::<crate::ModSourcesState>()
 		.set_state(crate::ActionState::Loading);
-	window
+	main_window
 		.global::<crate::ModSourcesState>()
 		.set_error("".into());
 
-	let window_weak = window.as_weak();
-	let database_for_refresh = database.clone();
+	let window_weak = main_window.as_weak();
+	let database_for_refresh = Arc::clone(&database);
 
 	thread::spawn(move || {
 		let result = url_mod_provider::remove_url_mod_source(&url);

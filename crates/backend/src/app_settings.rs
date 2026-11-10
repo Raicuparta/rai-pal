@@ -97,8 +97,6 @@ impl AppSettings {
 	}
 
 	fn get_path() -> Result<PathBuf> {
-		Ok(app_paths::app_data_file(&format!(
-			"settings-{SETTINGS_VERSION}.json"
-		))?)
+		app_paths::app_data_file(&format!("settings-{SETTINGS_VERSION}.json"))
 	}
 }

@@ -1,6 +1,7 @@
-use std::{env, fs::File, path::PathBuf, process::ExitCode};
+use std::{env, path::PathBuf, process::ExitCode};
 
 use base64::{Engine as _, engine::general_purpose::STANDARD};
+use fs_err::File;
 use minisign::SecretKeyBox;
 
 fn main() -> ExitCode {
@@ -23,8 +24,7 @@ fn run() -> Result<(), String> {
 		env::var("UPDATE_PRIVATE_KEY").map_err(|_| "Missing UPDATE_PRIVATE_KEY".to_string())?;
 	let password = match env::var("UPDATE_KEY_PASSWORD") {
 		Ok(password) if !password.is_empty() => Some(password),
-		Ok(_) => None,
-		Err(env::VarError::NotPresent) => None,
+		Ok(_) | Err(env::VarError::NotPresent) => None,
 		Err(err) => {
 			eprintln!("Failed to read UPDATE_KEY_PASSWORD: {err}");
 			None
@@ -46,7 +46,7 @@ fn run() -> Result<(), String> {
 			Err(err) => {
 				eprintln!("Failed to decrypt secret key, trying as unencrypted: {err}");
 				minisign::SecretKey::from_unencrypted_box(make_box()?)
-					.map_err(|err| err.to_string())?
+					.map_err(|error| error.to_string())?
 			}
 		}
 	} else {

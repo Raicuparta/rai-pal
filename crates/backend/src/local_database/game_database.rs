@@ -152,8 +152,7 @@ impl GameDatabase for DbMutex {
 	}
 
 	fn get_game(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Game> {
-		Ok(self
-			.lock_db()?
+		self.lock_db()?
 			.prepare_cached(
 				r"
 		SELECT
@@ -212,7 +211,7 @@ impl GameDatabase for DbMutex {
 				})
 			})
 			.optional()?
-			.ok_or_else(|| Error::GameNotFound(format!("{provider_id}/{game_id}")))?)
+			.ok_or_else(|| Error::GameNotFound(format!("{provider_id}/{game_id}")))
 	}
 
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse> {

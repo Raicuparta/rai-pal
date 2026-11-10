@@ -49,7 +49,7 @@ fn forward_arguments() {
 				match stream.write_all(&encoded) {
 					Ok(()) => return,
 					Err(err) => {
-						log::debug!("Failed to forward arguments to running instance: {err}")
+						log::debug!("Failed to forward arguments to running instance: {err}");
 					}
 				}
 			}

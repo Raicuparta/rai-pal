@@ -1,5 +1,4 @@
 use std::{
-	fs,
 	path::PathBuf,
 	sync::{
 		LazyLock,
@@ -8,11 +7,12 @@ use std::{
 	time::UNIX_EPOCH,
 };
 
+use fs_err as fs;
 use rai_pal_backend::{app_paths, result::LogErrExt};
 use sha2::{Digest, Sha256};
 
-pub(crate) const THUMBNAIL_WIDTH: u32 = 200;
-pub(crate) const THUMBNAIL_HEIGHT: u32 = 120;
+pub const THUMBNAIL_WIDTH: u32 = 200;
+pub const THUMBNAIL_HEIGHT: u32 = 120;
 
 const CACHE_VERSION: u32 = 1;
 const MAX_CACHE_BYTES: u64 = 200 * 1024 * 1024;
@@ -37,11 +37,11 @@ fn cache_path(url: &str, width: u32, height: u32) -> Option<PathBuf> {
 	)
 }
 
-pub(crate) fn contains(url: &str, width: u32, height: u32) -> bool {
+pub fn contains(url: &str, width: u32, height: u32) -> bool {
 	cache_path(url, width, height).is_some_and(|path| path.is_file())
 }
 
-pub(crate) fn load(url: &str, width: u32, height: u32) -> Option<Vec<u8>> {
+pub fn load(url: &str, width: u32, height: u32) -> Option<Vec<u8>> {
 	let path = cache_path(url, width, height)?;
 	fs::read(&path).ok_or_log(&format!(
 		"Failed to read thumbnail cache file {}",
@@ -49,7 +49,7 @@ pub(crate) fn load(url: &str, width: u32, height: u32) -> Option<Vec<u8>> {
 	))
 }
 
-pub(crate) fn store(url: &str, width: u32, height: u32, bytes: &[u8]) {
+pub fn store(url: &str, width: u32, height: u32, bytes: &[u8]) {
 	let Some(path) = cache_path(url, width, height) else {
 		return;
 	};
@@ -89,7 +89,7 @@ pub(crate) fn store(url: &str, width: u32, height: u32, bytes: &[u8]) {
 	}
 }
 
-pub(crate) fn remove(url: &str, width: u32, height: u32) {
+pub fn remove(url: &str, width: u32, height: u32) {
 	let Some(path) = cache_path(url, width, height) else {
 		return;
 	};
@@ -102,7 +102,7 @@ pub(crate) fn remove(url: &str, width: u32, height: u32) {
 	}
 }
 
-pub(crate) fn prune() {
+pub fn prune() {
 	let Some(dir) = CACHE_DIR.as_ref() else {
 		return;
 	};

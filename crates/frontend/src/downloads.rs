@@ -192,7 +192,9 @@ impl Tracker {
 					})
 					.sum::<f64>();
 
-				(total / items.len() as f64 / 100.0) as f32
+				let count = u32::try_from(items.len()).unwrap_or(u32::MAX);
+				let average = total / f64::from(count) / 100.0;
+				progress_to_f32(average)
 			};
 
 			let rows = items
@@ -200,7 +202,7 @@ impl Tracker {
 				.map(|item| DownloadItemData {
 					id: item.id.into(),
 					name: item.name.into(),
-					progress: item.progress as f32,
+					progress: progress_to_f32(item.progress),
 					phase: match item.phase {
 						Phase::Pending => DownloadPhase::Pending,
 						Phase::InProgress => DownloadPhase::InProgress,
@@ -220,9 +222,9 @@ impl Tracker {
 	}
 
 	fn schedule_cleanup(&self) {
-		let items = self.items.clone();
+		let items = Arc::clone(&self.items);
 		let window = self.window.clone();
-		let last_publish = self.last_publish.clone();
+		let last_publish = Arc::clone(&self.last_publish);
 
 		thread::spawn(move || {
 			thread::sleep(FINISHED_RETENTION);
@@ -230,7 +232,7 @@ impl Tracker {
 			let removed = items
 				.lock()
 				.ok_or_log("Failed to lock download items")
-				.map(|mut items| {
+				.is_some_and(|mut items| {
 					let has_active = items
 						.iter()
 						.any(|item| matches!(item.phase, Phase::Pending | Phase::InProgress));
@@ -242,14 +244,13 @@ impl Tracker {
 					let before = items.len();
 					items.retain(|item| item.phase != Phase::Finished);
 					items.len() != before
-				})
-				.unwrap_or(false);
+				});
 
 			if !removed {
 				return;
 			}
 
-			let tracker = Tracker {
+			let tracker = Self {
 				items,
 				last_publish,
 				window,
@@ -258,6 +259,14 @@ impl Tracker {
 			tracker.publish();
 		});
 	}
+}
+
+#[expect(
+	clippy::cast_possible_truncation,
+	reason = "progress is a normalized fraction for the UI"
+)]
+const fn progress_to_f32(progress: f64) -> f32 {
+	progress as f32
 }
 
 fn step_name(step: &InstallStep) -> String {

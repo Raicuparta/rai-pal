@@ -82,7 +82,8 @@ fn patron_from_json(value: &Value) -> Option<FetchedPatron> {
 		return None;
 	}
 
-	let ranking = value.get("ranking")?.as_i64()? as i32;
+	let ranking = i32::try_from(value.get("ranking")?.as_i64()?)
+		.ok_or_log("Patron ranking does not fit in i32")?;
 	let avatar = value
 		.get("imageUrl")
 		.and_then(Value::as_str)

@@ -1,9 +1,10 @@
 use std::{
-	fs::{self, File, OpenOptions},
 	io::{self, Write},
 	path::PathBuf,
 	sync::Mutex,
 };
+
+use fs_err::{self as fs, File, OpenOptions};
 
 use log::{LevelFilter, Metadata, Record};
 

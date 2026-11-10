@@ -4341,6 +4341,7 @@ version = "1.0.0"
 dependencies = [
  "base64",
  "chrono",
+ "fs-err",
  "image",
  "log",
  "minisign-verify",
@@ -4373,6 +4374,7 @@ name = "rai-pal-updater-signer"
 version = "1.0.0"
 dependencies = [
  "base64",
+ "fs-err",
  "minisign",
 ]
 

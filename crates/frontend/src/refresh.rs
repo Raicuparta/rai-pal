@@ -77,7 +77,7 @@ pub fn refresh_all(
 			mods_tab::load(&window, &database);
 			start_query(
 				window.as_weak(),
-				database.clone(),
+				Arc::clone(&database),
 				scheduler,
 				query,
 				Duration::ZERO,
@@ -87,7 +87,7 @@ pub fn refresh_all(
 	});
 }
 
-pub(crate) fn refresh_mods(database: &DbMutex) -> Result<(), String> {
+pub fn refresh_mods(database: &DbMutex) -> Result<(), String> {
 	runtime::block_on(mod_provider::refresh_all_mods(database))
 }
 
@@ -127,7 +127,7 @@ fn publish_tasks(window: &slint::Weak<MainWindow>, tasks: &[String]) {
 	});
 }
 
-pub(crate) fn refresh_selected_game(
+pub fn refresh_selected_game(
 	window: &MainWindow,
 	database: &Arc<DbMutex>,
 	selected_game: &SelectedGameState,

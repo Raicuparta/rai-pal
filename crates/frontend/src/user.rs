@@ -29,7 +29,7 @@ pub fn log_in(window: slint::Weak<MainWindow>) {
 	thread::spawn(move || {
 		let result = runtime::block_on(async {
 			start_auth().await?;
-			Ok(get_user_auth_state().await?)
+			get_user_auth_state().await
 		});
 
 		if result.is_ok() {
@@ -57,7 +57,7 @@ pub fn log_out(window: slint::Weak<MainWindow>) {
 	thread::spawn(move || {
 		let result = runtime::block_on(async {
 			logout_auth().await?;
-			Ok(get_user_auth_state().await?)
+			get_user_auth_state().await
 		});
 
 		apply_result(window, result);

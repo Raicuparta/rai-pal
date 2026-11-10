@@ -204,7 +204,7 @@ impl ProviderParser for Epic {
 							ProviderCommandAction::StartViaProvider,
 							ProviderCommandKind::String(format!(
 								"com.epicgames.launcher://apps/{}?action=launch&silent=true",
-								&game.external_id
+								game.external_id
 							)),
 						);
 					}
