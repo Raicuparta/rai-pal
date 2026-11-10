@@ -103,6 +103,14 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let database = Arc::new(database);
 
 	let window = MainWindow::new()?;
+
+	// Must happen before the winit window is created (on first show), so that
+	// Wayland/X11 can associate the window with the desktop entry and its icon.
+	#[cfg(target_os = "linux")]
+	if let Err(err) = slint::set_xdg_app_id("rai-pal-slint") {
+		log::warn!("Failed to set XDG app id: {err}");
+	}
+
 	window.set_window_title(if cfg!(debug_assertions) {
 		"Rai Pal DEV".into()
 	} else {

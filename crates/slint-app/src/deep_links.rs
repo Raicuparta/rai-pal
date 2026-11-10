@@ -148,9 +148,11 @@ fn register_linux() {
 	}
 
 	let executable = current_executable();
-	let desktop_file = applications_dir.join("rai-pal-slint.desktop");
+	// Deep links only need a hidden handler, the visible app entry with its icon ships
+	// inside the AppImage's own `.desktop` file.
+	let desktop_file = applications_dir.join("rai-pal-handler.desktop");
 	let contents = format!(
-		"[Desktop Entry]\nType=Application\nName=Rai Pal\nComment=Universal game mod manager\nExec=\"{}\" %u\nIcon=rai-pal-slint\nTerminal=false\nCategories=Game;\nStartupNotify=true\nMimeType=x-scheme-handler/rai-pal;\n",
+		"[Desktop Entry]\nType=Application\nName=Rai Pal\nNoDisplay=true\nExec=\"{}\" %u\nTerminal=false\nMimeType=x-scheme-handler/rai-pal;\n",
 		executable.display()
 	);
 
@@ -162,7 +164,7 @@ fn register_linux() {
 	match Command::new("xdg-mime")
 		.args([
 			"default",
-			"rai-pal-slint.desktop",
+			"rai-pal-handler.desktop",
 			"x-scheme-handler/rai-pal",
 		])
 		.status()

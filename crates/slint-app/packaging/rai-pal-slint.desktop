@@ -7,4 +7,5 @@ Icon=rai-pal-slint
 Terminal=false
 Categories=Game;
 StartupNotify=true
+StartupWMClass=rai-pal-slint
 MimeType=x-scheme-handler/rai-pal;
