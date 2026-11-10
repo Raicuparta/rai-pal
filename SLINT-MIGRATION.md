@@ -7,7 +7,7 @@ needs an equivalent after that removal.
 ## Done
 
 - Removed the Tauri app, frontend, Node tooling, and Tauri-only build config.
-- Moved the Cargo workspace, `crates/core`, `crates/proc-macros`, and `crates/slint-app` under `crates/`.
+- Moved the Cargo workspace, `crates/backend`, `crates/proc-macros`, and `crates/frontend` under `crates/`.
 - Replaced npm scripts with shell scripts for dev, formatting, linting, builds,
   and release helpers.
 - App shell, games/mods/thanks tabs, app menu.
@@ -19,7 +19,7 @@ needs an equivalent after that removal.
 - Mod actions: install, update, reinstall, uninstall, uninstall all, run, configure, open folder, download config.
 - Mods tab: mod families, mod rows, run/install/website actions, open local mods folder.
 - About popup.
-- Bundled gettext translations. The `.po` catalogs in `crates/slint-app/translations` are
+- Bundled gettext translations. The `.po` catalogs in `crates/frontend/translations` are
   the source of truth now that the TypeScript localizations are gone.
 - Shared core filter mutation and provider-action selection logic.
 - Central Slint theme, branding colors, sidebar/section components, global mod actions.
@@ -66,7 +66,7 @@ Nothing currently.
   the details debug popup still shows pretty JSON from the selected game.
 - Kept Slint row structs and display formatting on the Slint side. Frontend data
   types use a `View` suffix: `GameRowView` is populated by the `ReleaseDate` and
-  formatting helpers in `crates/slint-app/src/model.rs`, and fetch workers send
+  formatting helpers in `crates/frontend/src/model.rs`, and fetch workers send
   the typed `Game` back to the UI thread instead of building preformatted data.
 - Backend names now distinguish the manifest from the per-game entry: `Mod` is
   the manifest (`mods::manifest`), `GameMod` is a manifest plus its `ModInfo` and
@@ -97,7 +97,7 @@ These are plausible simplifications that need a product or API decision before
 changing.
 
 - Move filter group metadata (labels, translation keys, display values, and
-  notes) from `crates/slint-app/src/filters.rs` into core, so the UI only maps
+  notes) from `crates/frontend/src/filters.rs` into core, so the UI only maps
   core filter definitions into Slint models. The value lists and mutation logic
   are already shared, but the labels are still duplicated and can drift from
   the core filter groups.
@@ -145,7 +145,7 @@ Scrolling CPU is dominated by rendering, not image fetching/decoding:
 
 ```text
 80.1%  llvmpipe-* threads       software OpenGL rasterizer
-19.7%  rai-pal-slint            app/main-thread work
+19.7%  Rai-Pal                  app/main-thread work
  0.1%  reqwest/async-io         network-related threads
 ```
 

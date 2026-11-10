@@ -8,10 +8,10 @@ description: "Use when asked to update translations, localize strings, add new l
 Translations are gettext catalogs:
 
 ```text
-crates/slint-app/translations/<language>/LC_MESSAGES/rai-pal-slint.po
+crates/frontend/translations/<language>/LC_MESSAGES/rai-pal-frontend.po
 ```
 
-`crates/slint-app/translations/en/LC_MESSAGES/rai-pal-slint.po` is the source of truth
+`crates/frontend/translations/en/LC_MESSAGES/rai-pal-frontend.po` is the source of truth
 for `msgid` and `msgctxt`. Other languages are under their short language code
 (`de`, `es`, `fr`, `ja`, `ko`, `pt`, `wa`, `zh`).
 
@@ -39,11 +39,11 @@ When translating an existing key, leave all unrelated entries untouched.
 Compile-check the catalogs together with the UI:
 
 ```bash
-cargo check -p rai-pal-slint
+cargo check -p rai-pal-frontend
 ```
 
 If `msgfmt` is available, it can also check an individual catalog:
 
 ```bash
-msgfmt --check -o /dev/null crates/slint-app/translations/en/LC_MESSAGES/rai-pal-slint.po
+msgfmt --check -o /dev/null crates/frontend/translations/en/LC_MESSAGES/rai-pal-frontend.po
 ```

@@ -10,18 +10,17 @@ if [[ -z "$PLATFORM" || -z "$VERSION" ]]; then
 	exit 1
 fi
 
-DIST_DIR="$ROOT_DIR/crates/slint-app/dist"
 OUTPUT_DIR="$ROOT_DIR/release-assets"
 mkdir -p "$OUTPUT_DIR"
 
 case "$PLATFORM" in
 	windows)
-		SOURCE="$DIST_DIR/RaiPal-Slint-$VERSION-x86_64-setup.exe"
+		SOURCE="$ROOT_DIR/target/bundles/nsis/RaiPal-$VERSION-x86_64-setup.exe"
 		TARGET="$OUTPUT_DIR/RaiPal.exe"
 		PLATFORM_KEY="windows-x86_64"
 		;;
 	linux)
-		SOURCE="$DIST_DIR/RaiPal-Slint-$VERSION-x86_64.AppImage"
+		SOURCE="$ROOT_DIR/target/bundles/appimage/RaiPal-$VERSION-x86_64.AppImage"
 		TARGET="$OUTPUT_DIR/RaiPal.AppImage"
 		PLATFORM_KEY="linux-x86_64"
 		;;

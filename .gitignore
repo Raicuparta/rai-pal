@@ -1,5 +1,4 @@
 /target/
-/crates/slint-app/dist/
 /release-assets/
 /temp_release_body.md
 /latest.json

@@ -100,11 +100,11 @@ jobs:
 
       - name: Build (Linux)
         if: matrix.os-name == 'linux'
-        run: bash scripts/build-slint-appimage.sh
+        run: bash scripts/build-appimage.sh
 
       - name: Build (Windows)
         if: matrix.os-name == 'windows'
-        run: bash scripts/build-slint-windows.sh
+        run: bash scripts/build-windows.sh
 
       - name: Collect Build Artifacts
         run: bash scripts/collect-build-artifacts.sh ${{ matrix.os-name }} ${{ needs.create-release.outputs.version }}
@@ -150,7 +150,7 @@ jobs:
           files: latest.json
           draft: true
 
-  release-slint-macos:
+  release-macos:
     needs: create-release
     if: inputs.build_target == 'macos' || inputs.build_target == 'all'
     runs-on: macos-latest
@@ -163,11 +163,11 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build macOS app
-        run: bash scripts/build-slint-macos.sh
+        run: bash scripts/build-macos.sh
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.create-release.outputs.tag_name }}
-          files: crates/slint-app/dist/*.zip
+          files: target/bundles/macos/*.zip
           draft: true

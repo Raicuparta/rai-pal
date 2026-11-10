@@ -4302,7 +4302,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 
 [[package]]
-name = "rai-pal-core"
+name = "rai-pal-backend"
 version = "1.0.0"
 dependencies = [
  "base64",
@@ -4336,15 +4336,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rai-pal-proc-macros"
-version = "1.0.0"
-dependencies = [
- "quote",
- "syn 3.0.9",
-]
-
-[[package]]
-name = "rai-pal-slint"
+name = "rai-pal-frontend"
 version = "1.0.0"
 dependencies = [
  "base64",
@@ -4352,7 +4344,7 @@ dependencies = [
  "image",
  "log",
  "minisign-verify",
- "rai-pal-core",
+ "rai-pal-backend",
  "reqwest",
  "rfd",
  "semver",
@@ -4366,6 +4358,14 @@ dependencies = [
  "tokio",
  "url",
  "winreg",
+]
+
+[[package]]
+name = "rai-pal-proc-macros"
+version = "1.0.0"
+dependencies = [
+ "quote",
+ "syn 3.0.9",
 ]
 
 [[package]]

@@ -3,10 +3,10 @@ set -euo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 DECK_HOST="${DECK_HOST:-deck@192.168.8.166}"
-APPIMAGE="$(find "$ROOT_DIR/crates/slint-app/dist" -maxdepth 1 -name '*.AppImage' -print -quit)"
+APPIMAGE="$(find "$ROOT_DIR/target/bundles/appimage" -maxdepth 1 -name '*.AppImage' -print -quit)"
 
 if [[ -z "$APPIMAGE" ]]; then
-	echo "No AppImage found in crates/slint-app/dist. Build one first." >&2
+	echo "No AppImage found in target/bundles/appimage. Build one first." >&2
 	exit 1
 fi
 

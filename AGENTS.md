@@ -1,7 +1,7 @@
 # Instructions for AI agents
 
 Rai Pal is a Slint desktop app. The Rust workspace is at the repository root:
-`crates/core` contains shared logic, `crates/slint-app` contains the UI and application
+`crates/backend` contains shared logic, `crates/frontend` contains the UI and application
 runtime, and `crates/proc-macros` contains shared derive macros.
 
 ## Finding things
@@ -19,14 +19,14 @@ of the same commit.
 
 - `scripts/dev.sh` — Slint app with the MCP server enabled.
 - `scripts/dev-live.sh` — Slint live preview (no bundled translations).
-- `cargo check -p rai-pal-slint` — compile-check the app.
+- `cargo check -p rai-pal-frontend` — compile-check the app.
 - Backend logs go to stdout/stderr.
 
 Packaging scripts live in `scripts/`; see `scripts/README.md`.
 
 ## Styles
 
-Use `crates/slint-app/ui/theme.slint` for reusable spacing, sizes, radii, font sizes,
+Use `crates/frontend/ui/theme.slint` for reusable spacing, sizes, radii, font sizes,
 and semantic colors. If some style is only used in one place, it probably
 shouldn't be in the theme.
 
@@ -58,7 +58,7 @@ Read `.agents/skills/slint/SKILL.md` and the relevant
   string concatenation so translations can reorder arguments.
 - Reserve space for hover-only controls and track hover across the whole row so
   layouts don't shift or flicker.
-- Compile-check with `cargo check -p rai-pal-slint`; for visual/runtime checks
+- Compile-check with `cargo check -p rai-pal-frontend`; for visual/runtime checks
   use the Slint MCP server or `slint-viewer`, not only source inspection.
 - Avoid putting wrapped `Text` or layouts that size to wrapped content inside
   `if`. Slint 1.18 gives conditional elements their unconstrained
@@ -72,16 +72,16 @@ Read `.agents/skills/slint/SKILL.md` and the relevant
 
 ## Shared code
 
-Put logic that is not specific to the UI in `rai-pal-core` instead of
-duplicating it in `crates/slint-app`. Be careful not to introduce extra lock contention
+Put logic that is not specific to the UI in `rai-pal-backend` instead of
+duplicating it in `crates/frontend`. Be careful not to introduce extra lock contention
 or make hot paths synchronous.
 
-Translations are gettext catalogs in `crates/slint-app/translations`; they are the
+Translations are gettext catalogs in `crates/frontend/translations`; they are the
 source of truth for user-visible strings.
 
 ## Error handling
 
-Errors use thiserror enums in `crates/core/src/result.rs`. Errors reach the UI mostly
+Errors use thiserror enums in `crates/backend/src/result.rs`. Errors reach the UI mostly
 as strings. `fs-err` already adds useful context; for dependency `io::Error`s and
 similar, add context with `thiserror-context` whenever the error can reach the
 user.

@@ -11,11 +11,13 @@ scripts/lint.sh       # cargo clippy --fix
 
 ## Packaging
 
-```sh
-scripts/build-slint-appimage.sh
-scripts/build-slint-windows.sh
-scripts/build-slint-macos.sh
-```
+Bundles are written to `target/bundles/<type>/`:
+
+| Script                  | Output                              |
+| ----------------------- | ----------------------------------- |
+| `build-appimage.sh`     | `target/bundles/appimage/`          |
+| `build-windows.sh`      | `target/bundles/nsis/`              |
+| `build-macos.sh`        | `target/bundles/macos/`             |
 
 Windows builds use `cargo-xwin` and package an NSIS installer with `makensis`.
 The macOS script removes the Linux-only winit patch from `Cargo.toml` before
@@ -37,9 +39,9 @@ scripts/merge-updater-json.sh <partials-dir>
 
 ```sh
 podman build -f Containerfile.linux -t rai-pal-builder:linux-local .
-podman run --rm -v "$PWD:/app" -w /app rai-pal-builder:linux-local scripts/build-slint-appimage.sh
+podman run --rm -v "$PWD:/app" -w /app rai-pal-builder:linux-local scripts/build-appimage.sh
 
-podman run --rm -v "$PWD:/app" -w /app ghcr.io/raicuparta/rai-pal-builder:windows-latest scripts/build-slint-windows.sh
+podman run --rm -v "$PWD:/app" -w /app ghcr.io/raicuparta/rai-pal-builder:windows-latest scripts/build-windows.sh
 ```
 
 ## Steam Deck
