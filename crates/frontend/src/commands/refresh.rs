@@ -102,7 +102,7 @@ impl CommandHandler {
 	}
 
 	pub fn refresh_game(&self) {
-		let Some((index, game)) = self.selected_game() else {
+		let Some((_, game)) = self.selected_game() else {
 			return;
 		};
 
@@ -142,6 +142,18 @@ impl CommandHandler {
 					return;
 				};
 
+				// The refresh runs in the background; don't apply it if the user
+				// selected another game in the meantime.
+				let Some((index, selected_game)) = handler.selected_game() else {
+					return;
+				};
+
+				if selected_game.provider_id != updated_game.provider_id
+					|| selected_game.game_id != updated_game.game_id
+				{
+					return;
+				}
+
 				handler.set_selected_game(index, updated_game.clone());
 				handler.refresh_selected_row(index, &updated_game);
 				handler.refresh_mods(&updated_game);
@@ -154,6 +166,27 @@ impl CommandHandler {
 				"",
 			);
 		});
+	}
+
+	/// Tauri refreshed the selected game whenever the window regained focus, so
+	/// mods installed while the game was running showed up on return.
+	pub fn refresh_selected_game_on_focus(&self) {
+		let Some((_, game)) = self.selected_game() else {
+			return;
+		};
+
+		if game.exe_path.is_none() {
+			return;
+		}
+
+		if self
+			.ui()
+			.is_some_and(|window| window.global::<crate::Refresh>().get_refreshing())
+		{
+			return;
+		}
+
+		self.refresh_game();
 	}
 
 	pub fn reload_selected_game(&self) {

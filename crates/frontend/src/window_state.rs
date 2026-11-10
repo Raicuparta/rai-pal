@@ -85,6 +85,11 @@ pub fn register_events(window: &MainWindow) {
 					handler.persist_settings();
 				}
 			}
+			winit::event::WindowEvent::Focused(true) => {
+				if let Some(handler) = CommandHandler::current() {
+					handler.refresh_selected_game_on_focus();
+				}
+			}
 			winit::event::WindowEvent::HoveredFile(_) => {
 				if let Some(handler) = CommandHandler::current()
 					&& let Some(app_window) = handler.ui()

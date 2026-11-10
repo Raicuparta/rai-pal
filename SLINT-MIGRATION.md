@@ -37,6 +37,8 @@ needs an equivalent after that removal.
   the source of truth now that the TypeScript localizations are gone.
 - Shared core filter mutation and provider-action selection logic.
 - Refresh all games, mod sources, and remote databases from the games and mods sidebars.
+- Automatic refresh of the selected game's executable and installed mods when the
+  window regains focus, matching the Tauri game page behavior.
 - URL mod source management, including source toggles, removal, and add confirmation.
 - Steam cache reset from the app menu.
 - Steam shortcut creation from the app menu.
@@ -79,10 +81,10 @@ needs an equivalent after that removal.
   events are not handled (registration only exists for Linux and Windows).
 - macOS: no automatic updates. The updater only has platform entries and
   installers for Linux x86_64 (AppImage) and Windows x86_64 (NSIS).
-- Tauri refreshed the game's executable and mods every time the game was opened
-  and whenever the window regained focus. The current app reloads the game from
-  the database and refreshes mods on selection, but never re-scans the
-  executable and does not react to window focus.
+- Selecting a game reloads it from the database and refreshes its mods without
+  re-scanning the executable. Tauri also refreshed the executable when the game
+  page opened, but the window-focus refresh now covers returning from a game.
+  Re-scanning on selection itself is still not implemented.
 
 ## Core/Slint cleanup
 
