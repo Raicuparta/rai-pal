@@ -7,6 +7,7 @@ mod actions;
 mod analytics;
 mod app;
 mod confirmation;
+mod deep_link_registration;
 mod deep_links;
 mod downloads;
 mod fetch;

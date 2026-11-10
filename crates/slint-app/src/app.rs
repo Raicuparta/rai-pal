@@ -25,7 +25,7 @@ use slint::{
 
 use crate::{
 	ActionKind, ActionStates, AppColorScheme, AppTab, Fonts, MainWindow, ModActions, action_state,
-	actions, analytics, confirmation, deep_links, downloads,
+	actions, analytics, confirmation, deep_link_registration, deep_links, downloads,
 	fetch::spawn_fetchers,
 	filters::{
 		apply_filter_action, build_groups, load_mod_families, reset_all_filters, reset_filter_group,
@@ -1129,7 +1129,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			}
 		});
 
-	deep_links::register();
+	deep_link_registration::register();
 	for argument in std::env::args().skip(1) {
 		deep_links::handle(&argument, &window, &database, &selected_game, &downloads);
 	}
