@@ -10,6 +10,8 @@ use crate::{
 	text,
 };
 
+use super::CommandHandler;
+
 const PATRONS_URL: &str = "https://raicuparta.github.io/patron-fetcher/patrons.json";
 const AVATAR_SIZE: u32 = 64;
 
@@ -20,7 +22,13 @@ struct FetchedPatron {
 	avatar: Option<FetchedImage>,
 }
 
-pub fn load(window: slint::Weak<MainWindow>) {
+impl CommandHandler {
+	pub fn load_patrons(&self) {
+		load(self.window());
+	}
+}
+
+fn load(window: slint::Weak<MainWindow>) {
 	thread::spawn(move || {
 		let patrons = fetch_patrons();
 

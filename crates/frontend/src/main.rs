@@ -9,34 +9,22 @@ mod generated {
 pub use generated::*;
 
 mod action_state;
-mod actions;
 mod analytics;
 mod app;
-mod confirmation;
+mod commands;
 mod downloads;
 mod fetch;
 mod filters;
 mod i18n;
 mod image_cache;
 mod logging;
-mod manual;
-mod mod_sources;
 mod model;
-mod mods;
-mod mods_tab;
 mod notifications;
-mod os_integration;
-mod query;
-mod refresh;
 mod runtime;
 mod scheduler;
 mod selected;
 mod single_instance;
 mod text;
-mod thanks;
-mod tools;
-mod updater;
-mod user;
 
 fn main() -> Result<(), slint::PlatformError> {
 	app::run()

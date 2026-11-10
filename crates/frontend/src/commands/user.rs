@@ -8,60 +8,66 @@ use rai_pal_backend::{
 
 use crate::{MainWindow, analytics, notifications, runtime, text};
 
-pub fn load(window: slint::Weak<MainWindow>) {
-	refresh_state(window);
-}
+use super::CommandHandler;
 
-pub fn log_in(window: slint::Weak<MainWindow>) {
-	let Some(handle) = window.upgrade() else {
-		return;
-	};
-
-	if handle.global::<crate::UserState>().get_state() == crate::ActionState::Loading {
-		return;
+impl CommandHandler {
+	pub fn load_user(&self) {
+		refresh_state(self.window());
 	}
 
-	handle
-		.global::<crate::UserState>()
-		.set_state(crate::ActionState::Loading);
-	drop(handle);
+	pub fn log_in(&self) {
+		let window = self.window();
+		let Some(handle) = window.upgrade() else {
+			return;
+		};
 
-	thread::spawn(move || {
-		let result = runtime::block_on(async {
-			start_auth().await?;
-			get_user_auth_state().await
-		});
-
-		if result.is_ok() {
-			analytics::send(rai_pal_backend::analytics::Event::UserSignIn, &[]);
+		if handle.global::<crate::UserState>().get_state() == crate::ActionState::Loading {
+			return;
 		}
 
-		apply_result(window, result);
-	});
-}
+		handle
+			.global::<crate::UserState>()
+			.set_state(crate::ActionState::Loading);
+		drop(handle);
 
-pub fn log_out(window: slint::Weak<MainWindow>) {
-	let Some(handle) = window.upgrade() else {
-		return;
-	};
+		thread::spawn(move || {
+			let result = runtime::block_on(async {
+				start_auth().await?;
+				get_user_auth_state().await
+			});
 
-	if handle.global::<crate::UserState>().get_state() == crate::ActionState::Loading {
-		return;
+			if result.is_ok() {
+				analytics::send(rai_pal_backend::analytics::Event::UserSignIn, &[]);
+			}
+
+			apply_result(window, result);
+		});
 	}
 
-	handle
-		.global::<crate::UserState>()
-		.set_state(crate::ActionState::Loading);
-	drop(handle);
+	pub fn log_out(&self) {
+		let window = self.window();
+		let Some(handle) = window.upgrade() else {
+			return;
+		};
 
-	thread::spawn(move || {
-		let result = runtime::block_on(async {
-			logout_auth().await?;
-			get_user_auth_state().await
+		if handle.global::<crate::UserState>().get_state() == crate::ActionState::Loading {
+			return;
+		}
+
+		handle
+			.global::<crate::UserState>()
+			.set_state(crate::ActionState::Loading);
+		drop(handle);
+
+		thread::spawn(move || {
+			let result = runtime::block_on(async {
+				logout_auth().await?;
+				get_user_auth_state().await
+			});
+
+			apply_result(window, result);
 		});
-
-		apply_result(window, result);
-	});
+	}
 }
 
 fn refresh_state(window: slint::Weak<MainWindow>) {

@@ -15,6 +15,7 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - some modals have clipped titles (add to steam as example, i saw on deck)
 - maybe a bit too small on steam deck?
 - slint supports both _ and -, maybe rename every single thing to _?
+- confused about confirmation.rs in frontend, seems overkill? can it be more in slint side?
 
 # Report:
 

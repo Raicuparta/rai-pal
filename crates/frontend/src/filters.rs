@@ -215,27 +215,28 @@ fn unknown_value<T: Eq + Hash>(
 	item_data("", label_key, label, &group.item(None), "")
 }
 
-#[expect(
-	clippy::too_many_arguments,
-	reason = "the filter group needs its labels, values, and grouping metadata"
-)]
-fn build_group<T: Eq + Hash>(
+struct GroupSpec<'a, T: Eq + Hash> {
 	key: FilterGroupKey,
-	label_key: &str,
-	label: &str,
-	group: &FilterGroup<T>,
+	label_key: &'a str,
+	label: &'a str,
+	group: &'a FilterGroup<T>,
 	values: Vec<FilterValueData>,
-	possible_values: &[T],
+	possible_values: &'a [T],
 	has_unknown: bool,
+}
+
+fn build_group<T: Eq + Hash>(
+	spec: GroupSpec<'_, T>,
 	expanded_filters: &HashSet<String>,
 ) -> FilterGroupData {
 	group_data(
-		key,
-		label_key,
-		label,
-		values,
-		group.has_changes(possible_values, has_unknown),
-		group.has_locked(),
+		spec.key,
+		spec.label_key,
+		spec.label,
+		spec.values,
+		spec.group
+			.has_changes(spec.possible_values, spec.has_unknown),
+		spec.group.has_locked(),
 		expanded_filters,
 	)
 }
@@ -260,13 +261,15 @@ fn build_mod_family_group(
 	values.sort_by_key(|a| a.label.to_lowercase());
 
 	build_group(
-		FilterGroupKey::ModFamilies,
-		"mod",
-		"Mod",
-		&filter.mod_families,
-		values,
-		mod_families,
-		false,
+		GroupSpec {
+			key: FilterGroupKey::ModFamilies,
+			label_key: "mod",
+			label: "Mod",
+			group: &filter.mod_families,
+			values,
+			possible_values: mod_families,
+			has_unknown: false,
+		},
 		expanded_filters,
 	)
 }
@@ -388,84 +391,100 @@ pub fn build_groups(
 ) -> Vec<FilterGroupData> {
 	vec![
 		build_group(
-			FilterGroupKey::Installed,
-			"status",
-			"Install status",
-			&filter.installed,
-			installed_values(filter),
-			&InstallState::ALL,
-			false,
+			GroupSpec {
+				key: FilterGroupKey::Installed,
+				label_key: "status",
+				label: "Install status",
+				group: &filter.installed,
+				values: installed_values(filter),
+				possible_values: &InstallState::ALL,
+				has_unknown: false,
+			},
 			expanded_filters,
 		),
 		build_group(
-			FilterGroupKey::Engines,
-			"engine",
-			"Engine",
-			&filter.engines,
-			engine_values(filter),
-			&EngineBrand::ALL,
-			true,
+			GroupSpec {
+				key: FilterGroupKey::Engines,
+				label_key: "engine",
+				label: "Engine",
+				group: &filter.engines,
+				values: engine_values(filter),
+				possible_values: &EngineBrand::ALL,
+				has_unknown: true,
+			},
 			expanded_filters,
 		),
 		build_mod_family_group(filter, mod_families, expanded_filters),
 		build_group(
-			FilterGroupKey::Tags,
-			"tags",
-			"Tag",
-			&filter.tags,
-			tag_values(filter),
-			&GameTag::ALL,
-			true,
+			GroupSpec {
+				key: FilterGroupKey::Tags,
+				label_key: "tags",
+				label: "Tag",
+				group: &filter.tags,
+				values: tag_values(filter),
+				possible_values: &GameTag::ALL,
+				has_unknown: true,
+			},
 			expanded_filters,
 		),
 		build_group(
-			FilterGroupKey::Providers,
-			"provider",
-			"Provider",
-			&filter.providers,
-			provider_values(filter),
-			&GameProviderId::ALL,
-			false,
+			GroupSpec {
+				key: FilterGroupKey::Providers,
+				label_key: "provider",
+				label: "Provider",
+				group: &filter.providers,
+				values: provider_values(filter),
+				possible_values: &GameProviderId::ALL,
+				has_unknown: false,
+			},
 			expanded_filters,
 		),
 		build_group(
-			FilterGroupKey::UnityBackends,
-			"unityBackend",
-			"Unity Backend",
-			&filter.unity_backends,
-			unity_backend_values(filter),
-			&UnityBackend::ALL,
-			true,
+			GroupSpec {
+				key: FilterGroupKey::UnityBackends,
+				label_key: "unityBackend",
+				label: "Unity Backend",
+				group: &filter.unity_backends,
+				values: unity_backend_values(filter),
+				possible_values: &UnityBackend::ALL,
+				has_unknown: true,
+			},
 			expanded_filters,
 		),
 		build_group(
-			FilterGroupKey::ExecutableOs,
-			"executableOs",
-			"Executable OS",
-			&filter.executable_os,
-			operating_system_values(&filter.executable_os),
-			&OperatingSystem::ALL,
-			true,
+			GroupSpec {
+				key: FilterGroupKey::ExecutableOs,
+				label_key: "executableOs",
+				label: "Executable OS",
+				group: &filter.executable_os,
+				values: operating_system_values(&filter.executable_os),
+				possible_values: &OperatingSystem::ALL,
+				has_unknown: true,
+			},
 			expanded_filters,
 		),
 		build_group(
-			FilterGroupKey::SupportedOs,
-			"supportedOs",
-			"Supported OS",
-			&filter.supported_os,
-			operating_system_values(&filter.supported_os),
-			&OperatingSystem::ALL,
-			true,
+			GroupSpec {
+				key: FilterGroupKey::SupportedOs,
+				label_key: "supportedOs",
+				label: "Supported OS",
+				group: &filter.supported_os,
+				values: operating_system_values(&filter.supported_os),
+				possible_values: &OperatingSystem::ALL,
+				has_unknown: true,
+			},
 			expanded_filters,
 		),
 		build_group(
-			FilterGroupKey::Architectures,
-			"architecture",
-			"Architecture",
-			&filter.architectures,
-			architecture_values(filter),
-			&Architecture::ALL,
-			true,
+			GroupSpec {
+				key: FilterGroupKey::Architectures,
+				label_key: "architecture",
+				label: "Architecture",
+				group: &filter.architectures,
+				values: architecture_values(filter),
+				possible_values: &Architecture::ALL,
+				has_unknown: true,
+			},
 			expanded_filters,
 		),
 	]

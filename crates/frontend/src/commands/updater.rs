@@ -132,6 +132,18 @@ impl Updater {
 	}
 }
 
+impl super::CommandHandler {
+	pub fn install_update(&self) {
+		self.updater.install(self.window());
+	}
+
+	pub fn ignore_update(&self) {
+		if let Some(window) = self.ui() {
+			self.updater.ignore(&window);
+		}
+	}
+}
+
 fn check_for_update(
 	window: &slint::Weak<MainWindow>,
 	pending: &Arc<Mutex<Option<Release>>>,

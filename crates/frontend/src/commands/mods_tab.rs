@@ -6,13 +6,24 @@ use rai_pal_backend::{
 	mods::{manifest::Mod, mod_groups},
 };
 
-use crate::{
-	MainWindow, ModsTabItemData, ModsTabModData,
+use crate::{MainWindow, ModsTabItemData, ModsTabModData, notifications};
+
+use super::{
+	CommandHandler,
 	mods::{download_version, engine_text, release_date_display},
-	notifications,
 };
 
-pub fn load(window: &MainWindow, database: &DbMutex) {
+impl CommandHandler {
+	pub fn load_mods_tab(&self) {
+		let Some(window) = self.ui() else {
+			return;
+		};
+
+		load(&window, &self.database);
+	}
+}
+
+fn load(window: &MainWindow, database: &DbMutex) {
 	let groups = match mod_groups::get_mod_groups(database) {
 		Ok(groups) => groups,
 		Err(err) => {

@@ -1,4 +1,3 @@
-use slint::ComponentHandle as _;
 use std::{sync::Arc, thread, time::Duration};
 
 use rai_pal_backend::{
@@ -8,8 +7,11 @@ use rai_pal_backend::{
 		game_database::{GameDatabase, GameIdsResponse},
 	},
 };
+use slint::ComponentHandle as _;
 
 use crate::{MainWindow, model::make_rows, notifications, scheduler::FetchScheduler};
+
+use super::CommandHandler;
 
 pub fn load_game_ids(database: &DbMutex, query: GamesQuery) -> Result<GameIdsResponse, String> {
 	database
@@ -17,7 +19,19 @@ pub fn load_game_ids(database: &DbMutex, query: GamesQuery) -> Result<GameIdsRes
 		.map_err(|err| err.to_string())
 }
 
-pub fn start_query(
+impl CommandHandler {
+	pub fn start_query(&self, delay: Duration) {
+		start_query(
+			self.window(),
+			Arc::clone(&self.database),
+			Arc::clone(&self.scheduler),
+			self.query(),
+			delay,
+		);
+	}
+}
+
+fn start_query(
 	window: slint::Weak<MainWindow>,
 	database: Arc<DbMutex>,
 	scheduler: Arc<FetchScheduler>,
