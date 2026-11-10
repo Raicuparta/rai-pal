@@ -3,7 +3,7 @@ import { Theme } from "../theme.slint";
 import { Tr } from "../translations.slint";
 import { LabeledDivider } from "labeled_divider.slint";
 import { SidebarAction } from "sidebar_action.slint";
-import { Sidebar, SidebarSection } from "sidebar.slint";
+import { Sidebar, SidebarScroll, SidebarSection } from "sidebar.slint";
 import { Icon } from "svg_icon.slint";
 import { Button } from "button.slint";
 import { GamesActions } from "../actions.slint";
@@ -26,22 +26,23 @@ export component GameSidebar inherits Sidebar {
         return Icon.none;
     }
 
-    VerticalLayout {
-        alignment: start;
-        spacing: Theme.space-sm;
+    SidebarSection {
+        Button {
+            text: @tr("subPage" => "Back");
+            icon: Icon.back;
 
-        SidebarSection {
-            Button {
-                text: @tr("subPage" => "Back");
-                icon: Icon.back;
-
-                clicked => {
-                    GamesActions.back();
-                }
+            clicked => {
+                GamesActions.back();
             }
         }
+    }
 
-        if GameSidebarState.provider-actions.length > 0: VerticalLayout {
+    SidebarScroll {
+        VerticalLayout {
+            alignment: start;
+            spacing: Theme.space-sm;
+
+            if GameSidebarState.provider-actions.length > 0: VerticalLayout {
             alignment: start;
             spacing: 0px;
 
@@ -160,12 +161,13 @@ export component GameSidebar inherits Sidebar {
                 }
             }
 
-            SidebarAction {
-                text: @tr("debugData" => "Debug data");
-                icon: Icon.bug;
+                SidebarAction {
+                    text: @tr("debugData" => "Debug data");
+                    icon: Icon.bug;
 
-                clicked => {
-                    GamesActions.request-debug-data();
+                    clicked => {
+                        GamesActions.request-debug-data();
+                    }
                 }
             }
         }

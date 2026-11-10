@@ -10,19 +10,26 @@ export component SidebarSection inherits VerticalLayout {
     @children
 }
 
+export component SidebarScroll inherits ScrollView {
+    vertical-stretch: 1;
+
+    VerticalLayout {
+        alignment: start;
+        padding-bottom: Theme.space-md;
+
+        @children
+    }
+}
+
 export component Sidebar inherits Rectangle {
     width: 220px;
     background: Theme.background;
 
-    ScrollView {
-        VerticalLayout {
-            padding-bottom: Theme.space-md;
-            padding-top: Theme.space-md;
-            spacing: Theme.space-sm;
-            alignment: start;
+    VerticalLayout {
+        padding-top: Theme.space-md;
+        spacing: Theme.space-sm;
 
-            @children
-        }
+        @children
     }
 
     Rectangle {

@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 
 # Do these now:
 
-
 # Don't do these yet:
 
 - Filters scrolling still always scrolls entire sidebar.
@@ -18,13 +17,3 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - confused about confirmation.rs in frontend, seems overkill? can it be more in slint side?
 
 # Report:
-- Dropped the monospace font handling entirely (no `Fonts.monospace_family` global, no per-platform font
-  names, no fontique lookup). Anywhere that used a monospace font now just uses the default font.
-- Modal titles now wrap instead of eliding. Modal height is still the header + body preferred height sum, so
-  wrapped titles grow the modal correctly.
-- All `.slint` files (and their imports) renamed to snake_case. Non-Slint assets (icons, images) kept their
-  kebab-case names.
-- Debug modal text was invisible because `Modal`'s body layout used `alignment: start`, so the `TextEdit`
-  (which only ever sizes itself by stretch) collapsed to zero height. Removed that alignment so children can
-  stretch inside `big` modals; content-sized modals are unaffected because their body height equals its
-  preferred height.

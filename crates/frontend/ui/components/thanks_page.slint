@@ -4,7 +4,7 @@ import { PatronData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { ExternalLink } from "external_link.slint";
 import { LabeledDivider } from "labeled_divider.slint";
-import { Sidebar } from "sidebar.slint";
+import { Sidebar, SidebarScroll } from "sidebar.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 
 export global ThanksState {
@@ -82,21 +82,23 @@ export component ThanksPage inherits Rectangle {
 
     HorizontalLayout {
         Sidebar {
-            VerticalLayout {
-                padding-left: Theme.space-md;
-                padding-right: Theme.space-md;
-                spacing: Theme.space-sm;
-                alignment: start;
+            SidebarScroll {
+                VerticalLayout {
+                    padding-left: Theme.space-md;
+                    padding-right: Theme.space-md;
+                    spacing: Theme.space-sm;
+                    alignment: start;
 
-                LabeledDivider {
-                    label: @tr("thanksPage" => "Patreon Leaderboard");
-                    tooltip: root.leaderboard-tooltip;
-                    padding-left: Theme.space-sm;
-                    padding-right: Theme.space-sm;
-                }
+                    LabeledDivider {
+                        label: @tr("thanksPage" => "Patreon Leaderboard");
+                        tooltip: root.leaderboard-tooltip;
+                        padding-left: Theme.space-sm;
+                        padding-right: Theme.space-sm;
+                    }
 
-                for patron in ThanksState.patrons: PatronRow {
-                    patron: patron;
+                    for patron in ThanksState.patrons: PatronRow {
+                        patron: patron;
+                    }
                 }
             }
         }

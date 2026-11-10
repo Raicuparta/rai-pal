@@ -11,7 +11,7 @@ import { IconButton } from "icon_button.slint";
 import { LabeledDivider } from "labeled_divider.slint";
 import { ResetButton } from "reset_button.slint";
 import { FilterGroup } from "filter_group.slint";
-import { Sidebar, SidebarSection } from "sidebar.slint";
+import { Sidebar, SidebarScroll, SidebarSection } from "sidebar.slint";
 import { SidebarAction } from "sidebar_action.slint";
 import { RowDivider } from "row_divider.slint";
 import { SearchInput } from "search_input.slint";
@@ -116,40 +116,40 @@ export component GamesPage inherits Rectangle {
                 }
             }
 
-            VerticalLayout {
-                HorizontalLayout {
-                    vertical-stretch: 0;
-                    padding-left: Theme.space-sm;
-                    padding-right: Theme.space-lg;
-                    padding-bottom: Theme.space-xs;
-                    spacing: Theme.space-xs;
-                    cross-axis-alignment: center;
+            HorizontalLayout {
+                vertical-stretch: 0;
+                padding-left: Theme.space-sm;
+                padding-right: Theme.space-lg;
+                padding-bottom: Theme.space-xs;
+                spacing: Theme.space-xs;
+                cross-axis-alignment: center;
 
-                    IconButton {
-                        icon: Icon.collapse-all;
-                        tooltip: @tr("filterMenu" => "Collapse all filters");
-                        enabled: GamesQuery.filters-have-expanded;
+                IconButton {
+                    icon: Icon.collapse-all;
+                    tooltip: @tr("filterMenu" => "Collapse all filters");
+                    enabled: GamesQuery.filters-have-expanded;
 
-                        clicked => {
-                            GamesActions.filters-collapse-all();
-                        }
-                    }
-
-                    LabeledDivider {
-                        label: @tr("filterMenu" => "Filters");
-                        horizontal-stretch: 1;
-                    }
-
-                    ResetButton {
-                        tooltip: @tr("filterMenu" => "Reset all filters");
-                        enabled: GamesQuery.filters-have-changes;
-
-                        clicked => {
-                            GamesActions.filters-reset();
-                        }
+                    clicked => {
+                        GamesActions.filters-collapse-all();
                     }
                 }
 
+                LabeledDivider {
+                    label: @tr("filterMenu" => "Filters");
+                    horizontal-stretch: 1;
+                }
+
+                ResetButton {
+                    tooltip: @tr("filterMenu" => "Reset all filters");
+                    enabled: GamesQuery.filters-have-changes;
+
+                    clicked => {
+                        GamesActions.filters-reset();
+                    }
+                }
+            }
+
+            SidebarScroll {
                 for group in GamesQuery.filter-groups: FilterGroup {
                     group: group;
                 }
