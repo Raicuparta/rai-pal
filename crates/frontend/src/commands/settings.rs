@@ -1,20 +1,18 @@
-use std::{sync::Arc, thread, time::Duration};
+use std::time::Duration;
 
 use rai_pal_backend::{
-	app_settings::{AppLocale, AppSettings, ColorScheme, TabId},
+	app_settings::{AppSettings, ColorScheme, TabId},
 	game::Game,
 	game_providers::game_provider::GameProviderId,
 	games_query::GamesSortBy,
-	local_database::{game_database::GameDatabase, mod_database::ModDatabase},
+	local_database::game_database::GameDatabase,
 	result::LogErrExt,
 };
 use slint::{ComponentHandle, Model as _};
 
-use crate::{
-	ActionKind, AppColorScheme, AppTab, action_state, i18n, model::apply_game_to_row, selected,
-};
+use crate::{AppColorScheme, AppTab, i18n, model::apply_game_to_row, selected};
 
-use super::CommandHandler;
+use super::{CommandHandler, on_command};
 
 const SORT_OPTIONS: [(GamesSortBy, bool); 6] = [
 	(GamesSortBy::Title, false),
@@ -49,7 +47,7 @@ const fn core_tab(tab: AppTab) -> TabId {
 }
 
 impl CommandHandler {
-	pub fn reset_settings(&self, detected_locale: Option<AppLocale>) {
+	pub fn reset_settings(&self) {
 		let Some(window) = self.ui() else {
 			return;
 		};
@@ -61,7 +59,7 @@ impl CommandHandler {
 		};
 		self.persist_settings();
 
-		let locale = i18n::effective_locale(&self.settings.borrow(), detected_locale);
+		let locale = i18n::effective_locale(&self.settings.borrow(), self.detected_locale);
 		i18n::apply_translation(locale);
 
 		window
@@ -80,11 +78,11 @@ impl CommandHandler {
 		window.set_current_tab(AppTab::Games);
 		self.scheduler.set_thumbnails_enabled(true);
 
-		self.refresh_filter_groups();
+		self.refresh_filters();
 		self.start_query(Duration::ZERO);
 	}
 
-	pub fn set_language(&self, value: &str, detected_locale: Option<AppLocale>) {
+	pub fn set_language(&self, value: &str) {
 		let override_language = if value.is_empty() {
 			None
 		} else if let Some(locale) = i18n::locale_from_code(value) {
@@ -97,7 +95,7 @@ impl CommandHandler {
 		self.settings.borrow_mut().override_language = override_language;
 		self.persist_settings();
 
-		let locale = i18n::effective_locale(&self.settings.borrow(), detected_locale);
+		let locale = i18n::effective_locale(&self.settings.borrow(), self.detected_locale);
 		i18n::apply_translation(locale);
 
 		if let Some(window) = self.ui() {
@@ -204,7 +202,7 @@ impl CommandHandler {
 		}
 	}
 
-	pub fn update_selected_row(&self, index: usize, game: &Game) {
+	pub fn refresh_selected_row(&self, index: usize, game: &Game) {
 		let Some(window) = self.ui() else {
 			return;
 		};
@@ -215,59 +213,34 @@ impl CommandHandler {
 		rows.set_row_data(index, row.clone());
 		selected::show(&window, game, row);
 	}
+}
 
-	pub fn refresh_game(&self) {
-		let Some((index, game)) = self.selected_game() else {
-			return;
-		};
-
-		let action_id = action_state::key(ActionKind::RefreshGame, "");
-		let window = self.window();
-		action_state::start(&window, action_id.clone());
-
-		let database = Arc::clone(&self.database);
-
-		thread::spawn(move || {
-			let mut current_game = game;
-
-			let result = (|| {
-				current_game.refresh_executable()?;
-				database.insert_game(&current_game);
-				database.refresh_installed_mods()?;
-				database.get_game(&current_game.provider_id, &current_game.game_id)
-			})();
-
-			let updated_game = match result {
-				Ok(updated_game) => updated_game,
-				Err(err) => {
-					log::error!("Failed to refresh game: {err}");
-					action_state::finish(
-						&window,
-						action_id.clone(),
-						Err(err),
-						"Failed to refresh game",
-					);
-					return;
-				}
-			};
-
-			let finish_window = window.clone();
-			crate::runtime::invoke_on_ui(move || {
-				let Some(handler) = Self::current() else {
-					return;
-				};
-
-				handler.set_selected_game(index, updated_game.clone());
-				handler.update_selected_row(index, &updated_game);
-				handler.refresh_mods(&updated_game);
-			});
-
-			action_state::finish(
-				&finish_window,
-				action_id,
-				Ok::<(), rai_pal_backend::result::Error>(()),
-				"",
-			);
-		});
-	}
+pub fn register(window: &crate::MainWindow) {
+	on_command!(window, AppActions, on_reset_settings, || handler => {
+		handler.reset_settings();
+	});
+	on_command!(window, AppActions, on_language_changed, |value| handler => {
+		handler.set_language(value.as_str());
+	});
+	on_command!(window, AppActions, on_color_scheme_changed, |value| handler => {
+		handler.set_color_scheme(value);
+	});
+	on_command!(window, AppActions, on_hide_game_thumbnails_changed, |hide| handler => {
+		handler.set_hide_game_thumbnails(hide);
+	});
+	on_command!(window, AppActions, on_tab_changed, |tab| handler => {
+		handler.set_tab(tab);
+	});
+	on_command!(window, GamesActions, on_search_changed, |text| handler => {
+		handler.set_search_text(text.as_str());
+	});
+	on_command!(window, GamesActions, on_sort_changed, |index| handler => {
+		handler.set_sort_index(index);
+	});
+	on_command!(window, GamesActions, on_select_game, |index| handler => {
+		handler.select_game(index);
+	});
+	on_command!(window, GamesActions, on_back, || handler => {
+		handler.deselect_game();
+	});
 }

@@ -16,11 +16,11 @@ use rai_pal_backend::{
 use slint::ComponentHandle;
 
 use crate::{
-	ActionKind, GameModData, MainWindow, PotentialModData, action_state, downloads::Tracker,
-	notifications, runtime,
+	ActionKind, GameModData, MainWindow, PotentialModData, action_state, analytics,
+	downloads::Tracker, notifications, runtime,
 };
 
-use super::CommandHandler;
+use super::{CommandHandler, on_command};
 
 #[derive(Default)]
 struct LoadedMods {
@@ -41,6 +41,24 @@ impl CommandHandler {
 	}
 
 	pub fn install_mod(&self, game: Game, mod_id: String) {
+		analytics::send_mod(
+			rai_pal_backend::analytics::Event::InstallMod,
+			&mod_id,
+			Some(&game),
+		);
+		self.install_mod_inner(game, mod_id);
+	}
+
+	pub fn update_mod(&self, game: Game, mod_id: String) {
+		analytics::send_mod(
+			rai_pal_backend::analytics::Event::UpdateMod,
+			&mod_id,
+			Some(&game),
+		);
+		self.install_mod_inner(game, mod_id);
+	}
+
+	fn install_mod_inner(&self, game: Game, mod_id: String) {
 		let database = Arc::clone(&self.database);
 		let window = self.window();
 		let downloads = self.downloads.clone();
@@ -154,6 +172,12 @@ impl CommandHandler {
 	}
 
 	pub fn uninstall_mod(&self, game: Game, mod_id: String) {
+		analytics::send_mod(
+			rai_pal_backend::analytics::Event::UninstallMod,
+			&mod_id,
+			Some(&game),
+		);
+
 		let database = Arc::clone(&self.database);
 		let window = self.window();
 
@@ -243,6 +267,12 @@ impl CommandHandler {
 	}
 
 	pub fn run_mod(&self, game: Game, mod_id: String) {
+		analytics::send_mod(
+			rai_pal_backend::analytics::Event::RunMod,
+			&mod_id,
+			Some(&game),
+		);
+
 		let database = Arc::clone(&self.database);
 		let window = self.window();
 
@@ -703,5 +733,46 @@ fn refresh_after_action(window: &slint::Weak<MainWindow>, database: &Arc<DbMutex
 		}
 
 		refresh_mods_ui(&window, &database, &game);
+	});
+}
+
+impl CommandHandler {
+	fn with_selected_mod(&self, mod_id: &str, action: impl FnOnce(&Self, Game, String)) {
+		let Some((_, game)) = self.selected_game() else {
+			return;
+		};
+
+		action(self, game, mod_id.to_string());
+	}
+}
+
+pub fn register(window: &crate::MainWindow) {
+	on_command!(window, ModActions, on_update, |mod_id| handler => {
+		handler.with_selected_mod(mod_id.as_str(), CommandHandler::update_mod);
+	});
+	on_command!(window, ModActions, on_reinstall, |mod_id| handler => {
+		handler.with_selected_mod(mod_id.as_str(), CommandHandler::install_mod);
+	});
+	on_command!(window, ModActions, on_uninstall, |mod_id| handler => {
+		handler.with_selected_mod(mod_id.as_str(), CommandHandler::uninstall_mod);
+	});
+	on_command!(window, ModActions, on_run, |mod_id| handler => {
+		handler.with_selected_mod(mod_id.as_str(), CommandHandler::run_mod);
+	});
+	on_command!(window, ModActions, on_open_folder, |mod_id| handler => {
+		handler.with_selected_mod(mod_id.as_str(), CommandHandler::open_mod_folder);
+	});
+	on_command!(window, ModActions, on_download_config, |mod_id| handler => {
+		handler.with_selected_mod(mod_id.as_str(), CommandHandler::download_mod_config);
+	});
+	on_command!(window, ModActions, on_configure, |mod_id| handler => {
+		handler.with_selected_mod(mod_id.as_str(), |handler, game, mod_id| {
+			handler.configure_mod(game, mod_id, false);
+		});
+	});
+	on_command!(window, ModActions, on_configure_folder, |mod_id| handler => {
+		handler.with_selected_mod(mod_id.as_str(), |handler, game, mod_id| {
+			handler.configure_mod(game, mod_id, true);
+		});
 	});
 }

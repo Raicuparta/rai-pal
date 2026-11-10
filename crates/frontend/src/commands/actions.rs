@@ -1,6 +1,8 @@
 use std::{sync::Arc, thread};
 
-use crate::{ActionKey, ActionKind, action_state, analytics};
+use slint::ComponentHandle as _;
+
+use crate::{ActionKey, ActionKind, action_state, analytics, notifications};
 
 use rai_pal_backend::{
 	app_paths,
@@ -13,15 +15,41 @@ use rai_pal_backend::{
 	result::{Error, LogErrExt, Result},
 };
 
-use super::CommandHandler;
+use super::{CommandHandler, on_command};
 
 impl CommandHandler {
-	pub fn run_provider_action(
-		&self,
-		game: Game,
-		action: ProviderCommandAction,
-		action_id: ActionKey,
-	) {
+	pub fn run_provider_action(&self, value: &str) {
+		let Some(action) = value
+			.parse::<ProviderCommandAction>()
+			.ok_or_log("Failed to parse provider action")
+		else {
+			return;
+		};
+
+		let Some((_, game)) = self.selected_game() else {
+			return;
+		};
+
+		analytics::send(
+			rai_pal_backend::analytics::Event::ProviderCommand,
+			[
+				("action", action.to_string()),
+				("game", game.display_title.clone()),
+			],
+		);
+
+		if let Some(window) = self.ui() {
+			notifications::info(&window, "Running command... This might take a few seconds.");
+		}
+
+		self.run_game_action(
+			game,
+			action,
+			action_state::key(ActionKind::ProviderAction, value),
+		);
+	}
+
+	fn run_game_action(&self, game: Game, action: ProviderCommandAction, action_id: ActionKey) {
 		let database = Arc::clone(&self.database);
 		let window = self.window();
 
@@ -40,56 +68,69 @@ impl CommandHandler {
 		});
 	}
 
-	pub fn open_game_folder(&self, action_id: ActionKey, game: Game) {
-		spawn_action(
-			self.window(),
-			action_id,
+	pub fn open_game_folder(&self) {
+		self.open_selected(
+			ActionKind::OpenGameFolder,
 			"Failed to open game folder",
-			move || game.open_game_folder(),
+			Game::open_game_folder,
 		);
 	}
 
-	pub fn open_game_mods_folder(&self, action_id: ActionKey, game: Game) {
-		spawn_action(
-			self.window(),
-			action_id,
+	pub fn open_game_mods_folder(&self) {
+		self.open_selected(
+			ActionKind::OpenGameModsFolder,
 			"Failed to open game mods folder",
-			move || game.open_mods_folder(),
+			Game::open_mods_folder,
 		);
 	}
 
-	pub fn open_game_data_folder(&self, action_id: ActionKey, game: Game) {
-		spawn_action(
-			self.window(),
-			action_id,
+	pub fn open_game_data_folder(&self) {
+		self.open_selected(
+			ActionKind::OpenGameDataFolder,
 			"Failed to open game data folder",
-			move || game.open_data_folder(),
+			Game::open_data_folder,
 		);
 	}
 
-	pub fn open_wine_prefix_folder(&self, action_id: ActionKey, game: Game) {
-		spawn_action(
-			self.window(),
-			action_id,
+	pub fn open_wine_prefix_folder(&self) {
+		self.open_selected(
+			ActionKind::OpenWinePrefixFolder,
 			"Failed to open Wine prefix folder",
-			move || {
+			|game| {
 				game_provider::get_provider(game.provider_id)?
-					.get_wine_prefix_path(&game)?
+					.get_wine_prefix_path(game)?
 					.open_folder_or_parent()
 			},
 		);
 	}
 
-	pub fn open_wine_binary_folder(&self, action_id: ActionKey, game: Game) {
-		spawn_action(
-			self.window(),
-			action_id,
+	pub fn open_wine_binary_folder(&self) {
+		self.open_selected(
+			ActionKind::OpenWineBinaryFolder,
 			"Failed to open Wine binary folder",
-			move || {
+			|game| {
 				game_provider::get_provider(game.provider_id)?
-					.get_wine_binary_path(&game)?
+					.get_wine_binary_path(game)?
 					.open_folder_or_parent()
 			},
+		);
+	}
+
+	fn open_selected(
+		&self,
+		kind: ActionKind,
+		error: &'static str,
+		open: impl FnOnce(&Game) -> Result + Send + 'static,
+	) {
+		let Some((_, game)) = self.selected_game() else {
+			return;
+		};
+
+		spawn_action(
+			self.window(),
+			action_state::key(kind, ""),
+			error,
+			move || open(&game),
 		);
 	}
 
@@ -183,23 +224,60 @@ impl CommandHandler {
 		});
 	}
 
-	pub fn open_local_mods_folder(&self, action_id: ActionKey) {
+	pub fn open_local_mods_folder(&self) {
 		spawn_action(
 			self.window(),
-			action_id,
+			action_state::key(ActionKind::OpenLocalModsFolder, ""),
 			"Failed to open local mods folder",
 			|| app_paths::local_mods_path()?.open_folder_or_parent(),
 		);
 	}
 
-	pub fn open_logs_folder(&self, action_id: ActionKey) {
+	pub fn open_logs_folder(&self) {
 		spawn_action(
 			self.window(),
-			action_id,
+			action_state::key(ActionKind::OpenLogsFolder, ""),
 			"Failed to open logs folder",
 			|| app_paths::logs_path()?.open_folder_or_parent(),
 		);
 	}
+}
+
+pub fn register(window: &crate::MainWindow) {
+	on_command!(window, GamesActions, on_run_provider_action, |value| handler => {
+		handler.run_provider_action(value.as_str());
+	});
+	on_command!(window, GamesActions, on_open_game_folder, || handler => {
+		handler.open_game_folder();
+	});
+	on_command!(window, GamesActions, on_open_game_mods_folder, || handler => {
+		handler.open_game_mods_folder();
+	});
+	on_command!(window, GamesActions, on_open_game_data_folder, || handler => {
+		handler.open_game_data_folder();
+	});
+	on_command!(window, GamesActions, on_open_wine_prefix_folder, || handler => {
+		handler.open_wine_prefix_folder();
+	});
+	on_command!(window, GamesActions, on_open_wine_binary_folder, || handler => {
+		handler.open_wine_binary_folder();
+	});
+	on_command!(window, ModActions, on_run_standalone, |mod_id| handler => {
+		handler.run_standalone_mod(mod_id.to_string());
+	});
+	on_command!(window, ModActions, on_install_standalone, |mod_id| handler => {
+		handler.install_standalone_mod(mod_id.to_string());
+	});
+	on_command!(window, ModActions, on_open_local_mods_folder, || handler => {
+		handler.open_local_mods_folder();
+	});
+	on_command!(window, AppActions, on_open_logs_folder, || handler => {
+		handler.open_logs_folder();
+	});
+
+	window.global::<crate::ModActions>().on_open_url(|url| {
+		open_url(url.to_string());
+	});
 }
 
 pub fn open_url(url: String) {

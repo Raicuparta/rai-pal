@@ -34,7 +34,7 @@ impl CommandHandler {
 		match action {
 			"add-mod-source" => {
 				if let Some(source_url) = query.get("url") {
-					self.request_add_mod_source(source_url);
+					self.prompt_add_mod_source(source_url);
 				}
 			}
 			"install-mod" => self.dispatch_mod_action(ModAction::Install, &query),

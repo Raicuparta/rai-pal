@@ -85,7 +85,7 @@ fn show(window: &MainWindow, message: impl Into<slint::SharedString>, kind: Noti
 	if kind == NotificationKind::Error {
 		analytics::send(
 			rai_pal_backend::analytics::Event::ErrorNotification,
-			&[("error_message", message.to_string())],
+			[("error_message", message.to_string())],
 		);
 	}
 
@@ -97,4 +97,15 @@ fn show(window: &MainWindow, message: impl Into<slint::SharedString>, kind: Noti
 		.set_notifications(Rc::new(slint::VecModel::from(notifications)).into());
 
 	schedule_dismiss(window.as_weak(), id);
+}
+
+pub fn register(window: &MainWindow) {
+	let ui_window = window.as_weak();
+	window
+		.global::<crate::AppActions>()
+		.on_dismiss_notification(move |id| {
+			if let Some(window) = ui_window.upgrade() {
+				dismiss(&window, id);
+			}
+		});
 }

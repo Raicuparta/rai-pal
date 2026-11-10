@@ -7,7 +7,7 @@ use slint::ComponentHandle;
 
 use crate::{MainWindow, UrlModSourceData, runtime};
 
-use super::{CommandHandler, refresh};
+use super::{CommandHandler, on_command, refresh};
 
 impl CommandHandler {
 	pub fn show_mod_sources(&self) {
@@ -21,7 +21,7 @@ impl CommandHandler {
 		load_sources(&window);
 	}
 
-	pub fn request_add_mod_source(&self, url: &str) {
+	pub fn prompt_add_mod_source(&self, url: &str) {
 		let Some(window) = self.ui() else {
 			return;
 		};
@@ -87,7 +87,18 @@ impl CommandHandler {
 		});
 	}
 
-	pub fn confirm_add_mod_source(&self) {
+	pub fn cancel_add_mod_source(&self) {
+		let Some(window) = self.ui() else {
+			return;
+		};
+
+		let state = window.global::<crate::ConfirmModSourceState>();
+		state.set_error("".into());
+		state.set_mods(slint::ModelRc::default());
+		state.set_state(crate::ActionState::Idle);
+	}
+
+	pub fn add_mod_source(&self) {
 		let Some(window) = self.ui() else {
 			return;
 		};
@@ -313,4 +324,25 @@ fn load_sources(window: &MainWindow) {
 
 fn get_mods(url: &str) -> Result<Vec<rai_pal_backend::mods::manifest::Mod>, String> {
 	runtime::block_on(url_mod_provider::get_mods_from_url_mod_source(url))
+}
+
+pub fn register(window: &crate::MainWindow) {
+	on_command!(window, DialogActions, on_request_url_mod_sources, || handler => {
+		handler.show_mod_sources();
+	});
+	on_command!(window, DialogActions, on_add_url_mod_source, |url| handler => {
+		handler.prompt_add_mod_source(url.as_str());
+	});
+	on_command!(window, DialogActions, on_confirm_url_mod_source, || handler => {
+		handler.add_mod_source();
+	});
+	on_command!(window, DialogActions, on_cancel_url_mod_source, || handler => {
+		handler.cancel_add_mod_source();
+	});
+	on_command!(window, DialogActions, on_set_url_mod_source_enabled, |url, enabled| handler => {
+		handler.set_mod_source_enabled(url.to_string(), enabled);
+	});
+	on_command!(window, DialogActions, on_remove_url_mod_source, |url| handler => {
+		handler.remove_mod_source(url.to_string());
+	});
 }

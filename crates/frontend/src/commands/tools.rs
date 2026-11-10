@@ -11,10 +11,18 @@ use rai_pal_backend::{
 };
 use slint::ComponentHandle;
 
-use super::CommandHandler;
+use super::{CommandHandler, on_command};
 
 impl CommandHandler {
 	pub fn reset_steam_cache(&self) {
+		let Some(ui_window) = self.ui() else {
+			return;
+		};
+
+		if ui_window.global::<crate::SteamCacheState>().get_state() == crate::ActionState::Loading {
+			return;
+		}
+
 		let window = self.window();
 		let database = Arc::clone(&self.database);
 
@@ -45,7 +53,7 @@ impl CommandHandler {
 
 						if let Some(handler) = Self::current() {
 							handler.start_query(Duration::ZERO);
-							handler.refresh_selected_game();
+							handler.reload_selected_game();
 						}
 					}
 					Err(err) => {
@@ -62,6 +70,16 @@ impl CommandHandler {
 	}
 
 	pub fn add_steam_shortcut(&self) {
+		let Some(ui_window) = self.ui() else {
+			return;
+		};
+
+		if ui_window.global::<crate::SteamShortcutState>().get_state()
+			== crate::ActionState::Loading
+		{
+			return;
+		}
+
 		let window = self.window();
 
 		if let Some(window) = window.upgrade() {
@@ -141,4 +159,13 @@ fn write_steam_artwork() -> Result<PathBuf> {
 	}
 
 	Ok(artwork_dir)
+}
+
+pub fn register(window: &crate::MainWindow) {
+	on_command!(window, DialogActions, on_reset_steam_cache, || handler => {
+		handler.reset_steam_cache();
+	});
+	on_command!(window, DialogActions, on_add_steam_shortcut, || handler => {
+		handler.add_steam_shortcut();
+	});
 }

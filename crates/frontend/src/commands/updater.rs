@@ -23,6 +23,8 @@ use slint::{Timer, TimerMode};
 
 use crate::{MainWindow, fetch, notifications};
 
+use super::on_command;
+
 const LATEST_JSON_URL: &str =
 	"https://github.com/Raicuparta/rai-pal/releases/latest/download/latest.json";
 const PUBLIC_KEY: &str = "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNGMzI5QUM1RjMwMjM0OTMKUldTVE5BTHp4Wm95UDcvaWgyKzRENVkzZVc2K1JTOEhidUR4OFVENWVqemloUWRmZDllbzJGaSsK";
@@ -375,4 +377,13 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 #[cfg(not(any(target_os = "linux", target_os = "windows")))]
 fn install_and_restart(_bytes: &[u8]) -> Result<(), String> {
 	Err("Automatic updates are not supported on this platform".to_string())
+}
+
+pub fn register(window: &crate::MainWindow) {
+	on_command!(window, AppActions, on_install_update, || handler => {
+		handler.install_update();
+	});
+	on_command!(window, AppActions, on_ignore_update, || handler => {
+		handler.ignore_update();
+	});
 }

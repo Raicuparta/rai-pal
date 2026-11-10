@@ -22,7 +22,7 @@ use slint::ComponentHandle;
 
 use crate::{AddGamePhase, MainWindow, notifications, runtime, selected};
 
-use super::CommandHandler;
+use super::{CommandHandler, on_command};
 
 static SCAN_GENERATION: AtomicU64 = AtomicU64::new(0);
 
@@ -32,6 +32,10 @@ impl CommandHandler {
 			return;
 		};
 
+		window.set_current_tab(crate::AppTab::Games);
+		window
+			.global::<crate::AppActions>()
+			.invoke_tab_changed(crate::AppTab::Games);
 		window.global::<crate::AddGameState>().set_open(true);
 		reset_scan(&window);
 		reload_directories(&window);
@@ -242,7 +246,6 @@ impl CommandHandler {
 
 			let result = runtime::block_on(async {
 				manual_provider::remove_directory(&path).await?;
-				manual_provider::remove_directory(&path).await?;
 				GameProviderId::Manual.insert_games(&database)?;
 				database.refresh_installed_mods()?;
 				Ok::<(), rai_pal_backend::result::Error>(())
@@ -407,4 +410,28 @@ fn reload_directories(window: &MainWindow) {
 	window
 		.global::<crate::AddGameState>()
 		.set_manual_directories(Rc::new(slint::VecModel::from(directories)).into());
+}
+
+pub fn register(window: &crate::MainWindow) {
+	on_command!(window, DialogActions, on_request_add_game, || handler => {
+		handler.show_add_game();
+	});
+	on_command!(window, DialogActions, on_add_game_closed, || handler => {
+		handler.cancel_game_scan();
+	});
+	on_command!(window, DialogActions, on_select_game_executable, || handler => {
+		handler.select_executable();
+	});
+	on_command!(window, DialogActions, on_select_game_directory, || handler => {
+		handler.select_directory();
+	});
+	on_command!(window, DialogActions, on_cancel_game_scan, || handler => {
+		handler.cancel_game_scan();
+	});
+	on_command!(window, DialogActions, on_confirm_game_directory, || handler => {
+		handler.confirm_add_directory();
+	});
+	on_command!(window, DialogActions, on_remove_game_directory, |path| handler => {
+		handler.remove_directory(path.to_string());
+	});
 }

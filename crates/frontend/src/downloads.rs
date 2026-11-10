@@ -308,3 +308,11 @@ fn update_existing(items: &mut Vec<Item>, id: &str, progress: Option<f64>, phase
 		phase,
 	});
 }
+
+pub fn register(window: &MainWindow) {
+	window.global::<crate::AppActions>().on_clear_downloads(|| {
+		if let Some(handler) = crate::commands::CommandHandler::current() {
+			handler.downloads.clear_completed();
+		}
+	});
+}

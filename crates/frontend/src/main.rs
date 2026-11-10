@@ -25,6 +25,7 @@ mod scheduler;
 mod selected;
 mod single_instance;
 mod text;
+mod window_state;
 
 fn main() -> Result<(), slint::PlatformError> {
 	app::run()

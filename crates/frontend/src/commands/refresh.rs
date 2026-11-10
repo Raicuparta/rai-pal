@@ -13,9 +13,12 @@ use rai_pal_backend::{
 };
 use slint::ComponentHandle;
 
-use crate::{MainWindow, model::apply_game_to_row, notifications, runtime, selected};
+use crate::{
+	ActionKind, MainWindow, action_state, model::apply_game_to_row, notifications, runtime,
+	selected,
+};
 
-use super::CommandHandler;
+use super::{CommandHandler, on_command};
 
 impl CommandHandler {
 	pub fn refresh_all(&self) {
@@ -93,12 +96,67 @@ impl CommandHandler {
 					.set_task_names("".into());
 				handler.load_mods_tab();
 				handler.start_query(Duration::ZERO);
-				handler.refresh_selected_game();
+				handler.reload_selected_game();
 			});
 		});
 	}
 
-	pub fn refresh_selected_game(&self) {
+	pub fn refresh_game(&self) {
+		let Some((index, game)) = self.selected_game() else {
+			return;
+		};
+
+		let action_id = action_state::key(ActionKind::RefreshGame, "");
+		let window = self.window();
+		action_state::start(&window, action_id.clone());
+
+		let database = Arc::clone(&self.database);
+
+		thread::spawn(move || {
+			let mut current_game = game;
+
+			let result = (|| {
+				current_game.refresh_executable()?;
+				database.insert_game(&current_game);
+				database.refresh_installed_mods()?;
+				database.get_game(&current_game.provider_id, &current_game.game_id)
+			})();
+
+			let updated_game = match result {
+				Ok(updated_game) => updated_game,
+				Err(err) => {
+					log::error!("Failed to refresh game: {err}");
+					action_state::finish(
+						&window,
+						action_id.clone(),
+						Err(err),
+						"Failed to refresh game",
+					);
+					return;
+				}
+			};
+
+			let finish_window = window.clone();
+			crate::runtime::invoke_on_ui(move || {
+				let Some(handler) = Self::current() else {
+					return;
+				};
+
+				handler.set_selected_game(index, updated_game.clone());
+				handler.refresh_selected_row(index, &updated_game);
+				handler.refresh_mods(&updated_game);
+			});
+
+			action_state::finish(
+				&finish_window,
+				action_id,
+				Ok::<(), rai_pal_backend::result::Error>(()),
+				"",
+			);
+		});
+	}
+
+	pub fn reload_selected_game(&self) {
 		let Some((_, game)) = self.selected_game() else {
 			return;
 		};
@@ -159,5 +217,14 @@ fn publish_tasks(window: &slint::Weak<MainWindow>, tasks: &[String]) {
 		window
 			.global::<crate::Refresh>()
 			.set_task_names(names.into());
+	});
+}
+
+pub fn register(window: &MainWindow) {
+	on_command!(window, Refresh, on_refresh_all, || handler => {
+		handler.refresh_all();
+	});
+	on_command!(window, GamesActions, on_refresh_game, || handler => {
+		handler.refresh_game();
 	});
 }

@@ -8,7 +8,7 @@ use rai_pal_backend::{
 
 use crate::{MainWindow, analytics, notifications, runtime, text};
 
-use super::CommandHandler;
+use super::{CommandHandler, on_command};
 
 impl CommandHandler {
 	pub fn load_user(&self) {
@@ -37,7 +37,7 @@ impl CommandHandler {
 			});
 
 			if result.is_ok() {
-				analytics::send(rai_pal_backend::analytics::Event::UserSignIn, &[]);
+				analytics::send_event(rai_pal_backend::analytics::Event::UserSignIn);
 			}
 
 			apply_result(window, result);
@@ -124,4 +124,13 @@ fn apply_state(window: &MainWindow, state: &AuthState) {
 	window
 		.global::<crate::UserState>()
 		.set_avatar(avatar.unwrap_or_default());
+}
+
+pub fn register(window: &crate::MainWindow) {
+	on_command!(window, AppActions, on_log_in, || handler => {
+		handler.log_in();
+	});
+	on_command!(window, AppActions, on_log_out, || handler => {
+		handler.log_out();
+	});
 }

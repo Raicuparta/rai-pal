@@ -16,6 +16,7 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - maybe a bit too small on steam deck?
 - slint supports both _ and -, maybe rename every single thing to _?
 - confused about confirmation.rs in frontend, seems overkill? can it be more in slint side?
+- does monospace font family thing require some fonts that don't necessarily exist?
 
 # Report:
 

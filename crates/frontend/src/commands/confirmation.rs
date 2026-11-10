@@ -1,11 +1,8 @@
 use std::cell::RefCell;
 
-use rai_pal_backend::game::Game;
 use slint::ComponentHandle;
 
-use crate::analytics;
-
-use super::CommandHandler;
+use super::{CommandHandler, on_command};
 
 type ConfirmationFn = Box<dyn FnOnce(&CommandHandler)>;
 
@@ -18,39 +15,31 @@ struct PendingConfirmation {
 pub struct PendingState(RefCell<Option<PendingConfirmation>>);
 
 impl CommandHandler {
-	pub fn request_install(
+	pub fn prompt_install_mod(
 		&self,
-		game: Game,
 		mod_id: String,
 		confirmation_text: String,
 		confirm_label: String,
 		skip_id: String,
 	) {
-		let analytics_mod_id = mod_id.clone();
-		let analytics_game = game.clone();
+		let Some((_, game)) = self.selected_game() else {
+			return;
+		};
 
-		self.request(
-			Box::new(move |handler| {
-				analytics::send_mod(
-					rai_pal_backend::analytics::Event::InstallMod,
-					&analytics_mod_id,
-					Some(&analytics_game),
-				);
-				handler.install_mod(game, mod_id);
-			}),
+		self.prompt(
+			Box::new(move |handler| handler.install_mod(game, mod_id)),
 			confirmation_text,
 			confirm_label,
 			skip_id,
 		);
 	}
 
-	pub fn request_uninstall_all(
-		&self,
-		game: Game,
-		confirmation_text: String,
-		confirm_label: String,
-	) {
-		self.request(
+	pub fn prompt_uninstall_all_mods(&self, confirmation_text: String, confirm_label: String) {
+		let Some((_, game)) = self.selected_game() else {
+			return;
+		};
+
+		self.prompt(
 			Box::new(move |handler| handler.uninstall_all_mods(game)),
 			confirmation_text,
 			confirm_label,
@@ -58,13 +47,12 @@ impl CommandHandler {
 		);
 	}
 
-	pub fn request_remove_game(
-		&self,
-		game: Game,
-		confirmation_text: String,
-		confirm_label: String,
-	) {
-		self.request(
+	pub fn prompt_remove_game(&self, confirmation_text: String, confirm_label: String) {
+		let Some((_, game)) = self.selected_game() else {
+			return;
+		};
+
+		self.prompt(
 			Box::new(move |handler| handler.remove_game(game)),
 			confirmation_text,
 			confirm_label,
@@ -103,7 +91,7 @@ impl CommandHandler {
 		(pending.action)(self);
 	}
 
-	fn request(
+	fn prompt(
 		&self,
 		action: ConfirmationFn,
 		confirmation_text: String,
@@ -143,4 +131,24 @@ impl CommandHandler {
 		state.set_dont_ask_again(false);
 		state.set_open(true);
 	}
+}
+
+pub fn register(window: &crate::MainWindow) {
+	on_command!(window, DialogActions, on_confirmation_response, |confirmed| handler => {
+		handler.respond_to_confirmation(confirmed);
+	});
+	on_command!(window, GamesActions, on_remove_game, |text, label| handler => {
+		handler.prompt_remove_game(text.to_string(), label.to_string());
+	});
+	on_command!(window, ModActions, on_request_install, |mod_id, text, label, skip_id| handler => {
+		handler.prompt_install_mod(
+			mod_id.to_string(),
+			text.to_string(),
+			label.to_string(),
+			skip_id.to_string(),
+		);
+	});
+	on_command!(window, ModActions, on_request_uninstall_all, |text, label| handler => {
+		handler.prompt_uninstall_all_mods(text.to_string(), label.to_string());
+	});
 }
