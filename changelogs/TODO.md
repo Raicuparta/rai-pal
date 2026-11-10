@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 
 # Do these now:
 
-- the debug modal currently shows no text at all. likely a bug introduced when we changed how modals render with the window. we need to keep the modal that way, let's try not to go overkill. bug the debug text needs to render properly, that's the whole point.
 
 # Don't do these yet:
 
@@ -19,3 +18,15 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - confused about confirmation.rs in frontend, seems overkill? can it be more in slint side?
 
 # Report:
+- Modal titles now wrap instead of eliding. Modal height is still the header + body preferred height sum, so
+  wrapped titles grow the modal correctly.
+- All `.slint` files (and their imports) renamed to snake_case. Non-Slint assets (icons, images) kept their
+  kebab-case names.
+- Monospace family is now looked up from the system through Slint's own fontique collection
+  (`slint::fontique_011::shared_collection()`, requires the `unstable-fontique-011` feature), instead of
+  hardcoding `DejaVu Sans Mono`/`Consolas`/`Menlo`. If the system has no monospace family, the font-family is
+  left empty so text falls back to the default system font instead of a broken family name.
+- Debug modal text was invisible because `Modal`'s body layout used `alignment: start`, so the `TextEdit`
+  (which only ever sizes itself by stretch) collapsed to zero height. Removed that alignment so children can
+  stretch inside `big` modals; content-sized modals are unaffected because their body height equals its
+  preferred height.

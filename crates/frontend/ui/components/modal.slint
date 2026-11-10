@@ -125,7 +125,6 @@ export component Modal inherits Rectangle {
                     body-layout := VerticalLayout {
                         width: body-scroll.visible-width;
                         height: max(self.preferred-height, body-scroll.visible-height);
-                        alignment: start;
                         cross-axis-alignment: stretch;
                         spacing: Theme.space-md;
                         @children
