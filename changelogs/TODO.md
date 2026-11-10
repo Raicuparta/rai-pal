@@ -6,8 +6,6 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 
 # Do these now:
 
-# Don't do these yet:
-
 - Filters scrolling still always scrolls entire sidebar.
 - debug data currently missing a bunch of data. adding more buttons for game-mods maybe would be good.
 - update the intro text.
@@ -15,5 +13,6 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - button size and icon spacing needs to be adjusted to match the tauri one better.
 - maybe a bit too small on steam deck?
 - confused about confirmation.rs in frontend, seems overkill? can it be more in slint side?
+- better way to do scripts instead of the .sh? more rust-friendly way?
 
 # Report:
