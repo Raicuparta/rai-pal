@@ -1,0 +1,73 @@
+import { Theme } from "../theme.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+import { PopupMenu, PopupMenuItem } from "menu.slint";
+
+export struct SelectOption {
+    label: string,
+    value: string,
+}
+
+export component SelectMenu inherits Rectangle {
+    in property <[SelectOption]> options;
+    in-out property <int> selected-index: 0;
+    in property <Icon> icon;
+
+    callback selected(index: int);
+
+    horizontal-stretch: 1;
+    height: Theme.control-height;
+    border-width: Theme.border-width;
+    border-color: Theme.border;
+    border-radius: Theme.radius-sm;
+    background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : Theme.surface-background;
+
+    private property <string> current-label: root.selected-index >= 0 && root.selected-index < root.options.length ? root.options[root.selected-index].label : "";
+
+    HorizontalLayout {
+        padding-left: Theme.space-sm;
+        padding-right: Theme.space-sm;
+        spacing: Theme.space-xs;
+        cross-axis-alignment: center;
+
+        SvgIcon {
+            icon: root.icon;
+        }
+
+        Text {
+            text: root.current-label;
+            horizontal-stretch: 1;
+            vertical-alignment: center;
+            overflow: elide;
+        }
+
+        SvgIcon {
+            icon: Icon.chevron-down;
+            color: Theme.dimmed-foreground;
+        }
+    }
+
+    touch-area := TouchArea {
+        mouse-cursor: pointer;
+
+        clicked => {
+            menu.show();
+        }
+    }
+
+    menu := PopupMenu {
+        x: 0;
+        y: root.height;
+        menu-width: root.width;
+
+        for option[index] in root.options: PopupMenuItem {
+            text: option.label;
+            checkable: true;
+            checked: index == root.selected-index;
+
+            clicked => {
+                root.selected(index);
+                menu.close();
+            }
+        }
+    }
+}

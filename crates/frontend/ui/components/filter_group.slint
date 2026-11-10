@@ -1,0 +1,160 @@
+import { CheckBox } from "std-widgets.slint";
+import { FilterGroupData, FilterValueData } from "../app_types.slint";
+import { Tr } from "../translations.slint";
+import { Theme } from "../theme.slint";
+import { Button } from "button.slint";
+import { IconButton } from "icon_button.slint";
+import { ListRow } from "list_row.slint";
+import { ResetButton } from "reset_button.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+import { GamesActions } from "../actions.slint";
+
+component FilterValueRow inherits ListRow {
+    in property <FilterValueData> item;
+
+    callback toggled(checked: bool);
+    callback lock-toggled;
+    callback only;
+
+    extra-hovered: checkbox-touch.has-hover || only-button.hovered || lock-button.hovered;
+    spacing: Theme.space-xs;
+    accessible-label: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
+
+    clicked => {
+        if !root.item.locked {
+            root.toggled(!root.item.enabled);
+        }
+    }
+
+    Rectangle {
+        horizontal-stretch: 1;
+        height: 100%;
+
+        check-box := CheckBox {
+            x: Theme.space-lg;
+            y: (parent.height - self.height) / 2;
+            text: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
+            checked: root.item.enabled;
+            enabled: !root.item.locked;
+        }
+
+        checkbox-touch := TouchArea {
+            width: root.item.note-label-key == "" ? parent.width : check-box.preferred-width;
+            height: parent.height;
+            mouse-cursor: pointer;
+
+            clicked => {
+                if !root.item.locked {
+                    root.toggled(!root.item.enabled);
+                }
+            }
+        }
+
+        if root.item.note-label-key != "": Rectangle {
+            x: check-box.preferred-width + Theme.space-lg;
+            y: (parent.height - self.height) / 2;
+            width: 12px;
+
+            SvgIcon {
+                icon: Icon.help;
+                size: 12px;
+                color: Theme.dimmed-foreground;
+            }
+
+            Tooltip {
+                text: @markdown("\{Tr.filter-value-note(root.item.note-label-key)}");
+            }
+        }
+    }
+
+    only-button := Button {
+        text: "Only";
+        text-size: 10px;
+        tooltip: @tr("filterMenu" => "Only show this value");
+        visible: !root.item.locked;
+        enabled: !root.item.locked;
+        opacity: root.hovered ? 1 : 0;
+        reserve-icon-space: false;
+
+        clicked => {
+            root.only();
+        }
+    }
+
+    lock-button := IconButton {
+        icon: root.item.locked ? Icon.locked : Icon.unlocked;
+        tooltip: root.item.locked ? @tr("filterMenu" => "Unlock filter value") : @tr("filterMenu" => "Lock filter value");
+        visible: root.item.locked || root.hovered;
+        enabled: !root.item.enabled;
+        tint: root.item.locked ? Theme.highlight : Theme.surface-background;
+
+        clicked => {
+            root.lock-toggled();
+        }
+    }
+}
+
+export component FilterGroup inherits Rectangle {
+    in property <FilterGroupData> group;
+
+    VerticalLayout {
+        alignment: start;
+        spacing: Theme.border-width;
+
+        ListRow {
+            extra-hovered: reset-button.hovered;
+            spacing: Theme.space-xs;
+            accessible-label: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
+
+            clicked => {
+                GamesActions.filter-expanded-changed(root.group.key, !root.group.expanded);
+            }
+
+            SvgIcon {
+                icon: root.group.expanded ? Icon.expanded : Icon.collapsed;
+                color: Theme.dimmed-foreground;
+            }
+
+            Text {
+                text: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
+                font-weight: Theme.weight-bold;
+                overflow: elide;
+                color: Theme.strong-foreground;
+            }
+
+            if root.group.has-locked: Rectangle {
+                width: 6px;
+                height: 6px;
+                border-radius: 6px / 2;
+                background: Theme.highlight;
+            }
+
+            reset-button := ResetButton {
+                tooltip: @tr("filterMenu" => "Reset");
+                enabled: root.group.has-changes;
+
+                clicked => {
+                    GamesActions.filter-reset(root.group.key);
+                }
+            }
+        }
+
+        if root.group.expanded: VerticalLayout {
+            for value in root.group.values: FilterValueRow {
+                item: value;
+
+                toggled(checked) => {
+                    GamesActions.filter-toggled(root.group.key, value.value, checked);
+                }
+
+                lock-toggled => {
+                    GamesActions.filter-lock-toggled(root.group.key, value.value);
+                }
+
+                only => {
+                    GamesActions.filter-only(root.group.key, value.value);
+                }
+            }
+        }
+    }
+}

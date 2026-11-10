@@ -1,0 +1,227 @@
+import { ScrollView } from "std-widgets.slint";
+import { Branding } from "../branding.slint";
+import { PatronData } from "../app_types.slint";
+import { Theme } from "../theme.slint";
+import { ExternalLink } from "external_link.slint";
+import { LabeledDivider } from "labeled_divider.slint";
+import { Sidebar } from "sidebar.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+
+export global ThanksState {
+    in property <[PatronData]> patrons;
+}
+
+component PatronRow inherits Rectangle {
+    in property <PatronData> patron;
+
+    private property <length> avatar-size: Theme.control-height;
+    private property <length> rank-border-width: 2px;
+    private property <brush> rank-color: root.patron.ranking == 1 ? Theme.highlight : root.patron.ranking == 2 ? (Theme.dark ? #ced4da : #adb5bd) : root.patron.ranking == 3 ? (Theme.dark ? #e8a06a : #b87333) : transparent;
+
+    background: transparent;
+
+    HorizontalLayout {
+        spacing: Theme.space-sm;
+        alignment: start;
+        cross-axis-alignment: center;
+
+        Rectangle {
+            width: root.avatar-size;
+            height: root.avatar-size;
+            border-width: root.rank-border-width;
+            border-color: root.rank-color;
+            border-radius: root.avatar-size / 2;
+            background: transparent;
+            clip: true;
+
+            Rectangle {
+                x: root.rank-border-width;
+                y: root.rank-border-width;
+                width: parent.width - root.rank-border-width * 2;
+                height: parent.height - root.rank-border-width * 2;
+                border-radius: self.width / 2;
+                clip: true;
+                background: Theme.surface-background;
+
+                if root.patron.has-avatar: Image {
+                    source: root.patron.avatar;
+                    width: 100%;
+                    height: 100%;
+                    image-fit: cover;
+                }
+
+                if !root.patron.has-avatar: Text {
+                    text: root.patron.initials;
+                    font-size: Theme.font-sm;
+                    font-weight: Theme.weight-bold;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+
+        if root.patron.ranking <= 3: SvgIcon {
+            icon: Icon.trophy;
+            color: root.rank-color;
+        }
+
+        Text {
+            text: root.patron.name;
+            horizontal-stretch: 1;
+            vertical-alignment: center;
+            font-weight: root.patron.ranking <= 3 ? Theme.weight-bold : Theme.weight-normal;
+            overflow: elide;
+        }
+    }
+}
+
+export component ThanksPage inherits Rectangle {
+
+    private property <string> intro: @tr("thanksPage" => "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io.");
+    private property <string> leaderboard-tooltip: @tr("thanksPage" => "Ranked by total lifetime donation amount.") + " " + @tr("thanksPage" => "If you don't see yourself here, it's because your Patreon profile is private.");
+
+    HorizontalLayout {
+        Sidebar {
+            VerticalLayout {
+                padding-left: Theme.space-md;
+                padding-right: Theme.space-md;
+                spacing: Theme.space-sm;
+                alignment: start;
+
+                LabeledDivider {
+                    label: @tr("thanksPage" => "Patreon Leaderboard");
+                    tooltip: root.leaderboard-tooltip;
+                    padding-left: Theme.space-sm;
+                    padding-right: Theme.space-sm;
+                }
+
+                for patron in ThanksState.patrons: PatronRow {
+                    patron: patron;
+                }
+            }
+        }
+
+        Rectangle {
+            horizontal-stretch: 1;
+
+            ScrollView {
+                VerticalLayout {
+                    padding: Theme.space-xl;
+                    spacing: Theme.space-lg;
+                    alignment: start;
+
+                    HorizontalLayout {
+                        alignment: center;
+
+                        Rectangle {
+                            horizontal-stretch: 1;
+                            max-width: 540px;
+
+                            HorizontalLayout {
+                                spacing: Theme.space-lg;
+                                alignment: start;
+
+                                Rectangle {
+                                    width: 120px;
+                                    border-radius: Theme.radius-md;
+                                    background: Theme.background;
+
+                                    VerticalLayout {
+                                        padding: Theme.space-md;
+                                        spacing: Theme.space-sm;
+                                        alignment: start;
+                                        cross-axis-alignment: center;
+
+                                        Rectangle {
+                                            width: 72px;
+                                            height: 72px;
+                                            border-radius: 36px;
+                                            clip: true;
+
+                                            Image {
+                                                source: @image-url("../images/raicuparta.png");
+                                                width: 100%;
+                                                height: 100%;
+                                                image-fit: cover;
+                                            }
+                                        }
+
+                                        Text {
+                                            text: "Raicuparta";
+                                            font-size: Theme.font-lg;
+                                            font-weight: Theme.weight-semibold;
+                                        }
+                                    }
+                                }
+
+                                VerticalLayout {
+                                    horizontal-stretch: 1;
+                                    spacing: Theme.space-md;
+                                    alignment: start;
+
+                                    Rectangle {
+                                        vertical-stretch: 0;
+                                        border-width: Theme.border-width;
+                                        border-color: Theme.border;
+                                        border-radius: Theme.radius-md;
+
+                                        VerticalLayout {
+                                            padding: Theme.space-lg;
+
+                                            Text {
+                                                color: Theme.foreground;
+                                                text: root.intro;
+                                                font-size: Theme.font-lg;
+                                                wrap: word-wrap;
+                                            }
+                                        }
+                                    }
+
+                                    VerticalLayout {
+                                        spacing: Theme.space-sm;
+                                        alignment: start;
+
+                                        ExternalLink {
+                                            label: "raicuparta.com";
+                                            icon: Icon.rai;
+                                            icon-color: transparent;
+                                            url: "https://raicuparta.com";
+                                        }
+
+                                        ExternalLink {
+                                            label: @tr("thanksPage" => "Star Rai Pal on GitHub");
+                                            icon: Icon.github;
+                                            icon-color: Branding.brand-color("GitHub");
+                                            url: "https://github.com/raicuparta/rai-pal";
+                                        }
+
+                                        ExternalLink {
+                                            label: "Patreon";
+                                            icon: Icon.patreon;
+                                            icon-color: Branding.brand-color("Patreon");
+                                            url: "https://www.patreon.com/raivr";
+                                        }
+
+                                        ExternalLink {
+                                            label: "Paypal";
+                                            icon: Icon.paypal;
+                                            icon-color: Branding.brand-color("Paypal");
+                                            url: "https://paypal.me/raicuparta/5usd";
+                                        }
+
+                                        ExternalLink {
+                                            label: "Itch.io";
+                                            icon: Icon.itch;
+                                            icon-color: Branding.provider-foreground("Itch");
+                                            url: "https://raicuparta.itch.io/";
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

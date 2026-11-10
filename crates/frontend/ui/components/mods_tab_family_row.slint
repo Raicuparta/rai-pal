@@ -1,0 +1,80 @@
+import { ModsTabItemData } from "../app_types.slint";
+import { Theme } from "../theme.slint";
+import { ModsTabRow } from "mods_tab_row.slint";
+import { RowDivider } from "row_divider.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+
+export component ModsTabFamilyRow inherits Rectangle {
+    in property <ModsTabItemData> item;
+
+    property <bool> expanded: false;
+
+    vertical-stretch: 0;
+
+    VerticalLayout {
+        alignment: start;
+        spacing: 0px;
+
+        VerticalLayout {
+            alignment: start;
+            spacing: 0px;
+
+            Rectangle {
+                background: header-touch.has-hover ? Theme.hover-background : transparent;
+
+                HorizontalLayout {
+                padding: Theme.space-sm;
+                spacing: Theme.space-sm;
+                cross-axis-alignment: center;
+
+                SvgIcon {
+                    icon: root.expanded ? Icon.expanded : Icon.collapsed;
+                    size: Theme.space-lg;
+                    color: Theme.dimmed-foreground;
+                }
+
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    alignment: start;
+                    spacing: Theme.space-2xs;
+
+                    Text {
+                        text: root.item.family-title;
+                        font-size: Theme.font-lg;
+                        font-weight: Theme.weight-bold;
+                        overflow: elide;
+                    }
+
+                    if root.item.family-description != "": Text {
+                        height: self.preferred-height;
+                        text: root.item.family-description;
+                        font-size: Theme.font-sm;
+                        opacity: 0.75;
+                        wrap: word-wrap;
+                    }
+                }
+            }
+
+                header-touch := TouchArea {
+                    mouse-cursor: pointer;
+
+                    clicked => {
+                        root.expanded = !root.expanded;
+                    }
+                }
+            }
+
+            RowDivider { }
+        }
+
+        if root.expanded: VerticalLayout {
+            alignment: start;
+            spacing: 0px;
+
+            for mod-row in root.item.mods: ModsTabRow {
+                mod-data: mod-row;
+                indented: true;
+            }
+        }
+    }
+}

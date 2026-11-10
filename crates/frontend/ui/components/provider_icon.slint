@@ -1,0 +1,41 @@
+import { Branding } from "../branding.slint";
+import { Theme } from "../theme.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+
+export component ProviderIcon inherits Rectangle {
+    in property <string> provider-id;
+
+    width: Theme.space-lg;
+    height: Theme.space-lg;
+
+    pure function icon-source(id: string) -> Icon {
+        if id == "Amazon" {
+            return Icon.amazon;
+        }
+        if id == "Steam" {
+            return Icon.steam;
+        }
+        if id == "Epic" {
+            return Icon.epic;
+        }
+        if id == "Gog" {
+            return Icon.gog;
+        }
+        if id == "Itch" {
+            return Icon.itch;
+        }
+        if id == "Xbox" {
+            return Icon.xbox;
+        }
+        if id == "Manual" {
+            return Icon.manual;
+        }
+        return Icon.none;
+    }
+
+    SvgIcon {
+        icon: root.icon-source(root.provider-id);
+        size: Theme.space-lg;
+        color: Branding.provider-foreground(root.provider-id);
+    }
+}

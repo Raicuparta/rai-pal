@@ -1,0 +1,152 @@
+import { Theme } from "../theme.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+
+component MetaItem inherits HorizontalLayout {
+    in property <Icon> icon: Icon.none;
+    in property <string> text;
+    in property <string> tooltip: "";
+
+    spacing: Theme.space-2xs;
+    horizontal-stretch: 0;
+    cross-axis-alignment: center;
+
+    SvgIcon {
+        icon: root.icon;
+        size: Theme.font-xs;
+        color: Theme.foreground;
+    }
+
+    Text {
+        text: root.text;
+        font-size: Theme.font-xs;
+        color: Theme.foreground;
+
+        if root.tooltip != "" : Tooltip {
+            text: @markdown("\{root.tooltip}");
+        }
+    }
+}
+
+export component ModSummaryView inherits HorizontalLayout {
+    in property <string> title;
+    in property <string> description;
+    in property <string> version-text;
+    in property <string> release-date;
+    in property <string> author;
+    in property <string> engine-text;
+    in property <bool> deprecated: false;
+    in property <bool> has-remote-config: false;
+    in property <bool> show-status: false;
+    in property <bool> installed: false;
+    in property <bool> outdated: false;
+
+    property <bool> has-details: version-text != "" || release-date != "" || author != "" || engine-text != "" || has-remote-config;
+
+    private property <string> deprecated-tooltip: @tr("modsPage" => "This mod is deprecated. You should uninstall it and install a newer alternative.");
+
+    spacing: Theme.space-sm;
+    cross-axis-alignment: center;
+
+    if show-status : SvgIcon {
+        icon: outdated ? Icon.outdated : installed ? Icon.success : Icon.mod-not-installed;
+        size: 15px;
+        color: outdated ? Theme.status-warning : installed ? Theme.status-success : Theme.dimmed-foreground;
+    }
+
+    VerticalLayout {
+        horizontal-stretch: 1;
+        alignment: start;
+        spacing: Theme.space-2xs;
+
+        HorizontalLayout {
+            spacing: Theme.space-sm;
+            cross-axis-alignment: center;
+
+            Text {
+                text: root.title;
+                font-weight: Theme.weight-semibold;
+                wrap: word-wrap;
+                horizontal-stretch: 1;
+            }
+
+            if root.deprecated : Rectangle {
+                width: deprecated-content.preferred-width + Theme.space-sm;
+                height: 18px;
+                border-radius: Theme.radius-sm;
+                background: Theme.deprecated-background;
+
+                Tooltip {
+                    text: @markdown("\{root.deprecated-tooltip}");
+                }
+
+                deprecated-content := HorizontalLayout {
+                    padding-left: Theme.space-xs;
+                    padding-right: Theme.space-xs;
+                    spacing: Theme.space-2xs;
+                    alignment: center;
+
+                    SvgIcon {
+                        icon: Icon.deprecated;
+                        size: Theme.font-xs;
+                        color: Theme.deprecated-foreground;
+                    }
+
+                    Text {
+                        text: @tr("modsPage" => "Deprecated");
+                        font-size: Theme.font-xs;
+                        font-weight: Theme.weight-bold;
+                        color: Theme.deprecated-foreground;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+        }
+
+        if root.has-details : FlexboxLayout {
+            height: self.preferred-height;
+            opacity: 0.4;
+            spacing-horizontal: Theme.space-md;
+            spacing-vertical: Theme.space-2xs;
+            flex-wrap: wrap;
+            alignment: start;
+            cross-axis-alignment: center;
+
+            if root.version-text != "" : Text {
+                text: root.version-text;
+                font-size: Theme.font-xs;
+                color: Theme.foreground;
+                horizontal-stretch: 0;
+            }
+
+            if root.release-date != "" : MetaItem {
+                icon: Icon.calendar;
+                text: root.release-date;
+            }
+
+            if root.author != "" : MetaItem {
+                icon: Icon.user;
+                text: root.author;
+            }
+
+            if root.engine-text != "" : MetaItem {
+                icon: Icon.engine;
+                text: root.engine-text;
+            }
+
+            if root.has-remote-config : MetaItem {
+                icon: Icon.settings;
+                text: @tr("gameModRow" => "Recommended config");
+                tooltip: @tr("gameModRow" => "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu.");
+            }
+        }
+
+        if root.description != "" : Text {
+            height: self.preferred-height;
+            text: root.description;
+            font-size: Theme.font-sm;
+            opacity: 0.75;
+            wrap: word-wrap;
+            color: Theme.foreground;
+        }
+    }
+}

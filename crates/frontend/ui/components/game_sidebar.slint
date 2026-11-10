@@ -1,0 +1,173 @@
+import { ActionKind } from "../action_state.slint";
+import { Theme } from "../theme.slint";
+import { Tr } from "../translations.slint";
+import { LabeledDivider } from "labeled_divider.slint";
+import { SidebarAction } from "sidebar_action.slint";
+import { Sidebar, SidebarSection } from "sidebar.slint";
+import { Icon } from "svg_icon.slint";
+import { Button } from "button.slint";
+import { GamesActions } from "../actions.slint";
+
+export global GameSidebarState {
+    in property <string> provider-id: "";
+    in property <bool> has-exe-path: false;
+    in property <bool> show-wine-folders: false;
+    in property <[string]> provider-actions;
+}
+
+export component GameSidebar inherits Sidebar {
+    pure function provider-command-icon(command: string) -> Icon {
+        if command == "StartViaProvider" {
+            return Icon.play;
+        }
+        if command == "StartViaExe" {
+            return Icon.play-exe;
+        }
+        return Icon.none;
+    }
+
+    VerticalLayout {
+        alignment: start;
+        spacing: Theme.space-sm;
+
+        SidebarSection {
+            Button {
+                text: @tr("subPage" => "Back");
+                icon: Icon.back;
+
+                clicked => {
+                    GamesActions.back();
+                }
+            }
+        }
+
+        if GameSidebarState.provider-actions.length > 0: VerticalLayout {
+            alignment: start;
+            spacing: 0px;
+
+            SidebarSection {
+                padding-top: Theme.space-xs;
+                padding-bottom: Theme.space-xs;
+
+                LabeledDivider {
+                    label: GameSidebarState.provider-id;
+                    horizontal-stretch: 1;
+                }
+            }
+
+            for action[index] in GameSidebarState.provider-actions: SidebarAction {
+                text: Tr.provider-command(action);
+                icon: root.provider-command-icon(action);
+                highlighted: index == 0;
+                action-key: { kind: ActionKind.provider-action, target: action };
+
+                clicked => {
+                    if action == "Delete" {
+                        GamesActions.remove-game(
+                            @tr("gameModal" => "Are you sure you want to remove this game from Rai Pal?"),
+                            @tr("gameModal" => "Remove from Rai Pal"),
+                        );
+                    } else {
+                        GamesActions.run-provider-action(action);
+                    }
+                }
+            }
+        }
+
+        if GameSidebarState.has-exe-path: VerticalLayout {
+            alignment: start;
+            spacing: 0px;
+
+            SidebarSection {
+                padding-top: Theme.space-xs;
+                padding-bottom: Theme.space-xs;
+
+                LabeledDivider {
+                    label: @tr("gameModal" => "Folders");
+                    horizontal-stretch: 1;
+                }
+            }
+
+            SidebarAction {
+                text: @tr("gameModal" => "Game Files");
+                icon: Icon.folder;
+                action-key: { kind: ActionKind.open-game-folder, target: "" };
+
+                clicked => {
+                    GamesActions.open-game-folder();
+                }
+            }
+
+            SidebarAction {
+                text: @tr("gameModal" => "Installed Mods");
+                icon: Icon.folder-mods;
+                action-key: { kind: ActionKind.open-game-mods-folder, target: "" };
+
+                clicked => {
+                    GamesActions.open-game-mods-folder();
+                }
+            }
+
+            SidebarAction {
+                text: @tr("gameModal" => "Game App Data");
+                action-key: { kind: ActionKind.open-game-data-folder, target: "" };
+
+                clicked => {
+                    GamesActions.open-game-data-folder();
+                }
+            }
+
+            if GameSidebarState.show-wine-folders: SidebarAction {
+                text: @tr("gameModal" => "Wine Prefix");
+                action-key: { kind: ActionKind.open-wine-prefix-folder, target: "" };
+
+                clicked => {
+                    GamesActions.open-wine-prefix-folder();
+                }
+            }
+
+            if GameSidebarState.show-wine-folders: SidebarAction {
+                text: @tr("gameModal" => "Wine Binary");
+                action-key: { kind: ActionKind.open-wine-binary-folder, target: "" };
+
+                clicked => {
+                    GamesActions.open-wine-binary-folder();
+                }
+            }
+        }
+
+        VerticalLayout {
+            alignment: start;
+            spacing: 0px;
+
+            SidebarSection {
+                padding-top: Theme.space-xs;
+                padding-bottom: Theme.space-xs;
+
+                LabeledDivider {
+                    label: "Data";
+                    horizontal-stretch: 1;
+                }
+            }
+
+            if GameSidebarState.has-exe-path: SidebarAction {
+                text: @tr("gameModal" => "Refresh game");
+                icon: Icon.refresh;
+                action-key: { kind: ActionKind.refresh-game, target: "" };
+
+                clicked => {
+                    GamesActions.refresh-game();
+                }
+            }
+
+            SidebarAction {
+                text: @tr("debugData" => "Debug data");
+                icon: Icon.bug;
+
+                clicked => {
+                    GamesActions.request-debug-data();
+                }
+            }
+        }
+    }
+}

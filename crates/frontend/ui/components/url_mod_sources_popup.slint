@@ -1,0 +1,120 @@
+import { CheckBox, LineEdit } from "std-widgets.slint";
+import { Button } from "button.slint";
+import { Theme } from "../theme.slint";
+import { UrlModSourceData } from "../app_types.slint";
+import { Modal } from "modal.slint";
+import { ActionState } from "../action_state.slint";
+import { DialogActions } from "../actions.slint";
+
+export global ModSourcesState {
+    in property <UrlModSourceData> default-source;
+    in property <[UrlModSourceData]> sources;
+    in property <ActionState> state: idle;
+    in property <string> error: "";
+    in-out property <string> new-url: "";
+}
+
+component UrlModSourceRow inherits Rectangle {
+    in property <UrlModSourceData> source;
+    in property <bool> toggling;
+
+    callback toggled(enabled: bool);
+    callback removed;
+
+    height: Theme.control-height;
+
+    HorizontalLayout {
+        spacing: Theme.space-sm;
+        cross-axis-alignment: center;
+
+        source-checkbox := CheckBox {
+            checked: root.source.enabled;
+            enabled: !root.toggling;
+
+            toggled => {
+                root.toggled(source-checkbox.checked);
+            }
+        }
+
+        LineEdit {
+            horizontal-stretch: 1;
+            text: root.source.url;
+            read-only: true;
+        }
+
+        if !root.source.is-default : Button {
+            text: "Remove";
+            enabled: !root.toggling;
+
+            clicked => {
+                root.removed();
+            }
+        }
+    }
+}
+
+export component UrlModSourcesPopup inherits Modal {
+    title: @tr("urlModSources" => "Mod Sources");
+
+
+    if ModSourcesState.default-source.url != "" : UrlModSourceRow {
+        source: ModSourcesState.default-source;
+        toggling: ModSourcesState.state == ActionState.loading;
+
+        toggled(enabled) => {
+            DialogActions.set-url-mod-source-enabled(ModSourcesState.default-source.url, enabled);
+        }
+    }
+
+    for source in ModSourcesState.sources : UrlModSourceRow {
+        source: source;
+        toggling: ModSourcesState.state == ActionState.loading;
+
+        toggled(enabled) => {
+            DialogActions.set-url-mod-source-enabled(source.url, enabled);
+        }
+
+        removed => {
+            DialogActions.remove-url-mod-source(source.url);
+        }
+    }
+
+    HorizontalLayout {
+        spacing: Theme.space-sm;
+        alignment: start;
+        cross-axis-alignment: center;
+
+        LineEdit {
+            horizontal-stretch: 1;
+            text <=> ModSourcesState.new-url;
+            placeholder-text: "https://example.com/mods.json";
+
+            accepted => {
+                DialogActions.add-url-mod-source(ModSourcesState.new-url);
+            }
+        }
+
+        Button {
+            text: @tr("urlModSources" => "Add source");
+            enabled: ModSourcesState.new-url != "";
+
+            clicked => {
+                DialogActions.add-url-mod-source(ModSourcesState.new-url);
+            }
+        }
+    }
+
+    if ModSourcesState.error != "" : Text {
+        text: ModSourcesState.error;
+        color: red;
+        wrap: word-wrap;
+        font-size: Theme.font-sm;
+    }
+
+    Text {
+        text: @tr("urlModSources" => "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep-link {0}.", "rai-pal://add-mod-source?url=[URL]");
+        font-size: Theme.font-sm;
+        opacity: 0.7;
+        wrap: word-wrap;
+    }
+}
