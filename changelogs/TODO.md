@@ -14,6 +14,7 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - process name is still rai-pal-slint on appimage at least.
 - some modals have clipped titles (add to steam as example, i saw on deck)
 - maybe a bit too small on steam deck?
+- slint supports both _ and -, maybe rename every single thing to _?
 
 # Report:
 
@@ -34,5 +35,5 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
   - Gettext domain: `rai-pal-slint` → `rai-pal-frontend` (Slint derives the domain from the Cargo package name); `.po` catalogs renamed. No Tauri equivalent.
   - Unchanged names with no Slint suffix: single-instance key `rai-pal-single-instance`, data dir `ProjectDirs("com", "raicuparta", "rai-pal")`, log files `rai-pal.log`/`rai-pal.old.log`, temp dir `rai-pal`, mod manifest `rai-pal-manifest.json`, release/updater URLs.
   - Bundles moved from `crates/frontend/dist` to `target/bundles/<type>/`: `appimage/`, `nsis/`, `macos/`. Artifacts are now `RaiPal-<version>-x86_64.AppImage`, `RaiPal-<version>-x86_64.exe`, `RaiPal-<version>-x86_64-setup.exe`, `RaiPal-<version>-macos.zip`. Release assets (`RaiPal.AppImage`, `RaiPal.exe`) are unchanged. Build scripts renamed to `build-appimage.sh`, `build-windows.sh`, `build-macos.sh`.
-  - `deep_links.rs` split: URL handling stays there; scheme registration moved to `deep_link_registration.rs`.
+  - Deep link URL handling and OS scheme registration now live together in `os_integration.rs`.
   - Out of scope (Tauri leftovers not overwritten or deleted yet): Tauri WebView data dirs keyed by its identifier (`~/.local/share/com.raicuparta.pal`, `%APPDATA%\com.raicuparta.pal`, `~/Library/Application Support/com.raicuparta.pal`); the old Tauri AppImage/extracted copy in `~/.cache/appimage-run`; and any old macOS `.app` bundle in `/Applications`. Linux desktop/icon/handler files, the Windows protocol/install registry entries and the shared `rai-pal` data dir are intentionally reused or overwritten by the matching ids above.

@@ -25,14 +25,14 @@ use slint::{
 
 use crate::{
 	ActionKind, ActionStates, AppColorScheme, AppTab, Fonts, MainWindow, ModActions, action_state,
-	actions, analytics, confirmation, deep_link_registration, deep_links, downloads,
+	actions, analytics, confirmation, downloads,
 	fetch::spawn_fetchers,
 	filters::{
 		apply_filter_action, build_groups, load_mod_families, reset_all_filters, reset_filter_group,
 	},
 	i18n, logging, manual, mod_sources,
 	model::{self, make_rows},
-	mods, mods_tab, notifications,
+	mods, mods_tab, notifications, os_integration,
 	query::{load_game_ids, start_query},
 	refresh,
 	scheduler::{FetchScheduler, enqueue_index, schedule_visible_range},
@@ -1129,9 +1129,9 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			}
 		});
 
-	deep_link_registration::register();
+	os_integration::register();
 	for argument in std::env::args().skip(1) {
-		deep_links::handle(&argument, &window, &database, &selected_game, &downloads);
+		os_integration::handle(&argument, &window, &database, &selected_game, &downloads);
 	}
 
 	let instance_window = window.as_weak();
@@ -1155,7 +1155,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			});
 
 			for argument in arguments {
-				deep_links::handle(&argument, &window, &database, &selected_game, &downloads);
+				os_integration::handle(&argument, &window, &database, &selected_game, &downloads);
 			}
 		});
 	});
