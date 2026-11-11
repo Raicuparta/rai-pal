@@ -192,6 +192,10 @@ impl CommandHandler {
 		self.set_selected_game(index, game.clone());
 		selected::show(&window, &game, row);
 		self.refresh_mods(&game);
+
+		if game.exe_path.is_some() {
+			self.refresh_game();
+		}
 	}
 
 	pub fn deselect_game(&self) {
