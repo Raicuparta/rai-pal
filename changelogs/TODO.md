@@ -18,6 +18,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Done
 
+- Removed dead Xbox, GameMaker, remote-game, and Game serde code, trimmed unused parsed fields from the Epic and itch providers, and reused the shared directory copy helper for macOS updates. Clippy is clean across the workspace.
 - Replaced the `serde_struct` macro with direct derives, keeping explicit `camelCase` attributes only where persisted or external JSON needs them. `serde_enum` and `sql_enum` remain.
 - Handled incoming `rai-pal://` Apple events on macOS with a Carbon URL event handler, so deep links work on the running app.
 - Added macOS automatic updates: `darwin-aarch64`/`darwin-x86_64` platform entries, app bundle replacement and relaunch from the release zip, and signed updater partials in the release workflow.

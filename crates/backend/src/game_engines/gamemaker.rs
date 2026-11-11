@@ -91,38 +91,6 @@ fn has_gamemaker_metadata(data: &[u8]) -> bool {
 	is_gamemaker_studio_1(data) || is_gamemaker_legacy(data)
 }
 
-#[allow(dead_code)]
-fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
-	let mmap = crate::game_engines::mmap_safe::map_readonly(exe_path)
-		.ok_or_log("Failed to memory map GameMaker exe")?;
-
-	let pe = PeFile::from_bytes(&mmap).ok_or_log("Failed to parse PE file")?;
-
-	let mut end_of_sections = 0;
-	for section in pe.section_headers() {
-		let section_end = section.PointerToRawData as usize + section.SizeOfRawData as usize;
-		if section_end > end_of_sections {
-			end_of_sections = section_end;
-		}
-	}
-
-	let overlay_start = end_of_sections.min(mmap.len());
-
-	if let Some(version) = try_read_version_from_overlay(overlay_start, &mmap) {
-		return Some(version);
-	}
-
-	if let Some(version) = try_read_version_from_data_win(exe_path) {
-		return Some(version);
-	}
-
-	if let Some(version) = try_read_version_from_pe_sections(overlay_start, &mmap) {
-		return Some(version);
-	}
-
-	None
-}
-
 pub fn process_game(game: &mut Game) -> bool {
 	let Some(exe_path) = game.exe_path.as_ref() else {
 		return false;

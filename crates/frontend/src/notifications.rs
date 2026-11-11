@@ -117,8 +117,8 @@ pub fn register(window: &MainWindow) {
 	window
 		.global::<crate::AppActions>()
 		.on_dismiss_notification(move |id| {
-			if let Some(window) = ui_window.upgrade() {
-				dismiss(&window, id);
+			if let Some(upgraded_window) = ui_window.upgrade() {
+				dismiss(&upgraded_window, id);
 			}
 		});
 }

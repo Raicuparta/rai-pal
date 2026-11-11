@@ -1,7 +1,6 @@
 use std::{collections::BTreeMap, path::PathBuf};
 
 use rai_pal_proc_macros::serde_enum;
-use serde::Deserialize;
 
 use crate::{
 	game::Game,
@@ -33,32 +32,6 @@ pub enum ProviderCommandAction {
 pub struct ProviderCommand {
 	pub action: ProviderCommandAction,
 	pub kind: ProviderCommandKind,
-}
-
-#[derive(Deserialize)]
-#[serde(untagged)]
-enum ProviderCommandsRepr {
-	List(Vec<ProviderCommand>),
-	Map(BTreeMap<ProviderCommandAction, ProviderCommandKind>),
-}
-
-pub(crate) fn deserialize_provider_commands<'de, D>(
-	deserializer: D,
-) -> std::result::Result<Vec<ProviderCommand>, D::Error>
-where
-	D: serde::Deserializer<'de>,
-{
-	let mut commands = match ProviderCommandsRepr::deserialize(deserializer)? {
-		ProviderCommandsRepr::List(commands) => commands,
-		ProviderCommandsRepr::Map(commands) => commands
-			.into_iter()
-			.map(|(action, kind)| ProviderCommand { action, kind })
-			.collect(),
-	};
-
-	commands.sort_by_key(|command| command.action);
-
-	Ok(commands)
 }
 
 impl ProviderCommand {

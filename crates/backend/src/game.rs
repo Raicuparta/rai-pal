@@ -21,7 +21,7 @@ use crate::{
 	result::{ContextResult, Error, Result},
 };
 
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, Clone, Debug)]
 pub struct Game {
 	pub provider_id: GameProviderId,
 	pub game_id: String,
@@ -41,9 +41,6 @@ pub struct Game {
 	pub executable_os: Option<OperatingSystem>,
 	pub supported_os: Vec<OperatingSystem>,
 	pub tags: Vec<GameTag>,
-	#[serde(
-		deserialize_with = "crate::game_providers::provider_command::deserialize_provider_commands"
-	)]
 	pub provider_commands: Vec<ProviderCommand>,
 }
 

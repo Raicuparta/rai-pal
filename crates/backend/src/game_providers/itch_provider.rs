@@ -94,7 +94,6 @@ impl Itch {
 pub struct ItchDatabaseGame {
 	id: i32,
 	title: String,
-	url: Option<String>,
 	published_at: Option<String>,
 	cover_url: Option<String>,
 }
@@ -102,8 +101,6 @@ pub struct ItchDatabaseGame {
 pub struct ItchDatabaseCave {
 	id: i32,
 	verdict: Option<ItchDatabaseVerdict>,
-	title: String,
-	cover_url: Option<String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -249,18 +246,14 @@ fn get_database(db_path: &Path) -> Result<Option<ItchDatabase>> {
 	let mut caves_statement = connection
 		.prepare(
 			r"SELECT
-			caves.game_id, caves.verdict, games.title, games.cover_url
+			caves.game_id, caves.verdict
     FROM
-			caves
-    JOIN
-			games ON caves.game_id = games.id;
-  ",
+			caves;",
 		)
 		.with_context(|| format!("failed to query Itch database `{db_display}`"))?;
 	let cave_rows = caves_statement.query_map([], |row| {
 		Ok(ItchDatabaseCave {
 			id: row.get("game_id")?,
-			title: row.get("title")?,
 			verdict: parse_verdict(
 				row.get("verdict")
 					.ok_or_log(&format!(
@@ -268,15 +261,12 @@ fn get_database(db_path: &Path) -> Result<Option<ItchDatabase>> {
 					))
 					.as_ref(),
 			),
-			cover_url: row.get("cover_url").ok_or_log(&format!(
-				"Failed to parse itch cave cover_url for {db_display}"
-			)),
 		})
 	})?;
 
 	let mut games_statement = connection.prepare(
 		r"SELECT
-			id, title, url, published_at, cover_url
+			id, title, published_at, cover_url
 		FROM
 			'games'
 		WHERE
@@ -287,11 +277,10 @@ fn get_database(db_path: &Path) -> Result<Option<ItchDatabase>> {
 		Ok(ItchDatabaseGame {
 			id: row.get(0)?,
 			title: row.get(1)?,
-			url: row.get(2).ok_or_log("Failed to read url on itch row"),
 			published_at: row
-				.get(3)
+				.get(2)
 				.ok_or_log("Failed to read published_at on itch row"),
-			cover_url: row.get(4).ok_or_log("Failed to read cover_url on itch row"),
+			cover_url: row.get(3).ok_or_log("Failed to read cover_url on itch row"),
 		})
 	})?;
 

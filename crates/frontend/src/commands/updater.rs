@@ -422,7 +422,7 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 	if staged_bundle.exists() {
 		fs::remove_dir_all(&staged_bundle).map_err(|err| err.to_string())?;
 	}
-	copy_dir_all(&new_bundle, &staged_bundle)?;
+	crate::runtime::block_on(files::copy_dir_all(&new_bundle, &staged_bundle))?;
 
 	let backup_bundle = parent.join(".RaiPal.app.old");
 	if backup_bundle.exists() {
@@ -439,25 +439,6 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 		.map_err(|err| err.to_string())?;
 
 	std::process::exit(0);
-}
-
-#[cfg(target_os = "macos")]
-fn copy_dir_all(source: &Path, destination: &Path) -> Result<(), String> {
-	fs::create_dir_all(destination).map_err(|err| err.to_string())?;
-	for entry in fs::read_dir(source).map_err(|err| err.to_string())? {
-		let entry = entry.map_err(|err| err.to_string())?;
-		let file_type = entry.file_type().map_err(|err| err.to_string())?;
-		let target = destination.join(entry.file_name());
-		if file_type.is_dir() {
-			copy_dir_all(&entry.path(), &target)?;
-		} else if file_type.is_symlink() {
-			let link_target = fs::read_link(entry.path()).map_err(|err| err.to_string())?;
-			std::os::unix::fs::symlink(link_target, target).map_err(|err| err.to_string())?;
-		} else {
-			fs::copy(entry.path(), target).map_err(|err| err.to_string())?;
-		}
-	}
-	Ok(())
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "windows", target_os = "macos")))]

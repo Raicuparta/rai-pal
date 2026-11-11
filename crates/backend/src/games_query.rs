@@ -64,9 +64,7 @@ impl<'de> serde::Deserialize<'de> for FilterGroupKey {
 	fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
 		let value = String::deserialize(deserializer)?;
 
-		value
-			.parse::<Self>()
-			.map_err(|err| serde::de::Error::custom(err))
+		value.parse::<Self>().map_err(serde::de::Error::custom)
 	}
 }
 

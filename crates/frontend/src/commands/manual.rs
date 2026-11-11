@@ -70,13 +70,15 @@ impl CommandHandler {
 			});
 
 			crate::runtime::invoke_on_ui(move || {
-				let Some(window) = window_weak.upgrade() else {
+				let Some(upgraded_window) = window_weak.upgrade() else {
 					return;
 				};
 
 				match result {
 					Ok(()) => {
-						window.global::<crate::AddGameState>().set_open(false);
+						upgraded_window
+							.global::<crate::AddGameState>()
+							.set_open(false);
 
 						if let Some(handler) = Self::current() {
 							handler.refresh_after_change();
@@ -84,7 +86,7 @@ impl CommandHandler {
 					}
 					Err(err) => {
 						notifications::error(
-							&window,
+							&upgraded_window,
 							notifications::data(MessageContext::None, &err),
 						);
 					}

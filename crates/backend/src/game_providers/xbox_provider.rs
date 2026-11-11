@@ -19,21 +19,6 @@ use crate::{
 #[derive(Clone)]
 pub struct Xbox {}
 
-struct XboxGamepassGame {
-	product_title: String,
-	product_id: String,
-	images: Option<XboxGamepassImages>,
-	release_date: String,
-	store_page: String,
-}
-
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-#[serde(rename_all = "PascalCase")]
-struct XboxGamepassImages {
-	logo: Option<Vec<String>>,
-	box_art: Option<Vec<String>>,
-}
-
 impl ProviderActions for Xbox {
 	fn insert_games(&self, db: &DbMutex) -> Result {
 		if let Err(error) = get_games(db) {

@@ -30,18 +30,12 @@ use crate::{
 
 #[derive(serde::Deserialize)]
 pub struct EpicManifest {
-	#[serde(rename = "DisplayName")]
-	display_name: String,
 	#[serde(rename = "LaunchExecutable")]
 	launch_executable: String,
 	#[serde(rename = "InstallLocation")]
 	install_location: String,
-	#[serde(rename = "CatalogNamespace")]
-	catalog_namespace: String,
 	#[serde(rename = "CatalogItemId")]
 	catalog_item_id: String,
-	#[serde(rename = "AppName")]
-	app_name: String,
 }
 
 #[derive(serde::Deserialize)]
@@ -54,7 +48,6 @@ pub struct EpicCatalogCategory {
 #[serde(rename_all = "camelCase")]
 pub struct EpicCatalogReleaseInfo {
 	app_id: String,
-	platform: Vec<String>,
 	date_added: Option<String>,
 }
 
