@@ -34,6 +34,12 @@ building.
 Updater releases are signed with `UPDATE_PRIVATE_KEY` and
 `UPDATE_KEY_PASSWORD`.
 
+`collect-build-artifacts.sh` publishes a main asset (`RaiPal.exe`,
+`RaiPal.AppImage`, or `RaiPal.macos.zip`) and a separate updater asset in the
+format the Tauri v1 updater used (`updater-windows.zip`,
+`updater-linux.tar.gz`, `updater-macos.zip`). Keeping them separate means the
+GitHub release download counts updater downloads independently.
+
 ## Releases
 
 ```sh

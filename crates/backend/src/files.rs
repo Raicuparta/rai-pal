@@ -108,3 +108,40 @@ pub fn extract(archive_path: &Path, target_path: &Path, on_progress: &impl Fn(u6
 	}
 	Ok(())
 }
+
+pub fn extract_tar_gz(archive_path: &Path, target_path: &Path) -> Result {
+	let decoder = flate2::read::GzDecoder::new(File::open(archive_path)?);
+	let mut archive = tar::Archive::new(decoder);
+
+	for entry in archive.entries()? {
+		let mut entry = entry?;
+		let path = entry.path()?.into_owned();
+		let outpath = target_path.join(&path);
+
+		if !outpath.starts_with(target_path) {
+			return Err(io::Error::new(
+				io::ErrorKind::InvalidData,
+				format!(
+					"Tar file contains path escaping target: {}",
+					path.display()
+				),
+			)
+			.into());
+		}
+
+		if entry.header().entry_type().is_dir() {
+			fs::create_dir_all(&outpath)?;
+			continue;
+		}
+
+		if let Some(parent) = outpath.parent() {
+			fs::create_dir_all(parent)?;
+		}
+
+		let mut outfile = fs::File::create(&outpath)?;
+		io::copy(&mut entry, &mut outfile)
+			.with_context(|| format!("failed to extract `{}`", outpath.display()))?;
+	}
+
+	Ok(())
+}

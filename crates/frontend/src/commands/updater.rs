@@ -14,7 +14,7 @@ use std::{
 
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 use minisign_verify::{PublicKey, Signature};
-#[cfg(any(target_os = "windows", target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
 use rai_pal_backend::app_paths;
 use rai_pal_backend::result::LogErrExt;
 use semver::Version;
@@ -307,6 +307,8 @@ fn update_file_path(file_name: &str) -> Result<PathBuf, String> {
 fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 	use std::os::unix::fs::PermissionsExt;
 
+	use rai_pal_backend::files;
+
 	let target = match std::env::var_os("APPIMAGE") {
 		Some(path) => PathBuf::from(path),
 		None => std::env::current_exe()
@@ -328,7 +330,24 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 		.unwrap_or("rai-pal.AppImage");
 	let temp_path = parent.join(format!(".{file_name}.update"));
 
-	fs::write(&temp_path, bytes).map_err(|err| err.to_string())?;
+	let update_dir = app_paths::temp_dir("update").map_err(|err| err.to_string())?;
+	let archive_path = update_dir.join("updater-linux.tar.gz");
+	fs::write(&archive_path, bytes).map_err(|err| err.to_string())?;
+
+	let extract_dir = update_dir.join("extracted-linux");
+	if extract_dir.exists() {
+		fs::remove_dir_all(&extract_dir).map_err(|err| err.to_string())?;
+	}
+	files::extract_tar_gz(&archive_path, &extract_dir).map_err(|err| err.to_string())?;
+
+	let appimage_path = fs::read_dir(&extract_dir)
+		.map_err(|err| err.to_string())?
+		.filter_map(|entry| entry.ok())
+		.map(|entry| entry.path())
+		.find(|path| path.extension().is_some_and(|extension| extension == "AppImage"))
+		.ok_or_else(|| "Could not find the updated AppImage".to_string())?;
+
+	fs::copy(&appimage_path, &temp_path).map_err(|err| err.to_string())?;
 	fs::set_permissions(&temp_path, std::fs::Permissions::from_mode(0o755))
 		.map_err(|err| err.to_string())?;
 	fs::rename(&temp_path, &target).map_err(|err| err.to_string())?;
@@ -361,10 +380,27 @@ fn shell_quote(path: &Path) -> Result<String, String> {
 fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 	use std::{os::windows::process::CommandExt, process::Command};
 
+	use rai_pal_backend::files;
+
 	const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
-	let installer = update_file_path("RaiPal-Setup.exe")?;
-	fs::write(&installer, bytes).map_err(|err| err.to_string())?;
+	let archive_path = update_file_path("updater-windows.zip")?;
+	fs::write(&archive_path, bytes).map_err(|err| err.to_string())?;
+
+	let extract_dir = app_paths::temp_dir("update")
+		.map_err(|err| err.to_string())?
+		.join("extracted-windows");
+	if extract_dir.exists() {
+		fs::remove_dir_all(&extract_dir).map_err(|err| err.to_string())?;
+	}
+	files::extract(&archive_path, &extract_dir, &|_, _| {}).map_err(|err| err.to_string())?;
+
+	let installer = fs::read_dir(&extract_dir)
+		.map_err(|err| err.to_string())?
+		.filter_map(|entry| entry.ok())
+		.map(|entry| entry.path())
+		.find(|path| path.extension().is_some_and(|extension| extension == "exe"))
+		.ok_or_else(|| "Could not find the updated installer".to_string())?;
 
 	let pid = std::process::id();
 	let installer = installer.display();
@@ -398,7 +434,7 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 		.ok_or_else(|| "Could not find the app bundle folder".to_string())?;
 
 	let update_dir = app_paths::temp_dir("update").map_err(|err| err.to_string())?;
-	let archive_path = update_dir.join("RaiPal-macos.zip");
+	let archive_path = update_dir.join("updater-macos.zip");
 	fs::write(&archive_path, bytes).map_err(|err| err.to_string())?;
 
 	let extract_dir = update_dir.join("extracted");

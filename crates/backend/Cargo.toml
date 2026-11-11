@@ -35,6 +35,8 @@ steamlocate = "2.1.1"
 unicode-normalization = "0.1.25"
 uuid = { version = "1.28.0", features = ["v4"] }
 zip = { version = "9.0.4", default-features = false, features = ["deflate"] }
+flate2 = "1.1.10"
+tar = "0.4.46"
 futures-util = "0.3"
 memchr = "2.8.3"
 libc = "0.2"
