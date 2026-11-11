@@ -115,12 +115,17 @@ impl CommandHandler {
 	}
 
 	pub fn set_tab(&self, tab: AppTab) {
+		let previous_tab: AppTab = self.settings.borrow().selected_tab.into();
 		self.settings.borrow_mut().selected_tab = tab.into();
 		self.persist_settings();
 
 		let Some(window) = self.ui() else {
 			return;
 		};
+
+		if tab == AppTab::Games && previous_tab == AppTab::Games && window.get_game_selected() {
+			self.deselect_game();
+		}
 
 		if tab == AppTab::Mods {
 			self.load_mods_tab();
