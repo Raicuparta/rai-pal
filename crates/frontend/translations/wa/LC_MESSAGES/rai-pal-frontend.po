@@ -5,129 +5,173 @@ msgstr ""
 "Language: wa\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgctxt "meta"
-msgid "English (US)"
-msgstr "Wario (Waah!)"
+msgctxt "about"
+msgid "About Rai Pal"
+msgstr "Waaah wah wah!"
 
-msgctxt "tab"
-msgid "Games"
-msgstr "Waaah!"
+msgctxt "about"
+msgid "Version: {0}"
+msgstr "Waaaaaah {0}"
 
-msgctxt "tab"
-msgid "Mods"
+msgctxt "about"
+msgid "Rendering backend: {0}"
+msgstr "Waaaaaaah waaaaaah {0}"
+
+msgctxt "about"
+msgid "Platform: {0}"
+msgstr "Waaaaaaah {0}"
+
+msgctxt "appDropdownMenu"
+msgid "App menu"
+msgstr "Wah waah!"
+
+msgctxt "appDropdownMenu"
+msgid "Auto"
 msgstr "Waah!"
 
-msgctxt "tab"
-msgid "Thanks"
-msgstr "Waaaah!"
+msgctxt "appDropdownMenu"
+msgid "Dark"
+msgstr "Waah!"
 
-msgctxt "gamesPage"
-msgid "Rai Pal didn't find any games at all. Remember Rai Pal needs to find installed apps from other game providers, like Steam, Epic, etc."
-msgstr "Wah wah waaaah waah wah waaah at waah waaaaaah wah wah waaah to waah waaaaaaah waah waah waaah waah waaaaaaaah waah waaaah waaah waah!"
+msgctxt "appDropdownMenu"
+msgid "Light"
+msgstr "Waaah!"
 
-msgctxt "gamesPage"
-msgid "Nothing! All of your games are hidden because of the filters you selected. Clear your filters to see your beautiful games again."
-msgstr "Waaaaaah wah of waah waaah wah waaaah waaaaah of wah waaaaah wah waaaaaaah waaah waah waaaaah to wah waah waaaaaaah waaah waaaah!"
+msgctxt "appDropdownMenu"
+msgid "Show game thumbnails on list"
+msgstr "Waah waah waaaaaaaah on waah!"
 
-msgctxt "gamesPage"
-msgid "Finding your games..."
-msgstr "Waaaaah waah waaaaaah!"
+msgctxt "appDropdownMenu"
+msgid "Reset Rai Pal settings"
+msgstr "Waaah wah wah waaaaaah!"
 
-msgctxt "manualGames"
-msgid "Note: you can also add your non-Steam games to Steam, and they will still be detected by Rai Pal."
-msgstr "Waaah wah wah waah wah waah waaaaaaah waaah to waaaah wah waah waah waaah be waaaaaah by wah waah!"
+msgctxt "appDropdownMenu"
+msgid "Open Logs Folder"
+msgstr "Waah waah waaaah!"
 
-msgctxt "manualGames"
-msgid "These directories will be scanned recursively every time Rai Pal refreshes its data. Large folders may make things significantly slower."
-msgstr "Waaah waaaaaaaaah waah be waaaaah waaaaaaaaah waaah waah wah wah waaaaaaah wah waaah waaah waaaaah wah waah waaaah waaaaaaaaaaah waaaaah!"
+msgctxt "appDropdownMenu"
+msgid "Language"
+msgstr "Waaaaaah!"
 
-msgctxt "manualGames"
-msgid "Add games"
-msgstr "Wah waaah!"
+msgctxt "appDropdownMenu"
+msgid "Auto-detected - {0}"
+msgstr "Waaaaaaaaaaah - {0}"
 
-msgctxt "manualGames"
-msgid "Manually Added Games"
-msgstr "Waaaaaah waaah waaah!"
+msgctxt "appDropdownMenu"
+msgid "Color scheme"
+msgstr "Waaah waaaah!"
 
-msgctxt "manualGames"
-msgid "Select game executable"
-msgstr "Waaaah waah waaaaaaaah!"
+msgctxt "appDropdownMenu"
+msgid "About..."
+msgstr "Waaaaaah!"
 
-msgctxt "manualGames"
-msgid "Select game directory. Can be slow!"
-msgstr "Waaaah waah waaaaaaaah wah be waaah!"
+msgctxt "appUpdate"
+msgid "Rai Pal {0}"
+msgstr "Wah wah {0}"
 
-msgctxt "manualGames"
-msgid "You can also just drop game executable files or entire folders anywhere on Rai Pal's window to add them to the library, even without opening this dialog."
-msgstr "Wah wah waah waah waah waah waaaaaaaah waaah or waaaah waaaaah waaaaaah on wah waaah waaaah to wah waah to wah waaaaaah waah waaaaah waaaaah waah waaaaah!"
+msgctxt "appUpdate"
+msgid "(no changelog)"
+msgstr "Wah waaaaaaaah!"
 
-msgctxt "manualGames"
-msgid "Scanning {0}..."
-msgstr "Waaaaaah {0}..."
+msgctxt "appUpdate"
+msgid "Ignore (won't ask again until you restart Rai Pal)"
+msgstr "Waaaah waaaah wah waaah waaah wah waaaaah wah waah!"
 
-msgctxt "manualGames"
-msgid "Scanned {0} directories, found {1} executables"
-msgstr "Waaaaah {0} waaaaaaaaaah waaah {1} waaaaaaaaah!"
+msgctxt "appUpdate"
+msgid "Update now"
+msgstr "Waaaah wah!"
 
-msgctxt "manualGames"
-msgid "Found {0} executables in {1} seconds. Add this folder to Rai Pal?"
-msgstr "Waaah {0} waaaaaaaaah in {1} waaaaaah wah waah waaaah to wah waah!"
+msgctxt "commandButton"
+msgid "Don't ask again"
+msgstr "Waaah wah waaah!"
 
-msgctxt "manualGames"
-msgid "Add folder"
-msgstr "Wah waaaah!"
-
-msgctxt "manualGames"
-msgid "Remove"
-msgstr "Waaaah!"
-
-msgctxt "manualGames"
+msgctxt "commandButton"
 msgid "Cancel"
 msgstr "Waaaah!"
 
-msgctxt "refresh"
-msgid "Refresh"
-msgstr "Waaaaah!"
+msgctxt "debugData"
+msgid "Copy debug data"
+msgstr "Waah waaah waah!"
 
-msgctxt "refresh"
-msgid "Update remote databases"
-msgstr "Waaaah waaaah waaaaaaah!"
+msgctxt "debugData"
+msgid "Debug data"
+msgstr "Waaah waah!"
 
-msgctxt "refresh"
-msgid "Loading {0}..."
-msgstr "Waaaaah {0}..."
-
-msgctxt "filterMenu"
-msgid "Filters"
-msgstr "Waaaaah!"
-
-msgctxt "filterMenu"
-msgid "Collapse all filters"
-msgstr "Waaaaaah wah waaaaah!"
-
-msgctxt "filterMenu"
-msgid "Reset"
+msgctxt "debugData"
+msgid "Close"
 msgstr "Waaah!"
 
-msgctxt "filterMenu"
-msgid "Reset all filters"
-msgstr "Waaah wah waaaaah!"
+msgctxt "downloadStatusMenu"
+msgid "Downloads"
+msgstr "Waaaaaaah!"
+
+msgctxt "downloadStatusMenu"
+msgid "Clear completed"
+msgstr "Waaah waaaaaaah!"
+
+msgctxt "downloads"
+msgid "Download {0}"
+msgstr "Waaaaaah {0}"
+
+msgctxt "downloads"
+msgid "Extract {0}"
+msgstr "Waaaaah {0}"
+
+msgctxt "fileDialog"
+msgid "Select the game executable"
+msgstr "Waaaah wah waah waaaaaaaah!"
+
+msgctxt "fileDialog"
+msgid "Windows executable"
+msgstr "Waaaaah waaaaaaaah!"
+
+msgctxt "fileDialog"
+msgid "Other executable"
+msgstr "Waaah waaaaaaaah!"
+
+msgctxt "fileDialog"
+msgid "Select a game directory"
+msgstr "Waaaah a waah waaaaaaah!"
 
 msgctxt "filterMenu"
-msgid "Lock filter value"
-msgstr "Waah waaaah waaah!"
-
-msgctxt "filterMenu"
-msgid "Unlock filter value"
-msgstr "Waaaah waaaah waaah!"
+msgid "Only"
+msgstr "Waah!"
 
 msgctxt "filterMenu"
 msgid "Only show this value"
 msgstr "Waah waah waah waaah!"
 
 msgctxt "filterMenu"
+msgid "Unlock filter value"
+msgstr "Waaaah waaaah waaah!"
+
+msgctxt "filterMenu"
+msgid "Lock filter value"
+msgstr "Waah waaaah waaah!"
+
+msgctxt "filterMenu"
+msgid "Reset"
+msgstr "Waaah!"
+
+msgctxt "filterMenu"
 msgid "Search..."
 msgstr "Waaaaaaah!"
+
+msgctxt "filterMenu"
+msgid "Collapse all filters"
+msgstr "Waaaaaah wah waaaaah!"
+
+msgctxt "filterMenu"
+msgid "Filters"
+msgstr "Waaaaah!"
+
+msgctxt "filterMenu"
+msgid "Reset all filters"
+msgstr "Waaah wah waaaaah!"
+
+msgctxt "filterMenu"
+msgid "Clear search"
+msgstr "Waaah waaaah!"
 
 msgctxt "filterProperty"
 msgid "Provider"
@@ -213,41 +257,97 @@ msgctxt "filterValueNote"
 msgid "GameMaker games are not fully supported yet."
 msgstr "Waaaaaaah waaah wah wah waaah waaaaaaah waah!"
 
-msgctxt "providerCommand"
+msgctxt "gameModRow"
+msgid "Edit Mod Config"
+msgstr "Waah wah waaaah!"
+
+msgctxt "gameModRow"
+msgid "Open folder containing this mod's config files"
+msgstr "Waah waaaah waaaaaaaah waah waaah waaaah waaah!"
+
+msgctxt "gameModRow"
+msgid "Open Mod Folder"
+msgstr "Waah wah waaaah!"
+
+msgctxt "gameModRow"
+msgid "Download Recommended Config"
+msgstr "Waaaaaah waaaaaaaaah waaaah!"
+
+msgctxt "gameModRow"
+msgid "Reinstall"
+msgstr "Waaaaaaah!"
+
+msgctxt "gameModRow"
+msgid "Uninstall"
+msgstr "Waaaaaaah!"
+
+msgctxt "gameModRow"
 msgid "Install"
 msgstr "Waaaaah!"
 
-msgctxt "providerCommand"
-msgid "Show In Library"
-msgstr "Waah In waaaaah!"
+msgctxt "gameModRow"
+msgid "Update"
+msgstr "Waaaah!"
 
-msgctxt "providerCommand"
-msgid "Open Store Page"
-msgstr "Waah waaah waah!"
+msgctxt "gameModRow"
+msgid "Run"
+msgstr "Wah!"
 
-msgctxt "providerCommand"
-msgid "Start Game"
-msgstr "Waaah waah!"
+msgctxt "gameModRow"
+msgid "Mod actions"
+msgstr "Wah waaaaah!"
 
-msgctxt "providerCommand"
-msgid "Run Game Executable"
-msgstr "Wah waah waaaaaaaah!"
+msgctxt "gameModRow"
+msgid "Recommended config"
+msgstr "Waaaaaaaaah waaaah!"
 
-msgctxt "providerCommand"
-msgid "Open In Browser"
-msgstr "Waah In waaaaah!"
+msgctxt "gameModRow"
+msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
+msgstr "Waaaaaaaaah waaaah waaaaaaaah waah be waaaaaaaah if wah waaah waaaaah waah a waaaaah wah wah waah waaah it to waaaaaah waah wah waaah wah waaah!"
 
-msgctxt "gameModal"
-msgid "Start Game"
-msgstr "Waaah waah!"
-
-msgctxt "gameModal"
-msgid "Start Game Executable"
-msgstr "Waaah waah waaaaaaaah!"
+msgctxt "gameModRow"
+msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
+msgstr "Waaaaaaaah be waaaaah waah waaaaaaaah waah on waaaaaaaaah waaaah waaaaaaah wah waaaah waah waah wah wah wah waaaaah waah if wah waah waah waaaaaaah!"
 
 msgctxt "gameModal"
-msgid "Start Game via {0}"
-msgstr "Waaah waah wah {0}"
+msgid "Nothing! None of the available mods are of any use for this game. Try something else."
+msgstr "Waaaaaah waah of wah waaaaaaah waah wah of wah wah wah waah waaah wah waaaaaaah waaah!"
+
+msgctxt "gameModal"
+msgid "Potentially compatible mods"
+msgstr "Waaaaaaaaah waaaaaaaah waah!"
+
+msgctxt "gameModal"
+msgid "Install this game to see more detailed information about which mods are compatible"
+msgstr "Waaaaah waah waah to wah waah waaaaaah waaaaaaaaah waaah waaah waah wah waaaaaaaah!"
+
+msgctxt "gameModal"
+msgid "Installed Mods"
+msgstr "Waaaaaaah waah!"
+
+msgctxt "gameModal"
+msgid "Uninstall all mods"
+msgstr "Waaaaaaah wah waah!"
+
+msgctxt "gameModal"
+msgid "Available Mods"
+msgstr "Waaaaaaah waah!"
+
+msgctxt "gameModal"
+msgid "Other things"
+msgstr "Waaah waaaah!"
+
+msgctxt "gameModal"
+msgid "These are mostly dependencies and other stuff that you don't usually need to mess with directly."
+msgstr "Waaah wah waaaah waaaaaaaaaah wah waaah waaah waah wah waaah waaaaah waah to waah waah waaaaaaah!"
+
+msgctxt "gameModal"
+msgid "Incompatible Mods"
+msgstr "Waaaaaaaaaah waah!"
+
+msgctxt "gameModal"
+msgid "The mods listed here can't be installed because they aren't compatible with this game's engine version."
+msgstr "Wah waah waaaah waah waaah be waaaaaaah waaaaah waah waaaah waaaaaaaah waah waah waaaah waaaah waaaaaah!"
 
 msgctxt "gameModal"
 msgid "Folders"
@@ -256,10 +356,6 @@ msgstr "Waaaaah!"
 msgctxt "gameModal"
 msgid "Game Files"
 msgstr "Waah waaah!"
-
-msgctxt "gameModal"
-msgid "Installed Mods"
-msgstr "Waaaaaaah waah!"
 
 msgctxt "gameModal"
 msgid "Game App Data"
@@ -274,136 +370,32 @@ msgid "Wine Binary"
 msgstr "Waah waaaah!"
 
 msgctxt "gameModal"
-msgid "Data"
-msgstr "Waah!"
+msgid "Refresh game"
+msgstr "Waaaaah waah!"
 
 msgctxt "gameModal"
 msgid "Remove from Rai Pal"
 msgstr "Waaaah waah wah wah!"
 
 msgctxt "gameModal"
-msgid "Are you sure you want to remove this game from Rai Pal?"
-msgstr "Wah wah waah wah waah to waaaah waah waah waah wah waah!"
-
-msgctxt "gameModal"
-msgid "Refresh game"
-msgstr "Waaaaah waah!"
-
-msgctxt "gameModal"
-msgid "Failed to determine the engine for this game."
-msgstr "Waaaah to waaaaaaah wah waaaah wah waah waaah!"
-
-msgctxt "gameModal"
-msgid "Uninstall all mods"
-msgstr "Waaaaaaah wah waah!"
-
-msgctxt "gameModal"
 msgid "You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
 msgstr "Wah waaah waah waah waaaah wah waaah in waah waaaah waah waaaaah It waaah waaaah wah waaah waah wah waaaah waah waaaaah!"
 
 msgctxt "gameModal"
-msgid "Installed Mods"
-msgstr "Waaaaaaah waah!"
+msgid "Are you sure you want to remove this game from Rai Pal?"
+msgstr "Wah wah waah wah waah to waaaah waah waah waah wah waah!"
 
-msgctxt "gameModal"
-msgid "Available Mods"
-msgstr "Waaaaaaah waah!"
+msgctxt "gamesPage"
+msgid "Finding your games..."
+msgstr "Waaaaah waah waaaaaah!"
 
-msgctxt "gameModal"
-msgid "Potentially compatible mods"
-msgstr "Waaaaaaaaah waaaaaaaah waah!"
+msgctxt "gamesPage"
+msgid "Rai Pal didn't find any games at all. Remember Rai Pal needs to find installed apps from other game providers, like Steam, Epic, etc."
+msgstr "Wah wah waaaah waah wah waaah at waah waaaaaah wah wah waaah to waah waaaaaaah waah waah waaah waah waaaaaaaah waah waaaah waaah waah!"
 
-msgctxt "gameModal"
-msgid "Install this game to see more detailed information about which mods are compatible"
-msgstr "Waaaaah waah waah to wah waah waaaaaah waaaaaaaaah waaah waaah waah wah waaaaaaaah!"
-
-msgctxt "gameModal"
-msgid "Incompatible Mods"
-msgstr "Waaaaaaaaaah waah!"
-
-msgctxt "gameModal"
-msgid "The mods listed here can't be installed because they aren't compatible with this game's engine version."
-msgstr "Wah waah waaaah waah waaah be waaaaaaah waaaaah waah waaaah waaaaaaaah waah waah waaaah waaaah waaaaaah!"
-
-msgctxt "gameModal"
-msgid "Other things"
-msgstr "Waaah waaaah!"
-
-msgctxt "gameModal"
-msgid "These are mostly dependencies and other stuff that you don't usually need to mess with directly."
-msgstr "Waaah wah waaaah waaaaaaaaaah wah waaah waaah waah wah waaah waaaaah waah to waah waah waaaaaaah!"
-
-msgctxt "gameModal"
-msgid "Nothing! None of the available mods are of any use for this game. Try something else."
-msgstr "Waaaaaah waah of wah waaaaaaah waah wah of wah wah wah waah waaah wah waaaaaaah waaah!"
-
-msgctxt "gameModRow"
-msgid "Edit Mod Config"
-msgstr "Waah wah waaaah!"
-
-msgctxt "gameModRow"
-msgid "Open folder containing this mod's config files"
-msgstr "Waah waaaah waaaaaaaah waah waaah waaaah waaah!"
-
-msgctxt "gameModRow"
-msgid "Open Mod Folder"
-msgstr "Waah wah waaaah!"
-
-msgctxt "gameModRow"
-msgid "Update"
-msgstr "Waaaah!"
-
-msgctxt "gameModRow"
-msgid "Install"
-msgstr "Waaaaah!"
-
-msgctxt "gameModRow"
-msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
-msgstr "Waaaaaaaah be waaaaah waah waaaaaaaah waah on waaaaaaaaah waaaah waaaaaaah wah waaaah waah waah wah wah wah waaaaah waah if wah waah waah waaaaaaah!"
-
-msgctxt "gameModRow"
-msgid "Reinstall"
-msgstr "Waaaaaaah!"
-
-msgctxt "gameModRow"
-msgid "Uninstall"
-msgstr "Waaaaaaah!"
-
-msgctxt "gameModRow"
-msgid "Run"
-msgstr "Wah!"
-
-msgctxt "gameModRow"
-msgid "Download Recommended Config"
-msgstr "Waaaaaah waaaaaaaaah waaaah!"
-
-msgctxt "gameModRow"
-msgid "Recommended config"
-msgstr "Waaaaaaaaah waaaah!"
-
-msgctxt "gameModRow"
-msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
-msgstr "Waaaaaaaaah waaaah waaaaaaaah waah be waaaaaaaah if wah waaah waaaaah waah a waaaaah wah wah waah waaah it to waaaaaah waah wah waaah wah waaah!"
-
-msgctxt "gameModRow"
-msgid "Mod outdated"
-msgstr "Wah waaaaaah!"
-
-msgctxt "gameModRow"
-msgid "Can't uninstall a mod that has dependants. Uninstall the mods that depend on this one first."
-msgstr "Waaah waaaaaaah a wah waah wah waaaaaaaaah waaaaaaah wah waah waah waaaah on waah wah waaaah!"
-
-msgctxt "gameModRow"
-msgid "Mod actions"
-msgstr "Wah waaaaah!"
-
-msgctxt "gamesSort"
-msgid "Sort by"
-msgstr "Waah by"
-
-msgctxt "gamesSort"
-msgid "Sort direction"
-msgstr "Waah waaaaaaah!"
+msgctxt "gamesPage"
+msgid "Nothing! All of your games are hidden because of the filters you selected. Clear your filters to see your beautiful games again."
+msgstr "Waaaaaah wah of waah waaah wah waaaah waaaaah of wah waaaaah wah waaaaaaah waaah waah waaaaah to wah waah waaaaaaah waaah waaaah!"
 
 msgctxt "gamesSort"
 msgid "Name A-Z"
@@ -429,65 +421,181 @@ msgctxt "gamesSort"
 msgid "Date Descending"
 msgstr "Waah waaaaaaaah!"
 
-msgctxt "gamesTableColumn"
-msgid "Name"
-msgstr "Waah!"
-
-msgctxt "gamesTableColumn"
-msgid "Engine"
+msgctxt "manualGames"
+msgid "Remove"
 msgstr "Waaaah!"
 
-msgctxt "gamesTableColumn"
-msgid "Date"
-msgstr "Waah!"
+msgctxt "manualGames"
+msgid "Manually Added Games"
+msgstr "Waaaaaah waaah waaah!"
 
-msgctxt "modsPage"
-msgid "Open Local Mods Folder"
-msgstr "Waah waaah waah waaaah!"
+msgctxt "manualGames"
+msgid "Note: you can also add your non-Steam games to Steam, and they will still be detected by Rai Pal."
+msgstr "Waaah wah wah waah wah waah waaaaaaah waaah to waaaah wah waah waah waaah be waaaaaah by wah waah!"
 
-msgctxt "modsPage"
-msgid "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database."
-msgstr "Wah wah waaah waah in waah waaaah waah a waaaaaaaaaaaaaaaaaaaah to be waaaah waaaaaah waaaaah waaah waaaaah wah waaaah waaaaaaah!"
+msgctxt "manualGames"
+msgid "Select game executable"
+msgstr "Waaaah waah waaaaaaaah!"
 
-msgctxt "modsPage"
-msgid "Mod"
-msgstr "Wah!"
+msgctxt "manualGames"
+msgid "Select game directory. Can be slow!"
+msgstr "Waaaah waah waaaaaaaah wah be waaah!"
 
-msgctxt "modsPage"
-msgid "Version"
-msgstr "Waaaaah!"
+msgctxt "manualGames"
+msgid "You can also just drop game executable files or entire folders anywhere on Rai Pal's window to add them to the library, even without opening this dialog."
+msgstr "Wah wah waah waah waah waah waaaaaaaah waaah or waaaah waaaaah waaaaaah on wah waaah waaaah to wah waah to wah waaaaaah waah waaaaah waaaaah waah waaaaah!"
 
-msgctxt "modsPage"
-msgid "Engine"
+msgctxt "manualGames"
+msgid "Scanning {0}..."
+msgstr "Waaaaaah {0}..."
+
+msgctxt "manualGames"
+msgid "Scanned {0} directories, found {1} executables"
+msgstr "Waaaaah {0} waaaaaaaaaah waaah {1} waaaaaaaaah!"
+
+msgctxt "manualGames"
+msgid "Cancel"
 msgstr "Waaaah!"
 
-msgctxt "modsPage"
-msgid "Backend"
-msgstr "Waaaaah!"
+msgctxt "manualGames"
+msgid "Found {0} executables in {1} seconds. Add this folder to Rai Pal?"
+msgstr "Waaah {0} waaaaaaaaah in {1} waaaaaah wah waah waaaah to wah waah!"
 
-msgctxt "modsPage"
-msgid "by {0}"
-msgstr "by {0}"
+msgctxt "manualGames"
+msgid "Add folder"
+msgstr "Wah waaaah!"
 
-msgctxt "modsPage"
-msgid "Deprecated"
-msgstr "Waaaaaaaah!"
+msgctxt "manualGames"
+msgid "These directories will be scanned recursively every time Rai Pal refreshes its data. Large folders may make things significantly slower."
+msgstr "Waaah waaaaaaaaah waah be waaaaah waaaaaaaaah waaah waah wah wah waaaaaaah wah waaah waaah waaaaah wah waah waaaah waaaaaaaaaaah waaaaah!"
 
-msgctxt "modsPage"
-msgid "This mod is deprecated. You should uninstall it and install a newer alternative."
-msgstr "Waah wah is waaaaaaaaah wah waaaah waaaaaaah it wah waaaaah a waaah waaaaaaaaaah!"
+msgctxt "manualGames"
+msgid "Add games"
+msgstr "Wah waaah!"
+
+msgctxt "messages"
+msgid "Failed to run game action"
+msgstr "Waaaah to wah waah waaaah!"
+
+msgctxt "messages"
+msgid "Failed to open game folder"
+msgstr "Waaaah to waah waah waaaah!"
+
+msgctxt "messages"
+msgid "Failed to open game mods folder"
+msgstr "Waaaah to waah waah waah waaaah!"
+
+msgctxt "messages"
+msgid "Failed to open game data folder"
+msgstr "Waaaah to waah waah waah waaaah!"
+
+msgctxt "messages"
+msgid "Failed to open Wine prefix folder"
+msgstr "Waaaah to waah waah waaaah waaaah!"
+
+msgctxt "messages"
+msgid "Failed to open Wine binary folder"
+msgstr "Waaaah to waah waah waaaah waaaah!"
+
+msgctxt "messages"
+msgid "Failed to open local mods folder"
+msgstr "Waaaah to waah waaah waah waaaah!"
+
+msgctxt "messages"
+msgid "Failed to open logs folder"
+msgstr "Waaaah to waah waah waaaah!"
+
+msgctxt "messages"
+msgid "Failed to install mod {0}"
+msgstr "Waaaah to waaaaah wah {0}"
+
+msgctxt "messages"
+msgid "Failed to download config for mod {0}"
+msgstr "Waaaah to waaaaaah waaaah wah wah {0}"
+
+msgctxt "messages"
+msgid "Failed to uninstall mod {0}"
+msgstr "Waaaah to waaaaaaah wah {0}"
+
+msgctxt "messages"
+msgid "Failed to uninstall all mods"
+msgstr "Waaaah to waaaaaaah wah waah!"
+
+msgctxt "messages"
+msgid "Failed to run mod {0}"
+msgstr "Waaaah to wah wah {0}"
+
+msgctxt "messages"
+msgid "Failed to open mod folder {0}"
+msgstr "Waaaah to waah wah waaaah {0}"
+
+msgctxt "messages"
+msgid "Failed to configure mod {0}"
+msgstr "Waaaah to waaaaaaah wah {0}"
+
+msgctxt "messages"
+msgid "Failed to refresh game"
+msgstr "Waaaah to waaaaah waah!"
+
+msgctxt "messages"
+msgid "Failed to refresh {0} games"
+msgstr "Waaaah to waaaaah {0} waaah!"
+
+msgctxt "messages"
+msgid "Failed to refresh installed mods"
+msgstr "Waaaah to waaaaah waaaaaaah waah!"
+
+msgctxt "messages"
+msgid "Failed to refresh mods"
+msgstr "Waaaah to waaaaah waah!"
+
+msgctxt "messages"
+msgid "Failed to refresh remote database"
+msgstr "Waaaah to waaaaah waaaah waaaaaah!"
+
+msgctxt "messages"
+msgid "Failed to load mods"
+msgstr "Waaaah to waah waah!"
+
+msgctxt "messages"
+msgid "Failed to get app data"
+msgstr "Waaaah to wah wah waah!"
+
+msgctxt "messages"
+msgid "Failed to refresh user auth state"
+msgstr "Waaaah to waaaaah waah waah waaah!"
+
+msgctxt "messages"
+msgid "Failed to install app update"
+msgstr "Waaaah to waaaaah wah waaaah!"
+
+msgctxt "messages"
+msgid "Failed to get debug data"
+msgstr "Waaaah to wah waaah waah!"
+
+msgctxt "messages"
+msgid "Running command... This might take a few seconds."
+msgstr "Waaaaah waaaaaaaah waah waaah waah a wah waaaaaah!"
+
+msgctxt "messages"
+msgid "Failed to update mod sources"
+msgstr "Waaaah to waaaah wah waaaaah!"
+
+msgctxt "messages"
+msgid "URL is empty"
+msgstr "Wah is waaah!"
+
+msgctxt "messages"
+msgid "Failed to reset Steam cache"
+msgstr "Waaaah to waaah waaah waaah!"
+
+msgctxt "messages"
+msgid "Failed to add Rai Pal to your Steam library"
+msgstr "Waaaah to wah wah wah to waah waaah waaaaah!"
 
 msgctxt "modModal"
 msgid "Run"
 msgstr "Wah!"
-
-msgctxt "modModal"
-msgid "Open mod folder"
-msgstr "Waah wah waaaah!"
-
-msgctxt "modModal"
-msgid "Update mod"
-msgstr "Waaaah wah!"
 
 msgctxt "modModal"
 msgid "Download"
@@ -497,105 +605,61 @@ msgctxt "modModal"
 msgid "Website"
 msgstr "Waaaaah!"
 
-msgctxt "modModal"
-msgid "Delete mod"
-msgstr "Waaaah wah!"
+msgctxt "modsPage"
+msgid "This mod is deprecated. You should uninstall it and install a newer alternative."
+msgstr "Waah wah is waaaaaaaaah wah waaaah waaaaaaah it wah waaaaah a waaah waaaaaaaaaah!"
 
-msgctxt "modModal"
-msgid "You sure? Any files inside the mod's folder will be lost."
-msgstr "Wah waaah wah waaah waaaah wah waaah waaaah waah be waaah!"
+msgctxt "modsPage"
+msgid "Deprecated"
+msgstr "Waaaaaaaah!"
 
-msgctxt "modModal"
-msgid "by {0}"
-msgstr "by {0}"
+msgctxt "modsPage"
+msgid "Open Local Mods Folder"
+msgstr "Waah waaah waah waaaah!"
 
-msgctxt "appDropdownMenu"
-msgid "App menu"
-msgstr "Wah waah!"
+msgctxt "modsPage"
+msgid "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database."
+msgstr "Wah wah waaah waah in waah waaaah waah a waaaaaaaaaaaaaaaaaaaah to be waaaah waaaaaah waaaaah waaah waaaaah wah waaaah waaaaaaah!"
 
-msgctxt "appDropdownMenu"
-msgid "Show game thumbnails on list"
-msgstr "Waah waah waaaaaaaah on waah!"
+msgctxt "providerCommand"
+msgid "Install"
+msgstr "Waaaaah!"
 
-msgctxt "appDropdownMenu"
-msgid "Language"
-msgstr "Waaaaaah!"
+msgctxt "providerCommand"
+msgid "Show In Library"
+msgstr "Waah In waaaaah!"
 
-msgctxt "appDropdownMenu"
-msgid "Auto-detected - {0}"
-msgstr "Waaaaaaaaaaah - {0}"
+msgctxt "providerCommand"
+msgid "Open Store Page"
+msgstr "Waah waaah waah!"
 
-msgctxt "appDropdownMenu"
-msgid "Color scheme"
-msgstr "Waaah waaaah!"
+msgctxt "providerCommand"
+msgid "Start Game"
+msgstr "Waaah waah!"
 
-msgctxt "appDropdownMenu"
-msgid "Auto"
+msgctxt "providerCommand"
+msgid "Run Game Executable"
+msgstr "Wah waah waaaaaaaah!"
+
+msgctxt "providerCommand"
+msgid "Open In Browser"
+msgstr "Waah In waaaaah!"
+
+msgctxt "refresh"
+msgid "Refresh"
+msgstr "Waaaaah!"
+
+msgctxt "refresh"
+msgid "Loading..."
+msgstr "Waaaaaaaah!"
+
+msgctxt "refresh"
+msgid "mods"
 msgstr "Waah!"
 
-msgctxt "appDropdownMenu"
-msgid "Dark"
-msgstr "Waah!"
-
-msgctxt "appDropdownMenu"
-msgid "Light"
-msgstr "Waaah!"
-
-msgctxt "appDropdownMenu"
-msgid "Reset Rai Pal settings"
-msgstr "Waaah wah wah waaaaaah!"
-
-msgctxt "appDropdownMenu"
-msgid "Will reset filters, confirmation dialogs, probably other stuff."
-msgstr "Waah waaah waaaaaah waaaaaaaaaah waaaaaah waaaaaah waaah waaaah!"
-
-msgctxt "appDropdownMenu"
-msgid "Open Logs Folder"
-msgstr "Waah waah waaaah!"
-
-msgctxt "appDropdownMenu"
-msgid "Clear Rai Pal cache"
-msgstr "Waaah wah wah waaah!"
-
-msgctxt "appDropdownMenu"
-msgid "Clears the game list cache used by Rai Pal."
-msgstr "Waaaah wah waah waah waaah waah by wah waah!"
-
-msgctxt "userMenu"
-msgid "User menu"
-msgstr "Waah waah!"
-
-msgctxt "userMenu"
-msgid "Unknown user"
-msgstr "Waaaaah waah!"
-
-msgctxt "userMenu"
-msgid "Log out"
-msgstr "Wah wah!"
-
-msgctxt "userMenu"
-msgid "Sign in with Discord"
-msgstr "Waah in waah waaaaah!"
-
-msgctxt "userMenu"
-msgid "Mods can use this to access your Discord username, avatar, roles, etc."
-msgstr "Waah wah wah waah to waaaah waah waaaaah waaaaaaah waaaaah waaaah waah!"
-
-msgctxt "subPage"
-msgid "Back"
-msgstr "Waah!"
-
-msgctxt "downloadStatusMenu"
-msgid "Downloads"
-msgstr "Waaaaaaah!"
-
-msgctxt "downloadStatusMenu"
-msgid "Clear completed"
-msgstr "Waaah waaaaaaah!"
-
-msgctxt "steamCache"
-msgid "Reset Steam cache"
-msgstr "Waaah waaah waaah!"
+msgctxt "refresh"
+msgid "remote data"
+msgstr "Waaaah waah!"
 
 msgctxt "steamCache"
 msgid "Reset Steam cache"
@@ -625,57 +689,25 @@ msgctxt "steamShortcut"
 msgid "Rai Pal has been added to your Steam library. Restart Steam to see it."
 msgstr "Wah wah wah waah waaah to waah waaah waaaaaah waaaaah waaah to wah wah!"
 
-msgctxt "appUpdate"
-msgid "Rai Pal {0}"
-msgstr "Wah wah {0}"
+msgctxt "subPage"
+msgid "Back"
+msgstr "Waah!"
 
-msgctxt "appUpdate"
-msgid "(no changelog)"
-msgstr "Wah waaaaaaaah!"
-
-msgctxt "appUpdate"
-msgid "Ignore (won't ask again until you restart Rai Pal)"
-msgstr "Waaaah waaaah wah waaah waaah wah waaaaah wah waah!"
-
-msgctxt "appUpdate"
-msgid "Update now"
-msgstr "Waaaah wah!"
-
-msgctxt "debugData"
-msgid "Debug data"
-msgstr "Waaah waah!"
-
-msgctxt "debugData"
-msgid "Copy debug data"
-msgstr "Waah waaah waah!"
-
-msgctxt "debugData"
-msgid "Close"
+msgctxt "tab"
+msgid "Games"
 msgstr "Waaah!"
+
+msgctxt "tab"
+msgid "Mods"
+msgstr "Waah!"
+
+msgctxt "tab"
+msgid "Thanks"
+msgstr "Waaaah!"
 
 msgctxt "thanksPage"
 msgid "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io."
 msgstr "Waaaah I waah wah waah I waah waah waaah VR waah in wah waaah wah am waaaaaaah waaaaah on a waaaaaaah VR wah wah waaah waaaah If wah waah waah I wah wah waaah waah to wah waaah waaaah waaaaaah waaaaaaah wah wah waah waaaaah me by waaaah wah of my waah waah on waaaaaah!"
-
-msgctxt "thanksPage"
-msgid "Star Rai Pal on GitHub"
-msgstr "Waah wah wah on waaaah!"
-
-msgctxt "thanksPage"
-msgid "Other modders"
-msgstr "Waaah waaaaah!"
-
-msgctxt "thanksPage"
-msgid "Rai Pal is meant to help you manage game modding, and we can't do that without the tools that other developers have created. Some of these people don't have donation links, but I'm extremely grateful for their work."
-msgstr "Wah wah is waaah to waah wah waaaah waah waaaaaah wah we waaah do waah waaaaah wah waaah waah waaah waaaaaaaah waah waaaaaah waah of waaah waaaah waaah waah waaaaaah waaaah wah wah waaaaaaah waaaaaah wah waaah waaah!"
-
-msgctxt "thanksPage"
-msgid "{0} on {1}"
-msgstr "{0} on {1}"
-
-msgctxt "thanksPage"
-msgid "Patreon Leaderboard"
-msgstr "Waaaaah waaaaaaaaah!"
 
 msgctxt "thanksPage"
 msgid "Ranked by total lifetime donation amount."
@@ -685,13 +717,33 @@ msgctxt "thanksPage"
 msgid "If you don't see yourself here, it's because your Patreon profile is private."
 msgstr "If wah waaah wah waaaaaah waaah waah waaaaah waah waaaaah waaaaah is waaaaaah!"
 
-msgctxt "commandButton"
+msgctxt "thanksPage"
+msgid "Patreon Leaderboard"
+msgstr "Waaaaah waaaaaaaaah!"
+
+msgctxt "thanksPage"
+msgid "Star Rai Pal on GitHub"
+msgstr "Waah wah wah on waaaah!"
+
+msgctxt "urlModSources"
+msgid "Confirm Mod Source"
+msgstr "Waaaaah wah waaaah!"
+
+msgctxt "urlModSources"
+msgid "Loading mods..."
+msgstr "Waaaaah waaaaah!"
+
+msgctxt "urlModSources"
+msgid "{0} mods found in this source"
+msgstr "{0} waah waaah in waah waaaah!"
+
+msgctxt "urlModSources"
 msgid "Cancel"
 msgstr "Waaaah!"
 
-msgctxt "commandButton"
-msgid "Don't ask again"
-msgstr "Waaah wah waaah!"
+msgctxt "urlModSources"
+msgid "Add Source"
+msgstr "Wah waaaah!"
 
 msgctxt "urlModSources"
 msgid "Mod Sources"
@@ -705,23 +757,22 @@ msgctxt "urlModSources"
 msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep-link {0}."
 msgstr "Wah wah waah waaah wah waah in wah waaaaaaah waaaaaah waaah in waaaaaah to waaaaaah wah waaaaah wah waaaaaaah wah wah waaah wah waaaaah wah wah waaaaaaah {0}."
 
-msgctxt "urlModSources"
-msgid "Confirm Mod Source"
-msgstr "Waaaaah wah waaaah!"
+msgctxt "userMenu"
+msgid "User menu"
+msgstr "Waah waah!"
 
-msgctxt "urlModSources"
-msgid "{0} mods found in this source"
-msgstr "{0} waah waaah in waah waaaah!"
+msgctxt "userMenu"
+msgid "Unknown user"
+msgstr "Waaaaah waah!"
 
-msgctxt "urlModSources"
-msgid "Add Source"
-msgstr "Wah waaaah!"
+msgctxt "userMenu"
+msgid "Log out"
+msgstr "Wah wah!"
 
-msgctxt "urlModSources"
-msgid "Cancel"
-msgstr "Waaaah!"
+msgctxt "userMenu"
+msgid "Sign in with Discord"
+msgstr "Waah in waah waaaaah!"
 
-msgctxt "urlModSources"
-msgid "Loading mods..."
-msgstr "Waaaaah waaaaah!"
-
+msgctxt "userMenu"
+msgid "Mods can use this to access your Discord username, avatar, roles, etc."
+msgstr "Waah wah wah waah to waaaah waah waaaaah waaaaaaah waaaaah waaaah waah!"
