@@ -8,6 +8,7 @@ export component ListRow inherits Rectangle {
     in property <brush> background-color: transparent;
     in property <brush> hover-background: Theme.hover-background;
     in property <brush> pressed-background: Theme.pressed-background;
+    in property <length> vertical-padding: Theme.space-xs;
 
     out property <bool> hovered: row-touch.has-hover || root.extra-hovered;
 
@@ -37,8 +38,8 @@ export component ListRow inherits Rectangle {
     HorizontalLayout {
         padding-left: Theme.space-sm;
         padding-right: Theme.space-lg;
-        padding-top: Theme.space-xs;
-        padding-bottom: Theme.space-xs;
+        padding-top: root.vertical-padding;
+        padding-bottom: root.vertical-padding;
         spacing: Theme.space-sm;
         cross-axis-alignment: center;
 

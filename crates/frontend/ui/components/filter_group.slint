@@ -18,6 +18,7 @@ component FilterValueRow inherits ListRow {
     callback only;
 
     extra-hovered: checkbox-touch.has-hover || only-button.hovered || lock-button.hovered;
+    vertical-padding: Theme.space-2xs;
     enabled: root.item.available;
     accessible-label: root.item.label == FilterValueLabel.none ? root.item.display : Tr.filter-value(root.item.label);
 

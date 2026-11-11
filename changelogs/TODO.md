@@ -7,7 +7,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Do now:
 
 - Are loadable things during refresh even doing in parallel like before? or one at a time? one slow one can block them all? in tauri we'd have multiple things loading at once, now it seems like it loads them one at a time. should we mess with that or is this good? it seems really fast right now, so dunno if i wanna mess with it too much, i don't want to increase complexity. give me options and do a succint report.
-- make filter checkbox items shorter (so less tall). they should be about the same height as the expand elements (filter group headers). as usual, no hardcoded heights, the height comes from the contents and paddings.
 - preserve games list scroll position while refreshing. currently a refresh causes it to reset back to the start.
 
 ## Do later:
@@ -23,6 +22,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Done
 
+- Made filter value rows shorter by adding a vertical padding override to `ListRow`; they went from 30px to 26px tall, matching the 25px filter group headers.
 - Removed border-radius clipping from game thumbnails and avatars, which doesn't work with the software renderer; images are square now and the once-circular borders are slightly rounded instead.
 - Kept the recommended config tag from flickering during game refresh by caching the last known remote config ids per game and replacing them only when the fetch finishes.
 - Replaced the expand/collapse/collapse-all chevron SVGs with a single `chevron.svg` and a `Chevron` component that animates its rotation.
