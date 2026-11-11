@@ -6,7 +6,6 @@ use crate::{
 	result::{LogErrExt, Result},
 };
 
-/// A mods-tab entry: either one standalone mod or a family with several mods.
 #[derive(Clone, Debug)]
 pub struct ModGroup {
 	pub family: Option<ModFamily>,

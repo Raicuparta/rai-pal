@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- Look for leftover AI comments and clean them up or remove them as per @Agents.md.
 - add a "debug data" option in the three dot menu for all game mods in the game details page. opens a debug data json modal as with all other debug data menus.
 - bug: weird behavior when jumping between tauri app and slint app, suddenly game list is corrupted, and get some errors. broken db format? need to bump db file version? tauri app source is in @~/Repos/rai-pal-tauri.
 - macOS: missing automatic updates. The updater only has platform entries and installers for Linux x86_64 (AppImage) and Windows x86_64 (NSIS). Is it even possible to support mac autoupdates easily?
@@ -32,6 +31,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Done
 
+- Removed leftover AI-written comments from the Slint app and new backend modules, keeping only notes that explain non-obvious behaviour.
 - Removed the Tauri app, frontend, Node tooling, and Tauri-only build config.
 - Moved the Cargo workspace, `crates/backend`, `crates/proc-macros`, and `crates/frontend` under `crates/`.
 - Replaced npm scripts with shell scripts for dev, formatting, linting, builds,

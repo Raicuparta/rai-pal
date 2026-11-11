@@ -35,9 +35,6 @@ pub mod tools;
 pub mod updater;
 pub mod user;
 
-/// Connect a Slint callback to a `CommandHandler` method (or a small block
-/// using `handler`). The handler is looked up at call time, so wiring never
-/// needs to clone an `Rc` into each callback.
 macro_rules! on_command {
 	($window:expr, $global:ident, $callback:ident, || $handler:ident => $body:block) => {{
 		slint::ComponentHandle::global::<crate::$global>($window).$callback(move || {
@@ -59,8 +56,6 @@ macro_rules! on_command {
 
 pub(crate) use on_command;
 
-/// Wire every Slint callback to its command. Commands are looked up through
-/// `CommandHandler::current()`, so this only needs the window.
 pub fn register(window: &MainWindow) {
 	actions::register(window);
 	confirmation::register(window);
@@ -125,9 +120,6 @@ impl CommandHandler {
 		handler
 	}
 
-	/// The handler for the UI thread. Slint callbacks look this up at call time,
-	/// so wiring never needs to capture an `Rc` clone. This also works across
-	/// thread boundaries after hopping back with `invoke_on_ui`.
 	pub fn current() -> Option<Rc<Self>> {
 		CURRENT.with(|current| current.borrow().as_ref().and_then(std::rc::Weak::upgrade))
 	}

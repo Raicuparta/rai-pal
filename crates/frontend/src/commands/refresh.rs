@@ -178,8 +178,6 @@ impl CommandHandler {
 		});
 	}
 
-	/// Tauri refreshed the selected game whenever the window regained focus, so
-	/// mods installed while the game was running showed up on return.
 	pub fn refresh_selected_game_on_focus(&self) {
 		let Some((_, game)) = self.selected_game() else {
 			return;

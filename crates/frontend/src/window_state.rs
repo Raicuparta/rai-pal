@@ -6,7 +6,6 @@ use slint::{
 
 use crate::{MainWindow, commands::CommandHandler};
 
-/// Restore the saved window size and position, clamped to the current monitor.
 pub fn apply(window: &MainWindow, state: Option<WindowState>) {
 	let Some(state) = state else {
 		return;

@@ -1,4 +1,3 @@
-/// Up to two initials derived from a display name.
 pub fn initials(name: &str) -> Option<String> {
 	let words = name.split_whitespace().collect::<Vec<_>>();
 

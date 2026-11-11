@@ -7,7 +7,6 @@ use crate::{
 	result::{LogErrExt, Result},
 };
 
-/// A mod that applies to a game, together with its compatibility and install state.
 #[derive(Clone, Debug)]
 pub struct GameMod {
 	pub manifest: Mod,
