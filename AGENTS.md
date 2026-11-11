@@ -6,6 +6,10 @@ Rai Pal is a Slint desktop app. The Rust workspace is at the repository root: `c
 
 Avoid system-wide searches when you're looking for stuff. If the user is likely to know where something is, ask first before starting a long task.
 
+## Commits
+
+When asked to commit anything, use simple commit messages, no description.
+
 ## Quality
 
 These are all important:

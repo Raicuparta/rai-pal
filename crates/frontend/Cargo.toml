@@ -40,6 +40,7 @@ single-instance = "0.3.3"
 winreg = "0.56.0"
 
 [build-dependencies]
+embed-resource = "3.0"
 slint-build = "1.18.1"
 
 [lints]

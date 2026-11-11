@@ -71,7 +71,23 @@ pub fn apply(window: &MainWindow, state: Option<WindowState>) {
 }
 
 pub fn register_events(window: &MainWindow) {
-	window.window().on_winit_window_event(|window, event| {
+	#[cfg(target_os = "windows")]
+	let mut window_icon_applied = false;
+
+	window.window().on_winit_window_event(move |window, event| {
+		#[cfg(target_os = "windows")]
+		{
+			let icon_needs_update = match event {
+				winit::event::WindowEvent::Resized(_)
+				| winit::event::WindowEvent::RedrawRequested => !window_icon_applied,
+				winit::event::WindowEvent::ScaleFactorChanged { .. } => window_icon_applied,
+				_ => false,
+			};
+			if icon_needs_update && apply_windows_window_icon(window) {
+				window_icon_applied = true;
+			}
+		}
+
 		match event {
 			winit::event::WindowEvent::Resized(_) | winit::event::WindowEvent::Moved(_) => {
 				if let Some(handler) = CommandHandler::current() {
@@ -116,6 +132,35 @@ pub fn register_events(window: &MainWindow) {
 
 		EventResult::Propagate
 	});
+}
+
+#[cfg(target_os = "windows")]
+fn apply_windows_window_icon(window: &slint::Window) -> bool {
+	use image::imageops::FilterType;
+	use slint::winit_030::winit::{platform::windows::WindowExtWindows, window::Icon};
+
+	let Ok(source) = image::load_from_memory(include_bytes!("../graphics/128x128.png")) else {
+		return false;
+	};
+	let source = source.to_rgba8();
+
+	window
+		.with_winit_window(|winit_window| {
+			let scale_factor = f64::from(winit_window.scale_factor());
+			let make_icon = |logical_size: f64| {
+				let size = (logical_size * scale_factor).round().clamp(1.0, 128.0) as u32;
+				let pixels = image::imageops::resize(&source, size, size, FilterType::Lanczos3);
+				Icon::from_rgba(pixels.into_raw(), size, size).ok()
+			};
+
+			if let Some(icon) = make_icon(16.0) {
+				winit_window.set_window_icon(Some(icon));
+			}
+			if let Some(icon) = make_icon(32.0) {
+				winit_window.set_taskbar_icon(Some(icon));
+			}
+		})
+		.is_some()
 }
 
 fn update_state(window: &slint::Window, settings: &mut AppSettings) {

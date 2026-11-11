@@ -39,6 +39,18 @@ if [[ -z "$VERSION" ]]; then
 fi
 
 if [[ "$SKIP_BUILD" -eq 0 ]]; then
+	if ! command -v llvm-rc >/dev/null 2>&1; then
+		IFS=: read -ra path_dirs <<< "$PATH"
+		for dir in "${path_dirs[@]}"; do
+			for candidate in "$dir"/llvm-rc-*; do
+				if [[ -x "$candidate" ]]; then
+					export RC="$candidate"
+					break 2
+				fi
+			done
+		done
+	fi
+
 	cargo xwin build --release -p "$PACKAGE_NAME" --target "$TARGET"
 else
 	echo "Skipping cargo build (using existing $BINARY)"
