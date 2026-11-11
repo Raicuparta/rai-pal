@@ -9,6 +9,10 @@ and `crates/proc-macros` has shared derive macros.
 Avoid system-wide searches when you're looking for stuff. If the user is likely
 to know where something is, ask first before starting a long task.
 
+## APIs
+
+None of the crates in this repo are meant for external usage. We don't have to care about backwards compatibility of the Rust/Slint APIs. It's also important to lean towards code simplicity vs making the API more usable for third parties (since they don't exist). One good example to avoid is making lots of getters for structs; we should instead just expose struct properties directly.
+
 ## Formatting
 
 Ignore warnings, clippy, and formatting until the implementation is confirmed

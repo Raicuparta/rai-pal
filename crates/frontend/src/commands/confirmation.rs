@@ -1,13 +1,18 @@
 use std::cell::RefCell;
 
+use rai_pal_backend::game::Game;
 use slint::ComponentHandle;
 
 use super::{CommandHandler, on_command};
 
-type ConfirmationFn = Box<dyn FnOnce(&CommandHandler)>;
+enum PendingAction {
+	InstallMod { game: Game, mod_id: String },
+	UninstallAllMods { game: Game },
+	RemoveGame { game: Game },
+}
 
 struct PendingConfirmation {
-	action: ConfirmationFn,
+	action: PendingAction,
 	skip_id: String,
 }
 
@@ -27,7 +32,7 @@ impl CommandHandler {
 		};
 
 		self.prompt(
-			Box::new(move |handler| handler.install_mod(game, mod_id)),
+			PendingAction::InstallMod { game, mod_id },
 			confirmation_text,
 			confirm_label,
 			skip_id,
@@ -40,7 +45,7 @@ impl CommandHandler {
 		};
 
 		self.prompt(
-			Box::new(move |handler| handler.uninstall_all_mods(game)),
+			PendingAction::UninstallAllMods { game },
 			confirmation_text,
 			confirm_label,
 			String::new(),
@@ -53,7 +58,7 @@ impl CommandHandler {
 		};
 
 		self.prompt(
-			Box::new(move |handler| handler.remove_game(game)),
+			PendingAction::RemoveGame { game },
 			confirmation_text,
 			confirm_label,
 			String::new(),
@@ -88,12 +93,12 @@ impl CommandHandler {
 			self.persist_settings();
 		}
 
-		(pending.action)(self);
+		run_action(self, pending.action);
 	}
 
 	fn prompt(
 		&self,
-		action: ConfirmationFn,
+		action: PendingAction,
 		confirmation_text: String,
 		confirm_label: String,
 		skip_id: String,
@@ -116,7 +121,7 @@ impl CommandHandler {
 				.contains(&dialog_id)
 		{
 			*self.pending_confirmation.0.borrow_mut() = None;
-			action(self);
+			run_action(self, action);
 			return;
 		}
 
@@ -130,6 +135,14 @@ impl CommandHandler {
 		state.set_can_skip(can_skip);
 		state.set_dont_ask_again(false);
 		state.set_open(true);
+	}
+}
+
+fn run_action(handler: &CommandHandler, action: PendingAction) {
+	match action {
+		PendingAction::InstallMod { game, mod_id } => handler.install_mod(game, mod_id),
+		PendingAction::UninstallAllMods { game } => handler.uninstall_all_mods(game),
+		PendingAction::RemoveGame { game } => handler.remove_game(game),
 	}
 }
 
