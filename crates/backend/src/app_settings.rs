@@ -1,7 +1,7 @@
 use fs_err as fs;
 use std::{collections::HashSet, path::PathBuf};
 
-use rai_pal_proc_macros::{serde_enum, serde_struct};
+use rai_pal_proc_macros::serde_enum;
 
 use crate::{
 	app_paths,
@@ -75,8 +75,7 @@ pub enum SkipConfirmation {
 	InstallMod,
 }
 
-#[serde_struct]
-#[derive(Default, Copy)]
+#[derive(serde::Serialize, serde::Deserialize, Default, Clone, Copy)]
 pub struct WindowState {
 	pub x: i32,
 	pub y: i32,
@@ -85,8 +84,8 @@ pub struct WindowState {
 	pub maximized: bool,
 }
 
-#[serde_struct]
-#[derive(Default)]
+#[derive(serde::Serialize, serde::Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct AppSettings {
 	pub hide_game_thumbnails: bool,
 	pub override_language: Option<AppLocale>,

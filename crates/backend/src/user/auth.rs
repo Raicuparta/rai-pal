@@ -1,6 +1,5 @@
 use std::{collections::HashMap, path::PathBuf, time::Duration};
 
-use rai_pal_proc_macros::serde_struct;
 use serde::Deserialize;
 use tokio::{
 	io::{AsyncReadExt, AsyncWriteExt},
@@ -26,7 +25,8 @@ pub struct AuthState {
 	pub user_name: Option<String>,
 }
 
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct AuthSavedSession {
 	token: String,
 	user_name: String,

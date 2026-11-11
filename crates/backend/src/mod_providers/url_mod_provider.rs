@@ -5,8 +5,6 @@ use std::{
 	path::PathBuf,
 };
 
-use rai_pal_proc_macros::serde_struct;
-
 use super::mod_provider::ModProvider;
 use crate::{
 	app_paths, http,
@@ -20,7 +18,7 @@ use crate::{
 	result::{LogErrExt, Result},
 };
 
-#[serde_struct]
+#[derive(serde::Deserialize)]
 pub struct UrlModDatabase {
 	#[serde(default)]
 	pub families: BTreeMap<String, ModFamily>,
@@ -45,14 +43,14 @@ fn compute_source_hash(url: &str) -> String {
 	hasher.finish().to_string()
 }
 
-#[derive(Default)]
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct UrlModSource {
 	pub url: String,
 	pub enabled: bool,
 }
 
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UrlModSources {
 	#[serde(default = "default_true")]
 	pub default_enabled: bool,
@@ -111,7 +109,6 @@ fn write_url_mod_sources(sources: &UrlModSources) -> Result {
 	Ok(())
 }
 
-#[serde_struct]
 pub struct UrlModSourcesResponse {
 	pub default_source: UrlModSource,
 	pub sources: Vec<UrlModSource>,

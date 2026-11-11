@@ -8,7 +8,6 @@ use std::{
 
 use base64::engine::general_purpose;
 use log::error;
-use rai_pal_proc_macros::serde_struct;
 
 #[cfg(target_os = "windows")]
 use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
@@ -29,7 +28,7 @@ use crate::{
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
 };
 
-#[serde_struct]
+#[derive(serde::Deserialize)]
 pub struct EpicManifest {
 	#[serde(rename = "DisplayName")]
 	display_name: String,
@@ -45,25 +44,29 @@ pub struct EpicManifest {
 	app_name: String,
 }
 
-#[serde_struct]
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct EpicCatalogCategory {
 	path: String,
 }
 
-#[serde_struct]
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct EpicCatalogReleaseInfo {
 	app_id: String,
 	platform: Vec<String>,
 	date_added: Option<String>,
 }
 
-#[serde_struct]
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct EpicCatalogImage {
 	height: i32,
 	url: String,
 }
 
-#[serde_struct]
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct EpicCatalogItem {
 	id: String,
 	namespace: String,

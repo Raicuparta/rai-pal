@@ -5,7 +5,6 @@ use std::{
 };
 
 use log::error;
-use rai_pal_proc_macros::serde_struct;
 
 use super::game_provider::{GameProviderId, ProviderActions};
 use super::provider_command::{ProviderCommandAction, ProviderCommandKind};
@@ -32,7 +31,6 @@ const IGNORED_EXE_NAMES: [&str; 8] = [
 	"unitycrashhandler32",
 ];
 
-#[serde_struct]
 pub struct Manual {}
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -42,14 +40,12 @@ struct GamesConfig {
 	pub ignored_paths: Vec<PathBuf>,
 }
 
-#[serde_struct]
 pub struct ScanProgress {
 	pub scanned_dirs: u32,
 	pub executables_found: u32,
 	pub current_path: String,
 }
 
-#[serde_struct]
 pub struct DirectoryScanResult {
 	pub games: Vec<Game>,
 	pub duration_secs: f64,

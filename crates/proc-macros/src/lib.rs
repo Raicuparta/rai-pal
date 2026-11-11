@@ -1,26 +1,10 @@
-extern crate proc_macro;
-extern crate quote;
-
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::parse_macro_input;
 
 #[proc_macro_attribute]
-pub fn serde_struct(_args: TokenStream, input: TokenStream) -> TokenStream {
-	let mut output = TokenStream::from(quote! {
-		#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-		#[serde(rename_all = "camelCase")]
-	});
-	output.extend(input);
-	output
-}
-
-#[proc_macro_attribute]
 pub fn serde_enum(_args: TokenStream, input: TokenStream) -> TokenStream {
-	// Parse the input tokens into a syntax tree
 	let input = parse_macro_input!(input as syn::ItemEnum);
-
-	// Get the enum name
 	let enum_name = &input.ident;
 	let variant_count = input.variants.len();
 	let variant_names = input.variants.iter().map(|variant| &variant.ident);
@@ -31,7 +15,6 @@ pub fn serde_enum(_args: TokenStream, input: TokenStream) -> TokenStream {
 		}
 	};
 
-	// Generate the output tokens
 	let output = quote! {
 		#[derive(
 			serde::Serialize,
@@ -53,7 +36,6 @@ pub fn serde_enum(_args: TokenStream, input: TokenStream) -> TokenStream {
 		#all_impl
 	};
 
-	// Convert the output tokens into a TokenStream
 	TokenStream::from(output)
 }
 

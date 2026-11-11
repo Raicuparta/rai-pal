@@ -1,6 +1,4 @@
-use rai_pal_proc_macros::serde_struct;
-
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct ModFamily {
 	pub title: String,
 	pub description: String,

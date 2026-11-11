@@ -4,7 +4,6 @@ use std::{
 	time::{SystemTime, UNIX_EPOCH},
 };
 
-use rai_pal_proc_macros::serde_struct;
 use rusqlite::OptionalExtension;
 use serde::Serialize;
 
@@ -28,7 +27,7 @@ use crate::{
 	result::{ContextResult, Error, LogErrExt, Result},
 };
 
-#[serde_struct]
+#[derive(serde::Serialize, Clone, Debug)]
 pub struct ModInfo {
 	pub mod_id: String,
 	pub installed_version: Option<String>,

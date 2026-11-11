@@ -1,12 +1,9 @@
-use rai_pal_proc_macros::serde_struct;
-
 use super::game_provider::ProviderActions;
 use crate::{
 	game_providers::game_provider::WineProviderActions, local_database::app_database::DbMutex,
 	result::Result,
 };
 
-#[serde_struct]
 pub struct Dummy;
 
 impl ProviderActions for Dummy {

@@ -5,7 +5,7 @@ use std::{
 };
 
 use fs_err::PathExt as FsErrPathExt;
-use rai_pal_proc_macros::{serde_enum, serde_struct};
+use rai_pal_proc_macros::serde_enum;
 
 use crate::{
 	app_paths,
@@ -27,7 +27,8 @@ use crate::{
 	result::{Error, LogErrExt, Result},
 };
 
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct Mod {
 	pub id: String,
 	pub scope: Option<String>,
@@ -55,19 +56,22 @@ pub struct Mod {
 	pub hash: Option<String>,
 }
 
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct ModInstallExtract {
 	pub source: String,
 	pub destination: String,
 }
 
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct ModInstallWrite {
 	pub content: String,
 	pub destination: String,
 }
 
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct ModInstall {
 	pub manifest_path: String,
 	pub extract: Option<Vec<ModInstallExtract>>,
@@ -76,7 +80,8 @@ pub struct ModInstall {
 	pub main_installed_folder_path: Option<String>,
 }
 
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct ModRun {
 	pub path: Option<String>,
 	pub args: Option<Vec<String>>,
@@ -91,7 +96,8 @@ pub struct PreparedModRun {
 	pub os: Option<OperatingSystem>,
 }
 
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct ModDownload {
 	pub id: String,
 	pub url: String,

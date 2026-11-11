@@ -18,7 +18,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Done
 
-- Split the proc macros into `serde_struct`/`serde_enum` for serialization and `sql_enum` for the rusqlite conversions, which are now opted into only by the enums stored in the database.
+- Replaced the `serde_struct` macro with direct derives, keeping explicit `camelCase` attributes only where persisted or external JSON needs them. `serde_enum` and `sql_enum` remain.
 - Handled incoming `rai-pal://` Apple events on macOS with a Carbon URL event handler, so deep links work on the running app.
 - Added macOS automatic updates: `darwin-aarch64`/`darwin-x86_64` platform entries, app bundle replacement and relaunch from the release zip, and signed updater partials in the release workflow.
 - Bumped the local database version to 10 so the Slint app no longer shares database files with the Tauri app, whose `provider_commands` JSON format it can't read.

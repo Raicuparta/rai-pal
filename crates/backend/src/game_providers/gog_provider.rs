@@ -2,7 +2,6 @@ use std::path::{Path, PathBuf};
 
 use chrono::DateTime;
 use log::error;
-use rai_pal_proc_macros::serde_struct;
 use rusqlite::{Connection, OpenFlags};
 use serde::Deserialize;
 
@@ -126,15 +125,18 @@ impl ProviderActions for Gog {
 	}
 }
 
-#[serde_struct]
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GogDbEntryTitle {
 	title: Option<String>,
 }
-#[serde_struct]
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GogDbEntryImages {
 	square_icon: Option<String>,
 }
-#[serde_struct]
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GogDbEntryMeta {
 	release_date: Option<i32>,
 }

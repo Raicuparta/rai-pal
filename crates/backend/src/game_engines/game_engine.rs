@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use rai_pal_proc_macros::{serde_enum, serde_struct, sql_enum};
+use rai_pal_proc_macros::{serde_enum, sql_enum};
 
 #[serde_enum]
 #[sql_enum]
@@ -11,27 +11,27 @@ pub enum EngineBrand {
 	GameMaker,
 }
 
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct GameEngine {
 	pub brand: EngineBrand,
 	pub version: Option<EngineVersion>,
 }
 
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct EngineVersionNumbers {
 	pub major: u32,
 	pub minor: Option<u32>,
 	pub patch: Option<u32>,
 }
 
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct EngineVersion {
 	pub numbers: EngineVersionNumbers,
 	pub suffix: Option<String>,
 	pub display: String,
 }
 
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct EngineVersionRange {
 	pub minimum: Option<EngineVersionNumbers>,
 	pub maximum: Option<EngineVersionNumbers>,

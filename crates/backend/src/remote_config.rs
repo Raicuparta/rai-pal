@@ -1,6 +1,5 @@
 use std::{io::Cursor, path::Path};
 
-use rai_pal_proc_macros::serde_struct;
 use reqwest::Response;
 use zip::ZipArchive;
 
@@ -15,14 +14,15 @@ use crate::{
 const CONFIG_DB_BASE_URL: &str = "https://raicuparta.github.io/rai-pal-db/config-db";
 const CONFIG_DB_VERSION: u32 = 0;
 
-#[serde_struct]
+#[derive(serde::Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct RemoteConfig {
 	pub version: u32,
 	pub mod_id: String,
 	pub file: String,
 }
 
-#[serde_struct]
+#[derive(serde::Deserialize)]
 pub struct RemoteConfigs {
 	pub configs: Vec<RemoteConfig>,
 }

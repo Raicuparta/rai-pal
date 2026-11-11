@@ -1,7 +1,5 @@
 use std::path::{Path, PathBuf};
 
-use rai_pal_proc_macros::serde_struct;
-
 use crate::{
 	app_paths,
 	architecture::Architecture,
@@ -23,7 +21,7 @@ use crate::{
 	result::{ContextResult, Error, Result},
 };
 
-#[serde_struct]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Game {
 	pub provider_id: GameProviderId,
 	pub game_id: String,

@@ -5,7 +5,6 @@ use std::{
 
 use chrono::DateTime;
 use log::error;
-use rai_pal_proc_macros::serde_struct;
 use rusqlite::{Connection, OpenFlags};
 
 use super::provider_command::{ProviderCommandAction, ProviderCommandKind};
@@ -92,7 +91,6 @@ impl Itch {
 	}
 }
 
-#[serde_struct]
 pub struct ItchDatabaseGame {
 	id: i32,
 	title: String,
@@ -101,7 +99,6 @@ pub struct ItchDatabaseGame {
 	cover_url: Option<String>,
 }
 
-#[serde_struct]
 pub struct ItchDatabaseCave {
 	id: i32,
 	verdict: Option<ItchDatabaseVerdict>,
@@ -109,18 +106,19 @@ pub struct ItchDatabaseCave {
 	cover_url: Option<String>,
 }
 
-#[serde_struct]
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ItchDatabaseVerdict {
 	base_path: PathBuf,
 	candidates: Option<Vec<ItchDatabaseCandidate>>,
 }
 
-#[serde_struct]
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ItchDatabaseCandidate {
 	path: PathBuf,
 }
 
-#[serde_struct]
 pub struct ItchDatabase {
 	games: Vec<ItchDatabaseGame>,
 	caves: Vec<ItchDatabaseCave>,
