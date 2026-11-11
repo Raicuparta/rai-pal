@@ -227,6 +227,7 @@ fn known_values_with_availability<T: FilterValue>(
 		.iter()
 		.map(|value| value_view(group, value, is_available(value)))
 		.collect();
+	values.sort_by_key(|value| !value.available);
 
 	if T::HAS_UNKNOWN {
 		values.push(unknown_view(group));
