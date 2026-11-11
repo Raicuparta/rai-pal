@@ -7,7 +7,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Do now:
 
 - Are loadable things during refresh even doing in parallel like before? or one at a time? one slow one can block them all? in tauri we'd have multiple things loading at once, now it seems like it loads them one at a time. should we mess with that or is this good? it seems really fast right now, so dunno if i wanna mess with it too much, i don't want to increase complexity. give me options and do a succint report.
-- preserve games list scroll position while refreshing. currently a refresh causes it to reset back to the start.
 
 ## Do later:
 
@@ -22,6 +21,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Done
 
+- Preserved the games list scroll position during refresh: `start_query` now takes `ScrollBehavior::Reset`/`Keep`, and restores the scroll on the next frame because replacing the model makes the ListView snap to a row boundary.
 - Made filter value rows shorter by adding a vertical padding override to `ListRow`; they went from 30px to 26px tall, matching the 25px filter group headers.
 - Removed border-radius clipping from game thumbnails and avatars, which doesn't work with the software renderer; images are square now and the once-circular borders are slightly rounded instead.
 - Kept the recommended config tag from flickering during game refresh by caching the last known remote config ids per game and replacing them only when the fetch finishes.

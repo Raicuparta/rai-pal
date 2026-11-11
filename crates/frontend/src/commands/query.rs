@@ -19,6 +19,12 @@ use crate::{
 
 use super::{CommandHandler, on_command};
 
+#[derive(Clone, Copy)]
+pub enum ScrollBehavior {
+	Reset,
+	Keep,
+}
+
 pub fn load_game_ids(database: &DbMutex, query: GamesQuery) -> Result<GameIdsResponse, String> {
 	database
 		.get_game_ids(Some(query))
@@ -26,13 +32,14 @@ pub fn load_game_ids(database: &DbMutex, query: GamesQuery) -> Result<GameIdsRes
 }
 
 impl CommandHandler {
-	pub fn start_query(&self, delay: Duration) {
+	pub fn start_query(&self, delay: Duration, scroll: ScrollBehavior) {
 		run_query(
 			self.window(),
 			Arc::clone(&self.database),
 			Arc::clone(&self.scheduler),
 			self.query(),
 			delay,
+			scroll,
 		);
 	}
 
@@ -74,6 +81,7 @@ fn run_query(
 	scheduler: Arc<FetchScheduler>,
 	query: GamesQuery,
 	delay: Duration,
+	scroll: ScrollBehavior,
 ) {
 	let query_generation = scheduler.begin_query();
 
@@ -113,6 +121,12 @@ fn run_query(
 			let rows = make_rows(&response.game_ids);
 			ui_scheduler.begin_query();
 
+			let list = window.global::<crate::GamesList>();
+			let scroll_y = match scroll {
+				ScrollBehavior::Reset => 0.0,
+				ScrollBehavior::Keep => list.get_scroll_y(),
+			};
+
 			window.global::<crate::GamesList>().set_total_count(
 				i32::try_from(response.total_count).unwrap_or_else(|err| {
 					log::warn!("Games count exceeds i32: {err}");
@@ -120,7 +134,18 @@ fn run_query(
 				}),
 			);
 			let model = std::rc::Rc::new(slint::VecModel::from(rows));
-			window.global::<crate::GamesList>().set_rows(model.into());
+			list.set_rows(model.into());
+			list.set_scroll_y(scroll_y);
+
+			let window = window.as_weak();
+
+			// Replacing the model makes the ListView snap content-y to a row boundary,
+			// so the scroll position has to be restored after the next layout pass.
+			slint::Timer::single_shot(Duration::from_millis(16), move || {
+				if let Some(window) = window.upgrade() {
+					window.global::<crate::GamesList>().set_scroll_y(scroll_y);
+				}
+			});
 		});
 	});
 }

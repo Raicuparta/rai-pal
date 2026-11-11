@@ -18,6 +18,7 @@ use crate::{
 	model::apply_game_to_row, notifications, runtime, selected,
 };
 
+use super::query::ScrollBehavior;
 use super::{CommandHandler, on_command};
 
 impl CommandHandler {
@@ -106,7 +107,7 @@ impl CommandHandler {
 					.set_tasks(ModelRc::default());
 				handler.load_mods_tab();
 				handler.refresh_filters();
-				handler.start_query(Duration::ZERO);
+				handler.start_query(Duration::ZERO, ScrollBehavior::Keep);
 				handler.reload_selected_game();
 			});
 		});

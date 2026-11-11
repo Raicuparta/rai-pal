@@ -22,6 +22,7 @@ use slint::ComponentHandle;
 
 use crate::{AddGamePhase, MainWindow, MessageContext, notifications, runtime, selected};
 
+use super::query::ScrollBehavior;
 use super::{CommandHandler, on_command};
 
 static SCAN_GENERATION: AtomicU64 = AtomicU64::new(0);
@@ -384,7 +385,7 @@ impl CommandHandler {
 	fn refresh_after_change(&self) {
 		self.load_mods_tab();
 		self.refresh_filters();
-		self.start_query(Duration::ZERO);
+		self.start_query(Duration::ZERO, ScrollBehavior::Reset);
 	}
 }
 

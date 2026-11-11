@@ -13,6 +13,7 @@ use slint::ComponentHandle;
 
 use crate::{MessageContext, MessageData, notifications};
 
+use super::query::ScrollBehavior;
 use super::{CommandHandler, on_command};
 
 impl CommandHandler {
@@ -55,7 +56,7 @@ impl CommandHandler {
 
 						if let Some(handler) = Self::current() {
 							handler.refresh_filters();
-							handler.start_query(Duration::ZERO);
+							handler.start_query(Duration::ZERO, ScrollBehavior::Reset);
 							handler.reload_selected_game();
 						}
 					}

@@ -24,6 +24,7 @@ import { Icon } from "svg_icon.slint";
 export global GamesList {
     in property <[GameRowData]> rows;
     in property <int> total-count: 0;
+    in-out property <length> scroll-y: 0px;
 }
 
 export global GamesQuery {
@@ -46,6 +47,7 @@ export component GamesPage inherits Rectangle {
     property <length> list-content-y <=> game-list.content-y;
     property <length> list-visible-height <=> game-list.visible-height;
     private property <length> row-height: Theme.game-row-height + Theme.border-width;
+    private property <length> shared-scroll-y <=> GamesList.scroll-y;
     private property <[GameRowData]> rows: GamesList.rows;
 
     function empty-message() -> string {
@@ -71,12 +73,20 @@ export component GamesPage inherits Rectangle {
         GamesActions.visible-range-changed(first, last);
     }
 
+    init => {
+        GamesList.scroll-y = game-list.content-y;
+    }
+
+    changed shared-scroll-y => {
+        game-list.content-y = root.shared-scroll-y;
+    }
+
     changed rows => {
-        game-list.content-y = 0px;
         root.notify-visible-range();
     }
 
     changed list-content-y => {
+        GamesList.scroll-y = game-list.content-y;
         root.notify-visible-range();
     }
 

@@ -11,6 +11,7 @@ use crate::{
 	filters::{build_groups, load_providers_with_games},
 };
 
+use super::query::ScrollBehavior;
 use super::{CommandHandler, on_command};
 
 impl CommandHandler {
@@ -54,7 +55,7 @@ impl CommandHandler {
 
 		self.persist_settings();
 		self.refresh_filters();
-		self.start_query(Duration::ZERO);
+		self.start_query(Duration::ZERO, ScrollBehavior::Reset);
 	}
 
 	pub fn reset_filter(&self, group: FilterGroupId) {
@@ -65,7 +66,7 @@ impl CommandHandler {
 
 		self.persist_settings();
 		self.refresh_filters();
-		self.start_query(Duration::ZERO);
+		self.start_query(Duration::ZERO, ScrollBehavior::Reset);
 	}
 
 	pub fn reset_filters(&self) {
@@ -73,7 +74,7 @@ impl CommandHandler {
 
 		self.persist_settings();
 		self.refresh_filters();
-		self.start_query(Duration::ZERO);
+		self.start_query(Duration::ZERO, ScrollBehavior::Reset);
 	}
 
 	pub fn collapse_filters(&self) {

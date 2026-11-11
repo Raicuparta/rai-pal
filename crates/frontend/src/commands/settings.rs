@@ -12,6 +12,7 @@ use slint::{ComponentHandle, Model as _};
 
 use crate::{AppColorScheme, AppTab, i18n, languages, model::apply_game_to_row, selected};
 
+use super::query::ScrollBehavior;
 use super::{CommandHandler, on_command};
 
 const SORT_OPTIONS: [(GamesSortBy, bool); 6] = [
@@ -72,7 +73,7 @@ impl CommandHandler {
 		self.scheduler.set_thumbnails_enabled(true);
 
 		self.refresh_filters();
-		self.start_query(Duration::ZERO);
+		self.start_query(Duration::ZERO, ScrollBehavior::Reset);
 	}
 
 	pub fn set_language(&self, value: &str) {
@@ -110,7 +111,7 @@ impl CommandHandler {
 		self.scheduler.set_thumbnails_enabled(!hide);
 
 		if !hide {
-			self.start_query(Duration::ZERO);
+			self.start_query(Duration::ZERO, ScrollBehavior::Reset);
 		}
 	}
 
@@ -142,7 +143,7 @@ impl CommandHandler {
 	pub fn set_search_text(&self, text: &str) {
 		self.settings.borrow_mut().games_query.search = text.to_string();
 		self.persist_settings();
-		self.start_query(Duration::from_millis(200));
+		self.start_query(Duration::from_millis(200), ScrollBehavior::Reset);
 	}
 
 	pub fn set_sort_index(&self, index: i32) {
@@ -153,7 +154,7 @@ impl CommandHandler {
 			settings.games_query.sort_descending = sort_descending;
 		}
 		self.persist_settings();
-		self.start_query(Duration::ZERO);
+		self.start_query(Duration::ZERO, ScrollBehavior::Reset);
 	}
 
 	pub fn select_game(&self, index: i32) {
