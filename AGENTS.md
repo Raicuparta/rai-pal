@@ -11,7 +11,7 @@ to know where something is, ask first before starting a long task.
 
 ## APIs
 
-None of the crates in this repo are meant for external usage. We don't have to care about backwards compatibility of the Rust/Slint APIs. It's also important to lean towards code simplicity vs making the API more usable for third parties (since they don't exist). One good example to avoid is making lots of getters for structs; we should instead just expose struct properties directly.
+None of the crates in this repo are meant for external usage. We don't have to care about backwards compatibility of the Rust/Slint APIs. It's also important to lean towards code simplicity vs making the API more usable for third parties (since they don't exist). One good example to avoid is making lots of getters for structs; we should instead just expose struct properties directly. So avoid anything that complicates the code for reasons that don't make sense for private crates.
 
 ## Formatting
 
