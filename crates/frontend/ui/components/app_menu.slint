@@ -7,7 +7,10 @@ import { SelectMenu, SelectOption } from "select_menu.slint";
 import { AppSettings } from "../settings.slint";
 import { AppActions } from "../actions.slint";
 import { SteamCachePopup, SteamCacheState } from "steam_cache_popup.slint";
-import { SteamShortcutPopup, SteamShortcutState } from "steam_shortcut_popup.slint";
+import {
+    SteamShortcutPopup,
+    SteamShortcutState,
+} from "steam_shortcut_popup.slint";
 import { AboutPopup } from "about_popup.slint";
 import { ActionState } from "../action_state.slint";
 
@@ -34,7 +37,6 @@ export component AppMenu inherits Rectangle {
         }
 
         HorizontalLayout {
-            padding: Theme.space-md;
             cross-axis-alignment: center;
 
             SvgIcon {
