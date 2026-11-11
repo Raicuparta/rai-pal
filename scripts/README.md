@@ -41,6 +41,9 @@ updater used (`updater-windows.zip`, `updater-linux.tar.gz`,
 `updater-macos.tar.gz`). Keeping them separate means the GitHub release download
 counts updater downloads independently.
 
+Windows builds also publish `RaiPal.portable.exe`, the raw app executable with no
+installer around it.
+
 The Tauri v1 updater is built without deflate support, so the Windows updater
 zip must be stored uncompressed (`zip -0`). macOS updater assets must be
 `.app.tar.gz` with the `.app` bundle at the archive root.

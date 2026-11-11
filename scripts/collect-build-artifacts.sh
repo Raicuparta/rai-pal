@@ -13,10 +13,15 @@ fi
 OUTPUT_DIR="$ROOT_DIR/release-assets"
 mkdir -p "$OUTPUT_DIR"
 
+PORTABLE_SOURCE=""
+PORTABLE_TARGET=""
+
 case "$PLATFORM" in
 	windows)
 		MAIN_SOURCE="$ROOT_DIR/target/bundles/nsis/RaiPal-$VERSION-x86_64-setup.exe"
+		PORTABLE_SOURCE="$ROOT_DIR/target/bundles/nsis/RaiPal-$VERSION-x86_64.exe"
 		MAIN_TARGET="$OUTPUT_DIR/RaiPal.exe"
+		PORTABLE_TARGET="$OUTPUT_DIR/RaiPal.portable.exe"
 		UPDATER_TARGET="$OUTPUT_DIR/updater-windows.zip"
 		PLATFORM_KEY="windows-x86_64"
 		;;
@@ -50,6 +55,15 @@ fi
 
 cp "$MAIN_SOURCE" "$MAIN_TARGET"
 echo "Copied $MAIN_SOURCE -> $MAIN_TARGET"
+
+if [[ -n "$PORTABLE_SOURCE" ]]; then
+	if [[ ! -f "$PORTABLE_SOURCE" ]]; then
+		echo "Build artifact not found: $PORTABLE_SOURCE" >&2
+		exit 1
+	fi
+	cp "$PORTABLE_SOURCE" "$PORTABLE_TARGET"
+	echo "Copied $PORTABLE_SOURCE -> $PORTABLE_TARGET"
+fi
 
 STAGING_DIR="$(mktemp -d)"
 trap 'rm -rf "$STAGING_DIR"' EXIT
