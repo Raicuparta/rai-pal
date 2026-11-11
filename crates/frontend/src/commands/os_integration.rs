@@ -86,6 +86,98 @@ pub fn register() {
 	register_linux();
 	#[cfg(target_os = "windows")]
 	register_windows();
+	#[cfg(target_os = "macos")]
+	register_macos();
+}
+
+#[cfg(target_os = "macos")]
+fn register_macos() {
+	use std::ffi::c_void;
+
+	const K_INTERNET_EVENT_CLASS: u32 = 0x4755_524C;
+	const K_AE_GET_URL: u32 = 0x4755_524C;
+
+	type EventHandler = unsafe extern "C" fn(*const c_void, *mut c_void, isize) -> i16;
+
+	#[link(name = "Carbon", kind = "framework")]
+	unsafe extern "C" {
+		fn AEInstallEventHandler(
+			event_class: u32,
+			event_id: u32,
+			handler: Option<EventHandler>,
+			handler_refcon: isize,
+			is_system_handler: u8,
+		) -> i32;
+	}
+
+	let status = unsafe {
+		AEInstallEventHandler(
+			K_INTERNET_EVENT_CLASS,
+			K_AE_GET_URL,
+			Some(handle_macos_url_event),
+			0,
+			0,
+		)
+	};
+
+	if status != 0 {
+		log::warn!("Failed to register macOS URL event handler: {status}");
+	}
+}
+
+#[cfg(target_os = "macos")]
+unsafe extern "C" fn handle_macos_url_event(
+	event: *const std::ffi::c_void,
+	_reply: *mut std::ffi::c_void,
+	_refcon: isize,
+) -> i16 {
+	use std::ffi::c_void;
+
+	const KEY_DIRECT_OBJECT: u32 = 0x2D2D_2D2D;
+	const TYPE_UTF8_TEXT: u32 = 0x7574_6638;
+
+	#[link(name = "Carbon", kind = "framework")]
+	unsafe extern "C" {
+		fn AEGetParamPtr(
+			event: *const c_void,
+			keyword: u32,
+			desired_type: u32,
+			actual_type: *mut u32,
+			data: *mut c_void,
+			max_size: usize,
+			actual_size: *mut usize,
+		) -> i16;
+	}
+
+	let mut buffer = [0_u8; 16 * 1024];
+	let mut actual_size = 0_usize;
+	let status = unsafe {
+		AEGetParamPtr(
+			event,
+			KEY_DIRECT_OBJECT,
+			TYPE_UTF8_TEXT,
+			std::ptr::null_mut(),
+			buffer.as_mut_ptr().cast(),
+			buffer.len(),
+			&mut actual_size,
+		)
+	};
+
+	if status != 0 {
+		return status;
+	}
+
+	if let Ok(url) = std::str::from_utf8(&buffer[..actual_size as usize]) {
+		let url = url.to_string();
+		crate::runtime::invoke_on_ui(move || {
+			let Some(handler) = CommandHandler::current() else {
+				return;
+			};
+			handler.handle_deep_link(&url);
+		});
+	}
+
+	0
 }
 
 #[cfg(target_os = "linux")]

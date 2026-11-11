@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- macOS: the bundle declares the `rai-pal://` URL scheme, but incoming open-url events are not handled (registration only exists for Linux and Windows). fix that.
 - Revisit the `serializable_struct`/`serializable_enum` proc macros. They still
   make sense because remote manifests, settings, and debug JSON need serde, but
   their names and bundled SQLite impls no longer reflect why most types use
@@ -30,6 +29,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Done
 
+- Handled incoming `rai-pal://` Apple events on macOS with a Carbon URL event handler, so deep links work on the running app.
 - Added macOS automatic updates: `darwin-aarch64`/`darwin-x86_64` platform entries, app bundle replacement and relaunch from the release zip, and signed updater partials in the release workflow.
 - Bumped the local database version to 10 so the Slint app no longer shares database files with the Tauri app, whose `provider_commands` JSON format it can't read.
 - Added a debug data option to every game mod's three-dot menu in the game details page.
