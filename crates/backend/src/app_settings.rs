@@ -3,7 +3,12 @@ use std::{collections::HashSet, path::PathBuf};
 
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
-use crate::{app_paths, games_query::GamesQuery, path_extensions::PathExt, result::Result};
+use crate::{
+	app_paths,
+	games_query::{FilterGroupKey, GamesQuery},
+	path_extensions::PathExt,
+	result::Result,
+};
 
 #[serializable_enum]
 pub enum AppLocale {
@@ -55,7 +60,7 @@ pub struct AppSettings {
 	pub selected_tab: TabId,
 	pub skip_confirm_dialogs: HashSet<String>,
 	#[serde(default)]
-	pub expanded_filters: HashSet<String>,
+	pub expanded_filters: HashSet<FilterGroupKey>,
 	#[serde(default)]
 	pub color_scheme: ColorScheme,
 	#[serde(default)]

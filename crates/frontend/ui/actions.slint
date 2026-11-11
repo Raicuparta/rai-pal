@@ -1,4 +1,4 @@
-import { AppColorScheme, AppTab } from "app_types.slint";
+import { AppColorScheme, AppTab, FilterGroupId } from "app_types.slint";
 
 export global AppActions {
     callback reset-settings;
@@ -22,13 +22,13 @@ export global GamesActions {
     callback back;
     callback search-changed(text: string);
     callback sort-changed(index: int);
-    callback filter-toggled(group: string, value: string, checked: bool);
-    callback filter-lock-toggled(group: string, value: string);
-    callback filter-only(group: string, value: string);
-    callback filter-reset(group: string);
+    callback filter-toggled(group: FilterGroupId, value: string, checked: bool);
+    callback filter-lock-toggled(group: FilterGroupId, value: string);
+    callback filter-only(group: FilterGroupId, value: string);
+    callback filter-reset(group: FilterGroupId);
     callback filters-reset;
     callback filters-collapse-all;
-    callback filter-expanded-changed(group: string, expanded: bool);
+    callback filter-expanded-changed(group: FilterGroupId, expanded: bool);
     callback refresh-game;
     callback run-provider-action(value: string);
     callback open-game-folder;

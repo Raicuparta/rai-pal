@@ -12,6 +12,7 @@ mod action_state;
 mod analytics;
 mod app;
 mod commands;
+mod convert;
 mod downloads;
 mod fetch;
 mod filters;

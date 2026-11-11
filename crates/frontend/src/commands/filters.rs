@@ -1,9 +1,12 @@
 use std::{rc::Rc, time::Duration};
 
-use rai_pal_backend::games_query::FilterAction;
+use rai_pal_backend::{
+	filter_views::{apply_filter_action, reset_all_filters, reset_filter_group},
+	games_query::{FilterAction, FilterGroupKey},
+};
 use slint::ComponentHandle as _;
 
-use crate::filters::{apply_filter_action, build_groups, reset_all_filters, reset_filter_group};
+use crate::{FilterGroupId, filters::build_groups};
 
 use super::{CommandHandler, on_command};
 
@@ -28,13 +31,13 @@ impl CommandHandler {
 		query.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
 	}
 
-	pub fn apply_filter(&self, group: &str, value: &str, action: FilterAction) {
+	pub fn apply_filter(&self, group: FilterGroupId, value: &str, action: FilterAction) {
 		let changed = {
 			let mut settings = self.settings.borrow_mut();
 			apply_filter_action(
 				&mut settings.games_query.filter,
 				&self.mod_families,
-				group,
+				group.into(),
 				value,
 				action,
 			)
@@ -49,14 +52,10 @@ impl CommandHandler {
 		self.start_query(Duration::ZERO);
 	}
 
-	pub fn reset_filter(&self, group: &str) {
-		let changed = {
+	pub fn reset_filter(&self, group: FilterGroupId) {
+		{
 			let mut settings = self.settings.borrow_mut();
-			reset_filter_group(&mut settings.games_query.filter, group)
-		};
-
-		if !changed {
-			return;
+			reset_filter_group(&mut settings.games_query.filter, group.into());
 		}
 
 		self.persist_settings();
@@ -78,13 +77,14 @@ impl CommandHandler {
 		self.refresh_filters();
 	}
 
-	pub fn set_filter_expanded(&self, group: &str, expanded: bool) {
+	pub fn set_filter_expanded(&self, group: FilterGroupId, expanded: bool) {
+		let group = FilterGroupKey::from(group);
 		{
 			let mut settings = self.settings.borrow_mut();
 			if expanded {
-				settings.expanded_filters.insert(group.to_string());
+				settings.expanded_filters.insert(group);
 			} else {
-				settings.expanded_filters.remove(group);
+				settings.expanded_filters.remove(&group);
 			}
 		}
 
@@ -95,16 +95,16 @@ impl CommandHandler {
 
 pub fn register(window: &crate::MainWindow) {
 	on_command!(window, GamesActions, on_filter_toggled, |group, value, checked| handler => {
-		handler.apply_filter(group.as_str(), value.as_str(), FilterAction::Toggle(checked));
+		handler.apply_filter(group, value.as_str(), FilterAction::Toggle(checked));
 	});
 	on_command!(window, GamesActions, on_filter_lock_toggled, |group, value| handler => {
-		handler.apply_filter(group.as_str(), value.as_str(), FilterAction::Lock);
+		handler.apply_filter(group, value.as_str(), FilterAction::Lock);
 	});
 	on_command!(window, GamesActions, on_filter_only, |group, value| handler => {
-		handler.apply_filter(group.as_str(), value.as_str(), FilterAction::Only);
+		handler.apply_filter(group, value.as_str(), FilterAction::Only);
 	});
 	on_command!(window, GamesActions, on_filter_reset, |group| handler => {
-		handler.reset_filter(group.as_str());
+		handler.reset_filter(group);
 	});
 	on_command!(window, GamesActions, on_filters_reset, || handler => {
 		handler.reset_filters();
@@ -113,6 +113,6 @@ pub fn register(window: &crate::MainWindow) {
 		handler.collapse_filters();
 	});
 	on_command!(window, GamesActions, on_filter_expanded_changed, |group, expanded| handler => {
-		handler.set_filter_expanded(group.as_str(), expanded);
+		handler.set_filter_expanded(group, expanded);
 	});
 }

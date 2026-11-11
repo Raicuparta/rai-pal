@@ -36,19 +36,62 @@ export struct DownloadItemData {
     phase: DownloadPhase,
 }
 
+export enum FilterGroupId {
+    installed,
+    engines,
+    mod-families,
+    tags,
+    providers,
+    unity-backends,
+    executable-os,
+    supported-os,
+    architectures,
+}
+
+export enum FilterGroupLabel {
+    status,
+    engine,
+    mod,
+    tag,
+    provider,
+    unity-backend,
+    executable-os,
+    supported-os,
+    architecture,
+}
+
+export enum FilterValueLabel {
+    none,
+    unknown,
+    arch-64,
+    arch-32,
+    tag-demo,
+    tag-vr,
+    tag-untagged,
+    status-installed,
+    status-not-installed,
+    provider-manual,
+}
+
+export enum FilterValueNote {
+    none,
+    engine-godot-not-fully-supported,
+    engine-game-maker-not-fully-supported,
+    provider-xbox-only-installed,
+}
+
 export struct FilterValueData {
     value: string,
-    label-key: string,
-    label: string,
-    note-label-key: string,
+    label: FilterValueLabel,
+    display: string,
+    note: FilterValueNote,
     enabled: bool,
     locked: bool,
 }
 
 export struct FilterGroupData {
-    key: string,
-    label-key: string,
-    label: string,
+    key: FilterGroupId,
+    label: FilterGroupLabel,
     values: [FilterValueData],
     has-changes: bool,
     has-locked: bool,

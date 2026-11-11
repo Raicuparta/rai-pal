@@ -40,6 +40,18 @@ pub enum GameProviderId {
 }
 
 impl GameProviderId {
+	pub const fn display_name(self) -> &'static str {
+		match self {
+			Self::Amazon => "Amazon",
+			Self::Epic => "Epic",
+			Self::Gog => "GOG",
+			Self::Itch => "itch.io",
+			Self::Manual => "Manual",
+			Self::Steam => "Steam",
+			Self::Xbox => "Xbox",
+		}
+	}
+
 	pub const ALL: [Self; 7] = [
 		Self::Amazon,
 		Self::Epic,

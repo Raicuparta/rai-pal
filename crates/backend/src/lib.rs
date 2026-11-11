@@ -6,6 +6,7 @@ pub mod app_settings;
 pub mod architecture;
 pub mod debug;
 pub mod files;
+pub mod filter_views;
 pub mod game;
 pub mod game_engines;
 pub mod game_launch;

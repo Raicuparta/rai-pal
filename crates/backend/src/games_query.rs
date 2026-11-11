@@ -1,4 +1,4 @@
-use std::{collections::HashMap, hash::Hash};
+use std::{collections::HashMap, hash::Hash, str::FromStr};
 
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
@@ -42,7 +42,7 @@ pub enum FilterAction {
 	Only,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum FilterGroupKey {
 	Installed,
 	Engines,
@@ -91,6 +91,21 @@ impl std::str::FromStr for FilterGroupKey {
 			.into_iter()
 			.find(|key| key.as_str() == value)
 			.ok_or(())
+	}
+}
+
+impl serde::Serialize for FilterGroupKey {
+	fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+		serializer.serialize_str(self.as_str())
+	}
+}
+
+impl<'de> serde::Deserialize<'de> for FilterGroupKey {
+	fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+		let value = String::deserialize(deserializer)?;
+
+		Self::from_str(&value)
+			.map_err(|()| serde::de::Error::custom(format!("invalid filter group key `{value}`")))
 	}
 }
 

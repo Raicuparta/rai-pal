@@ -1,5 +1,5 @@
 import { CheckBox } from "std-widgets.slint";
-import { FilterGroupData, FilterValueData } from "../app_types.slint";
+import { FilterGroupData, FilterValueData, FilterValueLabel, FilterValueNote } from "../app_types.slint";
 import { Tr } from "../translations.slint";
 import { Theme } from "../theme.slint";
 import { Button } from "button.slint";
@@ -17,7 +17,7 @@ component FilterValueRow inherits ListRow {
     callback only;
 
     extra-hovered: checkbox-touch.has-hover || only-button.hovered || lock-button.hovered;
-    accessible-label: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
+    accessible-label: root.item.label == FilterValueLabel.none ? root.item.display : Tr.filter-value(root.item.label);
 
     clicked => {
         if !root.item.locked {
@@ -37,13 +37,13 @@ component FilterValueRow inherits ListRow {
             check-box := CheckBox {
                 x: Theme.space-lg;
                 y: (parent.height - self.height) / 2;
-                text: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
+                text: root.item.label == FilterValueLabel.none ? root.item.display : Tr.filter-value(root.item.label);
                 checked: root.item.enabled;
                 enabled: !root.item.locked;
             }
 
             checkbox-touch := TouchArea {
-                width: root.item.note-label-key == "" ? parent.width : check-box.preferred-width;
+                width: root.item.note == FilterValueNote.none ? parent.width : check-box.preferred-width;
                 height: parent.height;
                 mouse-cursor: pointer;
 
@@ -54,7 +54,7 @@ component FilterValueRow inherits ListRow {
                 }
             }
 
-            if root.item.note-label-key != "": Rectangle {
+            if root.item.note != FilterValueNote.none: Rectangle {
                 x: check-box.preferred-width + Theme.space-lg;
                 y: (parent.height - self.height) / 2;
                 width: 12px;
@@ -66,7 +66,7 @@ component FilterValueRow inherits ListRow {
                 }
 
                 Tooltip {
-                    text: @markdown("\{Tr.filter-value-note(root.item.note-label-key)}");
+                    text: @markdown("\{Tr.filter-value-note(root.item.note)}");
                 }
             }
         }
@@ -108,7 +108,7 @@ export component FilterGroup inherits Rectangle {
 
         ListRow {
             extra-hovered: reset-button.hovered;
-            accessible-label: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
+            accessible-label: Tr.filter-property(root.group.label);
 
             clicked => {
                 GamesActions.filter-expanded-changed(root.group.key, !root.group.expanded);
@@ -125,7 +125,7 @@ export component FilterGroup inherits Rectangle {
                 }
 
                 Text {
-                    text: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
+                    text: Tr.filter-property(root.group.label);
                     font-weight: Theme.weight-bold;
                     overflow: elide;
                     color: Theme.strong-foreground;

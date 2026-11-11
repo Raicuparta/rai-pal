@@ -1,78 +1,74 @@
+import { FilterGroupLabel, FilterValueLabel, FilterValueNote } from "app_types.slint";
+
 export global Tr {
     public pure function refresh-loading(items: string) -> string {
         return @tr("refresh" => "Loading {0}...", items);
     }
 
-    public pure function filter-property(key: string) -> string {
-        if key == "provider" {
+    public pure function filter-property(label: FilterGroupLabel) -> string {
+        if label == FilterGroupLabel.provider {
             return @tr("filterProperty" => "Provider");
         }
-        if key == "tags" {
+        if label == FilterGroupLabel.tag {
             return @tr("filterProperty" => "Tag");
         }
-        if key == "architecture" {
+        if label == FilterGroupLabel.architecture {
             return @tr("filterProperty" => "Architecture");
         }
-        if key == "executableOs" {
+        if label == FilterGroupLabel.executable-os {
             return @tr("filterProperty" => "Executable OS");
         }
-        if key == "supportedOs" {
+        if label == FilterGroupLabel.supported-os {
             return @tr("filterProperty" => "Supported OS");
         }
-        if key == "unityBackend" {
+        if label == FilterGroupLabel.unity-backend {
             return @tr("filterProperty" => "Unity Backend");
         }
-        if key == "engine" {
+        if label == FilterGroupLabel.engine {
             return @tr("filterProperty" => "Engine");
         }
-        if key == "status" {
+        if label == FilterGroupLabel.status {
             return @tr("filterProperty" => "Install status");
         }
-        if key == "mod" {
-            return @tr("filterProperty" => "Mod");
-        }
-        return key;
+        return @tr("filterProperty" => "Mod");
     }
 
-    public pure function filter-value(key: string) -> string {
-        if key == "unknown" {
+    public pure function filter-value(label: FilterValueLabel) -> string {
+        if label == FilterValueLabel.unknown {
             return @tr("filterValue" => "Unknown");
         }
-        if key == "arch64" {
+        if label == FilterValueLabel.arch-64 {
             return @tr("filterValue" => "64-bit");
         }
-        if key == "arch32" {
+        if label == FilterValueLabel.arch-32 {
             return @tr("filterValue" => "32-bit");
         }
-        if key == "tagDemo" {
+        if label == FilterValueLabel.tag-demo {
             return @tr("filterValue" => "Demo");
         }
-        if key == "tagVr" {
+        if label == FilterValueLabel.tag-vr {
             return @tr("filterValue" => "Native VR");
         }
-        if key == "tagUntagged" {
+        if label == FilterValueLabel.tag-untagged {
             return @tr("filterValue" => "Untagged");
         }
-        if key == "statusInstalled" {
+        if label == FilterValueLabel.status-installed {
             return @tr("filterValue" => "Installed");
         }
-        if key == "statusNotInstalled" {
+        if label == FilterValueLabel.status-not-installed {
             return @tr("filterValue" => "Not installed");
         }
-        if key == "providerManual" {
-            return @tr("filterValue" => "Manual");
-        }
-        return key;
+        return @tr("filterValue" => "Manual");
     }
 
-    public pure function filter-value-note(key: string) -> string {
-        if key == "providerXboxOnlyInstalled" {
+    public pure function filter-value-note(note: FilterValueNote) -> string {
+        if note == FilterValueNote.provider-xbox-only-installed {
             return @tr("filterValueNote" => "Only shows PC Xbox games if they're installed.");
         }
-        if key == "engineGodotNotFullySupported" {
+        if note == FilterValueNote.engine-godot-not-fully-supported {
             return @tr("filterValueNote" => "Godot games are not fully supported yet.");
         }
-        if key == "engineGameMakerNotFullySupported" {
+        if note == FilterValueNote.engine-game-maker-not-fully-supported {
             return @tr("filterValueNote" => "GameMaker games are not fully supported yet.");
         }
         return "";
