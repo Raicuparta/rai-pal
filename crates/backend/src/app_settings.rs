@@ -1,7 +1,7 @@
 use fs_err as fs;
 use std::{collections::HashSet, path::PathBuf};
 
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::{serde_enum, serde_struct};
 
 use crate::{
 	app_paths,
@@ -10,7 +10,7 @@ use crate::{
 	result::Result,
 };
 
-#[serializable_enum]
+#[serde_enum]
 pub enum AppLocale {
 	EnUs,
 	DeDe,
@@ -51,7 +51,7 @@ impl AppLocale {
 	}
 }
 
-#[serializable_enum]
+#[serde_enum]
 #[derive(Default)]
 pub enum TabId {
 	#[default]
@@ -60,7 +60,7 @@ pub enum TabId {
 	Thanks,
 }
 
-#[serializable_enum]
+#[serde_enum]
 #[derive(Default)]
 pub enum ColorScheme {
 	#[default]
@@ -75,7 +75,7 @@ pub enum SkipConfirmation {
 	InstallMod,
 }
 
-#[serializable_struct]
+#[serde_struct]
 #[derive(Default, Copy)]
 pub struct WindowState {
 	pub x: i32,
@@ -85,7 +85,7 @@ pub struct WindowState {
 	pub maximized: bool,
 }
 
-#[serializable_struct]
+#[serde_struct]
 #[derive(Default)]
 pub struct AppSettings {
 	pub hide_game_thumbnails: bool,

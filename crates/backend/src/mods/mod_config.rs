@@ -1,7 +1,7 @@
 use fs_err::PathExt;
 use std::path::{Path, PathBuf};
 
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::serde_struct;
 
 use crate::{
 	game::Game,
@@ -13,7 +13,7 @@ use crate::{
 	result::Result,
 };
 
-#[serializable_struct]
+#[serde_struct]
 pub struct ModConfig {
 	pub destination_path: String,
 	pub destination_type: ModConfigDestinationType,

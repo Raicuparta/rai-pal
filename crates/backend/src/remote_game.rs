@@ -1,7 +1,7 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use lazy_regex::regex;
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::serde_struct;
 
 use crate::{
 	app_paths,
@@ -20,7 +20,7 @@ const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
 // you would create a new folder in the database repository and change this number to match the folder.
 const DATABASE_VERSION: i32 = 2;
 
-#[serializable_struct]
+#[serde_struct]
 pub struct RemoteGame {
 	pub title: Option<String>,
 	pub engine: Option<GameEngine>,

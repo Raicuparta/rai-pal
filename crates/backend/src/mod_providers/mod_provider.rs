@@ -1,4 +1,4 @@
-use rai_pal_proc_macros::serializable_enum;
+use rai_pal_proc_macros::{serde_enum, sql_enum};
 use tokio::sync::Mutex as AsyncMutex;
 
 use crate::{
@@ -23,7 +23,8 @@ pub trait ModProvider {
 	async fn refresh(&self, db: &DbMutex) -> Result;
 }
 
-#[serializable_enum]
+#[serde_enum]
+#[sql_enum]
 pub enum ModProviderId {
 	Folder,
 	Url,

@@ -1,6 +1,6 @@
-use rai_pal_proc_macros::serializable_enum;
+use rai_pal_proc_macros::serde_enum;
 
-#[serializable_enum]
+#[serde_enum]
 pub enum GameTag {
 	VR,
 	Demo,

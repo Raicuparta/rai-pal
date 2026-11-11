@@ -5,7 +5,7 @@ use std::{
 };
 
 use fs_err::PathExt as FsErrPathExt;
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::{serde_enum, serde_struct};
 
 use crate::{
 	app_paths,
@@ -27,7 +27,7 @@ use crate::{
 	result::{Error, LogErrExt, Result},
 };
 
-#[serializable_struct]
+#[serde_struct]
 pub struct Mod {
 	pub id: String,
 	pub scope: Option<String>,
@@ -55,19 +55,19 @@ pub struct Mod {
 	pub hash: Option<String>,
 }
 
-#[serializable_struct]
+#[serde_struct]
 pub struct ModInstallExtract {
 	pub source: String,
 	pub destination: String,
 }
 
-#[serializable_struct]
+#[serde_struct]
 pub struct ModInstallWrite {
 	pub content: String,
 	pub destination: String,
 }
 
-#[serializable_struct]
+#[serde_struct]
 pub struct ModInstall {
 	pub manifest_path: String,
 	pub extract: Option<Vec<ModInstallExtract>>,
@@ -76,7 +76,7 @@ pub struct ModInstall {
 	pub main_installed_folder_path: Option<String>,
 }
 
-#[serializable_struct]
+#[serde_struct]
 pub struct ModRun {
 	pub path: Option<String>,
 	pub args: Option<Vec<String>>,
@@ -91,7 +91,7 @@ pub struct PreparedModRun {
 	pub os: Option<OperatingSystem>,
 }
 
-#[serializable_struct]
+#[serde_struct]
 pub struct ModDownload {
 	pub id: String,
 	pub url: String,
@@ -107,7 +107,7 @@ pub enum ModDependency {
 	Family { family: String },
 }
 
-#[serializable_enum]
+#[serde_enum]
 pub enum ModConfigDestinationType {
 	File,
 	Folder,

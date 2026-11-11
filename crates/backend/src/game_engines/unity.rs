@@ -8,7 +8,7 @@ use std::{
 
 use lazy_regex::regex_captures;
 use log::error;
-use rai_pal_proc_macros::serializable_enum;
+use rai_pal_proc_macros::{serde_enum, sql_enum};
 
 use super::game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers};
 use crate::{
@@ -19,7 +19,8 @@ use crate::{
 	result::{Error, LogErrExt, Result},
 };
 
-#[serializable_enum]
+#[serde_enum]
+#[sql_enum]
 pub enum UnityBackend {
 	Il2Cpp,
 	Mono,

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, hash::Hash};
 
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::{serde_enum, serde_struct};
 
 use crate::{
 	architecture::Architecture,
@@ -10,13 +10,13 @@ use crate::{
 	operating_system::OperatingSystem,
 };
 
-#[serializable_enum]
+#[serde_enum]
 pub enum InstallState {
 	Installed,
 	NotInstalled,
 }
 
-#[serializable_struct]
+#[serde_struct]
 pub struct FilterItem {
 	pub enabled: bool,
 	pub locked: bool,
@@ -213,7 +213,7 @@ impl<T: Hash + Eq + Clone> FilterGroup<T> {
 	}
 }
 
-#[serializable_struct]
+#[serde_struct]
 #[derive(Default)]
 pub struct GamesFilter {
 	pub providers: FilterGroup<GameProviderId>,
@@ -227,7 +227,7 @@ pub struct GamesFilter {
 	pub mod_families: FilterGroup<String>,
 }
 
-#[serializable_enum]
+#[serde_enum]
 #[derive(Default)]
 pub enum GamesSortBy {
 	#[default]
@@ -236,7 +236,7 @@ pub enum GamesSortBy {
 	ReleaseDate,
 }
 
-#[serializable_struct]
+#[serde_struct]
 #[derive(Default)]
 pub struct GamesQuery {
 	pub filter: GamesFilter,

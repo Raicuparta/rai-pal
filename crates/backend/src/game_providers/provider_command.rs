@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, path::PathBuf};
 
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::{serde_enum, serde_struct};
 use serde::Deserialize;
 
 use crate::{
@@ -18,7 +18,7 @@ pub enum ProviderCommandKind {
 	Delete,
 }
 
-#[serializable_enum]
+#[serde_enum]
 pub enum ProviderCommandAction {
 	StartViaProvider,
 	StartViaExe,
@@ -29,7 +29,7 @@ pub enum ProviderCommandAction {
 	Delete,
 }
 
-#[serializable_struct]
+#[serde_struct]
 #[derive(PartialEq, Eq, Hash)]
 pub struct ProviderCommand {
 	pub action: ProviderCommandAction,

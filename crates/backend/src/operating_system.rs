@@ -1,11 +1,12 @@
 use fs_err::File;
 use std::{io::Read, path::Path};
 
-use rai_pal_proc_macros::serializable_enum;
+use rai_pal_proc_macros::{serde_enum, sql_enum};
 
 use crate::result::LogErrExt;
 
-#[serializable_enum]
+#[serde_enum]
+#[sql_enum]
 pub enum OperatingSystem {
 	Windows,
 	Linux,

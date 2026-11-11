@@ -1,6 +1,6 @@
 use std::{io::Cursor, path::Path};
 
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::serde_struct;
 use reqwest::Response;
 use zip::ZipArchive;
 
@@ -15,14 +15,14 @@ use crate::{
 const CONFIG_DB_BASE_URL: &str = "https://raicuparta.github.io/rai-pal-db/config-db";
 const CONFIG_DB_VERSION: u32 = 0;
 
-#[serializable_struct]
+#[serde_struct]
 pub struct RemoteConfig {
 	pub version: u32,
 	pub mod_id: String,
 	pub file: String,
 }
 
-#[serializable_struct]
+#[serde_struct]
 pub struct RemoteConfigs {
 	pub configs: Vec<RemoteConfig>,
 }

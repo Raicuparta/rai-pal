@@ -1,4 +1,4 @@
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::serde_struct;
 
 use super::game_provider::ProviderActions;
 use crate::{
@@ -6,7 +6,7 @@ use crate::{
 	result::Result,
 };
 
-#[serializable_struct]
+#[serde_struct]
 pub struct Dummy;
 
 impl ProviderActions for Dummy {

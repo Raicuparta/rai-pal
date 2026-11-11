@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::serde_struct;
 
 use crate::{
 	app_paths,
@@ -23,7 +23,7 @@ use crate::{
 	result::{ContextResult, Error, Result},
 };
 
-#[serializable_struct]
+#[serde_struct]
 pub struct Game {
 	pub provider_id: GameProviderId,
 	pub game_id: String,

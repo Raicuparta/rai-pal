@@ -1,7 +1,7 @@
 use fs_err as fs;
 use std::path::{Path, PathBuf};
 
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::serde_struct;
 
 use super::vdf::{
 	KeyValues, ValueType, find_keys, value_to_i32, value_to_kv, value_to_path, value_to_string,
@@ -11,7 +11,7 @@ use crate::{
 	result::{ContextResult, Error, LogErrExt, Result},
 };
 
-#[serializable_struct]
+#[serde_struct]
 pub struct SteamLaunchOption {
 	pub launch_id: String,
 	pub app_id: u32,

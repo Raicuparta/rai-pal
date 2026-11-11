@@ -5,7 +5,7 @@ use std::{
 	path::PathBuf,
 };
 
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::serde_struct;
 
 use super::mod_provider::ModProvider;
 use crate::{
@@ -20,7 +20,7 @@ use crate::{
 	result::{LogErrExt, Result},
 };
 
-#[serializable_struct]
+#[serde_struct]
 pub struct UrlModDatabase {
 	#[serde(default)]
 	pub families: BTreeMap<String, ModFamily>,
@@ -46,13 +46,13 @@ fn compute_source_hash(url: &str) -> String {
 }
 
 #[derive(Default)]
-#[serializable_struct]
+#[serde_struct]
 pub struct UrlModSource {
 	pub url: String,
 	pub enabled: bool,
 }
 
-#[serializable_struct]
+#[serde_struct]
 pub struct UrlModSources {
 	#[serde(default = "default_true")]
 	pub default_enabled: bool,
@@ -111,7 +111,7 @@ fn write_url_mod_sources(sources: &UrlModSources) -> Result {
 	Ok(())
 }
 
-#[serializable_struct]
+#[serde_struct]
 pub struct UrlModSourcesResponse {
 	pub default_source: UrlModSource,
 	pub sources: Vec<UrlModSource>,

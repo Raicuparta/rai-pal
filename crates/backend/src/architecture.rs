@@ -1,14 +1,15 @@
 use std::path::Path;
 
 use pelite::{PeFile, Wrap};
-use rai_pal_proc_macros::serializable_enum;
+use rai_pal_proc_macros::{serde_enum, sql_enum};
 
 use crate::{
 	game_engines::mmap_safe,
 	result::{LogErrExt, Result},
 };
 
-#[serializable_enum]
+#[serde_enum]
+#[sql_enum]
 pub enum Architecture {
 	X64,
 	X86,

@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::LazyLock};
 
 use log;
-use rai_pal_proc_macros::serializable_enum;
+use rai_pal_proc_macros::serde_enum;
 use serde::Serialize;
 use uuid::Uuid;
 
@@ -13,7 +13,7 @@ static SESSION_ID: LazyLock<String> = LazyLock::new(|| Uuid::new_v4().hyphenated
 
 pub type AnalyticsData = HashMap<String, String>;
 
-#[serializable_enum]
+#[serde_enum]
 pub enum Event {
 	InstallMod,
 	UninstallMod,

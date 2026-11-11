@@ -3,7 +3,7 @@
 use std::{io, path::PathBuf};
 
 use log::error;
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::serde_struct;
 use winreg::{
 	RegKey,
 	enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE},
@@ -20,7 +20,7 @@ use crate::{
 #[derive(Clone)]
 pub struct Xbox {}
 
-#[serializable_struct]
+#[serde_struct]
 struct XboxGamepassGame {
 	product_title: String,
 	product_id: String,

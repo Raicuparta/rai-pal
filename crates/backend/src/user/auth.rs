@@ -1,6 +1,6 @@
 use std::{collections::HashMap, path::PathBuf, time::Duration};
 
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::serde_struct;
 use serde::Deserialize;
 use tokio::{
 	io::{AsyncReadExt, AsyncWriteExt},
@@ -26,7 +26,7 @@ pub struct AuthState {
 	pub user_name: Option<String>,
 }
 
-#[serializable_struct]
+#[serde_struct]
 struct AuthSavedSession {
 	token: String,
 	user_name: String,

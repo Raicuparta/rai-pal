@@ -6,11 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- Revisit the `serializable_struct`/`serializable_enum` proc macros. They still
-  make sense because remote manifests, settings, and debug JSON need serde, but
-  their names and bundled SQLite impls no longer reflect why most types use
-  them. Splitting serde and SQLite behaviour into separate derives would be
-  clearer.
 - The Slint row structs still need an explicit field-to-field mapping because
   Slint cannot import arbitrary Rust structs. A small conversion macro could
   remove the boilerplate if it becomes annoying, but it should stay in the
@@ -29,6 +24,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Done
 
+- Split the proc macros into `serde_struct`/`serde_enum` for serialization and `sql_enum` for the rusqlite conversions, which are now opted into only by the enums stored in the database.
 - Handled incoming `rai-pal://` Apple events on macOS with a Carbon URL event handler, so deep links work on the running app.
 - Added macOS automatic updates: `darwin-aarch64`/`darwin-x86_64` platform entries, app bundle replacement and relaunch from the release zip, and signed updater partials in the release workflow.
 - Bumped the local database version to 10 so the Slint app no longer shares database files with the Tauri app, whose `provider_commands` JSON format it can't read.

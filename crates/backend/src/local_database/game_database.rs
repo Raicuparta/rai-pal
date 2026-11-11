@@ -4,7 +4,7 @@ use std::{
 	time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::serde_struct;
 use rusqlite::{OpenFlags, OptionalExtension};
 use strum::IntoEnumIterator;
 
@@ -33,13 +33,13 @@ pub trait GameDatabase {
 	fn remove_stale_games(&self, provider_id: &GameProviderId, max_time: u64) -> Result;
 }
 
-#[serializable_struct]
+#[serde_struct]
 pub struct GameId {
 	pub provider_id: GameProviderId,
 	pub game_id: String,
 }
 
-#[serializable_struct]
+#[serde_struct]
 pub struct GameIdsResponse {
 	pub game_ids: Vec<GameId>,
 	pub total_count: u32,

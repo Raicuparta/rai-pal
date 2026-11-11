@@ -4,7 +4,7 @@ use std::{
 	time::{SystemTime, UNIX_EPOCH},
 };
 
-use rai_pal_proc_macros::serializable_enum;
+use rai_pal_proc_macros::{serde_enum, sql_enum};
 
 #[cfg(not(any(target_os = "linux", target_os = "windows")))]
 use crate::game_providers::dummy_provider::Dummy;
@@ -28,7 +28,8 @@ use crate::{
 };
 
 // These IDs need to match the ones in rai-pal-db.
-#[serializable_enum]
+#[serde_enum]
+#[sql_enum]
 pub enum GameProviderId {
 	Amazon,
 	Epic,

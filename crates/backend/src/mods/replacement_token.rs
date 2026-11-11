@@ -1,4 +1,4 @@
-use rai_pal_proc_macros::serializable_enum;
+use rai_pal_proc_macros::serde_enum;
 
 use crate::{
 	app_paths,
@@ -9,7 +9,7 @@ use crate::{
 	result::{ContextResult, Error, Result},
 };
 
-#[serializable_enum]
+#[serde_enum]
 pub enum ReplacementToken {
 	GameExecutableFolderPath,
 	GameExecutableName,
