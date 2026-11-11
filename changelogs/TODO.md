@@ -6,11 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- The Slint row structs still need an explicit field-to-field mapping because
-  Slint cannot import arbitrary Rust structs. A small conversion macro could
-  remove the boilerplate if it becomes annoying, but it should stay in the
-  Slint crate.
-
 ## Do later:
 
 - update the intro text.
@@ -20,6 +15,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Notes, questions, decisions, etc.
 
+- Slint row conversions are still handwritten. The mappings compute derived values (release dates, action flags, formatted labels), so a field-to-field macro would only remove a small part of the code while adding indirection.
 - macOS automatic updates are implemented, but release bundles are still ad-hoc signed and not notarized; first launch still needs the usual Gatekeeper bypass.
 
 ## Done
