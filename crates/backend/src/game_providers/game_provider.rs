@@ -51,16 +51,6 @@ impl GameProviderId {
 			Self::Xbox => "Xbox",
 		}
 	}
-
-	pub const ALL: [Self; 7] = [
-		Self::Amazon,
-		Self::Epic,
-		Self::Gog,
-		Self::Itch,
-		Self::Manual,
-		Self::Steam,
-		Self::Xbox,
-	];
 }
 
 pub trait ProviderActions {

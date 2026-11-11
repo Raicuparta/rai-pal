@@ -25,10 +25,6 @@ pub enum UnityBackend {
 	Mono,
 }
 
-impl UnityBackend {
-	pub const ALL: [Self; 2] = [Self::Il2Cpp, Self::Mono];
-}
-
 pub fn parse_version(string: &str) -> Option<EngineVersion> {
 	let (full, major, minor, patch, suffix) = regex_captures!(
 		r#"(?x)

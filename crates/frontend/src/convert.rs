@@ -32,6 +32,33 @@ macro_rules! slint_enum_conversions {
 	};
 }
 
+macro_rules! slint_optional_enum_conversions {
+	($core:ty => $ui:ty { $($variant:ident),+ $(,)? }) => {
+		impl From<$core> for $ui {
+			fn from(value: $core) -> Self {
+				match value {
+					$(<$core>::$variant => <$ui>::$variant,)+
+				}
+			}
+		}
+
+		impl From<Option<$core>> for $ui {
+			fn from(value: Option<$core>) -> Self {
+				value.map_or(<$ui>::None, <$ui>::from)
+			}
+		}
+
+		impl From<$ui> for Option<$core> {
+			fn from(value: $ui) -> Self {
+				match value {
+					<$ui>::None => None,
+					$(<$ui>::$variant => Some(<$core>::$variant),)+
+				}
+			}
+		}
+	};
+}
+
 slint_enum_conversions!(FilterGroupKey => FilterGroupId {
 	Installed,
 	Engines,
@@ -56,21 +83,17 @@ slint_enum_conversions!(FilterGroupLabel => UiFilterGroupLabel {
 	Architecture,
 });
 
-impl From<FilterValueLabel> for UiFilterValueLabel {
-	fn from(value: FilterValueLabel) -> Self {
-		match value {
-			FilterValueLabel::Unknown => Self::Unknown,
-			FilterValueLabel::Arch64 => Self::Arch64,
-			FilterValueLabel::Arch32 => Self::Arch32,
-			FilterValueLabel::TagDemo => Self::TagDemo,
-			FilterValueLabel::TagVr => Self::TagVr,
-			FilterValueLabel::TagUntagged => Self::TagUntagged,
-			FilterValueLabel::StatusInstalled => Self::StatusInstalled,
-			FilterValueLabel::StatusNotInstalled => Self::StatusNotInstalled,
-			FilterValueLabel::ProviderManual => Self::ProviderManual,
-		}
-	}
-}
+slint_optional_enum_conversions!(FilterValueLabel => UiFilterValueLabel {
+	Unknown,
+	Arch64,
+	Arch32,
+	TagDemo,
+	TagVr,
+	TagUntagged,
+	StatusInstalled,
+	StatusNotInstalled,
+	ProviderManual,
+});
 
 slint_enum_conversions!(FilterValueNote => UiFilterValueNote {
 	None,
@@ -91,69 +114,33 @@ slint_enum_conversions!(ColorScheme => AppColorScheme {
 	Light,
 });
 
-pub const fn provider_id(provider: GameProviderId) -> ProviderId {
-	match provider {
-		GameProviderId::Amazon => ProviderId::Amazon,
-		GameProviderId::Epic => ProviderId::Epic,
-		GameProviderId::Gog => ProviderId::Gog,
-		GameProviderId::Itch => ProviderId::Itch,
-		GameProviderId::Manual => ProviderId::Manual,
-		GameProviderId::Steam => ProviderId::Steam,
-		GameProviderId::Xbox => ProviderId::Xbox,
-	}
-}
+slint_optional_enum_conversions!(GameProviderId => ProviderId {
+	Amazon,
+	Epic,
+	Gog,
+	Itch,
+	Manual,
+	Steam,
+	Xbox,
+});
 
-pub const fn core_provider_id(provider: ProviderId) -> Option<GameProviderId> {
-	Some(match provider {
-		ProviderId::None => return None,
-		ProviderId::Amazon => GameProviderId::Amazon,
-		ProviderId::Epic => GameProviderId::Epic,
-		ProviderId::Gog => GameProviderId::Gog,
-		ProviderId::Itch => GameProviderId::Itch,
-		ProviderId::Manual => GameProviderId::Manual,
-		ProviderId::Steam => GameProviderId::Steam,
-		ProviderId::Xbox => GameProviderId::Xbox,
-	})
-}
+slint_optional_enum_conversions!(EngineBrand => EngineId {
+	Unity,
+	Unreal,
+	Godot,
+	GameMaker,
+});
 
-pub const fn engine_id(engine: Option<EngineBrand>) -> EngineId {
-	match engine {
-		Some(EngineBrand::Unity) => EngineId::Unity,
-		Some(EngineBrand::Unreal) => EngineId::Unreal,
-		Some(EngineBrand::Godot) => EngineId::Godot,
-		Some(EngineBrand::GameMaker) => EngineId::GameMaker,
-		None => EngineId::None,
-	}
-}
+slint_optional_enum_conversions!(ProviderCommandAction => ProviderAction {
+	StartViaProvider,
+	StartViaExe,
+	Install,
+	ShowInLibrary,
+	ShowInStore,
+	OpenInBrowser,
+	Delete,
+});
 
-pub const fn provider_action(action: ProviderCommandAction) -> ProviderAction {
-	match action {
-		ProviderCommandAction::StartViaProvider => ProviderAction::StartViaProvider,
-		ProviderCommandAction::StartViaExe => ProviderAction::StartViaExe,
-		ProviderCommandAction::Install => ProviderAction::Install,
-		ProviderCommandAction::ShowInLibrary => ProviderAction::ShowInLibrary,
-		ProviderCommandAction::ShowInStore => ProviderAction::ShowInStore,
-		ProviderCommandAction::OpenInBrowser => ProviderAction::OpenInBrowser,
-		ProviderCommandAction::Delete => ProviderAction::Delete,
-	}
-}
-
-pub const fn core_provider_action(action: ProviderAction) -> Option<ProviderCommandAction> {
-	Some(match action {
-		ProviderAction::None => return None,
-		ProviderAction::StartViaProvider => ProviderCommandAction::StartViaProvider,
-		ProviderAction::StartViaExe => ProviderCommandAction::StartViaExe,
-		ProviderAction::Install => ProviderCommandAction::Install,
-		ProviderAction::ShowInLibrary => ProviderCommandAction::ShowInLibrary,
-		ProviderAction::ShowInStore => ProviderCommandAction::ShowInStore,
-		ProviderAction::OpenInBrowser => ProviderCommandAction::OpenInBrowser,
-		ProviderAction::Delete => ProviderCommandAction::Delete,
-	})
-}
-
-pub const fn core_skip_confirmation(skip: UiSkipConfirmation) -> Option<CoreSkipConfirmation> {
-	match skip {
-		UiSkipConfirmation::None => None,
-		UiSkipConfirmation::InstallMod => Some(CoreSkipConfirmation::InstallMod),
-	}
-}
+slint_optional_enum_conversions!(CoreSkipConfirmation => UiSkipConfirmation {
+	InstallMod,
+});

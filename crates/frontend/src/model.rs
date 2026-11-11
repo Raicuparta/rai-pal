@@ -5,7 +5,7 @@ use rai_pal_backend::{
 	result::LogErrExt,
 };
 
-use crate::{EngineId, GameRowData, convert};
+use crate::{EngineId, GameRowData};
 
 #[derive(Clone, Debug, Default)]
 pub struct ReleaseDate {
@@ -87,7 +87,7 @@ pub fn make_rows(game_ids: &[GameId]) -> Vec<GameRowData> {
 	game_ids
 		.iter()
 		.map(|game_id| GameRowData {
-			provider: convert::provider_id(game_id.provider_id),
+			provider: game_id.provider_id.into(),
 			game_id: game_id.game_id.clone().into(),
 			title: "...".into(),
 			thumbnail: slint::Image::default(),
@@ -140,7 +140,7 @@ pub fn apply_game_to_row(row: &mut GameRowData, game: &Game) {
 			.collect::<Vec<_>>(),
 	))
 	.into();
-	row.engine = convert::engine_id(game.engine_brand);
+	row.engine = game.engine_brand.into();
 	row.engine_name = game
 		.engine_brand
 		.map(|brand| brand.to_string())

@@ -7,12 +7,12 @@ use rai_pal_backend::{
 	result::LogErrExt,
 };
 
-use crate::{FilterGroupData, FilterValueData, FilterValueLabel};
+use crate::{FilterGroupData, FilterValueData};
 
 fn value_data(value: FilterValueView) -> FilterValueData {
 	FilterValueData {
 		value: value.value.into(),
-		label: value.label.map_or(FilterValueLabel::None, Into::into),
+		label: value.label.into(),
 		display: value.display.into(),
 		note: value.note.into(),
 		enabled: value.enabled,

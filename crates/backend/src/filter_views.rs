@@ -1,5 +1,7 @@
 use std::{collections::HashSet, fmt::Display, hash::Hash, str::FromStr};
 
+use strum::IntoEnumIterator;
+
 use crate::{
 	architecture::Architecture,
 	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
@@ -444,7 +446,7 @@ pub fn reset_filter_group(filter: &mut GamesFilter, group_key: FilterGroupKey) {
 }
 
 pub fn reset_all_filters(filter: &mut GamesFilter) {
-	for key in FilterGroupKey::ALL {
+	for key in FilterGroupKey::iter() {
 		reset_filter_group(filter, key);
 	}
 }

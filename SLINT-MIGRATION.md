@@ -105,12 +105,12 @@ needs an equivalent after that removal.
   results, `GameEnvironment` for launch environment variables plus contributing
   mod IDs, and `InstallStep`/`InstallStepKind` instead of preformatted step
   names.
-- Added `ALL` value lists for provider, engine, tag, OS, architecture, Unity
-  backend, and install-state enums, removing copies in the Slint filters and
-  refresh code.
-- Build the games sort option model from `SORT_OPTIONS` in Rust, with labels
-  read from the translated `HostStrings` global, so the menu no longer keeps a
-  duplicate option list.
+- The `serializable_enum` proc macro now generates `ALL` value lists, so adding
+  an enum variant automatically adds it to iteration without a separate copy.
+  `FilterGroupKey` derives its persisted strings and iteration from strum.
+- Build the games sort option model from one `SORT_OPTIONS` list in Rust, with
+  labels read from the translated `HostStrings` global, so the menu no longer
+  keeps a duplicate option list.
 - Centralized the current-thread Tokio runtime setup and shared `initials` in
   the Slint app.
 - Removed the unused `maps` helper module and `byteorder` dependency.

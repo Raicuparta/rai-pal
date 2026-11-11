@@ -1,4 +1,4 @@
-use std::{collections::HashMap, hash::Hash, str::FromStr};
+use std::{collections::HashMap, hash::Hash};
 
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
@@ -14,10 +14,6 @@ use crate::{
 pub enum InstallState {
 	Installed,
 	NotInstalled,
-}
-
-impl InstallState {
-	pub const ALL: [Self; 2] = [Self::Installed, Self::NotInstalled];
 }
 
 #[serializable_struct]
@@ -42,7 +38,10 @@ pub enum FilterAction {
 	Only,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(
+	Clone, Copy, Debug, PartialEq, Eq, Hash, strum::Display, strum::EnumString, strum::EnumIter,
+)]
+#[strum(serialize_all = "camelCase")]
 pub enum FilterGroupKey {
 	Installed,
 	Engines,
@@ -55,48 +54,9 @@ pub enum FilterGroupKey {
 	Architectures,
 }
 
-impl FilterGroupKey {
-	pub const ALL: [Self; 9] = [
-		Self::Installed,
-		Self::Engines,
-		Self::ModFamilies,
-		Self::Tags,
-		Self::Providers,
-		Self::UnityBackends,
-		Self::ExecutableOs,
-		Self::SupportedOs,
-		Self::Architectures,
-	];
-
-	pub const fn as_str(self) -> &'static str {
-		match self {
-			Self::Installed => "installed",
-			Self::Engines => "engines",
-			Self::ModFamilies => "modFamilies",
-			Self::Tags => "tags",
-			Self::Providers => "providers",
-			Self::UnityBackends => "unityBackends",
-			Self::ExecutableOs => "executableOs",
-			Self::SupportedOs => "supportedOs",
-			Self::Architectures => "architectures",
-		}
-	}
-}
-
-impl std::str::FromStr for FilterGroupKey {
-	type Err = ();
-
-	fn from_str(value: &str) -> Result<Self, Self::Err> {
-		Self::ALL
-			.into_iter()
-			.find(|key| key.as_str() == value)
-			.ok_or(())
-	}
-}
-
 impl serde::Serialize for FilterGroupKey {
 	fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-		serializer.serialize_str(self.as_str())
+		serializer.serialize_str(&self.to_string())
 	}
 }
 
@@ -104,8 +64,9 @@ impl<'de> serde::Deserialize<'de> for FilterGroupKey {
 	fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
 		let value = String::deserialize(deserializer)?;
 
-		Self::from_str(&value)
-			.map_err(|()| serde::de::Error::custom(format!("invalid filter group key `{value}`")))
+		value
+			.parse::<Self>()
+			.map_err(|err| serde::de::Error::custom(err))
 	}
 }
 

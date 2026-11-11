@@ -12,8 +12,6 @@ pub enum OperatingSystem {
 }
 
 impl OperatingSystem {
-	pub const ALL: [Self; 2] = [Self::Windows, Self::Linux];
-
 	pub const fn get_current() -> Self {
 		if cfg!(target_os = "windows") {
 			Self::Windows

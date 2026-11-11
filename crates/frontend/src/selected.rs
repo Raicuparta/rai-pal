@@ -7,7 +7,7 @@ use std::{
 use rai_pal_backend::game::Game;
 use slint::ModelRc;
 
-use crate::{GameRowData, MainWindow, ProviderActionData, convert, model::apply_game_to_row};
+use crate::{GameRowData, MainWindow, ProviderActionData, model::apply_game_to_row};
 
 pub type SelectedGameState = Arc<Mutex<Option<(usize, Game)>>>;
 
@@ -18,7 +18,7 @@ pub fn show(window: &MainWindow, game: &Game, mut row: GameRowData) {
 		.provider_commands
 		.iter()
 		.map(|provider_command| ProviderActionData {
-			action: convert::provider_action(provider_command.action),
+			action: provider_command.action.into(),
 			action_id: provider_command.action.to_string().into(),
 		})
 		.collect();

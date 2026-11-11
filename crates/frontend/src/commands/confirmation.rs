@@ -35,7 +35,7 @@ impl CommandHandler {
 			PendingAction::InstallMod { game, mod_id },
 			confirmation_text,
 			confirm_label,
-			crate::convert::core_skip_confirmation(skip),
+			skip.into(),
 		);
 	}
 

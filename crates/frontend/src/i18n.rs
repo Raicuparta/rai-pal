@@ -1,27 +1,18 @@
 use rai_pal_backend::app_settings::{AppLocale, AppSettings};
 
 pub fn detect_locale() -> Option<AppLocale> {
-	let locale = sys_locale::get_locale()?;
-	let language_code = locale.split(['-', '_']).next()?;
+	let system_locale = sys_locale::get_locale()?;
+	let language_code = system_locale.split(['-', '_']).next()?;
 
-	let locale = match language_code {
-		"en" => AppLocale::EnUs,
-		"pt" => AppLocale::PtPt,
-		"de" => AppLocale::DeDe,
-		"es" => AppLocale::EsEs,
-		"fr" => AppLocale::FrFr,
-		"ja" => AppLocale::JaJp,
-		"ko" => AppLocale::KoKr,
-		"zh" => AppLocale::ZhCn,
-		_ => {
-			log::error!(
-				"Couldn't find a localization for the language code {language_code}, extracted from locale string {locale}"
-			);
-			return None;
-		}
-	};
+	let locale = AppLocale::from_code(language_code);
 
-	Some(locale)
+	if locale.is_none() {
+		log::error!(
+			"Couldn't find a localization for the language code {language_code}, extracted from locale string {system_locale}"
+		);
+	}
+
+	locale
 }
 
 pub fn effective_locale(settings: &AppSettings, detected: Option<AppLocale>) -> AppLocale {

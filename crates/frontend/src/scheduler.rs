@@ -10,7 +10,7 @@ use std::{
 use rai_pal_backend::{game_providers::game_provider::GameProviderId, result::LogErrExt};
 use slint::{Model, ModelRc};
 
-use crate::{GameRowData, convert, image_cache, model::reset_row};
+use crate::{GameRowData, image_cache, model::reset_row};
 
 const VISIBLE_MARGIN: usize = 8;
 const THUMBNAIL_VISIBLE_DELAY: Duration = Duration::from_millis(100);
@@ -491,7 +491,7 @@ fn make_request(
 	Some(FetchRequest {
 		index,
 		generation,
-		provider_id: convert::core_provider_id(row.provider)?,
+		provider_id: Option::<GameProviderId>::from(row.provider)?,
 		game_id: row.game_id.to_string(),
 	})
 }

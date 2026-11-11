@@ -3,6 +3,7 @@ use std::{rc::Rc, time::Duration};
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
 	game::Game,
+	game_providers::game_provider::GameProviderId,
 	games_query::GamesSortBy,
 	local_database::game_database::GameDatabase,
 	result::LogErrExt,
@@ -16,19 +17,49 @@ use crate::{
 
 use super::{CommandHandler, on_command};
 
-const SORT_OPTIONS: [(GamesSortBy, bool); 6] = [
-	(GamesSortBy::Title, false),
-	(GamesSortBy::Title, true),
-	(GamesSortBy::Engine, false),
-	(GamesSortBy::Engine, true),
-	(GamesSortBy::ReleaseDate, false),
-	(GamesSortBy::ReleaseDate, true),
+struct SortOption {
+	sort_by: GamesSortBy,
+	descending: bool,
+	label: fn(&HostStrings) -> slint::SharedString,
+}
+
+const SORT_OPTIONS: [SortOption; 6] = [
+	SortOption {
+		sort_by: GamesSortBy::Title,
+		descending: false,
+		label: |host| host.get_sort_name_asc(),
+	},
+	SortOption {
+		sort_by: GamesSortBy::Title,
+		descending: true,
+		label: |host| host.get_sort_name_desc(),
+	},
+	SortOption {
+		sort_by: GamesSortBy::Engine,
+		descending: false,
+		label: |host| host.get_sort_engine_asc(),
+	},
+	SortOption {
+		sort_by: GamesSortBy::Engine,
+		descending: true,
+		label: |host| host.get_sort_engine_desc(),
+	},
+	SortOption {
+		sort_by: GamesSortBy::ReleaseDate,
+		descending: false,
+		label: |host| host.get_sort_date_asc(),
+	},
+	SortOption {
+		sort_by: GamesSortBy::ReleaseDate,
+		descending: true,
+		label: |host| host.get_sort_date_desc(),
+	},
 ];
 
 pub fn sort_option_index(sort_by: GamesSortBy, sort_descending: bool) -> i32 {
 	SORT_OPTIONS
 		.iter()
-		.position(|option| *option == (sort_by, sort_descending))
+		.position(|option| option.sort_by == sort_by && option.descending == sort_descending)
 		.and_then(|index| i32::try_from(index).ok_or_log("Sort option index does not fit in i32"))
 		.unwrap_or_default()
 }
@@ -36,23 +67,18 @@ pub fn sort_option_index(sort_by: GamesSortBy, sort_descending: bool) -> i32 {
 fn sort_option_from_index(index: i32) -> (GamesSortBy, bool) {
 	usize::try_from(index)
 		.ok_or_log("Sort option index is negative")
-		.and_then(|index| SORT_OPTIONS.get(index).copied())
-		.unwrap_or((GamesSortBy::Title, false))
+		.and_then(|index| SORT_OPTIONS.get(index))
+		.map_or((GamesSortBy::Title, false), |option| {
+			(option.sort_by, option.descending)
+		})
 }
 
 pub fn refresh_sort_options(window: &crate::MainWindow) {
 	let host = window.global::<HostStrings>();
 	let options: Vec<SelectOption> = SORT_OPTIONS
 		.iter()
-		.map(|(sort_by, descending)| SelectOption {
-			label: match (sort_by, descending) {
-				(GamesSortBy::Title, false) => host.get_sort_name_asc(),
-				(GamesSortBy::Title, true) => host.get_sort_name_desc(),
-				(GamesSortBy::Engine, false) => host.get_sort_engine_asc(),
-				(GamesSortBy::Engine, true) => host.get_sort_engine_desc(),
-				(GamesSortBy::ReleaseDate, false) => host.get_sort_date_asc(),
-				(GamesSortBy::ReleaseDate, true) => host.get_sort_date_desc(),
-			},
+		.map(|option| SelectOption {
+			label: (option.label)(&host),
 			value: "".into(),
 		})
 		.collect();
@@ -189,7 +215,7 @@ impl CommandHandler {
 			return;
 		};
 
-		let Some(provider_id) = crate::convert::core_provider_id(row.provider) else {
+		let Some(provider_id) = Option::<GameProviderId>::from(row.provider) else {
 			return;
 		};
 

@@ -2,9 +2,7 @@ use std::{sync::Arc, thread};
 
 use slint::ComponentHandle as _;
 
-use crate::{
-	ActionKey, ActionKind, ProviderAction, action_state, analytics, convert, notifications,
-};
+use crate::{ActionKey, ActionKind, ProviderAction, action_state, analytics, notifications};
 
 use rai_pal_backend::{
 	app_paths,
@@ -21,7 +19,7 @@ use super::{CommandHandler, on_command};
 
 impl CommandHandler {
 	pub fn run_provider_action(&self, value: ProviderAction) {
-		let Some(action) = convert::core_provider_action(value) else {
+		let Some(action) = Option::<ProviderCommandAction>::from(value) else {
 			return;
 		};
 		let action_id = action.to_string();

@@ -13,55 +13,69 @@ use crate::{
 #[serializable_enum]
 pub enum AppLocale {
 	EnUs,
+	DeDe,
 	EsEs,
 	FrFr,
-	DeDe,
-	PtPt,
-	ZhCn,
 	JaJp,
 	KoKr,
+	PtPt,
+	ZhCn,
 	WaWa,
 }
 
-impl AppLocale {
-	pub const ALL: [Self; 9] = [
-		Self::EnUs,
-		Self::DeDe,
-		Self::EsEs,
-		Self::FrFr,
-		Self::JaJp,
-		Self::KoKr,
-		Self::PtPt,
-		Self::ZhCn,
-		Self::WaWa,
-	];
+struct LocaleInfo {
+	code: &'static str,
+	native_name: &'static str,
+}
 
-	pub const fn code(self) -> &'static str {
+impl AppLocale {
+	const fn info(self) -> LocaleInfo {
 		match self {
-			Self::EnUs => "en",
-			Self::DeDe => "de",
-			Self::EsEs => "es",
-			Self::FrFr => "fr",
-			Self::JaJp => "ja",
-			Self::KoKr => "ko",
-			Self::PtPt => "pt",
-			Self::ZhCn => "zh",
-			Self::WaWa => "wa",
+			Self::EnUs => LocaleInfo {
+				code: "en",
+				native_name: "English (US)",
+			},
+			Self::DeDe => LocaleInfo {
+				code: "de",
+				native_name: "Deutsch (Deutschland)",
+			},
+			Self::EsEs => LocaleInfo {
+				code: "es",
+				native_name: "Español (España)",
+			},
+			Self::FrFr => LocaleInfo {
+				code: "fr",
+				native_name: "Français (France)",
+			},
+			Self::JaJp => LocaleInfo {
+				code: "ja",
+				native_name: "日本語",
+			},
+			Self::KoKr => LocaleInfo {
+				code: "ko",
+				native_name: "한국어",
+			},
+			Self::PtPt => LocaleInfo {
+				code: "pt",
+				native_name: "Português (Portugal)",
+			},
+			Self::ZhCn => LocaleInfo {
+				code: "zh",
+				native_name: "简体中文",
+			},
+			Self::WaWa => LocaleInfo {
+				code: "wa",
+				native_name: "Wario (Waah!)",
+			},
 		}
 	}
 
+	pub const fn code(self) -> &'static str {
+		self.info().code
+	}
+
 	pub const fn native_name(self) -> &'static str {
-		match self {
-			Self::EnUs => "English (US)",
-			Self::DeDe => "Deutsch (Deutschland)",
-			Self::EsEs => "Español (España)",
-			Self::FrFr => "Français (France)",
-			Self::JaJp => "日本語",
-			Self::KoKr => "한국어",
-			Self::PtPt => "Português (Portugal)",
-			Self::ZhCn => "简体中文",
-			Self::WaWa => "Wario (Waah!)",
-		}
+		self.info().native_name
 	}
 
 	pub fn from_code(code: &str) -> Option<Self> {

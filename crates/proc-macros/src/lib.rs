@@ -22,6 +22,14 @@ pub fn serializable_enum(_args: TokenStream, input: TokenStream) -> TokenStream 
 
 	// Get the enum name
 	let enum_name = &input.ident;
+	let variant_count = input.variants.len();
+	let variant_names = input.variants.iter().map(|variant| &variant.ident);
+
+	let all_impl = quote! {
+		impl #enum_name {
+			pub const ALL: [Self; #variant_count] = [#(Self::#variant_names),*];
+		}
+	};
 
 	let sql_impl = quote! {
 		impl rusqlite::types::ToSql for #enum_name {
@@ -57,6 +65,7 @@ pub fn serializable_enum(_args: TokenStream, input: TokenStream) -> TokenStream 
 		)]
 		#input
 
+		#all_impl
 		#sql_impl
 	};
 
