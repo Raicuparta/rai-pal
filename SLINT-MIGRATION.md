@@ -117,7 +117,8 @@ needs an equivalent after that removal.
 - Moved filter group metadata into `rai-pal-backend::filter_views`: group order,
   typed group/value labels, display values, and per-value notes now come from
   core, and `crates/frontend/src/filters.rs` only maps those views into Slint.
-  Filter callbacks and expanded-filter settings use the typed `FilterGroupKey`.
+  Filter callbacks, group labels, and expanded-filter settings use the typed
+  `FilterGroupKey`; value labels and notes are typed enums.
 - Moved all enum boundary conversions into `crates/frontend/src/convert.rs`, so
   `TabId`/`AppTab`, `ColorScheme`/`AppColorScheme`, provider ids, engine brands,
   filter ids, and provider actions each have a single conversion.

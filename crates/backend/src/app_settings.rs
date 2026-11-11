@@ -23,59 +23,27 @@ pub enum AppLocale {
 	WaWa,
 }
 
-struct LocaleInfo {
-	code: &'static str,
-	native_name: &'static str,
-}
-
 impl AppLocale {
-	const fn info(self) -> LocaleInfo {
+	const fn info(self) -> (&'static str, &'static str) {
 		match self {
-			Self::EnUs => LocaleInfo {
-				code: "en",
-				native_name: "English (US)",
-			},
-			Self::DeDe => LocaleInfo {
-				code: "de",
-				native_name: "Deutsch (Deutschland)",
-			},
-			Self::EsEs => LocaleInfo {
-				code: "es",
-				native_name: "Español (España)",
-			},
-			Self::FrFr => LocaleInfo {
-				code: "fr",
-				native_name: "Français (France)",
-			},
-			Self::JaJp => LocaleInfo {
-				code: "ja",
-				native_name: "日本語",
-			},
-			Self::KoKr => LocaleInfo {
-				code: "ko",
-				native_name: "한국어",
-			},
-			Self::PtPt => LocaleInfo {
-				code: "pt",
-				native_name: "Português (Portugal)",
-			},
-			Self::ZhCn => LocaleInfo {
-				code: "zh",
-				native_name: "简体中文",
-			},
-			Self::WaWa => LocaleInfo {
-				code: "wa",
-				native_name: "Wario (Waah!)",
-			},
+			Self::EnUs => ("en", "English (US)"),
+			Self::DeDe => ("de", "Deutsch (Deutschland)"),
+			Self::EsEs => ("es", "Español (España)"),
+			Self::FrFr => ("fr", "Français (France)"),
+			Self::JaJp => ("ja", "日本語"),
+			Self::KoKr => ("ko", "한국어"),
+			Self::PtPt => ("pt", "Português (Portugal)"),
+			Self::ZhCn => ("zh", "简体中文"),
+			Self::WaWa => ("wa", "Wario (Waah!)"),
 		}
 	}
 
 	pub const fn code(self) -> &'static str {
-		self.info().code
+		self.info().0
 	}
 
 	pub const fn native_name(self) -> &'static str {
-		self.info().native_name
+		self.info().1
 	}
 
 	pub fn from_code(code: &str) -> Option<Self> {

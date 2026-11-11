@@ -88,18 +88,6 @@ export enum FilterGroupId {
     architectures,
 }
 
-export enum FilterGroupLabel {
-    status,
-    engine,
-    mod,
-    tag,
-    provider,
-    unity-backend,
-    executable-os,
-    supported-os,
-    architecture,
-}
-
 export enum FilterValueLabel {
     none,
     unknown,
@@ -131,7 +119,6 @@ export struct FilterValueData {
 
 export struct FilterGroupData {
     key: FilterGroupId,
-    label: FilterGroupLabel,
     values: [FilterValueData],
     has-changes: bool,
     has-locked: bool,

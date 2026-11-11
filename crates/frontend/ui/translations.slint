@@ -1,4 +1,4 @@
-import { FilterGroupLabel, FilterValueLabel, FilterValueNote, ProviderAction } from "app_types.slint";
+import { FilterGroupId, FilterValueLabel, FilterValueNote, ProviderAction } from "app_types.slint";
 import { AppSettings } from "settings.slint";
 
 export global HostStrings {
@@ -22,29 +22,29 @@ export global Tr {
         return @tr("refresh" => "Loading {0}...", items);
     }
 
-    public pure function filter-property(label: FilterGroupLabel) -> string {
-        if label == FilterGroupLabel.provider {
+    public pure function filter-property(group: FilterGroupId) -> string {
+        if group == FilterGroupId.providers {
             return @tr("filterProperty" => "Provider");
         }
-        if label == FilterGroupLabel.tag {
+        if group == FilterGroupId.tags {
             return @tr("filterProperty" => "Tag");
         }
-        if label == FilterGroupLabel.architecture {
+        if group == FilterGroupId.architectures {
             return @tr("filterProperty" => "Architecture");
         }
-        if label == FilterGroupLabel.executable-os {
+        if group == FilterGroupId.executable-os {
             return @tr("filterProperty" => "Executable OS");
         }
-        if label == FilterGroupLabel.supported-os {
+        if group == FilterGroupId.supported-os {
             return @tr("filterProperty" => "Supported OS");
         }
-        if label == FilterGroupLabel.unity-backend {
+        if group == FilterGroupId.unity-backends {
             return @tr("filterProperty" => "Unity Backend");
         }
-        if label == FilterGroupLabel.engine {
+        if group == FilterGroupId.engines {
             return @tr("filterProperty" => "Engine");
         }
-        if label == FilterGroupLabel.status {
+        if group == FilterGroupId.installed {
             return @tr("filterProperty" => "Install status");
         }
         return @tr("filterProperty" => "Mod");

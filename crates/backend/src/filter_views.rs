@@ -13,19 +13,6 @@ use crate::{
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum FilterGroupLabel {
-	Status,
-	Engine,
-	Mod,
-	Tag,
-	Provider,
-	UnityBackend,
-	ExecutableOs,
-	SupportedOs,
-	Architecture,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FilterValueLabel {
 	Unknown,
 	Arch64,
@@ -58,7 +45,6 @@ pub struct FilterValueView {
 
 pub struct FilterGroupView {
 	pub key: FilterGroupKey,
-	pub label: FilterGroupLabel,
 	pub values: Vec<FilterValueView>,
 	pub has_changes: bool,
 	pub has_locked: bool,
@@ -240,14 +226,12 @@ fn known_values<T: FilterValue>(group: &FilterGroup<T>) -> Vec<FilterValueView> 
 
 fn build_group<T: FilterValue>(
 	key: FilterGroupKey,
-	label: FilterGroupLabel,
 	group: &FilterGroup<T>,
 	values: Vec<FilterValueView>,
 	expanded_filters: &HashSet<FilterGroupKey>,
 ) -> FilterGroupView {
 	FilterGroupView {
 		key,
-		label,
 		values,
 		has_changes: group.has_changes(T::VALUES, T::HAS_UNKNOWN),
 		has_locked: group.has_locked(),
@@ -268,7 +252,6 @@ fn mod_family_group(
 
 	FilterGroupView {
 		key: FilterGroupKey::ModFamilies,
-		label: FilterGroupLabel::Mod,
 		values,
 		has_changes: filter.mod_families.has_changes(mod_families, false),
 		has_locked: filter.mod_families.has_locked(),
@@ -284,14 +267,12 @@ pub fn build_filter_views(
 	vec![
 		build_group(
 			FilterGroupKey::Installed,
-			FilterGroupLabel::Status,
 			&filter.installed,
 			known_values(&filter.installed),
 			expanded_filters,
 		),
 		build_group(
 			FilterGroupKey::Engines,
-			FilterGroupLabel::Engine,
 			&filter.engines,
 			known_values(&filter.engines),
 			expanded_filters,
@@ -299,42 +280,36 @@ pub fn build_filter_views(
 		mod_family_group(filter, mod_families, expanded_filters),
 		build_group(
 			FilterGroupKey::Tags,
-			FilterGroupLabel::Tag,
 			&filter.tags,
 			known_values(&filter.tags),
 			expanded_filters,
 		),
 		build_group(
 			FilterGroupKey::Providers,
-			FilterGroupLabel::Provider,
 			&filter.providers,
 			known_values(&filter.providers),
 			expanded_filters,
 		),
 		build_group(
 			FilterGroupKey::UnityBackends,
-			FilterGroupLabel::UnityBackend,
 			&filter.unity_backends,
 			known_values(&filter.unity_backends),
 			expanded_filters,
 		),
 		build_group(
 			FilterGroupKey::ExecutableOs,
-			FilterGroupLabel::ExecutableOs,
 			&filter.executable_os,
 			known_values(&filter.executable_os),
 			expanded_filters,
 		),
 		build_group(
 			FilterGroupKey::SupportedOs,
-			FilterGroupLabel::SupportedOs,
 			&filter.supported_os,
 			known_values(&filter.supported_os),
 			expanded_filters,
 		),
 		build_group(
 			FilterGroupKey::Architectures,
-			FilterGroupLabel::Architecture,
 			&filter.architectures,
 			known_values(&filter.architectures),
 			expanded_filters,

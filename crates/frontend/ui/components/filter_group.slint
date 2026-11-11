@@ -108,7 +108,7 @@ export component FilterGroup inherits Rectangle {
 
         ListRow {
             extra-hovered: reset-button.hovered;
-            accessible-label: Tr.filter-property(root.group.label);
+            accessible-label: Tr.filter-property(root.group.key);
 
             clicked => {
                 GamesActions.filter-expanded-changed(root.group.key, !root.group.expanded);
@@ -125,7 +125,7 @@ export component FilterGroup inherits Rectangle {
                 }
 
                 Text {
-                    text: Tr.filter-property(root.group.label);
+                    text: Tr.filter-property(root.group.key);
                     font-weight: Theme.weight-bold;
                     overflow: elide;
                     color: Theme.strong-foreground;

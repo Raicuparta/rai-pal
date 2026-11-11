@@ -23,7 +23,6 @@ fn value_data(value: FilterValueView) -> FilterValueData {
 fn group_data(group: FilterGroupView) -> FilterGroupData {
 	FilterGroupData {
 		key: group.key.into(),
-		label: group.label.into(),
 		values: Rc::new(slint::VecModel::from(
 			group.values.into_iter().map(value_data).collect::<Vec<_>>(),
 		))

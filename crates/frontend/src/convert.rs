@@ -1,15 +1,15 @@
 use rai_pal_backend::{
 	app_settings::{ColorScheme, SkipConfirmation as CoreSkipConfirmation, TabId},
-	filter_views::{FilterGroupLabel, FilterValueLabel, FilterValueNote},
+	filter_views::{FilterValueLabel, FilterValueNote},
 	game_engines::game_engine::EngineBrand,
 	game_providers::{game_provider::GameProviderId, provider_command::ProviderCommandAction},
 	games_query::FilterGroupKey,
 };
 
 use crate::{
-	AppColorScheme, AppTab, EngineId, FilterGroupId, FilterGroupLabel as UiFilterGroupLabel,
-	FilterValueLabel as UiFilterValueLabel, FilterValueNote as UiFilterValueNote, ProviderAction,
-	ProviderId, SkipConfirmation as UiSkipConfirmation,
+	AppColorScheme, AppTab, EngineId, FilterGroupId, FilterValueLabel as UiFilterValueLabel,
+	FilterValueNote as UiFilterValueNote, ProviderAction, ProviderId,
+	SkipConfirmation as UiSkipConfirmation,
 };
 
 macro_rules! slint_enum_conversions {
@@ -69,18 +69,6 @@ slint_enum_conversions!(FilterGroupKey => FilterGroupId {
 	ExecutableOs,
 	SupportedOs,
 	Architectures,
-});
-
-slint_enum_conversions!(FilterGroupLabel => UiFilterGroupLabel {
-	Status,
-	Engine,
-	Mod,
-	Tag,
-	Provider,
-	UnityBackend,
-	ExecutableOs,
-	SupportedOs,
-	Architecture,
 });
 
 slint_optional_enum_conversions!(FilterValueLabel => UiFilterValueLabel {
