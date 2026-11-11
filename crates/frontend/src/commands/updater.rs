@@ -437,14 +437,14 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 		.ok_or_else(|| "Could not find the app bundle folder".to_string())?;
 
 	let update_dir = app_paths::temp_dir("update").map_err(|err| err.to_string())?;
-	let archive_path = update_dir.join("updater-macos.zip");
+	let archive_path = update_dir.join("updater-macos.tar.gz");
 	fs::write(&archive_path, bytes).map_err(|err| err.to_string())?;
 
 	let extract_dir = update_dir.join("extracted");
 	if extract_dir.exists() {
 		fs::remove_dir_all(&extract_dir).map_err(|err| err.to_string())?;
 	}
-	files::extract(&archive_path, &extract_dir, &|_, _| {}).map_err(|err| err.to_string())?;
+	files::extract_tar_gz(&archive_path, &extract_dir).map_err(|err| err.to_string())?;
 
 	let new_bundle = fs::read_dir(&extract_dir)
 		.map_err(|err| err.to_string())?

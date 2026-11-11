@@ -33,8 +33,9 @@ case "$PLATFORM" in
 			ARCH="aarch64"
 		fi
 		MAIN_SOURCE="$ROOT_DIR/target/bundles/macos/RaiPal.macos.zip"
+		APP_SOURCE="$ROOT_DIR/target/bundles/macos/Rai Pal.app"
 		MAIN_TARGET="$OUTPUT_DIR/RaiPal.macos.zip"
-		UPDATER_TARGET="$OUTPUT_DIR/updater-macos.zip"
+		UPDATER_TARGET="$OUTPUT_DIR/updater-macos.tar.gz"
 		PLATFORM_KEY="darwin-$ARCH"
 		;;
 	*)
@@ -66,7 +67,7 @@ case "$PLATFORM" in
 			exit 1
 		fi
 		cp "$SETUP_SOURCE" "$STAGING_DIR/RaiPal-Setup.exe"
-		(cd "$STAGING_DIR" && zip -q -X "$UPDATER_TARGET" RaiPal-Setup.exe)
+		(cd "$STAGING_DIR" && zip -q -X -0 "$UPDATER_TARGET" RaiPal-Setup.exe)
 		;;
 	linux)
 		if ! command -v tar >/dev/null 2>&1; then
@@ -77,7 +78,15 @@ case "$PLATFORM" in
 		tar -czf "$UPDATER_TARGET" -C "$STAGING_DIR" RaiPal.AppImage
 		;;
 	macos)
-		cp "$MAIN_SOURCE" "$UPDATER_TARGET"
+		if ! command -v tar >/dev/null 2>&1; then
+			echo "Missing 'tar'. Install tar to package the macOS updater." >&2
+			exit 1
+		fi
+		if [[ ! -d "$APP_SOURCE" ]]; then
+			echo "Build artifact not found: $APP_SOURCE" >&2
+			exit 1
+		fi
+		tar -czf "$UPDATER_TARGET" -C "$(dirname "$APP_SOURCE")" "$(basename "$APP_SOURCE")"
 		;;
 esac
 

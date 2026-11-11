@@ -37,8 +37,12 @@ Updater releases are signed with `UPDATE_PRIVATE_KEY` and
 `collect-build-artifacts.sh` publishes a main asset (`RaiPal.exe`,
 `RaiPal.AppImage`, or `RaiPal.macos.zip`) and a separate updater asset in the
 format the Tauri v1 updater used (`updater-windows.zip`,
-`updater-linux.tar.gz`, `updater-macos.zip`). Keeping them separate means the
-GitHub release download counts updater downloads independently.
+`updater-linux.tar.gz`, `updater-macos.tar.gz`). Keeping them separate means
+the GitHub release download counts updater downloads independently.
+
+The Tauri v1 updater is built without deflate support, so the Windows updater
+zip must be stored uncompressed (`zip -0`). macOS updater assets must be
+`.app.tar.gz` with the `.app` bundle at the archive root.
 
 ## Releases
 
