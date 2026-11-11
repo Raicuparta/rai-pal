@@ -53,6 +53,12 @@ fn run() -> Result<(), String> {
 		let catalog = read_catalog(po_path)?;
 		let mut problems = catalog.structure_problems;
 
+		if language == "en" {
+			problems.push(
+				"English catalog is unnecessary: English comes from the UI strings".to_owned(),
+			);
+		}
+
 		for key in catalog.messages.keys() {
 			if !pot.messages.contains_key(key) {
 				problems.push(format!("unused translation: {}", describe(key)));
@@ -69,16 +75,6 @@ fn run() -> Result<(), String> {
 
 			if translation.trim().is_empty() {
 				problems.push(format!("empty translation: {}", describe(key)));
-				continue;
-			}
-
-			if language == "en" {
-				if translation != source {
-					problems.push(format!(
-						"English translation differs from the UI string: {}",
-						describe(key)
-					));
-				}
 				continue;
 			}
 

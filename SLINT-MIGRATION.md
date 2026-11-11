@@ -33,8 +33,7 @@ needs an equivalent after that removal.
 - Mod actions: install, update, reinstall, uninstall, uninstall all, run, configure, open folder, download config.
 - Mods tab: mod families, mod rows, run/install/website actions, open local mods folder.
 - About popup.
-- Bundled gettext translations. The `.po` catalogs in `crates/frontend/translations` are
-  the source of truth now that the TypeScript localizations are gone.
+- Bundled gettext translations. The `@tr` calls in the `.slint` files are the source of truth for English; `crates/frontend/translations` holds only the other languages, and there is no English catalog. `scripts/check-translations.sh` validates every catalog against the strings extracted from the UI.
 - Shared core filter mutation and provider-action selection logic.
 - Refresh all games, mod sources, and remote databases from the games and mods sidebars.
 - Automatic refresh of the selected game's executable and installed mods when it

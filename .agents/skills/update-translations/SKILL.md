@@ -11,15 +11,13 @@ Translations are gettext catalogs:
 crates/frontend/translations/<language>/LC_MESSAGES/rai-pal-frontend.po
 ```
 
-`crates/frontend/translations/en/LC_MESSAGES/rai-pal-frontend.po` is the source of truth
-for `msgid` and `msgctxt`. Other languages are under their short language code
-(`de`, `es`, `fr`, `ja`, `ko`, `pt`, `wa`, `zh`).
+Languages use their short code (`de`, `es`, `fr`, `ja`, `ko`, `pt`, `wa`, `zh`). There is no English catalog: English comes from the `@tr` msgids in the `.slint` files, which are index 0 of Slint's bundled translation table.
 
 ## Adding or changing a string
 
 User-visible text always originates in `.slint` files. Rust never holds a translated sentence: it sends typed values (`MessageData`, `ConfirmKind`, `RefreshTaskData`, `DownloadItemKind`, ids, paths, version strings) and the mapping functions in `crates/frontend/ui/translations.slint` turn them into `@tr(...)` calls. When adding a message, add the enum variant in `crates/frontend/ui/app_types.slint` first, then the branch in `ui/translations.slint`, then the catalog entry.
 
-1. Add or update the entry in the English catalog first.
+1. Add or update the `@tr` call in the `.slint` file. That is the source of truth for `msgid` and `msgctxt`.
 2. Use the same `msgctxt` as the surrounding entries. The context comes from the
    `@tr("context" => "...")` call in the `.slint` file.
 3. Keep placeholders exactly as numbered arguments: `{0}`, `{1}`, and so on.
