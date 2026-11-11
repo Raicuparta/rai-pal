@@ -12,11 +12,9 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - colored buttons probably need a "subtle" mode or something like in tauri.
 - button size and icon spacing needs to be adjusted to match the tauri one better.
 - maybe a bit too small on steam deck?
+- macOS automatic updates are implemented, but release bundles are still ad-hoc signed and not notarized; first launch still needs the usual Gatekeeper bypass.
 
 ## Notes, questions, decisions, etc.
-
-- Slint row conversions are still handwritten. The mappings compute derived values (release dates, action flags, formatted labels), so a field-to-field macro would only remove a small part of the code while adding indirection.
-- macOS automatic updates are implemented, but release bundles are still ad-hoc signed and not notarized; first launch still needs the usual Gatekeeper bypass.
 
 ## Done
 
