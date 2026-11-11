@@ -1,7 +1,6 @@
 use std::{
 	rc::Rc,
 	sync::atomic::{AtomicI32, Ordering},
-	thread,
 	time::Duration,
 };
 
@@ -63,14 +62,10 @@ pub fn dismiss(window: &MainWindow, id: i32) {
 }
 
 fn schedule_dismiss(window: slint::Weak<MainWindow>, id: i32) {
-	thread::spawn(move || {
-		thread::sleep(Duration::from_secs(5));
-
-		crate::runtime::invoke_on_ui(move || {
-			if let Some(window) = window.upgrade() {
-				dismiss(&window, id);
-			}
-		});
+	slint::Timer::single_shot(Duration::from_secs(5), move || {
+		if let Some(window) = window.upgrade() {
+			dismiss(&window, id);
+		}
 	});
 }
 

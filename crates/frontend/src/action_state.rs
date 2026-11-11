@@ -1,11 +1,11 @@
 use std::{
 	collections::HashMap,
 	fmt::Display,
+	hash::{Hash, Hasher},
 	sync::{
 		LazyLock, Mutex,
 		atomic::{AtomicI32, Ordering},
 	},
-	thread,
 	time::Duration,
 };
 
@@ -17,9 +17,26 @@ use crate::{ActionKey, ActionKind, ActionState, ActionStates, MainWindow, notifi
 const SUCCESS_DURATION: Duration = Duration::from_secs(1);
 const ERROR_DURATION: Duration = Duration::from_secs(2);
 
-static STATES: LazyLock<Mutex<HashMap<String, ActionState>>> =
+static STATES: LazyLock<Mutex<HashMap<ActionKey, ActionState>>> =
 	LazyLock::new(|| Mutex::new(HashMap::new()));
 static VERSION: AtomicI32 = AtomicI32::new(1);
+
+impl Eq for ActionKind {}
+
+impl Hash for ActionKind {
+	fn hash<H: Hasher>(&self, state: &mut H) {
+		std::mem::discriminant(self).hash(state);
+	}
+}
+
+impl Eq for ActionKey {}
+
+impl Hash for ActionKey {
+	fn hash<H: Hasher>(&self, state: &mut H) {
+		self.kind.hash(state);
+		self.target.hash(state);
+	}
+}
 
 pub fn key(kind: ActionKind, target: impl Into<SharedString>) -> ActionKey {
 	ActionKey {
@@ -28,15 +45,11 @@ pub fn key(kind: ActionKind, target: impl Into<SharedString>) -> ActionKey {
 	}
 }
 
-fn storage_key(key: &ActionKey) -> String {
-	format!("{:?}:{}", key.kind, key.target)
-}
-
 pub fn lookup(key: &ActionKey) -> ActionState {
 	STATES
 		.lock()
 		.ok_or_log("Failed to lock action states")
-		.and_then(|states| states.get(&storage_key(key)).copied())
+		.and_then(|states| states.get(key).copied())
 		.unwrap_or(ActionState::Idle)
 }
 
@@ -93,10 +106,8 @@ fn schedule_reset(
 	state: ActionState,
 	duration: Duration,
 ) {
-	thread::spawn(move || {
-		thread::sleep(duration);
-
-		crate::runtime::invoke_on_ui(move || {
+	crate::runtime::invoke_on_ui(move || {
+		slint::Timer::single_shot(duration, move || {
 			let Some(window) = window.upgrade() else {
 				return;
 			};
@@ -114,11 +125,10 @@ fn set(window: &MainWindow, key: &ActionKey, state: ActionState) {
 			return;
 		};
 
-		let storage_key = storage_key(key);
 		if state == ActionState::Idle {
-			states.remove(&storage_key);
+			states.remove(key);
 		} else {
-			states.insert(storage_key, state);
+			states.insert(key.clone(), state);
 		}
 	}
 
