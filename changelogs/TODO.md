@@ -6,8 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- Are loadable things during refresh even doing in parallel like before? or one at a time? one slow one can block them all? in tauri we'd have multiple things loading at once, now it seems like it loads them one at a time. should we mess with that or is this good? it seems really fast right now, so dunno if i wanna mess with it too much, i don't want to increase complexity. give me options and do a succint report.
-
 ## Do later:
 
 - update the intro text.
@@ -18,6 +16,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - try to reduce content shifts when seeing a game page, usually caused by the recommended config tag popping up.
 
 ## Notes, questions, decisions, etc.
+
+- Refresh parallelism: the current Slint app refreshes everything sequentially in one background thread (providers, then installed mods, then mod sources, then the remote database). The Tauri app started every provider refresh plus mods and remote data concurrently, so a slow provider delayed the rest. The database is a single `Mutex<rusqlite::Connection>`, so parallel refreshes would only overlap the network/parsing work, not DB writes. Options: (1) leave it sequential while it feels fast, (2) spawn one thread per provider and join, updating the task list with all active providers, (3) run providers sequentially but parallelize mods/remote data with them. Simplest useful change is (2); (1) is fine for now.
 
 ## Done
 
