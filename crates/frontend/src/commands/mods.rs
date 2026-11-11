@@ -1,8 +1,15 @@
-use std::{collections::HashSet, rc::Rc, sync::Arc, thread};
+use std::{
+	cell::RefCell,
+	collections::{HashMap, HashSet},
+	rc::Rc,
+	sync::Arc,
+	thread,
+};
 
 use rai_pal_backend::{
 	game::Game,
 	game_engines::game_engine::{EngineVersionNumbers, EngineVersionRange},
+	game_providers::game_provider::GameProviderId,
 	local_database::{
 		app_database::DbMutex,
 		mod_database::{ModDatabase, ModInfo},
@@ -21,6 +28,35 @@ use crate::{
 };
 
 use super::{CommandHandler, on_command};
+
+thread_local! {
+	static REMOTE_CONFIG_IDS: RefCell<HashMap<(GameProviderId, String), HashSet<String>>> =
+		RefCell::new(HashMap::new());
+}
+
+fn game_key(game: &Game) -> (GameProviderId, String) {
+	(game.provider_id.clone(), game.game_id.clone())
+}
+
+fn cached_remote_config_ids(game: &Game) -> HashSet<String> {
+	if game.exe_path.is_none() {
+		return HashSet::new();
+	}
+
+	REMOTE_CONFIG_IDS.with(|cache| {
+		cache
+			.borrow()
+			.get(&game_key(game))
+			.cloned()
+			.unwrap_or_default()
+	})
+}
+
+fn store_remote_config_ids(game: &Game, ids: HashSet<String>) {
+	REMOTE_CONFIG_IDS.with(|cache| {
+		cache.borrow_mut().insert(game_key(game), ids);
+	});
+}
 
 #[derive(Default)]
 struct LoadedMods {
@@ -336,7 +372,8 @@ impl CommandHandler {
 }
 
 fn refresh_mods_ui(window: &MainWindow, database: &Arc<DbMutex>, game: &Game) {
-	apply_mods(window, database, game, &HashSet::new());
+	let remote_config_ids = cached_remote_config_ids(game);
+	apply_mods(window, database, game, &remote_config_ids);
 	refresh_remote_configs(window.as_weak(), Arc::clone(database), game.clone());
 }
 
@@ -351,12 +388,12 @@ fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex
 			return;
 		};
 
-		let Some(configs) = runtime
-			.block_on(game.get_remote_configs())
-			.ok_or_log("Failed to load remote configs")
-			.flatten()
-		else {
-			return;
+		let configs = match runtime.block_on(game.get_remote_configs()) {
+			Ok(configs) => configs,
+			Err(err) => {
+				log::error!("Failed to load remote configs: {err}");
+				return;
+			}
 		};
 
 		let Some(mods) = database.get_mod_map().ok_or_log("Failed to load mod map") else {
@@ -365,7 +402,11 @@ fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex
 
 		let remote_config_ids = mods
 			.into_values()
-			.filter(|game_mod| configs.get_for_mod(game_mod).is_some())
+			.filter(|game_mod| {
+				configs
+					.as_ref()
+					.is_some_and(|configs| configs.get_for_mod(game_mod).is_some())
+			})
 			.map(|game_mod| game_mod.id)
 			.collect::<HashSet<_>>();
 
@@ -383,6 +424,7 @@ fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex
 				return;
 			}
 
+			store_remote_config_ids(&game, remote_config_ids.clone());
 			apply_mods(&window, &database, &game, &remote_config_ids);
 		});
 	});
