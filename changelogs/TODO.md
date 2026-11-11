@@ -17,10 +17,10 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Notes, questions, decisions, etc.
 
-- Refresh parallelism: the current Slint app refreshes everything sequentially in one background thread (providers, then installed mods, then mod sources, then the remote database). The Tauri app started every provider refresh plus mods and remote data concurrently, so a slow provider delayed the rest. The database is a single `Mutex<rusqlite::Connection>`, so parallel refreshes would only overlap the network/parsing work, not DB writes. Options: (1) leave it sequential while it feels fast, (2) spawn one thread per provider and join, updating the task list with all active providers, (3) run providers sequentially but parallelize mods/remote data with them. Simplest useful change is (2); (1) is fine for now.
 
 ## Done
 
+- Refreshed game providers in parallel with a scoped thread per provider, so a slow provider no longer blocks the others; the task list now shows whichever providers are still running. Installed mods, mod sources, and remote data still refresh sequentially after all providers finish.
 - Preserved the games list scroll position during refresh: `start_query` now takes `ScrollBehavior::Reset`/`Keep`, and restores the scroll on the next frame because replacing the model makes the ListView snap to a row boundary.
 - Made filter value rows shorter by adding a vertical padding override to `ListRow`; they went from 30px to 26px tall, matching the 25px filter group headers.
 - Removed border-radius clipping from game thumbnails and avatars, which doesn't work with the software renderer; images are square now and the once-circular borders are slightly rounded instead.

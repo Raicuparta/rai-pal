@@ -1,4 +1,8 @@
-use std::{sync::Arc, thread, time::Duration};
+use std::{
+	sync::{Arc, Mutex},
+	thread,
+	time::Duration,
+};
 
 use rai_pal_backend::{
 	game_providers::game_provider::GameProviderId,
@@ -40,26 +44,34 @@ impl CommandHandler {
 		let database = Arc::clone(&self.database);
 
 		thread::spawn(move || {
-			let mut tasks = Vec::<RefreshTaskData>::new();
+			let tasks = Mutex::new(Vec::<RefreshTaskData>::new());
 
-			for provider in GameProviderId::ALL {
-				let task = provider_task(provider);
-				push_task(&window, &mut tasks, task.clone());
+			thread::scope(|scope| {
+				for provider in GameProviderId::ALL {
+					let window = &window;
+					let database = &database;
+					let tasks = &tasks;
 
-				if let Err(err) = provider.insert_games(&database) {
-					log::error!("Failed to refresh {provider} games: {err}");
-					notifications::error_async(
-						&window,
-						notifications::data_with_subject(
-							MessageContext::RefreshGames,
-							provider.to_string(),
-							&err,
-						),
-					);
+					scope.spawn(move || {
+						let task = provider_task(provider);
+						push_task(window, tasks, task.clone());
+
+						if let Err(err) = provider.insert_games(database) {
+							log::error!("Failed to refresh {provider} games: {err}");
+							notifications::error_async(
+								window,
+								notifications::data_with_subject(
+									MessageContext::RefreshGames,
+									provider.to_string(),
+									&err,
+								),
+							);
+						}
+
+						pop_task(window, tasks, &task);
+					});
 				}
-
-				pop_task(&window, &mut tasks, &task);
-			}
+			});
 
 			if let Err(err) = database.refresh_installed_mods() {
 				log::error!("Failed to refresh installed mods: {err}");
@@ -70,7 +82,7 @@ impl CommandHandler {
 			}
 
 			let mods_task = task(RefreshTaskKind::Mods);
-			push_task(&window, &mut tasks, mods_task.clone());
+			push_task(&window, &tasks, mods_task.clone());
 			if let Err(err) = refresh_mods(&database) {
 				log::error!("Failed to refresh mods: {err}");
 				notifications::error_async(
@@ -78,10 +90,10 @@ impl CommandHandler {
 					notifications::data(MessageContext::RefreshMods, &err),
 				);
 			}
-			pop_task(&window, &mut tasks, &mods_task);
+			pop_task(&window, &tasks, &mods_task);
 
 			let remote_task = task(RefreshTaskKind::RemoteData);
-			push_task(&window, &mut tasks, remote_task.clone());
+			push_task(&window, &tasks, remote_task.clone());
 			if let Err(err) = refresh_remote_database() {
 				log::error!("Failed to refresh remote database: {err}");
 				notifications::error_async(
@@ -89,7 +101,7 @@ impl CommandHandler {
 					notifications::data(MessageContext::RefreshRemoteData, &err),
 				);
 			}
-			pop_task(&window, &mut tasks, &remote_task);
+			pop_task(&window, &tasks, &remote_task);
 
 			crate::runtime::invoke_on_ui(move || {
 				let Some(handler) = Self::current() else {
@@ -250,22 +262,31 @@ fn task(kind: RefreshTaskKind) -> RefreshTaskData {
 
 fn push_task(
 	window: &slint::Weak<MainWindow>,
-	tasks: &mut Vec<RefreshTaskData>,
+	tasks: &Mutex<Vec<RefreshTaskData>>,
 	task: RefreshTaskData,
 ) {
+	let Some(mut tasks) = tasks.lock().ok_or_log("Failed to lock refresh tasks") else {
+		return;
+	};
+
 	tasks.push(task);
-	publish_tasks(window, tasks);
+	publish_tasks(window, &tasks);
 }
 
 fn pop_task(
 	window: &slint::Weak<MainWindow>,
-	tasks: &mut Vec<RefreshTaskData>,
+	tasks: &Mutex<Vec<RefreshTaskData>>,
 	task: &RefreshTaskData,
 ) {
+	let Some(mut tasks) = tasks.lock().ok_or_log("Failed to lock refresh tasks") else {
+		return;
+	};
+
 	if let Some(index) = tasks.iter().position(|item| item == task) {
 		tasks.remove(index);
 	}
-	publish_tasks(window, tasks);
+
+	publish_tasks(window, &tasks);
 }
 
 fn publish_tasks(window: &slint::Weak<MainWindow>, tasks: &[RefreshTaskData]) {
