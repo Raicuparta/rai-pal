@@ -344,7 +344,10 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 		.map_err(|err| err.to_string())?
 		.filter_map(|entry| entry.ok())
 		.map(|entry| entry.path())
-		.find(|path| path.extension().is_some_and(|extension| extension == "AppImage"))
+		.find(|path| {
+			path.extension()
+				.is_some_and(|extension| extension == "AppImage")
+		})
 		.ok_or_else(|| "Could not find the updated AppImage".to_string())?;
 
 	fs::copy(&appimage_path, &temp_path).map_err(|err| err.to_string())?;

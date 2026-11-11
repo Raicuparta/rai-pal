@@ -2,8 +2,11 @@ use std::{collections::HashSet, rc::Rc};
 
 use rai_pal_backend::{
 	filter_views::{FilterGroupView, FilterValueView, build_filter_views},
+	game_providers::game_provider::GameProviderId,
 	games_query::{FilterGroupKey, GamesFilter},
-	local_database::{app_database::DbMutex, mod_database::ModDatabase},
+	local_database::{
+		app_database::DbMutex, game_database::GameDatabase, mod_database::ModDatabase,
+	},
 	result::LogErrExt,
 };
 
@@ -17,6 +20,7 @@ fn value_data(value: FilterValueView) -> FilterValueData {
 		note: value.note.into(),
 		enabled: value.enabled,
 		locked: value.locked,
+		available: value.available,
 	}
 }
 
@@ -37,11 +41,19 @@ pub fn build_groups(
 	filter: &GamesFilter,
 	mod_families: &[String],
 	expanded_filters: &HashSet<FilterGroupKey>,
+	providers_with_games: &HashSet<GameProviderId>,
 ) -> Vec<FilterGroupData> {
-	build_filter_views(filter, mod_families, expanded_filters)
+	build_filter_views(filter, mod_families, expanded_filters, providers_with_games)
 		.into_iter()
 		.map(group_data)
 		.collect()
+}
+
+pub fn load_providers_with_games(database: &DbMutex) -> HashSet<GameProviderId> {
+	database.get_providers_with_games().unwrap_or_else(|err| {
+		log::warn!("Failed to load providers with games: {err}");
+		HashSet::new()
+	})
 }
 
 pub fn load_mod_families(database: &DbMutex) -> Vec<String> {

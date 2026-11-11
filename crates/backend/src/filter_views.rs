@@ -41,6 +41,7 @@ pub struct FilterValueView {
 	pub note: FilterValueNote,
 	pub enabled: bool,
 	pub locked: bool,
+	pub available: bool,
 }
 
 pub struct FilterGroupView {
@@ -172,7 +173,11 @@ impl FilterValue for Architecture {
 	}
 }
 
-fn value_view<T: FilterValue>(group: &FilterGroup<T>, value: &T) -> FilterValueView {
+fn value_view<T: FilterValue>(
+	group: &FilterGroup<T>,
+	value: &T,
+	available: bool,
+) -> FilterValueView {
 	let item = group.item(Some(value));
 
 	FilterValueView {
@@ -182,6 +187,7 @@ fn value_view<T: FilterValue>(group: &FilterGroup<T>, value: &T) -> FilterValueV
 		note: value.note(),
 		enabled: item.enabled,
 		locked: item.locked,
+		available,
 	}
 }
 
@@ -195,6 +201,7 @@ fn unknown_view<T: FilterValue>(group: &FilterGroup<T>) -> FilterValueView {
 		note: FilterValueNote::None,
 		enabled: item.enabled,
 		locked: item.locked,
+		available: true,
 	}
 }
 
@@ -208,13 +215,17 @@ fn text_view(group: &FilterGroup<String>, value: &str) -> FilterValueView {
 		note: FilterValueNote::None,
 		enabled: item.enabled,
 		locked: item.locked,
+		available: true,
 	}
 }
 
-fn known_values<T: FilterValue>(group: &FilterGroup<T>) -> Vec<FilterValueView> {
+fn known_values_with_availability<T: FilterValue>(
+	group: &FilterGroup<T>,
+	is_available: impl Fn(&T) -> bool,
+) -> Vec<FilterValueView> {
 	let mut values: Vec<FilterValueView> = T::VALUES
 		.iter()
-		.map(|value| value_view(group, value))
+		.map(|value| value_view(group, value, is_available(value)))
 		.collect();
 
 	if T::HAS_UNKNOWN {
@@ -222,6 +233,10 @@ fn known_values<T: FilterValue>(group: &FilterGroup<T>) -> Vec<FilterValueView> 
 	}
 
 	values
+}
+
+fn known_values<T: FilterValue>(group: &FilterGroup<T>) -> Vec<FilterValueView> {
+	known_values_with_availability(group, |_| true)
 }
 
 fn build_group<T: FilterValue>(
@@ -263,6 +278,7 @@ pub fn build_filter_views(
 	filter: &GamesFilter,
 	mod_families: &[String],
 	expanded_filters: &HashSet<FilterGroupKey>,
+	providers_with_games: &HashSet<GameProviderId>,
 ) -> Vec<FilterGroupView> {
 	vec![
 		build_group(
@@ -287,7 +303,9 @@ pub fn build_filter_views(
 		build_group(
 			FilterGroupKey::Providers,
 			&filter.providers,
-			known_values(&filter.providers),
+			known_values_with_availability(&filter.providers, |provider| {
+				providers_with_games.contains(provider)
+			}),
 			expanded_filters,
 		),
 		build_group(

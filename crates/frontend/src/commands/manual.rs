@@ -383,6 +383,7 @@ impl CommandHandler {
 
 	fn refresh_after_change(&self) {
 		self.load_mods_tab();
+		self.refresh_filters();
 		self.start_query(Duration::ZERO);
 	}
 }

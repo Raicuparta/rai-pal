@@ -54,6 +54,7 @@ impl CommandHandler {
 							.set_state(crate::ActionState::Success);
 
 						if let Some(handler) = Self::current() {
+							handler.refresh_filters();
 							handler.start_query(Duration::ZERO);
 							handler.reload_selected_game();
 						}

@@ -6,18 +6,23 @@ use rai_pal_backend::{
 };
 use slint::ComponentHandle as _;
 
-use crate::{FilterGroupId, filters::build_groups};
+use crate::{
+	FilterGroupId,
+	filters::{build_groups, load_providers_with_games},
+};
 
 use super::{CommandHandler, on_command};
 
 impl CommandHandler {
 	pub fn refresh_filters(&self) {
+		let providers_with_games = load_providers_with_games(&self.database);
 		let groups = {
 			let settings = self.settings.borrow();
 			build_groups(
 				&settings.games_query.filter,
 				&self.mod_families,
 				&settings.expanded_filters,
+				&providers_with_games,
 			)
 		};
 

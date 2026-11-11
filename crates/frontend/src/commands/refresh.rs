@@ -105,6 +105,7 @@ impl CommandHandler {
 					.global::<crate::Refresh>()
 					.set_tasks(ModelRc::default());
 				handler.load_mods_tab();
+				handler.refresh_filters();
 				handler.start_query(Duration::ZERO);
 				handler.reload_selected_game();
 			});

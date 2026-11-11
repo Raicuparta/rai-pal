@@ -10,7 +10,7 @@ use crate::{
 	AppTab, MainWindow, action_state, analytics,
 	commands::{CommandHandler, os_integration, query::load_game_ids, settings::sort_option_index},
 	fetch::spawn_fetchers,
-	filters::{build_groups, load_mod_families},
+	filters::{build_groups, load_mod_families, load_providers_with_games},
 	i18n, logging,
 	model::make_rows,
 	single_instance, window_state,
@@ -57,6 +57,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let detected_locale = i18n::detect_locale();
 	let initial_locale = i18n::effective_locale(&app_settings.borrow(), detected_locale);
 	let mod_families = load_mod_families(&app_database);
+	let providers_with_games = load_providers_with_games(&app_database);
 
 	let initial_query = app_settings.borrow().games_query.clone();
 	let initial_tab = app_settings.borrow().selected_tab.into();
@@ -64,6 +65,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		&initial_query.filter,
 		&mod_families,
 		&app_settings.borrow().expanded_filters,
+		&providers_with_games,
 	);
 
 	let initial_have_changes = initial_groups.iter().any(|group| group.has_changes);

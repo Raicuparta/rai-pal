@@ -121,10 +121,7 @@ pub fn extract_tar_gz(archive_path: &Path, target_path: &Path) -> Result {
 		if !outpath.starts_with(target_path) {
 			return Err(io::Error::new(
 				io::ErrorKind::InvalidData,
-				format!(
-					"Tar file contains path escaping target: {}",
-					path.display()
-				),
+				format!("Tar file contains path escaping target: {}", path.display()),
 			)
 			.into());
 		}

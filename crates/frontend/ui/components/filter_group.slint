@@ -17,10 +17,11 @@ component FilterValueRow inherits ListRow {
     callback only;
 
     extra-hovered: checkbox-touch.has-hover || only-button.hovered || lock-button.hovered;
+    enabled: root.item.available;
     accessible-label: root.item.label == FilterValueLabel.none ? root.item.display : Tr.filter-value(root.item.label);
 
     clicked => {
-        if !root.item.locked {
+        if !root.item.locked && root.item.available {
             root.toggled(!root.item.enabled);
         }
     }
@@ -38,17 +39,18 @@ component FilterValueRow inherits ListRow {
                 x: Theme.space-lg;
                 y: (parent.height - self.height) / 2;
                 text: root.item.label == FilterValueLabel.none ? root.item.display : Tr.filter-value(root.item.label);
-                checked: root.item.enabled;
-                enabled: !root.item.locked;
+                checked: root.item.enabled && root.item.available;
+                enabled: !root.item.locked && root.item.available;
             }
 
             checkbox-touch := TouchArea {
                 width: root.item.note == FilterValueNote.none ? parent.width : check-box.preferred-width;
                 height: parent.height;
+                enabled: root.item.available;
                 mouse-cursor: pointer;
 
                 clicked => {
-                    if !root.item.locked {
+                    if !root.item.locked && root.item.available {
                         root.toggled(!root.item.enabled);
                     }
                 }
@@ -76,7 +78,7 @@ component FilterValueRow inherits ListRow {
             text-size: 10px;
             tooltip: @tr("filterMenu" => "Only show this value");
             visible: !root.item.locked;
-            enabled: !root.item.locked;
+            enabled: !root.item.locked && root.item.available;
             opacity: root.hovered ? 1 : 0;
             reserve-icon-space: false;
 
@@ -89,7 +91,7 @@ component FilterValueRow inherits ListRow {
             icon: root.item.locked ? Icon.locked : Icon.unlocked;
             tooltip: root.item.locked ? @tr("filterMenu" => "Unlock filter value") : @tr("filterMenu" => "Lock filter value");
             visible: root.item.locked || root.hovered;
-            enabled: !root.item.enabled;
+            enabled: !root.item.enabled && root.item.available;
             tint: root.item.locked ? Theme.highlight : Theme.surface-background;
 
             clicked => {

@@ -1,5 +1,6 @@
 use fs_err as fs;
 use std::{
+	collections::HashSet,
 	path::{Path, PathBuf},
 	time::{Instant, SystemTime, UNIX_EPOCH},
 };
@@ -29,6 +30,7 @@ pub trait GameDatabase {
 	fn insert_game(&self, game: &Game);
 	fn get_game(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Game>;
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse>;
+	fn get_providers_with_games(&self) -> Result<HashSet<GameProviderId>>;
 	fn remove_stale_games(&self, provider_id: &GameProviderId, max_time: u64) -> Result;
 }
 
@@ -492,6 +494,26 @@ impl GameDatabase for DbMutex {
 			game_ids,
 			total_count: u32::try_from(total_count)?,
 		})
+	}
+
+	fn get_providers_with_games(&self) -> Result<HashSet<GameProviderId>> {
+		let mut providers = HashSet::new();
+		let db = self.lock_db()?;
+		let mut statement = db.prepare_cached("SELECT DISTINCT provider_id FROM main.games;")?;
+		let rows = statement.query_map([], |row| row.get::<_, GameProviderId>(0))?;
+
+		for provider in rows {
+			match provider {
+				Ok(provider) => {
+					providers.insert(provider);
+				}
+				Err(err) => {
+					log::warn!("Failed to read provider with games from local database: {err}")
+				}
+			}
+		}
+
+		Ok(providers)
 	}
 
 	fn remove_stale_games(&self, provider_id: &GameProviderId, max_time: u64) -> Result {
