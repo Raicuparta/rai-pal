@@ -29,8 +29,8 @@ case "$PLATFORM" in
 		if [[ "$ARCH" == "arm64" ]]; then
 			ARCH="aarch64"
 		fi
-		SOURCE="$ROOT_DIR/target/bundles/macos/RaiPal-$VERSION-macos.zip"
-		TARGET="$OUTPUT_DIR/RaiPal-macos-$ARCH.zip"
+		SOURCE="$ROOT_DIR/target/bundles/macos/RaiPal.macos.zip"
+		TARGET="$OUTPUT_DIR/RaiPal.macos.zip"
 		PLATFORM_KEY="darwin-$ARCH"
 		;;
 	*)

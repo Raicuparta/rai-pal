@@ -103,6 +103,6 @@ EOF
 # Unsigned arm64 binaries won't launch, ad-hoc signing is enough for local testing.
 codesign --force --deep --sign - "$APP_DIR"
 
-ditto -c -k --keepParent "$APP_DIR" "$BUNDLE_DIR/RaiPal-$VERSION-macos.zip"
+ditto -c -k --keepParent "$APP_DIR" "$BUNDLE_DIR/RaiPal.macos.zip"
 
-echo "Built $BUNDLE_DIR/RaiPal-$VERSION-macos.zip"
+echo "Built $BUNDLE_DIR/RaiPal.macos.zip"

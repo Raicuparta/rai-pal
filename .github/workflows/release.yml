@@ -52,7 +52,7 @@ jobs:
           body_path: ${{ steps.body.outputs.body_path }}
           draft: true
 
-  release-matrix:
+  build-linux-windows:
     needs: create-release
     if: inputs.build_target != 'macos'
     strategy:
@@ -79,17 +79,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Validate updater signing secrets
-        shell: bash
-        env:
-          UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
-          UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
-        run: |
-          if [[ -z "$UPDATE_PRIVATE_KEY" || -z "$UPDATE_KEY_PASSWORD" ]]; then
-            echo "Missing UPDATE_PRIVATE_KEY or UPDATE_KEY_PASSWORD repository secret." >&2
-            exit 1
-          fi
-
       - name: Ensure NSIS
         if: matrix.os-name == 'windows'
         run: |
@@ -106,28 +95,44 @@ jobs:
         if: matrix.os-name == 'windows'
         run: bash scripts/build-windows.sh
 
-      - name: Collect Build Artifacts
-        run: bash scripts/collect-build-artifacts.sh ${{ matrix.os-name }} ${{ needs.create-release.outputs.version }}
+      - name: Publish Artifacts
+        uses: ./.github/actions/publish-artifacts
+        with:
+          platform: ${{ matrix.os-name }}
+          version: ${{ needs.create-release.outputs.version }}
+          tag_name: ${{ needs.create-release.outputs.tag_name }}
         env:
           UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
           UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
 
-      - name: Upload Release Assets
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ needs.create-release.outputs.tag_name }}
-          files: release-assets/*
-          draft: true
+  build-macos:
+    needs: create-release
+    if: inputs.build_target == 'macos' || inputs.build_target == 'all'
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
 
-      - name: Upload Updater Partial
-        uses: actions/upload-artifact@v7
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build macOS app
+        run: bash scripts/build-macos.sh
+
+      - name: Publish Artifacts
+        uses: ./.github/actions/publish-artifacts
         with:
-          name: updater-partial-${{ matrix.os-name }}
-          path: updater-partial-*.json
+          platform: macos
+          version: ${{ needs.create-release.outputs.version }}
+          tag_name: ${{ needs.create-release.outputs.tag_name }}
+        env:
+          UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
+          UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
 
   finalize-release:
-    needs: [create-release, release-matrix, release-macos]
-    if: ${{ always() && needs.create-release.result == 'success' && needs.release-matrix.result != 'failure' && needs.release-macos.result != 'failure' }}
+    needs: [create-release, build-linux-windows, build-macos]
+    if: ${{ always() && needs.create-release.result == 'success' && needs.build-linux-windows.result != 'failure' && needs.build-macos.result != 'failure' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -149,37 +154,3 @@ jobs:
           tag_name: ${{ needs.create-release.outputs.tag_name }}
           files: latest.json
           draft: true
-
-  release-macos:
-    needs: create-release
-    if: inputs.build_target == 'macos' || inputs.build_target == 'all'
-    runs-on: macos-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Build macOS app
-        run: bash scripts/build-macos.sh
-
-      - name: Collect Build Artifacts
-        run: bash scripts/collect-build-artifacts.sh macos ${{ needs.create-release.outputs.version }}
-        env:
-          UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
-          UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
-
-      - name: Upload Release Assets
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ needs.create-release.outputs.tag_name }}
-          files: release-assets/*
-          draft: true
-
-      - name: Upload Updater Partial
-        uses: actions/upload-artifact@v7
-        with:
-          name: updater-partial-macos
-          path: updater-partial-*.json
