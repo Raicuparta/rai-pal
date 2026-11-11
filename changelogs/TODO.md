@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- bug: weird behavior when jumping between tauri app and slint app, suddenly game list is corrupted, and get some errors. broken db format? need to bump db file version? tauri app source is in @~/Repos/rai-pal-tauri.
 - macOS: missing automatic updates. The updater only has platform entries and installers for Linux x86_64 (AppImage) and Windows x86_64 (NSIS). Is it even possible to support mac autoupdates easily?
 - macOS: the bundle declares the `rai-pal://` URL scheme, but incoming open-url events are not handled (registration only exists for Linux and Windows). fix that.
 - Revisit the `serializable_struct`/`serializable_enum` proc macros. They still
@@ -30,6 +29,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Done
 
+- Bumped the local database version to 10 so the Slint app no longer shares database files with the Tauri app, whose `provider_commands` JSON format it can't read.
 - Added a debug data option to every game mod's three-dot menu in the game details page.
 - Removed leftover AI-written comments from the Slint app and new backend modules, keeping only notes that explain non-obvious behaviour.
 - Removed the Tauri app, frontend, Node tooling, and Tauri-only build config.
