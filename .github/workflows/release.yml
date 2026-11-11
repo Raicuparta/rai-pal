@@ -3,16 +3,18 @@ name: Create Releases
 on:
   workflow_dispatch:
     inputs:
-      build_target:
-        description: "Choose which platform to build"
-        required: true
-        type: choice
-        default: "all"
-        options:
-          - all
-          - ubuntu
-          - windows
-          - macos
+      build_windows:
+        description: "Build Windows"
+        type: boolean
+        default: true
+      build_linux:
+        description: "Build Linux"
+        type: boolean
+        default: true
+      build_macos:
+        description: "Build macOS"
+        type: boolean
+        default: true
 
 jobs:
   create-release:
@@ -26,6 +28,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Validate updater signing secrets
+        if: inputs.build_windows || inputs.build_linux || inputs.build_macos
         shell: bash
         env:
           UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
@@ -44,7 +47,7 @@ jobs:
         id: body
         run: bash scripts/generate-release-body.sh ${{ steps.version.outputs.version }}
 
-      - name: Create Draft Release
+      - name: Create Or Update Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.tag_name }}
@@ -52,53 +55,63 @@ jobs:
           body_path: ${{ steps.body.outputs.body_path }}
           draft: true
 
-  build-linux-windows:
+  build-windows:
     needs: create-release
-    if: inputs.build_target != 'macos'
-    strategy:
-      fail-fast: false
-      matrix:
-        include: >-
-          ${{ fromJSON(
-            inputs.build_target == 'windows' && '[{"os-name":"windows"}]' ||
-            inputs.build_target == 'ubuntu' && '[{"os-name":"linux"}]' ||
-            '[{"os-name":"windows"},{"os-name":"linux"}]'
-          ) }}
-
+    if: inputs.build_windows
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: read
-
     container:
-      image: ghcr.io/raicuparta/rai-pal-builder:${{ matrix.os-name }}-latest
+      image: ghcr.io/raicuparta/rai-pal-builder:windows-latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-
     steps:
       - uses: actions/checkout@v6
 
       - name: Ensure NSIS
-        if: matrix.os-name == 'windows'
         run: |
           if ! command -v makensis >/dev/null 2>&1; then
             apt-get update
             apt-get install -y --no-install-recommends nsis
           fi
 
-      - name: Build (Linux)
-        if: matrix.os-name == 'linux'
-        run: bash scripts/build-appimage.sh
-
       - name: Build (Windows)
-        if: matrix.os-name == 'windows'
         run: bash scripts/build-windows.sh
 
       - name: Publish Artifacts
         uses: ./.github/actions/publish-artifacts
         with:
-          platform: ${{ matrix.os-name }}
+          platform: windows
+          version: ${{ needs.create-release.outputs.version }}
+          tag_name: ${{ needs.create-release.outputs.tag_name }}
+        env:
+          UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
+          UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
+
+  build-linux:
+    needs: create-release
+    if: inputs.build_linux
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: read
+    container:
+      image: ghcr.io/raicuparta/rai-pal-builder:linux-latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build (Linux)
+        run: bash scripts/build-appimage.sh
+
+      - name: Publish Artifacts
+        uses: ./.github/actions/publish-artifacts
+        with:
+          platform: linux
           version: ${{ needs.create-release.outputs.version }}
           tag_name: ${{ needs.create-release.outputs.tag_name }}
         env:
@@ -107,7 +120,7 @@ jobs:
 
   build-macos:
     needs: create-release
-    if: inputs.build_target == 'macos' || inputs.build_target == 'all'
+    if: inputs.build_macos
     runs-on: macos-latest
     permissions:
       contents: write
@@ -131,8 +144,8 @@ jobs:
           UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
 
   finalize-release:
-    needs: [create-release, build-linux-windows, build-macos]
-    if: ${{ always() && needs.create-release.result == 'success' && needs.build-linux-windows.result != 'failure' && needs.build-macos.result != 'failure' }}
+    needs: [create-release, build-windows, build-linux, build-macos]
+    if: ${{ always() && needs.create-release.result == 'success' && needs.build-windows.result != 'failure' && needs.build-linux.result != 'failure' && needs.build-macos.result != 'failure' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -140,15 +153,27 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Download Updater Partials
+        if: inputs.build_windows || inputs.build_linux || inputs.build_macos
         uses: actions/download-artifact@v4
         with:
           path: updater-partials
           pattern: updater-partial-*
 
+      - name: Download Existing Updater JSON
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p existing-updater
+          gh release download "${{ needs.create-release.outputs.tag_name }}" \
+            --pattern latest.json --dir existing-updater --clobber ||
+            echo "No existing latest.json on the release."
+
       - name: Merge Updater JSON
-        run: bash scripts/merge-updater-json.sh updater-partials
+        id: merge
+        run: bash scripts/merge-updater-json.sh updater-partials existing-updater/latest.json
 
       - name: Upload Updater JSON
+        if: steps.merge.outputs.has_latest == 'true'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.create-release.outputs.tag_name }}

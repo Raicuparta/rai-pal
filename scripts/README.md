@@ -50,11 +50,10 @@ zip must be stored uncompressed (`zip -0`). macOS updater assets must be
 scripts/get-version.sh
 scripts/generate-release-body.sh <version>
 scripts/collect-build-artifacts.sh <windows|linux|macos> <version>
-scripts/merge-updater-json.sh <partials-dir>
-scripts/update-release-changelog.sh [tag]
+scripts/merge-updater-json.sh <partials-dir> [existing-latest.json]
 ```
 
-`update-release-changelog.sh` rewrites an existing release's body and the `notes` in its attached `latest.json` from `changelogs/v<version>.md`, without rebuilding anything. The tag defaults to the version in `Cargo.toml`. It runs from the "Update Release Changelog" workflow, and needs `GH_TOKEN` set.
+`merge-updater-json.sh` builds `latest.json` from the platform partials, and from an existing `latest.json` when given one: platforms present in both are updated, platforms only in the existing file are kept, and the changelog becomes the updater notes. Running it with no partials only refreshes the notes.
 
 ## Containers
 
