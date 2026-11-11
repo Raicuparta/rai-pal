@@ -6,7 +6,7 @@ PLATFORM="${1:-}"
 VERSION="${2:-}"
 
 if [[ -z "$PLATFORM" || -z "$VERSION" ]]; then
-	echo "Usage: $0 <windows|linux> <version>" >&2
+	echo "Usage: $0 <windows|linux|macos> <version>" >&2
 	exit 1
 fi
 
@@ -24,8 +24,17 @@ case "$PLATFORM" in
 		TARGET="$OUTPUT_DIR/RaiPal.AppImage"
 		PLATFORM_KEY="linux-x86_64"
 		;;
+	macos)
+		ARCH="$(uname -m)"
+		if [[ "$ARCH" == "arm64" ]]; then
+			ARCH="aarch64"
+		fi
+		SOURCE="$ROOT_DIR/target/bundles/macos/RaiPal-$VERSION-macos.zip"
+		TARGET="$OUTPUT_DIR/RaiPal-macos-$ARCH.zip"
+		PLATFORM_KEY="darwin-$ARCH"
+		;;
 	*)
-		echo "Unsupported platform: $PLATFORM. Expected: windows|linux" >&2
+		echo "Unsupported platform: $PLATFORM. Expected: windows|linux|macos" >&2
 		exit 1
 		;;
 esac

@@ -126,8 +126,8 @@ jobs:
           path: updater-partial-*.json
 
   finalize-release:
-    needs: [create-release, release-matrix]
-    if: inputs.build_target != 'macos'
+    needs: [create-release, release-matrix, release-macos]
+    if: ${{ always() && needs.create-release.result == 'success' && needs.release-matrix.result != 'failure' && needs.release-macos.result != 'failure' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -165,9 +165,21 @@ jobs:
       - name: Build macOS app
         run: bash scripts/build-macos.sh
 
+      - name: Collect Build Artifacts
+        run: bash scripts/collect-build-artifacts.sh macos ${{ needs.create-release.outputs.version }}
+        env:
+          UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
+          UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
+
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.create-release.outputs.tag_name }}
-          files: target/bundles/macos/*.zip
+          files: release-assets/*
           draft: true
+
+      - name: Upload Updater Partial
+        uses: actions/upload-artifact@v7
+        with:
+          name: updater-partial-macos
+          path: updater-partial-*.json

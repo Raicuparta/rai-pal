@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- macOS: missing automatic updates. The updater only has platform entries and installers for Linux x86_64 (AppImage) and Windows x86_64 (NSIS). Is it even possible to support mac autoupdates easily?
 - macOS: the bundle declares the `rai-pal://` URL scheme, but incoming open-url events are not handled (registration only exists for Linux and Windows). fix that.
 - Revisit the `serializable_struct`/`serializable_enum` proc macros. They still
   make sense because remote manifests, settings, and debug JSON need serde, but
@@ -27,8 +26,11 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Notes, questions, decisions, etc.
 
+- macOS automatic updates are implemented, but release bundles are still ad-hoc signed and not notarized; first launch still needs the usual Gatekeeper bypass.
+
 ## Done
 
+- Added macOS automatic updates: `darwin-aarch64`/`darwin-x86_64` platform entries, app bundle replacement and relaunch from the release zip, and signed updater partials in the release workflow.
 - Bumped the local database version to 10 so the Slint app no longer shares database files with the Tauri app, whose `provider_commands` JSON format it can't read.
 - Added a debug data option to every game mod's three-dot menu in the game details page.
 - Removed leftover AI-written comments from the Slint app and new backend modules, keeping only notes that explain non-obvious behaviour.

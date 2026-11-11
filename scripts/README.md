@@ -39,7 +39,7 @@ Updater releases are signed with `UPDATE_PRIVATE_KEY` and
 ```sh
 scripts/get-version.sh
 scripts/generate-release-body.sh <version>
-scripts/collect-build-artifacts.sh <windows|linux> <version>
+scripts/collect-build-artifacts.sh <windows|linux|macos> <version>
 scripts/merge-updater-json.sh <partials-dir>
 ```
 

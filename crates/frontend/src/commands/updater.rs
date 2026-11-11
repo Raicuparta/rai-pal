@@ -14,7 +14,7 @@ use std::{
 
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 use minisign_verify::{PublicKey, Signature};
-#[cfg(target_os = "windows")]
+#[cfg(any(target_os = "windows", target_os = "macos"))]
 use rai_pal_backend::app_paths;
 use rai_pal_backend::result::LogErrExt;
 use semver::Version;
@@ -251,6 +251,10 @@ const fn platform_key() -> Option<&'static str> {
 		Some("linux-x86_64")
 	} else if cfg!(all(target_os = "windows", target_arch = "x86_64")) {
 		Some("windows-x86_64")
+	} else if cfg!(all(target_os = "macos", target_arch = "aarch64")) {
+		Some("darwin-aarch64")
+	} else if cfg!(all(target_os = "macos", target_arch = "x86_64")) {
+		Some("darwin-x86_64")
 	} else {
 		None
 	}
@@ -377,7 +381,86 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 	std::process::exit(0);
 }
 
-#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+#[cfg(target_os = "macos")]
+fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
+	use std::process::Command;
+
+	use rai_pal_backend::files;
+
+	let current_exe =
+		std::env::current_exe().map_err(|err| format!("Could not find the app path: {err}"))?;
+	let bundle = current_exe
+		.ancestors()
+		.find(|path| path.extension().is_some_and(|extension| extension == "app"))
+		.ok_or_else(|| "Could not find the app bundle".to_string())?;
+	let parent = bundle
+		.parent()
+		.ok_or_else(|| "Could not find the app bundle folder".to_string())?;
+
+	let update_dir = app_paths::temp_dir("update").map_err(|err| err.to_string())?;
+	let archive_path = update_dir.join("RaiPal-macos.zip");
+	fs::write(&archive_path, bytes).map_err(|err| err.to_string())?;
+
+	let extract_dir = update_dir.join("extracted");
+	if extract_dir.exists() {
+		fs::remove_dir_all(&extract_dir).map_err(|err| err.to_string())?;
+	}
+	files::extract(&archive_path, &extract_dir, &|_, _| {}).map_err(|err| err.to_string())?;
+
+	let new_bundle = fs::read_dir(&extract_dir)
+		.map_err(|err| err.to_string())?
+		.filter_map(|entry| entry.ok())
+		.map(|entry| entry.path())
+		.find(|path| path.extension().is_some_and(|extension| extension == "app"))
+		.ok_or_else(|| "Could not find the updated app bundle".to_string())?;
+
+	let bundle_name = bundle
+		.file_name()
+		.and_then(|name| name.to_str())
+		.unwrap_or("RaiPal.app");
+	let staged_bundle = parent.join(format!(".{bundle_name}.update"));
+	if staged_bundle.exists() {
+		fs::remove_dir_all(&staged_bundle).map_err(|err| err.to_string())?;
+	}
+	copy_dir_all(&new_bundle, &staged_bundle)?;
+
+	let backup_bundle = parent.join(".RaiPal.app.old");
+	if backup_bundle.exists() {
+		fs::remove_dir_all(&backup_bundle).map_err(|err| err.to_string())?;
+	}
+	fs::rename(bundle, &backup_bundle).map_err(|err| err.to_string())?;
+	fs::rename(&staged_bundle, bundle).map_err(|err| err.to_string())?;
+	fs::remove_dir_all(&backup_bundle).ok();
+
+	let bundle_path = bundle.to_string_lossy().to_string();
+	Command::new("open")
+		.args(["-n", &bundle_path])
+		.spawn()
+		.map_err(|err| err.to_string())?;
+
+	std::process::exit(0);
+}
+
+#[cfg(target_os = "macos")]
+fn copy_dir_all(source: &Path, destination: &Path) -> Result<(), String> {
+	fs::create_dir_all(destination).map_err(|err| err.to_string())?;
+	for entry in fs::read_dir(source).map_err(|err| err.to_string())? {
+		let entry = entry.map_err(|err| err.to_string())?;
+		let file_type = entry.file_type().map_err(|err| err.to_string())?;
+		let target = destination.join(entry.file_name());
+		if file_type.is_dir() {
+			copy_dir_all(&entry.path(), &target)?;
+		} else if file_type.is_symlink() {
+			let link_target = fs::read_link(entry.path()).map_err(|err| err.to_string())?;
+			std::os::unix::fs::symlink(link_target, target).map_err(|err| err.to_string())?;
+		} else {
+			fs::copy(entry.path(), target).map_err(|err| err.to_string())?;
+		}
+	}
+	Ok(())
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "windows", target_os = "macos")))]
 fn install_and_restart(_bytes: &[u8]) -> Result<(), String> {
 	Err("Automatic updates are not supported on this platform".to_string())
 }
