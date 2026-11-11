@@ -6,6 +6,7 @@ import { Button } from "button.slint";
 import { IconButton } from "icon_button.slint";
 import { ListRow } from "list_row.slint";
 import { ResetButton } from "reset_button.slint";
+import { Chevron } from "chevron.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 import { GamesActions } from "../actions.slint";
 
@@ -121,8 +122,8 @@ export component FilterGroup inherits Rectangle {
                 spacing: Theme.space-xs;
                 cross-axis-alignment: center;
 
-                SvgIcon {
-                    icon: root.group.expanded ? Icon.expanded : Icon.collapsed;
+                Chevron {
+                    rotation: root.group.expanded ? 0deg : -90deg;
                     color: Theme.dimmed-foreground;
                 }
 

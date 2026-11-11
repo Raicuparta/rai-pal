@@ -8,7 +8,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 - Are loadable things during refresh even doing in parallel like before? or one at a time? one slow one can block them all? in tauri we'd have multiple things loading at once, now it seems like it loads them one at a time. should we mess with that or is this good? it seems really fast right now, so dunno if i wanna mess with it too much, i don't want to increase complexity. give me options and do a succint report.
 - Remove every instance of clipping images with border radius (like circle images) since that does't work with software renderer. in those cases keep the border and maybe try to apply a border radius on the outside but without clipping the image (so the image is square but the border is a bit rounded).
-- Have only one instance of chevron icon and rotate it (maybe animate rotation too?) instead of multiple chevrons for each thing. ok to rename one of the chevron-up.svg and then just rotate.
 - clicking refresh game makes the "recommended config" tag disappear momentarily and then reappear, we need to try to avoid that. some way to prevent that from disappearing unless it really disappears after the end of the refresh? dunno.
 - make filter checkbox items shorter (so less tall). they should be about the same height as the expand elements (filter group headers). as usual, no hardcoded heights, the height comes from the contents and paddings.
 - preserve games list scroll position while refreshing. currently a refresh causes it to reset back to the start.
@@ -26,6 +25,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Done
 
+- Replaced the expand/collapse/collapse-all chevron SVGs with a single `chevron.svg` and a `Chevron` component that animates its rotation.
 - Moved provider filter values without games after the available ones, keeping the original order within each group.
 - Removed dead Xbox, GameMaker, remote-game, and Game serde code, trimmed unused parsed fields from the Epic and itch providers, and reused the shared directory copy helper for macOS updates. Clippy is clean across the workspace.
 - Replaced the `serde_struct` macro with direct derives, keeping explicit `camelCase` attributes only where persisted or external JSON needs them. `serde_enum` and `sql_enum` remain.

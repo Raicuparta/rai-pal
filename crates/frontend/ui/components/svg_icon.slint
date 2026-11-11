@@ -8,15 +8,12 @@ export enum Icon {
     calendar,
     check,
     close,
-    collapse-all,
-    collapsed,
     copied,
     copy,
     deprecated,
     download,
     engine,
     error,
-    expanded,
     external-link,
     folder-mods,
     folder,
@@ -41,7 +38,7 @@ export enum Icon {
     reinstall,
     reset,
     settings,
-    chevron-down,
+    chevron,
     success,
     thanks,
     trophy,
@@ -88,15 +85,12 @@ export component SvgIcon inherits Image {
         if icon == Icon.calendar { return @image-url("../icons/ui/calendar.svg"); }
         if icon == Icon.check { return @image-url("../icons/ui/check.svg"); }
         if icon == Icon.close { return @image-url("../icons/ui/close.svg"); }
-        if icon == Icon.collapse-all { return @image-url("../icons/ui/collapse-all.svg"); }
-        if icon == Icon.collapsed { return @image-url("../icons/ui/collapsed.svg"); }
         if icon == Icon.copied { return @image-url("../icons/ui/copied.svg"); }
         if icon == Icon.copy { return @image-url("../icons/ui/copy.svg"); }
         if icon == Icon.deprecated { return @image-url("../icons/ui/deprecated.svg"); }
         if icon == Icon.download { return @image-url("../icons/ui/download.svg"); }
         if icon == Icon.engine { return @image-url("../icons/ui/engine.svg"); }
         if icon == Icon.error { return @image-url("../icons/ui/error.svg"); }
-        if icon == Icon.expanded { return @image-url("../icons/ui/expanded.svg"); }
         if icon == Icon.external-link { return @image-url("../icons/ui/external-link.svg"); }
         if icon == Icon.folder-mods { return @image-url("../icons/ui/folder-mods.svg"); }
         if icon == Icon.folder { return @image-url("../icons/ui/folder.svg"); }
@@ -121,7 +115,7 @@ export component SvgIcon inherits Image {
         if icon == Icon.reinstall { return @image-url("../icons/ui/reinstall.svg"); }
         if icon == Icon.reset { return @image-url("../icons/ui/reset.svg"); }
         if icon == Icon.settings { return @image-url("../icons/ui/settings.svg"); }
-        if icon == Icon.chevron-down { return @image-url("../icons/ui/chevron-down.svg"); }
+        if icon == Icon.chevron { return @image-url("../icons/ui/chevron.svg"); }
         if icon == Icon.success { return @image-url("../icons/ui/success.svg"); }
         if icon == Icon.thanks { return @image-url("../icons/ui/thanks.svg"); }
         if icon == Icon.trophy { return @image-url("../icons/ui/trophy.svg"); }

@@ -1,4 +1,5 @@
 import { Theme } from "../theme.slint";
+import { Chevron } from "chevron.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 import { PopupMenu, PopupMenuItem } from "menu.slint";
 
@@ -41,8 +42,7 @@ export component SelectMenu inherits Rectangle {
             overflow: elide;
         }
 
-        SvgIcon {
-            icon: Icon.chevron-down;
+        Chevron {
             color: Theme.dimmed-foreground;
         }
     }

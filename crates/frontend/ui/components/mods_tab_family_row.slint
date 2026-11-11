@@ -1,8 +1,8 @@
 import { ModsTabItemData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { ModsTabRow } from "mods_tab_row.slint";
+import { Chevron } from "chevron.slint";
 import { RowDivider } from "row_divider.slint";
-import { Icon, SvgIcon } from "svg_icon.slint";
 
 export component ModsTabFamilyRow inherits Rectangle {
     in property <ModsTabItemData> item;
@@ -27,8 +27,8 @@ export component ModsTabFamilyRow inherits Rectangle {
                 spacing: Theme.space-sm;
                 cross-axis-alignment: center;
 
-                SvgIcon {
-                    icon: root.expanded ? Icon.expanded : Icon.collapsed;
+                Chevron {
+                    rotation: root.expanded ? 0deg : -90deg;
                     size: Theme.space-lg;
                     color: Theme.dimmed-foreground;
                 }

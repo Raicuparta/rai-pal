@@ -1,0 +1,10 @@
+import { Icon, SvgIcon } from "svg_icon.slint";
+
+export component Chevron inherits SvgIcon {
+    in property <angle> rotation: 0deg;
+
+    icon: Icon.chevron;
+    transform-rotation: root.rotation;
+
+    animate transform-rotation { duration: 150ms; easing: ease-in-out; }
+}

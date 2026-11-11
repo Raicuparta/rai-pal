@@ -135,7 +135,8 @@ export component GamesPage inherits Rectangle {
                 cross-axis-alignment: center;
 
                 IconButton {
-                    icon: Icon.collapse-all;
+                    icon: Icon.chevron;
+                    transform-rotation: 180deg;
                     tooltip: @tr("filterMenu" => "Collapse all filters");
                     enabled: GamesQuery.filters-have-expanded;
 
