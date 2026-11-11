@@ -1,6 +1,6 @@
 import { ActionKind } from "../action_state.slint";
 import { ModActions } from "../actions.slint";
-import { GameModData } from "../app_types.slint";
+import { GameModData, SkipConfirmation } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { ActionButton } from "action_button.slint";
 import { IconButton } from "icon_button.slint";
@@ -149,7 +149,7 @@ export component GameModRow inherits VerticalLayout {
                         game-mod.mod-id,
                         @tr("gameModRow" => "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."),
                         @tr("gameModRow" => "Install"),
-                        "install-mod-confirm",
+                        SkipConfirmation.install-mod,
                     );
                 }
             }

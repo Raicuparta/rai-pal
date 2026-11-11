@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use rai_pal_backend::game::Game;
+use rai_pal_backend::{app_settings::SkipConfirmation, game::Game};
 use slint::ComponentHandle;
 
 use super::{CommandHandler, on_command};
@@ -13,7 +13,7 @@ enum PendingAction {
 
 struct PendingConfirmation {
 	action: PendingAction,
-	skip_id: String,
+	skip: Option<SkipConfirmation>,
 }
 
 #[derive(Default)]
@@ -25,7 +25,7 @@ impl CommandHandler {
 		mod_id: String,
 		confirmation_text: String,
 		confirm_label: String,
-		skip_id: String,
+		skip: crate::SkipConfirmation,
 	) {
 		let Some((_, game)) = self.selected_game() else {
 			return;
@@ -35,7 +35,7 @@ impl CommandHandler {
 			PendingAction::InstallMod { game, mod_id },
 			confirmation_text,
 			confirm_label,
-			skip_id,
+			crate::convert::core_skip_confirmation(skip),
 		);
 	}
 
@@ -48,7 +48,7 @@ impl CommandHandler {
 			PendingAction::UninstallAllMods { game },
 			confirmation_text,
 			confirm_label,
-			String::new(),
+			None,
 		);
 	}
 
@@ -61,7 +61,7 @@ impl CommandHandler {
 			PendingAction::RemoveGame { game },
 			confirmation_text,
 			confirm_label,
-			String::new(),
+			None,
 		);
 	}
 
@@ -80,16 +80,12 @@ impl CommandHandler {
 			return;
 		}
 
-		if !pending.skip_id.is_empty()
+		if let Some(skip) = pending.skip
 			&& window
 				.global::<crate::ConfirmationState>()
 				.get_dont_ask_again()
 		{
-			let dialog_id = format!("skip-confirm-{}", pending.skip_id);
-			self.settings
-				.borrow_mut()
-				.skip_confirm_dialogs
-				.insert(dialog_id);
+			self.settings.borrow_mut().skip_confirm_dialogs.insert(skip);
 			self.persist_settings();
 		}
 
@@ -101,33 +97,21 @@ impl CommandHandler {
 		action: PendingAction,
 		confirmation_text: String,
 		confirm_label: String,
-		skip_id: String,
+		skip: Option<SkipConfirmation>,
 	) {
 		let Some(window) = self.ui() else {
 			return;
 		};
 
-		let dialog_id = if skip_id.is_empty() {
-			String::new()
-		} else {
-			format!("skip-confirm-{skip_id}")
-		};
-
-		if !dialog_id.is_empty()
-			&& self
-				.settings
-				.borrow()
-				.skip_confirm_dialogs
-				.contains(&dialog_id)
-		{
+		if skip.is_some_and(|skip| self.settings.borrow().skip_confirm_dialogs.contains(&skip)) {
 			*self.pending_confirmation.0.borrow_mut() = None;
 			run_action(self, action);
 			return;
 		}
 
-		let can_skip = !skip_id.is_empty();
+		let can_skip = skip.is_some();
 
-		*self.pending_confirmation.0.borrow_mut() = Some(PendingConfirmation { action, skip_id });
+		*self.pending_confirmation.0.borrow_mut() = Some(PendingConfirmation { action, skip });
 
 		let state = window.global::<crate::ConfirmationState>();
 		state.set_text(confirmation_text.into());
@@ -153,12 +137,12 @@ pub fn register(window: &crate::MainWindow) {
 	on_command!(window, GamesActions, on_remove_game, |text, label| handler => {
 		handler.prompt_remove_game(text.to_string(), label.to_string());
 	});
-	on_command!(window, ModActions, on_request_install, |mod_id, text, label, skip_id| handler => {
+	on_command!(window, ModActions, on_request_install, |mod_id, text, label, skip| handler => {
 		handler.prompt_install_mod(
 			mod_id.to_string(),
 			text.to_string(),
 			label.to_string(),
-			skip_id.to_string(),
+			skip,
 		);
 	});
 	on_command!(window, ModActions, on_request_uninstall_all, |text, label| handler => {

@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{rc::Rc, time::Duration};
 
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
@@ -9,7 +9,10 @@ use rai_pal_backend::{
 };
 use slint::{ComponentHandle, Model as _};
 
-use crate::{AppColorScheme, AppTab, i18n, languages, model::apply_game_to_row, selected};
+use crate::{
+	AppColorScheme, AppTab, HostStrings, SelectOption, i18n, languages, model::apply_game_to_row,
+	selected,
+};
 
 use super::{CommandHandler, on_command};
 
@@ -35,6 +38,28 @@ fn sort_option_from_index(index: i32) -> (GamesSortBy, bool) {
 		.ok_or_log("Sort option index is negative")
 		.and_then(|index| SORT_OPTIONS.get(index).copied())
 		.unwrap_or((GamesSortBy::Title, false))
+}
+
+pub fn refresh_sort_options(window: &crate::MainWindow) {
+	let host = window.global::<HostStrings>();
+	let options: Vec<SelectOption> = SORT_OPTIONS
+		.iter()
+		.map(|(sort_by, descending)| SelectOption {
+			label: match (sort_by, descending) {
+				(GamesSortBy::Title, false) => host.get_sort_name_asc(),
+				(GamesSortBy::Title, true) => host.get_sort_name_desc(),
+				(GamesSortBy::Engine, false) => host.get_sort_engine_asc(),
+				(GamesSortBy::Engine, true) => host.get_sort_engine_desc(),
+				(GamesSortBy::ReleaseDate, false) => host.get_sort_date_asc(),
+				(GamesSortBy::ReleaseDate, true) => host.get_sort_date_desc(),
+			},
+			value: "".into(),
+		})
+		.collect();
+
+	window
+		.global::<crate::GamesQuery>()
+		.set_sort_options(Rc::new(slint::VecModel::from(options)).into());
 }
 
 impl CommandHandler {
@@ -68,6 +93,7 @@ impl CommandHandler {
 		window.global::<crate::GamesQuery>().set_sort_index(0);
 		window.set_current_tab(AppTab::Games);
 		languages::refresh(&window, &self.settings.borrow(), self.detected_locale);
+		refresh_sort_options(&window);
 		self.scheduler.set_thumbnails_enabled(true);
 
 		self.refresh_filters();
@@ -95,6 +121,7 @@ impl CommandHandler {
 				.global::<crate::AppSettings>()
 				.set_selected_language(value.into());
 			languages::refresh(&window, &self.settings.borrow(), self.detected_locale);
+			refresh_sort_options(&window);
 		}
 	}
 

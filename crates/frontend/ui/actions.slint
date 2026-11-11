@@ -1,4 +1,4 @@
-import { AppColorScheme, AppTab, FilterGroupId, ProviderAction } from "app_types.slint";
+import { AppColorScheme, AppTab, FilterGroupId, ProviderAction, SkipConfirmation } from "app_types.slint";
 
 export global AppActions {
     callback reset-settings;
@@ -61,7 +61,7 @@ export global DialogActions {
 }
 
 export global ModActions {
-    callback request-install(mod-id: string, confirmation-text: string, confirm-label: string, skip-id: string);
+    callback request-install(mod-id: string, confirmation-text: string, confirm-label: string, skip-confirmation: SkipConfirmation);
     callback uninstall(mod-id: string);
     callback update(mod-id: string);
     callback reinstall(mod-id: string);

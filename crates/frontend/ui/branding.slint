@@ -1,6 +1,12 @@
 import { EngineId, ProviderId } from "app_types.slint";
 import { Theme } from "theme.slint";
 
+export enum Brand {
+    github,
+    patreon,
+    paypal,
+}
+
 export global Branding {
     pure function provider-color(provider: ProviderId) -> brush {
         if provider == ProviderId.amazon {
@@ -32,14 +38,14 @@ export global Branding {
         return provider-color(provider).darker(2).transparentize(0.2);
     }
 
-    public pure function brand-color(brand: string) -> brush {
-        if brand == "GitHub" {
+    public pure function brand-color(brand: Brand) -> brush {
+        if brand == Brand.github {
             return Theme.dark ? #74c0fc : #1971c2;
         }
-        if brand == "Patreon" {
+        if brand == Brand.patreon {
             return Theme.dark ? #f783ac : #d6336c;
         }
-        if brand == "Paypal" {
+        if brand == Brand.paypal {
             return Theme.dark ? #91a7ff : #4263eb;
         }
         return Theme.foreground;

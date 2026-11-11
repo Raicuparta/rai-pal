@@ -4,21 +4,13 @@ import { Icon } from "svg_icon.slint";
 
 
 export component SortMenu inherits Rectangle {
+    in property <[SelectOption]> options;
     in-out property <int> sort-index: 0;
 
     callback sort-changed(index: int);
 
     horizontal-stretch: 1;
     height: Theme.control-height;
-
-    private property <[SelectOption]> options: [
-        { label: @tr("gamesSort" => "Name A-Z"), value: "0" },
-        { label: @tr("gamesSort" => "Name Z-A"), value: "1" },
-        { label: @tr("gamesSort" => "Engine A-Z"), value: "2" },
-        { label: @tr("gamesSort" => "Engine Z-A"), value: "3" },
-        { label: @tr("gamesSort" => "Date Ascending"), value: "4" },
-        { label: @tr("gamesSort" => "Date Descending"), value: "5" },
-    ];
 
     SelectMenu {
         options: root.options;

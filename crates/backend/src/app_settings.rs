@@ -87,6 +87,12 @@ pub enum ColorScheme {
 	Light,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum SkipConfirmation {
+	#[serde(rename = "skip-confirm-install-mod-confirm")]
+	InstallMod,
+}
+
 #[serializable_struct]
 #[derive(Default, Copy)]
 pub struct WindowState {
@@ -104,7 +110,8 @@ pub struct AppSettings {
 	pub override_language: Option<AppLocale>,
 	pub games_query: GamesQuery,
 	pub selected_tab: TabId,
-	pub skip_confirm_dialogs: HashSet<String>,
+	#[serde(default)]
+	pub skip_confirm_dialogs: HashSet<SkipConfirmation>,
 	#[serde(default)]
 	pub expanded_filters: HashSet<FilterGroupKey>,
 	#[serde(default)]

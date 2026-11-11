@@ -1,5 +1,5 @@
 use rai_pal_backend::{
-	app_settings::{ColorScheme, TabId},
+	app_settings::{ColorScheme, SkipConfirmation as CoreSkipConfirmation, TabId},
 	filter_views::{FilterGroupLabel, FilterValueLabel, FilterValueNote},
 	game_engines::game_engine::EngineBrand,
 	game_providers::{game_provider::GameProviderId, provider_command::ProviderCommandAction},
@@ -9,7 +9,7 @@ use rai_pal_backend::{
 use crate::{
 	AppColorScheme, AppTab, EngineId, FilterGroupId, FilterGroupLabel as UiFilterGroupLabel,
 	FilterValueLabel as UiFilterValueLabel, FilterValueNote as UiFilterValueNote, ProviderAction,
-	ProviderId,
+	ProviderId, SkipConfirmation as UiSkipConfirmation,
 };
 
 macro_rules! slint_enum_conversions {
@@ -149,4 +149,11 @@ pub const fn core_provider_action(action: ProviderAction) -> Option<ProviderComm
 		ProviderAction::OpenInBrowser => ProviderCommandAction::OpenInBrowser,
 		ProviderAction::Delete => ProviderCommandAction::Delete,
 	})
+}
+
+pub const fn core_skip_confirmation(skip: UiSkipConfirmation) -> Option<CoreSkipConfirmation> {
+	match skip {
+		UiSkipConfirmation::None => None,
+		UiSkipConfirmation::InstallMod => Some(CoreSkipConfirmation::InstallMod),
+	}
 }

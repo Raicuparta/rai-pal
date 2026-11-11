@@ -15,6 +15,7 @@ import { Sidebar, SidebarScroll, SidebarSection } from "sidebar.slint";
 import { SidebarAction } from "sidebar_action.slint";
 import { RowDivider } from "row_divider.slint";
 import { SearchInput } from "search_input.slint";
+import { SelectOption } from "select_menu.slint";
 import { SortMenu } from "sort_menu.slint";
 import { AddGameState } from "add_game_popup.slint";
 import { DialogActions, GamesActions } from "../actions.slint";
@@ -27,6 +28,7 @@ export global GamesList {
 
 export global GamesQuery {
     in-out property <string> search-text: "";
+    in property <[SelectOption]> sort-options;
     in-out property <int> sort-index: 0;
     in property <[FilterGroupData]> filter-groups;
     in property <bool> filters-have-changes: false;
@@ -108,6 +110,7 @@ export component GamesPage inherits Rectangle {
                 }
 
                 SortMenu {
+                    options: GamesQuery.sort-options;
                     sort-index <=> GamesQuery.sort-index;
 
                     sort-changed(index) => {

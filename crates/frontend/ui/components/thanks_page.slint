@@ -1,5 +1,5 @@
 import { ScrollView } from "std-widgets.slint";
-import { Branding } from "../branding.slint";
+import { Brand, Branding } from "../branding.slint";
 import { PatronData, ProviderId } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { ExternalLink } from "external_link.slint";
@@ -193,21 +193,21 @@ export component ThanksPage inherits Rectangle {
                                         ExternalLink {
                                             label: @tr("thanksPage" => "Star Rai Pal on GitHub");
                                             icon: Icon.github;
-                                            icon-color: Branding.brand-color("GitHub");
+                                            icon-color: Branding.brand-color(Brand.github);
                                             url: "https://github.com/raicuparta/rai-pal";
                                         }
 
                                         ExternalLink {
                                             label: "Patreon";
                                             icon: Icon.patreon;
-                                            icon-color: Branding.brand-color("Patreon");
+                                            icon-color: Branding.brand-color(Brand.patreon);
                                             url: "https://www.patreon.com/raivr";
                                         }
 
                                         ExternalLink {
                                             label: "Paypal";
                                             icon: Icon.paypal;
-                                            icon-color: Branding.brand-color("Paypal");
+                                            icon-color: Branding.brand-color(Brand.paypal);
                                             url: "https://paypal.me/raicuparta/5usd";
                                         }
 

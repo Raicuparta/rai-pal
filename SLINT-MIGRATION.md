@@ -108,9 +108,9 @@ needs an equivalent after that removal.
 - Added `ALL` value lists for provider, engine, tag, OS, architecture, Unity
   backend, and install-state enums, removing copies in the Slint filters and
   refresh code.
-- Kept the games sort option labels in the Slint app's menu, with the option
-  order and index mapping in `SORT_OPTIONS` in
-  `crates/frontend/src/commands/settings.rs`.
+- Build the games sort option model from `SORT_OPTIONS` in Rust, with labels
+  read from the translated `HostStrings` global, so the menu no longer keeps a
+  duplicate option list.
 - Centralized the current-thread Tokio runtime setup and shared `initials` in
   the Slint app.
 - Removed the unused `maps` helper module and `byteorder` dependency.
@@ -126,6 +126,8 @@ needs an equivalent after that removal.
 - Centralized language metadata in core (`AppLocale::ALL`, `code`, `native_name`)
   and build the language menu model from it, removing the duplicated list and
   hand-written index mapping in `app_menu.slint`.
+- Replaced the thanks-page brand color string mapping with a typed `Brand` enum,
+  and typed confirmation skip ids as persisted `SkipConfirmation` values.
 - Routed the remaining host- and Slint-side strings through gettext, using a
   `HostStrings` global for text that Rust needs for native file dialogs and
   refresh task names.
@@ -145,14 +147,6 @@ needs an equivalent after that removal.
 These are plausible simplifications that need a product or API decision before
 changing.
 
-- The sort labels live in `sort_menu.slint` while the corresponding order
-  lives in `SORT_OPTIONS` in `commands/settings.rs`. Building the sort options
-  model from Rust (with the labels exposed through `HostStrings`) would match
-  how the language menu now works and remove the last duplicated option list.
-- The thanks-page brand colors in `branding.slint` (`GitHub`, `Patreon`,
-  `Paypal`) still use their own string mapping.
-- The confirmation skip ids are still strings (`skip-confirm-...` in settings
-  and Slint callbacks). A typed skip-confirmation id would finish that boundary.
 - Revisit the `serializable_struct`/`serializable_enum` proc macros. They still
   make sense because remote manifests, settings, and debug JSON need serde, but
   their names and bundled SQLite impls no longer reflect why most types use
