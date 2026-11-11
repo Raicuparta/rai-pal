@@ -114,8 +114,27 @@ needs an equivalent after that removal.
 - Centralized the current-thread Tokio runtime setup and shared `initials` in
   the Slint app.
 - Removed the unused `maps` helper module and `byteorder` dependency.
-- Removed the single-field `ProviderActionItem` Slint struct; provider actions
-  are now exposed as plain strings.
+- Moved filter group metadata into `rai-pal-backend::filter_views`: group order,
+  typed group/value labels, display values, and per-value notes now come from
+  core, and `crates/frontend/src/filters.rs` only maps those views into Slint.
+  Filter callbacks and expanded-filter settings use the typed `FilterGroupKey`.
+- Moved all enum boundary conversions into `crates/frontend/src/convert.rs`, so
+  `TabId`/`AppTab`, `ColorScheme`/`AppColorScheme`, provider ids, engine brands,
+  filter ids, and provider actions each have a single conversion.
+- Exposed provider actions as typed Slint items, and use the typed provider and
+  engine ids in icons, colors, rows, and the sidebar instead of matching strings.
+- Centralized language metadata in core (`AppLocale::ALL`, `code`, `native_name`)
+  and build the language menu model from it, removing the duplicated list and
+  hand-written index mapping in `app_menu.slint`.
+- Routed the remaining host- and Slint-side strings through gettext, using a
+  `HostStrings` global for text that Rust needs for native file dialogs and
+  refresh task names.
+- Derived mod row action visibility in Slint from the underlying mod facts
+  (installed/outdated/compatibility plus which manifest operations exist)
+  instead of carrying one Rust-computed boolean per action.
+- Reduced the confirmation flow to typed pending actions instead of boxed
+  callbacks, keyed action state by typed `ActionKey`, and replaced worker-thread
+  sleeps for notifications/action resets with `slint::Timer::single_shot`.
 - Buttons and sidebar actions share the spinner/status icon presentation through
   `action_status_icon.slint` (the 500 ms long-loading timer, success/error
   icons, and spinner rotation), and share tint contrast/hover/pressed math
@@ -126,37 +145,14 @@ needs an equivalent after that removal.
 These are plausible simplifications that need a product or API decision before
 changing.
 
-- Move filter group metadata (labels, translation keys, display values, order,
-  and notes) from `crates/frontend/src/filters.rs` and
-  `crates/frontend/ui/translations.slint` into core, so the UI only maps core
-  filter definitions into Slint models. The value lists and mutation logic are
-  already shared, but each group is currently described in both the builder and
-  the `Tr.filter-property`/`Tr.filter-value`/`Tr.filter-value-note` key maps,
-  and the note lookup special-cases `"GameMaker"` and `"Xbox"` by display string.
-- Replace the duplicated `TabId`/`AppTab` and `ColorScheme`/`AppColorScheme`
-  pairs. Slint enums cannot directly use the core types, so this needs a
-  decision between generated enum bindings, integer codes, or keeping the
-  explicit boundary conversion. Note that the conversion is currently written
-  twice (`app_tab` in `app.rs` and `core_tab` in `commands/settings.rs`).
-- Make `AppSettings.expanded_filters` a set of `FilterGroupKey` values instead
-  of strings, with a serialization format that stays compatible with existing
-  settings files. This would remove string parsing and casts in the UI.
-- Expose provider actions as typed items (action plus label/icon metadata)
-  instead of strings that are parsed back into `ProviderCommandAction` when the
-  callback fires and matched by string in `game_sidebar.slint` for icons and
-  labels. This was intentionally left plain when removing `ProviderActionItem`.
-- Stop dispatching provider ids, engine brands, and provider command actions by
-  string in the UI. `provider_icon.slint`, `engine_icon.slint`,
-  `branding.slint`, and `Tr.provider-command` match the same literals as the
-  core enums; typed enums (or icon/color data sent from Rust with the row) would
-  remove the repeated string chains. The thanks-page brand colors in
-  `branding.slint` (`GitHub`, `Patreon`, `Paypal`) would still need their own
-  mapping.
-- Keep the UI-facing metadata lists in one place: the language list (codes and
-  native names) exists in both `i18n.rs` and `app_menu.slint`, including a
-  hand-written index mapping; the sort labels exist in `sort_menu.slint` while
-  the corresponding order lives in `SORT_OPTIONS` in
-  `commands/settings.rs`.
+- The sort labels live in `sort_menu.slint` while the corresponding order
+  lives in `SORT_OPTIONS` in `commands/settings.rs`. Building the sort options
+  model from Rust (with the labels exposed through `HostStrings`) would match
+  how the language menu now works and remove the last duplicated option list.
+- The thanks-page brand colors in `branding.slint` (`GitHub`, `Patreon`,
+  `Paypal`) still use their own string mapping.
+- The confirmation skip ids are still strings (`skip-confirm-...` in settings
+  and Slint callbacks). A typed skip-confirmation id would finish that boundary.
 - Revisit the `serializable_struct`/`serializable_enum` proc macros. They still
   make sense because remote manifests, settings, and debug JSON need serde, but
   their names and bundled SQLite impls no longer reflect why most types use
@@ -166,27 +162,6 @@ changing.
   Slint cannot import arbitrary Rust structs. A small conversion macro could
   remove the boilerplate if it becomes annoying, but it should stay in the
   Slint crate.
-- The mod row carries one boolean per possible action (`can_install`,
-  `can_update`, `can_run`, `can_edit_config`, ...) derived in `commands/mods.rs`
-  from the manifest and install state. Exposing the few underlying facts
-  (installed/outdated/compatible plus which manifest operations exist) and
-  letting the Slint side decide which buttons to show would shrink the row
-  struct every time an action changes.
-- The confirmation flow stores a boxed `FnOnce` plus UI-supplied text and labels
-  in Rust, and builds `skip-confirm-` string ids. It could be reduced to a typed
-  pending action (with Slint owning the dialog copy), which would address the
-  "confirmation.rs seems overkill" note in `changelogs/TODO.md`.
-- Notification dismissal and action-state resets each spawn a thread that
-  sleeps and then hops back to the UI thread. A shared timer (or Slint `Timer`)
-  would avoid one OS thread per notification/action.
-- Action state is stored in a `HashMap<String, ActionState>` keyed by
-  `format!("{:?}:{}", kind, target)`; if Slint's generated enums can be hashed,
-  keying by `ActionKey` directly would remove the formatting and parsing.
-- Some user-visible strings still bypass gettext: the manual-game file dialog
-  titles and refresh task names are built in Rust, and a few Slint labels are
-  plain literals (`"Only"` in `filter_group.slint`, `"Remove"` in
-  `url_mod_sources_popup.slint`, the about popup lines, and the `"About..."`
-  menu item). Routing them through `@tr`/`Tr` would finish translation coverage.
 - Button parity with the Tauri UI is still open: colored buttons need a
   "subtle" variant, and sizes/icon spacing still need tuning (see
   `changelogs/TODO.md`). This is a design decision before it is a refactor.
