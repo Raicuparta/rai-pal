@@ -1,12 +1,8 @@
 use std::time::Duration;
 
 use rai_pal_backend::{
-	app_settings::{AppSettings, ColorScheme, TabId},
-	game::Game,
-	game_providers::game_provider::GameProviderId,
-	games_query::GamesSortBy,
-	local_database::game_database::GameDatabase,
-	result::LogErrExt,
+	app_settings::AppSettings, game::Game, games_query::GamesSortBy,
+	local_database::game_database::GameDatabase, result::LogErrExt,
 };
 use slint::{ComponentHandle, Model as _};
 
@@ -36,14 +32,6 @@ fn sort_option_from_index(index: i32) -> (GamesSortBy, bool) {
 		.ok_or_log("Sort option index is negative")
 		.and_then(|index| SORT_OPTIONS.get(index).copied())
 		.unwrap_or((GamesSortBy::Title, false))
-}
-
-const fn core_tab(tab: AppTab) -> TabId {
-	match tab {
-		AppTab::Games => TabId::Games,
-		AppTab::Mods => TabId::Mods,
-		AppTab::Thanks => TabId::Thanks,
-	}
 }
 
 impl CommandHandler {
@@ -106,11 +94,7 @@ impl CommandHandler {
 	}
 
 	pub fn set_color_scheme(&self, value: AppColorScheme) {
-		self.settings.borrow_mut().color_scheme = match value {
-			AppColorScheme::Dark => ColorScheme::Dark,
-			AppColorScheme::Light => ColorScheme::Light,
-			AppColorScheme::Auto => ColorScheme::Auto,
-		};
+		self.settings.borrow_mut().color_scheme = value.into();
 		self.persist_settings();
 	}
 
@@ -125,7 +109,7 @@ impl CommandHandler {
 	}
 
 	pub fn set_tab(&self, tab: AppTab) {
-		self.settings.borrow_mut().selected_tab = core_tab(tab);
+		self.settings.borrow_mut().selected_tab = tab.into();
 		self.persist_settings();
 
 		let Some(window) = self.ui() else {
@@ -173,11 +157,7 @@ impl CommandHandler {
 			return;
 		};
 
-		let Some(provider_id) = row
-			.provider_id
-			.parse::<GameProviderId>()
-			.ok_or_log("Failed to parse game provider ID")
-		else {
+		let Some(provider_id) = crate::convert::core_provider_id(row.provider) else {
 			return;
 		};
 

@@ -2,7 +2,9 @@ use std::{sync::Arc, thread};
 
 use slint::ComponentHandle as _;
 
-use crate::{ActionKey, ActionKind, action_state, analytics, notifications};
+use crate::{
+	ActionKey, ActionKind, ProviderAction, action_state, analytics, convert, notifications,
+};
 
 use rai_pal_backend::{
 	app_paths,
@@ -18,13 +20,11 @@ use rai_pal_backend::{
 use super::{CommandHandler, on_command};
 
 impl CommandHandler {
-	pub fn run_provider_action(&self, value: &str) {
-		let Some(action) = value
-			.parse::<ProviderCommandAction>()
-			.ok_or_log("Failed to parse provider action")
-		else {
+	pub fn run_provider_action(&self, value: ProviderAction) {
+		let Some(action) = convert::core_provider_action(value) else {
 			return;
 		};
+		let action_id = action.to_string();
 
 		let Some((_, game)) = self.selected_game() else {
 			return;
@@ -45,7 +45,7 @@ impl CommandHandler {
 		self.run_game_action(
 			game,
 			action,
-			action_state::key(ActionKind::ProviderAction, value),
+			action_state::key(ActionKind::ProviderAction, action_id),
 		);
 	}
 
@@ -244,8 +244,8 @@ impl CommandHandler {
 }
 
 pub fn register(window: &crate::MainWindow) {
-	on_command!(window, GamesActions, on_run_provider_action, |value| handler => {
-		handler.run_provider_action(value.as_str());
+	on_command!(window, GamesActions, on_run_provider_action, |action| handler => {
+		handler.run_provider_action(action);
 	});
 	on_command!(window, GamesActions, on_open_game_folder, || handler => {
 		handler.open_game_folder();

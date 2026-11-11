@@ -1,11 +1,15 @@
 use rai_pal_backend::{
+	app_settings::{ColorScheme, TabId},
 	filter_views::{FilterGroupLabel, FilterValueLabel, FilterValueNote},
+	game_engines::game_engine::EngineBrand,
+	game_providers::{game_provider::GameProviderId, provider_command::ProviderCommandAction},
 	games_query::FilterGroupKey,
 };
 
 use crate::{
-	FilterGroupId, FilterGroupLabel as UiFilterGroupLabel, FilterValueLabel as UiFilterValueLabel,
-	FilterValueNote as UiFilterValueNote,
+	AppColorScheme, AppTab, EngineId, FilterGroupId, FilterGroupLabel as UiFilterGroupLabel,
+	FilterValueLabel as UiFilterValueLabel, FilterValueNote as UiFilterValueNote, ProviderAction,
+	ProviderId,
 };
 
 macro_rules! slint_enum_conversions {
@@ -75,6 +79,78 @@ slint_enum_conversions!(FilterValueNote => UiFilterValueNote {
 	ProviderXboxOnlyInstalled,
 });
 
+slint_enum_conversions!(TabId => AppTab {
+	Games,
+	Mods,
+	Thanks,
+});
+
+slint_enum_conversions!(ColorScheme => AppColorScheme {
+	Auto,
+	Dark,
+	Light,
+});
+
 pub fn filter_value_label(label: Option<FilterValueLabel>) -> UiFilterValueLabel {
 	label.map_or(UiFilterValueLabel::None, UiFilterValueLabel::from)
+}
+
+pub const fn provider_id(provider: GameProviderId) -> ProviderId {
+	match provider {
+		GameProviderId::Amazon => ProviderId::Amazon,
+		GameProviderId::Epic => ProviderId::Epic,
+		GameProviderId::Gog => ProviderId::Gog,
+		GameProviderId::Itch => ProviderId::Itch,
+		GameProviderId::Manual => ProviderId::Manual,
+		GameProviderId::Steam => ProviderId::Steam,
+		GameProviderId::Xbox => ProviderId::Xbox,
+	}
+}
+
+pub const fn core_provider_id(provider: ProviderId) -> Option<GameProviderId> {
+	Some(match provider {
+		ProviderId::None => return None,
+		ProviderId::Amazon => GameProviderId::Amazon,
+		ProviderId::Epic => GameProviderId::Epic,
+		ProviderId::Gog => GameProviderId::Gog,
+		ProviderId::Itch => GameProviderId::Itch,
+		ProviderId::Manual => GameProviderId::Manual,
+		ProviderId::Steam => GameProviderId::Steam,
+		ProviderId::Xbox => GameProviderId::Xbox,
+	})
+}
+
+pub const fn engine_id(engine: Option<EngineBrand>) -> EngineId {
+	match engine {
+		Some(EngineBrand::Unity) => EngineId::Unity,
+		Some(EngineBrand::Unreal) => EngineId::Unreal,
+		Some(EngineBrand::Godot) => EngineId::Godot,
+		Some(EngineBrand::GameMaker) => EngineId::GameMaker,
+		None => EngineId::None,
+	}
+}
+
+pub const fn provider_action(action: ProviderCommandAction) -> ProviderAction {
+	match action {
+		ProviderCommandAction::StartViaProvider => ProviderAction::StartViaProvider,
+		ProviderCommandAction::StartViaExe => ProviderAction::StartViaExe,
+		ProviderCommandAction::Install => ProviderAction::Install,
+		ProviderCommandAction::ShowInLibrary => ProviderAction::ShowInLibrary,
+		ProviderCommandAction::ShowInStore => ProviderAction::ShowInStore,
+		ProviderCommandAction::OpenInBrowser => ProviderAction::OpenInBrowser,
+		ProviderCommandAction::Delete => ProviderAction::Delete,
+	}
+}
+
+pub const fn core_provider_action(action: ProviderAction) -> Option<ProviderCommandAction> {
+	Some(match action {
+		ProviderAction::None => return None,
+		ProviderAction::StartViaProvider => ProviderCommandAction::StartViaProvider,
+		ProviderAction::StartViaExe => ProviderCommandAction::StartViaExe,
+		ProviderAction::Install => ProviderCommandAction::Install,
+		ProviderAction::ShowInLibrary => ProviderCommandAction::ShowInLibrary,
+		ProviderAction::ShowInStore => ProviderCommandAction::ShowInStore,
+		ProviderAction::OpenInBrowser => ProviderCommandAction::OpenInBrowser,
+		ProviderAction::Delete => ProviderCommandAction::Delete,
+	})
 }

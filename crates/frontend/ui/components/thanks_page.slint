@@ -1,6 +1,6 @@
 import { ScrollView } from "std-widgets.slint";
 import { Branding } from "../branding.slint";
-import { PatronData } from "../app_types.slint";
+import { PatronData, ProviderId } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { ExternalLink } from "external_link.slint";
 import { LabeledDivider } from "labeled_divider.slint";
@@ -214,7 +214,7 @@ export component ThanksPage inherits Rectangle {
                                         ExternalLink {
                                             label: "Itch.io";
                                             icon: Icon.itch;
-                                            icon-color: Branding.provider-foreground("Itch");
+                                            icon-color: Branding.provider-foreground(ProviderId.itch);
                                             url: "https://raicuparta.itch.io/";
                                         }
                                     }

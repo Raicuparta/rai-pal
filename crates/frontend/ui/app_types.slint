@@ -16,6 +16,41 @@ export enum AddGamePhase {
     confirming,
 }
 
+export enum ProviderId {
+    none,
+    amazon,
+    epic,
+    gog,
+    itch,
+    manual,
+    steam,
+    xbox,
+}
+
+export enum EngineId {
+    none,
+    unity,
+    unreal,
+    godot,
+    game-maker,
+}
+
+export enum ProviderAction {
+    none,
+    start-via-provider,
+    start-via-exe,
+    install,
+    show-in-library,
+    show-in-store,
+    open-in-browser,
+    delete,
+}
+
+export struct ProviderActionData {
+    action: ProviderAction,
+    action-id: string,
+}
+
 export enum DownloadPhase {
     pending,
     in-progress,
@@ -126,7 +161,7 @@ export struct GameModData {
 }
 
 export struct GameRowData {
-    provider-id: string,
+    provider: ProviderId,
     game-id: string,
     title: string,
     thumbnail: image,
@@ -134,7 +169,8 @@ export struct GameRowData {
     installed: bool,
     tags: [string],
     loaded: bool,
-    engine-brand: string,
+    engine: EngineId,
+    engine-name: string,
     engine-version: string,
     engine-details: string,
     release-day: string,

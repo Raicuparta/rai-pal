@@ -7,23 +7,26 @@ use std::{
 use rai_pal_backend::game::Game;
 use slint::ModelRc;
 
-use crate::{GameRowData, MainWindow, model::apply_game_to_row};
+use crate::{GameRowData, MainWindow, ProviderActionData, convert, model::apply_game_to_row};
 
 pub type SelectedGameState = Arc<Mutex<Option<(usize, Game)>>>;
 
 pub fn show(window: &MainWindow, game: &Game, mut row: GameRowData) {
 	apply_game_to_row(&mut row, game);
 
-	let provider_actions: Vec<slint::SharedString> = game
+	let provider_actions: Vec<ProviderActionData> = game
 		.provider_commands
 		.iter()
-		.map(|provider_command| provider_command.action.to_string().into())
+		.map(|provider_command| ProviderActionData {
+			action: convert::provider_action(provider_command.action),
+			action_id: provider_command.action.to_string().into(),
+		})
 		.collect();
 
 	window.set_selected_game_row(row);
 	window
 		.global::<crate::GameSidebarState>()
-		.set_provider_id(game.provider_id.to_string().into());
+		.set_provider_name(game.provider_id.display_name().into());
 	window
 		.global::<crate::GameSidebarState>()
 		.set_has_exe_path(game.exe_path.is_some());
@@ -41,7 +44,7 @@ pub fn hide(window: &MainWindow) {
 	window.set_selected_game_row(GameRowData::default());
 	window
 		.global::<crate::GameSidebarState>()
-		.set_provider_id("".into());
+		.set_provider_name("".into());
 	window
 		.global::<crate::GameSidebarState>()
 		.set_has_exe_path(false);

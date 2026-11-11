@@ -5,7 +5,7 @@ use rai_pal_backend::{
 	result::LogErrExt,
 };
 
-use crate::GameRowData;
+use crate::{EngineId, GameRowData, convert};
 
 #[derive(Clone, Debug, Default)]
 pub struct ReleaseDate {
@@ -87,7 +87,7 @@ pub fn make_rows(game_ids: &[GameId]) -> Vec<GameRowData> {
 	game_ids
 		.iter()
 		.map(|game_id| GameRowData {
-			provider_id: format!("{}", game_id.provider_id).into(),
+			provider: convert::provider_id(game_id.provider_id),
 			game_id: game_id.game_id.clone().into(),
 			title: "...".into(),
 			thumbnail: slint::Image::default(),
@@ -95,7 +95,8 @@ pub fn make_rows(game_ids: &[GameId]) -> Vec<GameRowData> {
 			installed: false,
 			tags: slint::ModelRc::default(),
 			loaded: false,
-			engine_brand: "".into(),
+			engine: EngineId::None,
+			engine_name: "".into(),
 			engine_version: "".into(),
 			engine_details: "".into(),
 			release_day: "".into(),
@@ -112,7 +113,8 @@ pub fn reset_row(row: &mut GameRowData) {
 	row.installed = false;
 	row.tags = slint::ModelRc::default();
 	row.loaded = false;
-	row.engine_brand = "".into();
+	row.engine = EngineId::None;
+	row.engine_name = "".into();
 	row.engine_version = "".into();
 	row.engine_details = "".into();
 	row.release_day = "".into();
@@ -138,7 +140,8 @@ pub fn apply_game_to_row(row: &mut GameRowData, game: &Game) {
 			.collect::<Vec<_>>(),
 	))
 	.into();
-	row.engine_brand = game
+	row.engine = convert::engine_id(game.engine_brand);
+	row.engine_name = game
 		.engine_brand
 		.map(|brand| brand.to_string())
 		.unwrap_or_default()

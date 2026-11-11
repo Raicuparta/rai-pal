@@ -8,7 +8,6 @@ use std::{
 
 use rai_pal_backend::{
 	game::Game,
-	game_providers::game_provider::GameProviderId,
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	result::LogErrExt,
 };
@@ -179,19 +178,7 @@ where
 }
 
 fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
-	let provider_id = match request.provider_id.parse::<GameProviderId>() {
-		Ok(provider_id) => provider_id,
-		Err(err) => {
-			log::error!("Invalid provider id {}: {err}", request.provider_id);
-			return FetchResult {
-				index: request.index,
-				generation: request.generation,
-				game: Err(format!("{}: {}", request.provider_id, request.game_id)),
-			};
-		}
-	};
-
-	match database.get_game(&provider_id, &request.game_id) {
+	match database.get_game(&request.provider_id, &request.game_id) {
 		Ok(game) => FetchResult {
 			index: request.index,
 			generation: request.generation,

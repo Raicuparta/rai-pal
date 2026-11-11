@@ -1,4 +1,4 @@
-import { AppColorScheme, AppTab, FilterGroupId } from "app_types.slint";
+import { AppColorScheme, AppTab, FilterGroupId, ProviderAction } from "app_types.slint";
 
 export global AppActions {
     callback reset-settings;
@@ -30,7 +30,7 @@ export global GamesActions {
     callback filters-collapse-all;
     callback filter-expanded-changed(group: FilterGroupId, expanded: bool);
     callback refresh-game;
-    callback run-provider-action(value: string);
+    callback run-provider-action(action: ProviderAction);
     callback open-game-folder;
     callback open-game-mods-folder;
     callback open-game-data-folder;

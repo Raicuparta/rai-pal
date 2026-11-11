@@ -1,4 +1,4 @@
-import { FilterGroupLabel, FilterValueLabel, FilterValueNote } from "app_types.slint";
+import { FilterGroupLabel, FilterValueLabel, FilterValueNote, ProviderAction } from "app_types.slint";
 
 export global Tr {
     public pure function refresh-loading(items: string) -> string {
@@ -74,28 +74,25 @@ export global Tr {
         return "";
     }
 
-    public pure function provider-command(key: string) -> string {
-        if key == "Install" {
+    public pure function provider-command(action: ProviderAction) -> string {
+        if action == ProviderAction.install {
             return @tr("providerCommand" => "Install");
         }
-        if key == "ShowInLibrary" {
+        if action == ProviderAction.show-in-library {
             return @tr("providerCommand" => "Show In Library");
         }
-        if key == "ShowInStore" {
+        if action == ProviderAction.show-in-store {
             return @tr("providerCommand" => "Open Store Page");
         }
-        if key == "StartViaProvider" {
+        if action == ProviderAction.start-via-provider {
             return @tr("providerCommand" => "Start Game");
         }
-        if key == "StartViaExe" {
+        if action == ProviderAction.start-via-exe {
             return @tr("providerCommand" => "Run Game Executable");
         }
-        if key == "OpenInBrowser" {
+        if action == ProviderAction.open-in-browser {
             return @tr("providerCommand" => "Open In Browser");
         }
-        if key == "Delete" {
-            return @tr("gameModal" => "Remove from Rai Pal");
-        }
-        return key;
+        return @tr("gameModal" => "Remove from Rai Pal");
     }
 }

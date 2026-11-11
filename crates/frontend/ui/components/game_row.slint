@@ -1,5 +1,5 @@
 import { Branding } from "../branding.slint";
-import { GameRowData } from "../app_types.slint";
+import { EngineId, GameRowData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { ProviderIcon } from "provider_icon.slint";
 import { RowDivider } from "row_divider.slint";
@@ -33,7 +33,7 @@ export component GameRow inherits VerticalLayout {
                 spacing: Theme.space-2xs;
 
                 ProviderIcon {
-                    provider-id: game-row.provider-id;
+                    provider: game-row.provider;
                 }
 
                 SvgIcon {
@@ -49,7 +49,7 @@ export component GameRow inherits VerticalLayout {
             clip: true;
             opacity: game-row.installed ? 1 : 0.5;
             border-radius: Theme.radius-md;
-            background: Branding.provider-background(game-row.provider-id);
+            background: Branding.provider-background(game-row.provider);
 
             Image {
                 source: @image-url("../images/fallback-thumbnail.png");
@@ -106,19 +106,19 @@ export component GameRow inherits VerticalLayout {
                 padding-left: Theme.space-sm;
                 padding-right: Theme.space-sm;
 
-                if (game-row.engine-brand != ""): HorizontalLayout {
+                if game-row.engine != EngineId.none: HorizontalLayout {
                     alignment: center;
                     spacing: Theme.space-xs;
                     cross-axis-alignment: center;
 
                     EngineIcon {
-                        engine-brand: game-row.engine-brand;
+                        engine: game-row.engine;
                         size: 12px;
                     }
 
                     Text {
-                        text: game-row.engine-brand == "" ? "-" : game-row.engine-brand.to-uppercase();
-                        color: Branding.engine-foreground(game-row.engine-brand);
+                        text: game-row.engine-name.to-uppercase();
+                        color: Branding.engine-foreground(game-row.engine);
                         font-weight: Theme.weight-bold;
                         horizontal-alignment: center;
                         overflow: elide;

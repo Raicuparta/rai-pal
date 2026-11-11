@@ -7,10 +7,10 @@ use std::{
 	time::{Duration, Instant},
 };
 
-use rai_pal_backend::result::LogErrExt;
+use rai_pal_backend::{game_providers::game_provider::GameProviderId, result::LogErrExt};
 use slint::{Model, ModelRc};
 
-use crate::{GameRowData, image_cache, model::reset_row};
+use crate::{GameRowData, convert, image_cache, model::reset_row};
 
 const VISIBLE_MARGIN: usize = 8;
 const THUMBNAIL_VISIBLE_DELAY: Duration = Duration::from_millis(100);
@@ -18,7 +18,7 @@ const THUMBNAIL_VISIBLE_DELAY: Duration = Duration::from_millis(100);
 pub struct FetchRequest {
 	pub index: usize,
 	pub generation: u64,
-	pub provider_id: String,
+	pub provider_id: GameProviderId,
 	pub game_id: String,
 }
 
@@ -491,7 +491,7 @@ fn make_request(
 	Some(FetchRequest {
 		index,
 		generation,
-		provider_id: row.provider_id.to_string(),
+		provider_id: convert::core_provider_id(row.provider)?,
 		game_id: row.game_id.to_string(),
 	})
 }

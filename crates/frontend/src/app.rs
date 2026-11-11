@@ -1,13 +1,13 @@
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use rai_pal_backend::{
-	app_settings::{AppLocale, AppSettings, ColorScheme, TabId},
+	app_settings::{AppLocale, AppSettings},
 	local_database::{game_database::try_create, mod_database::ModDatabase},
 };
 use slint::{ComponentHandle, winit_030::WinitWindowAccessor};
 
 use crate::{
-	AppColorScheme, AppTab, MainWindow, action_state, analytics,
+	AppTab, MainWindow, action_state, analytics,
 	commands::{CommandHandler, os_integration, query::load_game_ids, settings::sort_option_index},
 	fetch::spawn_fetchers,
 	filters::{build_groups, load_mod_families},
@@ -59,7 +59,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let mod_families = load_mod_families(&app_database);
 
 	let initial_query = app_settings.borrow().games_query.clone();
-	let initial_tab = app_tab(app_settings.borrow().selected_tab);
+	let initial_tab = app_settings.borrow().selected_tab.into();
 	let initial_groups = build_groups(
 		&initial_query.filter,
 		&mod_families,
@@ -207,7 +207,7 @@ fn apply_initial_state(
 			.unwrap_or_default()
 			.into(),
 	);
-	settings.set_selected_color_scheme(app_color_scheme(app_settings.borrow().color_scheme));
+	settings.set_selected_color_scheme(app_settings.borrow().color_scheme.into());
 	settings.set_hide_game_thumbnails(app_settings.borrow().hide_game_thumbnails);
 
 	window
@@ -235,20 +235,4 @@ fn apply_initial_state(
 		}),
 	);
 	window.set_current_tab(initial_tab);
-}
-
-const fn app_color_scheme(color_scheme: ColorScheme) -> AppColorScheme {
-	match color_scheme {
-		ColorScheme::Dark => AppColorScheme::Dark,
-		ColorScheme::Light => AppColorScheme::Light,
-		ColorScheme::Auto => AppColorScheme::Auto,
-	}
-}
-
-const fn app_tab(tab: TabId) -> AppTab {
-	match tab {
-		TabId::Games => AppTab::Games,
-		TabId::Mods => AppTab::Mods,
-		TabId::Thanks => AppTab::Thanks,
-	}
 }

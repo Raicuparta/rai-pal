@@ -1,41 +1,42 @@
+import { ProviderId } from "../app_types.slint";
 import { Branding } from "../branding.slint";
 import { Theme } from "../theme.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 
 export component ProviderIcon inherits Rectangle {
-    in property <string> provider-id;
+    in property <ProviderId> provider: ProviderId.none;
 
     width: Theme.space-lg;
     height: Theme.space-lg;
 
-    pure function icon-source(id: string) -> Icon {
-        if id == "Amazon" {
+    pure function icon-source(provider: ProviderId) -> Icon {
+        if provider == ProviderId.amazon {
             return Icon.amazon;
         }
-        if id == "Steam" {
+        if provider == ProviderId.steam {
             return Icon.steam;
         }
-        if id == "Epic" {
+        if provider == ProviderId.epic {
             return Icon.epic;
         }
-        if id == "Gog" {
+        if provider == ProviderId.gog {
             return Icon.gog;
         }
-        if id == "Itch" {
+        if provider == ProviderId.itch {
             return Icon.itch;
         }
-        if id == "Xbox" {
+        if provider == ProviderId.xbox {
             return Icon.xbox;
         }
-        if id == "Manual" {
+        if provider == ProviderId.manual {
             return Icon.manual;
         }
         return Icon.none;
     }
 
     SvgIcon {
-        icon: root.icon-source(root.provider-id);
+        icon: root.icon-source(root.provider);
         size: Theme.space-lg;
-        color: Branding.provider-foreground(root.provider-id);
+        color: Branding.provider-foreground(root.provider);
     }
 }

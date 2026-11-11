@@ -7,20 +7,21 @@ import { Sidebar, SidebarScroll, SidebarSection } from "sidebar.slint";
 import { Icon } from "svg_icon.slint";
 import { Button } from "button.slint";
 import { GamesActions } from "../actions.slint";
+import { ProviderAction, ProviderActionData } from "../app_types.slint";
 
 export global GameSidebarState {
-    in property <string> provider-id: "";
+    in property <string> provider-name: "";
     in property <bool> has-exe-path: false;
     in property <bool> show-wine-folders: false;
-    in property <[string]> provider-actions;
+    in property <[ProviderActionData]> provider-actions;
 }
 
 export component GameSidebar inherits Sidebar {
-    pure function provider-command-icon(command: string) -> Icon {
-        if command == "StartViaProvider" {
+    pure function provider-command-icon(action: ProviderAction) -> Icon {
+        if action == ProviderAction.start-via-provider {
             return Icon.play;
         }
-        if command == "StartViaExe" {
+        if action == ProviderAction.start-via-exe {
             return Icon.play-exe;
         }
         return Icon.none;
@@ -51,25 +52,25 @@ export component GameSidebar inherits Sidebar {
                 padding-bottom: Theme.space-xs;
 
                 LabeledDivider {
-                    label: GameSidebarState.provider-id;
+                    label: GameSidebarState.provider-name;
                     horizontal-stretch: 1;
                 }
             }
 
             for action[index] in GameSidebarState.provider-actions: SidebarAction {
-                text: Tr.provider-command(action);
-                icon: root.provider-command-icon(action);
+                text: Tr.provider-command(action.action);
+                icon: root.provider-command-icon(action.action);
                 highlighted: index == 0;
-                action-key: { kind: ActionKind.provider-action, target: action };
+                action-key: { kind: ActionKind.provider-action, target: action.action-id };
 
                 clicked => {
-                    if action == "Delete" {
+                    if action.action == ProviderAction.delete {
                         GamesActions.remove-game(
                             @tr("gameModal" => "Are you sure you want to remove this game from Rai Pal?"),
                             @tr("gameModal" => "Remove from Rai Pal"),
                         );
                     } else {
-                        GamesActions.run-provider-action(action);
+                        GamesActions.run-provider-action(action.action);
                     }
                 }
             }
