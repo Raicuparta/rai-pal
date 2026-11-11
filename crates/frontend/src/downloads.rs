@@ -60,7 +60,7 @@ impl Tracker {
 		self.publish();
 	}
 
-	pub fn record(&self, status: ProgressStatus) {
+	pub fn record(&self, status: &ProgressStatus) {
 		if let Some(mut items) = self.items.lock().ok_or_log("Failed to lock download items") {
 			let progress = status.progress * 100.0;
 			set_item(&mut items, &status.step, Some(progress), Phase::InProgress);

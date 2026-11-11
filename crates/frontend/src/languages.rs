@@ -1,6 +1,9 @@
 use std::rc::Rc;
 
-use rai_pal_backend::app_settings::{AppLocale, AppSettings};
+use rai_pal_backend::{
+	app_settings::{AppLocale, AppSettings},
+	result::LogErrExt,
+};
 use slint::{ComponentHandle, ModelRc};
 
 use crate::{AppSettings as UiAppSettings, MainWindow, SelectOption};
@@ -18,7 +21,7 @@ pub fn refresh(window: &MainWindow, settings: &AppSettings, detected: Option<App
 		Some(locale) => AppLocale::ALL
 			.iter()
 			.position(|item| *item == locale)
-			.and_then(|index| i32::try_from(index).ok())
+			.and_then(|index| i32::try_from(index).ok_or_log("Language index does not fit in i32"))
 			.unwrap_or_default(),
 		None if detected.is_some() => -1,
 		None => 0,

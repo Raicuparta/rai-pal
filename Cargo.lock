@@ -4362,6 +4362,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "rai-pal-i18n-check"
+version = "1.0.0"
+dependencies = [
+ "fs-err",
+ "rspolib",
+]
+
+[[package]]
 name = "rai-pal-proc-macros"
 version = "1.0.0"
 dependencies = [

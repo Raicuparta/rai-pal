@@ -11,7 +11,7 @@ use rai_pal_backend::{
 };
 use slint::ComponentHandle;
 
-use crate::{MessageContext, notifications};
+use crate::{MessageContext, MessageData, notifications};
 
 use super::{CommandHandler, on_command};
 
@@ -34,7 +34,7 @@ impl CommandHandler {
 				.set_state(crate::ActionState::Loading);
 			window
 				.global::<crate::SteamCacheState>()
-				.set_error(Default::default());
+				.set_error(MessageData::default());
 		}
 
 		thread::spawn(move || {
@@ -90,7 +90,7 @@ impl CommandHandler {
 				.set_state(crate::ActionState::Loading);
 			window
 				.global::<crate::SteamShortcutState>()
-				.set_error(Default::default());
+				.set_error(MessageData::default());
 		}
 
 		thread::spawn(move || {

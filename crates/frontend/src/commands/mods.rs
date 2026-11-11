@@ -620,7 +620,7 @@ async fn install_mod_inner(
 
 	for dependency in &deps_to_install {
 		dependency
-			.install(Some(game), |status| downloads.record(status))
+			.install(Some(game), |status| downloads.record(&status))
 			.await?;
 	}
 
@@ -632,7 +632,7 @@ async fn install_mod_inner(
 
 	if game_mod.install.is_some() {
 		game_mod
-			.install(Some(game), |status| downloads.record(status))
+			.install(Some(game), |status| downloads.record(&status))
 			.await?;
 	}
 

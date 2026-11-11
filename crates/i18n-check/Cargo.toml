@@ -1,0 +1,12 @@
+[package]
+name = "rai-pal-i18n-check"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+fs-err.workspace = true
+rspolib = "0.1.2"
+
+[lints]
+workspace = true

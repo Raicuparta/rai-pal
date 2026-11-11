@@ -11,7 +11,7 @@ use rai_pal_backend::{
 	remote_game,
 	result::LogErrExt,
 };
-use slint::ComponentHandle;
+use slint::{ComponentHandle, ModelRc, SharedString};
 
 use crate::{
 	ActionKind, MainWindow, MessageContext, RefreshTaskData, RefreshTaskKind, action_state,
@@ -33,7 +33,7 @@ impl CommandHandler {
 		ui_window.global::<crate::Refresh>().set_refreshing(true);
 		ui_window
 			.global::<crate::Refresh>()
-			.set_tasks(Default::default());
+			.set_tasks(ModelRc::default());
 
 		let window = self.window();
 		let database = Arc::clone(&self.database);
@@ -103,7 +103,7 @@ impl CommandHandler {
 					.set_refreshing(false);
 				handler_window
 					.global::<crate::Refresh>()
-					.set_tasks(Default::default());
+					.set_tasks(ModelRc::default());
 				handler.load_mods_tab();
 				handler.start_query(Duration::ZERO);
 				handler.reload_selected_game();
@@ -244,7 +244,7 @@ fn provider_task(provider: GameProviderId) -> RefreshTaskData {
 fn task(kind: RefreshTaskKind) -> RefreshTaskData {
 	RefreshTaskData {
 		kind,
-		provider: Default::default(),
+		provider: SharedString::default(),
 	}
 }
 

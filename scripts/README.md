@@ -9,6 +9,14 @@ scripts/format.sh     # cargo fmt
 scripts/lint.sh       # cargo clippy --fix
 ```
 
+## Checks
+
+```sh
+scripts/check-translations.sh  # validate every catalog against the @tr strings in the UI
+```
+
+Translation checks need `slint-tr-extractor`; `scripts/check-translations.sh --install-tool` installs the version that matches the Slint version in `crates/frontend/Cargo.toml`. The check is not part of the build, so normal builds never require it; CI runs it from `.github/workflows/check.yml`.
+
 ## Packaging
 
 Bundles are written to `target/bundles/<type>/`:

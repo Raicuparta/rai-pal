@@ -198,7 +198,7 @@ impl CommandHandler {
 
 			let result = runtime.block_on(async {
 				game_mod
-					.install(None, |status| downloads.record(status))
+					.install(None, |status| downloads.record(&status))
 					.await?;
 				database.refresh_installed_mods()?;
 				Ok::<(), rai_pal_backend::result::Error>(())

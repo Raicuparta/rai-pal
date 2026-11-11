@@ -24,28 +24,27 @@ User-visible text always originates in `.slint` files. Rust never holds a transl
    `@tr("context" => "...")` call in the `.slint` file.
 3. Keep placeholders exactly as numbered arguments: `{0}`, `{1}`, and so on.
    Never reorder or rename them.
-4. Add the translated entry to every language file that already has a real
-   translation for it. If a language does not have a translation yet, leave the
-   entry out rather than inserting English placeholder text.
+4. Add the translated entry to every catalog in the same change. Catalogs are
+   always complete; there is no "untranslated until later" state.
 
-## Syncing other languages
+## Keeping catalogs in sync
 
-Compare each non-English catalog against the English one. Missing keys are
-expected to be untranslated until someone provides a real translation. Do not
-fill them with copied English text, `TODO`, or machine-guessed filler.
-
-When translating an existing key, leave all unrelated entries untouched.
+Every catalog must translate every string, with the same `msgctxt`, the same
+placeholders, and no extra or obsolete entries. When a string changes in the UI,
+update all catalogs in the same change. Never fill entries with copied English,
+`TODO`, or placeholder text.
 
 ## Validation
 
-Compile-check the catalogs together with the UI:
-
 ```bash
-cargo check -p rai-pal-frontend
+scripts/check-translations.sh
 ```
 
-If `msgfmt` is available, it can also check an individual catalog:
+The script extracts `@tr` strings from `crates/frontend/ui` with
+`slint-tr-extractor` (the UI is the source of truth, not the English catalog),
+then checks every catalog for missing, unused, empty, fuzzy, obsolete, or
+duplicate entries and for placeholder mismatches. `scripts/check-translations.sh
+--install-tool` installs the extractor version that matches Slint.
 
-```bash
-msgfmt --check -o /dev/null crates/frontend/translations/en/LC_MESSAGES/rai-pal-frontend.po
-```
+The check is not part of the build, so normal builds never run it; CI runs the
+same script from `.github/workflows/check.yml`.

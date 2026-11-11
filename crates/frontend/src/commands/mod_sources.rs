@@ -5,7 +5,7 @@ use rai_pal_backend::{
 };
 use slint::ComponentHandle;
 
-use crate::{MainWindow, MessageContext, UrlModSourceData, notifications, runtime};
+use crate::{MainWindow, MessageContext, MessageData, UrlModSourceData, notifications, runtime};
 
 use super::{CommandHandler, on_command, refresh};
 
@@ -17,7 +17,7 @@ impl CommandHandler {
 
 		window
 			.global::<crate::ModSourcesState>()
-			.set_error(Default::default());
+			.set_error(MessageData::default());
 		load_sources(&window);
 	}
 
@@ -46,7 +46,7 @@ impl CommandHandler {
 			.set_state(crate::ActionState::Loading);
 		window
 			.global::<crate::ConfirmModSourceState>()
-			.set_error(Default::default());
+			.set_error(MessageData::default());
 		window
 			.global::<crate::ConfirmModSourceState>()
 			.set_open(true);
@@ -93,7 +93,7 @@ impl CommandHandler {
 		};
 
 		let state = window.global::<crate::ConfirmModSourceState>();
-		state.set_error(Default::default());
+		state.set_error(MessageData::default());
 		state.set_mods(slint::ModelRc::default());
 		state.set_state(crate::ActionState::Idle);
 	}
@@ -120,7 +120,7 @@ impl CommandHandler {
 			.set_state(crate::ActionState::Loading);
 		window
 			.global::<crate::ConfirmModSourceState>()
-			.set_error(Default::default());
+			.set_error(MessageData::default());
 
 		let window = window.as_weak();
 		let database = Arc::clone(&self.database);
@@ -183,7 +183,7 @@ impl CommandHandler {
 			.set_state(crate::ActionState::Loading);
 		main_window
 			.global::<crate::ModSourcesState>()
-			.set_error(Default::default());
+			.set_error(MessageData::default());
 
 		let window_weak = main_window.as_weak();
 		let database = Arc::clone(&self.database);
@@ -239,7 +239,7 @@ impl CommandHandler {
 			.set_state(crate::ActionState::Loading);
 		main_window
 			.global::<crate::ModSourcesState>()
-			.set_error(Default::default());
+			.set_error(MessageData::default());
 
 		let window_weak = main_window.as_weak();
 		let database = Arc::clone(&self.database);
