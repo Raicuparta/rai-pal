@@ -1,5 +1,5 @@
 import { ActionKind } from "../action_state.slint";
-import { ModActions } from "../actions.slint";
+import { GamesActions, ModActions } from "../actions.slint";
 import { GameModData, SkipConfirmation } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { ActionButton } from "action_button.slint";
@@ -21,6 +21,7 @@ export component GameModRow inherits VerticalLayout {
     private property <bool> can-download-config: root.can-show-actions && game-mod.installed && game-mod.has-remote-config;
     private property <bool> can-reinstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
     private property <bool> can-uninstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
+    private property <bool> has-mod-actions: root.can-edit-config || root.can-open-mod-folder || root.can-download-config || root.can-reinstall || root.can-uninstall;
 
     private property <length> menu-x: 0;
     private property <length> menu-y: 0;
@@ -97,6 +98,18 @@ export component GameModRow inherits VerticalLayout {
                 menu.close();
             }
         }
+
+        if root.has-mod-actions: PopupMenuSeparator { }
+
+        PopupMenuItem {
+            text: @tr("debugData" => "Debug data");
+            icon: Icon.bug;
+
+            clicked => {
+                GamesActions.request-mod-debug-data(game-mod.mod-id);
+                menu.close();
+            }
+        }
     }
 
     Rectangle {
@@ -133,7 +146,7 @@ export component GameModRow inherits VerticalLayout {
             outdated: game-mod.outdated;
         }
 
-        if root.can-show-actions: HorizontalLayout {
+        HorizontalLayout {
             horizontal-stretch: 0;
             alignment: end;
             spacing: Theme.space-xs;
@@ -174,7 +187,6 @@ export component GameModRow inherits VerticalLayout {
             }
 
             actions-button := IconButton {
-                visible: root.can-edit-config || root.can-open-mod-folder || root.can-download-config || root.can-reinstall || root.can-uninstall;
                 icon: Icon.more;
                 icon-size: 22px;
                 tooltip: @tr("gameModRow" => "Mod actions");
