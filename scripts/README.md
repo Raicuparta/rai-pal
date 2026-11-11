@@ -34,11 +34,12 @@ building.
 Updater releases are signed with `UPDATE_PRIVATE_KEY` and
 `UPDATE_KEY_PASSWORD`.
 
-`collect-build-artifacts.sh` publishes a main asset (`RaiPal.exe`,
-`RaiPal.AppImage`, or `RaiPal.macos.zip`) and a separate updater asset in the
-format the Tauri v1 updater used (`updater-windows.zip`,
-`updater-linux.tar.gz`, `updater-macos.tar.gz`). Keeping them separate means
-the GitHub release download counts updater downloads independently.
+`collect-build-artifacts.sh` publishes a main download (`RaiPal.exe` is the
+NSIS installer, `RaiPal.AppImage` is the AppImage, and `RaiPal.macos.zip` is the
+macOS app bundle) and a separate updater asset in the format the Tauri v1
+updater used (`updater-windows.zip`, `updater-linux.tar.gz`,
+`updater-macos.tar.gz`). Keeping them separate means the GitHub release download
+counts updater downloads independently.
 
 The Tauri v1 updater is built without deflate support, so the Windows updater
 zip must be stored uncompressed (`zip -0`). macOS updater assets must be

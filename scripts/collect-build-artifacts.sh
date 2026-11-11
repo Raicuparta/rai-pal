@@ -15,8 +15,7 @@ mkdir -p "$OUTPUT_DIR"
 
 case "$PLATFORM" in
 	windows)
-		MAIN_SOURCE="$ROOT_DIR/target/bundles/nsis/RaiPal-$VERSION-x86_64.exe"
-		SETUP_SOURCE="$ROOT_DIR/target/bundles/nsis/RaiPal-$VERSION-x86_64-setup.exe"
+		MAIN_SOURCE="$ROOT_DIR/target/bundles/nsis/RaiPal-$VERSION-x86_64-setup.exe"
 		MAIN_TARGET="$OUTPUT_DIR/RaiPal.exe"
 		UPDATER_TARGET="$OUTPUT_DIR/updater-windows.zip"
 		PLATFORM_KEY="windows-x86_64"
@@ -62,11 +61,7 @@ case "$PLATFORM" in
 			echo "Missing 'zip'. Install zip to package the Windows updater." >&2
 			exit 1
 		fi
-		if [[ ! -f "$SETUP_SOURCE" ]]; then
-			echo "Build artifact not found: $SETUP_SOURCE" >&2
-			exit 1
-		fi
-		cp "$SETUP_SOURCE" "$STAGING_DIR/RaiPal-Setup.exe"
+		cp "$MAIN_SOURCE" "$STAGING_DIR/RaiPal-Setup.exe"
 		(cd "$STAGING_DIR" && zip -q -X -0 "$UPDATER_TARGET" RaiPal-Setup.exe)
 		;;
 	linux)
