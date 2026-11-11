@@ -12,6 +12,16 @@ import { Icon } from "svg_icon.slint";
 export component GameModRow inherits VerticalLayout {
     in property <GameModData> game-mod;
 
+    private property <bool> can-show-actions: !game-mod.incompatible && game-mod.has-exe-path;
+    private property <bool> can-install: root.can-show-actions && !game-mod.installed && !game-mod.outdated && game-mod.has-install;
+    private property <bool> can-update: root.can-show-actions && game-mod.outdated;
+    private property <bool> can-run: root.can-show-actions && game-mod.has-run && (!game-mod.has-install || game-mod.installed);
+    private property <bool> can-edit-config: root.can-show-actions && game-mod.installed && (game-mod.has-config || game-mod.has-remote-config);
+    private property <bool> can-open-mod-folder: root.can-show-actions && game-mod.installed;
+    private property <bool> can-download-config: root.can-show-actions && game-mod.installed && game-mod.has-remote-config;
+    private property <bool> can-reinstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
+    private property <bool> can-uninstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
+
     private property <length> menu-x: 0;
     private property <length> menu-y: 0;
 
@@ -23,7 +33,7 @@ export component GameModRow inherits VerticalLayout {
         x: root.menu-x;
         y: root.menu-y;
 
-        if game-mod.can-edit-config: PopupMenuItem {
+        if root.can-edit-config: PopupMenuItem {
             text: @tr("gameModRow" => "Edit Mod Config");
             icon: Icon.settings;
 
@@ -33,7 +43,7 @@ export component GameModRow inherits VerticalLayout {
             }
         }
 
-        if game-mod.can-edit-config: PopupMenuItem {
+        if root.can-edit-config: PopupMenuItem {
             text: @tr("gameModRow" => "Open folder containing this mod's config files");
             icon: Icon.folder-mods;
 
@@ -43,9 +53,9 @@ export component GameModRow inherits VerticalLayout {
             }
         }
 
-        if game-mod.can-edit-config: PopupMenuSeparator { }
+        if root.can-edit-config: PopupMenuSeparator { }
 
-        if game-mod.can-open-mod-folder: PopupMenuItem {
+        if root.can-open-mod-folder: PopupMenuItem {
             text: @tr("gameModRow" => "Open Mod Folder");
             icon: Icon.folder-mods;
 
@@ -55,7 +65,7 @@ export component GameModRow inherits VerticalLayout {
             }
         }
 
-        if game-mod.can-download-config: PopupMenuItem {
+        if root.can-download-config: PopupMenuItem {
             text: @tr("gameModRow" => "Download Recommended Config");
             icon: Icon.download;
 
@@ -65,9 +75,9 @@ export component GameModRow inherits VerticalLayout {
             }
         }
 
-        if game-mod.can-download-config: PopupMenuSeparator { }
+        if root.can-download-config: PopupMenuSeparator { }
 
-        if game-mod.can-reinstall: PopupMenuItem {
+        if root.can-reinstall: PopupMenuItem {
             text: @tr("gameModRow" => "Reinstall");
             icon: Icon.reinstall;
 
@@ -77,7 +87,7 @@ export component GameModRow inherits VerticalLayout {
             }
         }
 
-        if game-mod.can-uninstall: PopupMenuItem {
+        if root.can-uninstall: PopupMenuItem {
             text: @tr("gameModRow" => "Uninstall");
             icon: Icon.uninstall;
             enabled: !game-mod.has-installed-dependants;
@@ -118,18 +128,18 @@ export component GameModRow inherits VerticalLayout {
             engine-text: game-mod.engine-text;
             deprecated: game-mod.deprecated;
             has-remote-config: game-mod.has-remote-config;
-            show-status: game-mod.show-status;
+            show-status: root.can-show-actions;
             installed: game-mod.installed;
             outdated: game-mod.outdated;
         }
 
-        if game-mod.can-show-actions: HorizontalLayout {
+        if root.can-show-actions: HorizontalLayout {
             horizontal-stretch: 0;
             alignment: end;
             spacing: Theme.space-xs;
             min-width: self.preferred-width;
 
-            if game-mod.can-install: ActionButton {
+            if root.can-install: ActionButton {
                 text: @tr("gameModRow" => "Install");
                 icon: Icon.install;
                 action-key: { kind: ActionKind.game-mod-install, target: game-mod.mod-id };
@@ -144,7 +154,7 @@ export component GameModRow inherits VerticalLayout {
                 }
             }
 
-            if game-mod.can-update: ActionButton {
+            if root.can-update: ActionButton {
                 text: @tr("gameModRow" => "Update");
                 icon: Icon.update;
                 tint: Theme.status-success;
@@ -155,7 +165,7 @@ export component GameModRow inherits VerticalLayout {
                 }
             }
 
-            if game-mod.can-run: ActionButton {
+            if root.can-run: ActionButton {
                 text: @tr("gameModRow" => "Run");
                 icon: Icon.play;
                 action-key: { kind: ActionKind.game-mod-run, target: game-mod.mod-id };
@@ -166,7 +176,7 @@ export component GameModRow inherits VerticalLayout {
             }
 
             actions-button := IconButton {
-                visible: game-mod.can-edit-config || game-mod.can-open-mod-folder || game-mod.can-download-config || game-mod.can-reinstall || game-mod.can-uninstall;
+                visible: root.can-edit-config || root.can-open-mod-folder || root.can-download-config || root.can-reinstall || root.can-uninstall;
                 icon: Icon.more;
                 icon-size: 22px;
                 tooltip: @tr("gameModRow" => "Mod actions");

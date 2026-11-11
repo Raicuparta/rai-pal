@@ -468,7 +468,6 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	} = entry;
 	let installed = info.installed_hash.is_some();
 	let is_incompatible = !info.compatible;
-	let can_show_actions = !is_incompatible && game.exe_path.is_some();
 	let version_text = version_text(&info, &manifest);
 	let release_date = release_date_display(&manifest);
 	let engine_text = engine_text(&manifest);
@@ -487,23 +486,10 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		incompatible: is_incompatible,
 		deprecated: manifest.deprecated == Some(true),
 		has_remote_config,
-		show_status: can_show_actions,
-		can_install: can_show_actions
-			&& !installed
-			&& !info.is_outdated
-			&& manifest.install.is_some(),
-		can_update: can_show_actions && info.is_outdated,
-		can_run: can_show_actions
-			&& manifest.run_for_game.is_some()
-			&& (manifest.install.is_none() || installed),
-		can_show_actions,
-		can_edit_config: can_show_actions
-			&& installed
-			&& (manifest.config.is_some() || has_remote_config),
-		can_open_mod_folder: can_show_actions && installed,
-		can_download_config: can_show_actions && installed && has_remote_config,
-		can_reinstall: can_show_actions && installed && manifest.install.is_some(),
-		can_uninstall: can_show_actions && installed && manifest.install.is_some(),
+		has_exe_path: game.exe_path.is_some(),
+		has_install: manifest.install.is_some(),
+		has_run: manifest.run_for_game.is_some(),
+		has_config: manifest.config.is_some(),
 		has_installed_dependants: info.has_installed_dependants,
 	}
 }
