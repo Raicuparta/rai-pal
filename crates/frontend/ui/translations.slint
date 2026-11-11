@@ -1,4 +1,15 @@
 import { FilterGroupLabel, FilterValueLabel, FilterValueNote, ProviderAction } from "app_types.slint";
+import { AppSettings } from "settings.slint";
+
+export global HostStrings {
+    in property <string> select-executable-title: @tr("fileDialog" => "Select the game executable");
+    in property <string> windows-executable-filter: @tr("fileDialog" => "Windows executable");
+    in property <string> other-executable-filter: @tr("fileDialog" => "Other executable");
+    in property <string> select-directory-title: @tr("fileDialog" => "Select a game directory");
+    in property <string> refresh-mods-task: @tr("refresh" => "mods");
+    in property <string> refresh-remote-data-task: @tr("refresh" => "remote data");
+    in property <string> auto-language-label: @tr("appDropdownMenu" => "Auto-detected - {0}", AppSettings.detected-language-name);
+}
 
 export global Tr {
     public pure function refresh-loading(items: string) -> string {

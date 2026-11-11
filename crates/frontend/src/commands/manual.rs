@@ -50,11 +50,19 @@ impl CommandHandler {
 	}
 
 	pub fn select_executable(&self) {
-		let window_weak = self.window();
+		let Some(window) = self.ui() else {
+			return;
+		};
+
+		let strings = window.global::<crate::HostStrings>();
+		let title = strings.get_select_executable_title().to_string();
+		let windows_filter = strings.get_windows_executable_filter().to_string();
+		let other_filter = strings.get_other_executable_filter().to_string();
+		let window_weak = window.as_weak();
 		let database = Arc::clone(&self.database);
 
 		thread::spawn(move || {
-			let Some(path) = pick_executable() else {
+			let Some(path) = pick_executable(&title, &windows_filter, &other_filter) else {
 				return;
 			};
 			let path = path.normalize();
@@ -92,11 +100,15 @@ impl CommandHandler {
 		};
 
 		let generation = SCAN_GENERATION.fetch_add(1, Ordering::SeqCst) + 1;
+		let title = main_window
+			.global::<crate::HostStrings>()
+			.get_select_directory_title()
+			.to_string();
 		let window_weak = main_window.as_weak();
 		let progress_window = main_window.as_weak();
 
 		thread::spawn(move || {
-			let Some(path) = pick_directory() else {
+			let Some(path) = pick_directory(&title) else {
 				return;
 			};
 			let path = path.normalize();
@@ -358,18 +370,16 @@ impl CommandHandler {
 	}
 }
 
-fn pick_executable() -> Option<PathBuf> {
+fn pick_executable(title: &str, windows_filter: &str, other_filter: &str) -> Option<PathBuf> {
 	rfd::FileDialog::new()
-		.set_title("Select the game executable")
-		.add_filter("Windows executable", &["exe"])
-		.add_filter("Other executable", &["*"])
+		.set_title(title)
+		.add_filter(windows_filter, &["exe"])
+		.add_filter(other_filter, &["*"])
 		.pick_file()
 }
 
-fn pick_directory() -> Option<PathBuf> {
-	rfd::FileDialog::new()
-		.set_title("Select a game directory")
-		.pick_folder()
+fn pick_directory(title: &str) -> Option<PathBuf> {
+	rfd::FileDialog::new().set_title(title).pick_folder()
 }
 
 fn reset_scan(window: &MainWindow) {

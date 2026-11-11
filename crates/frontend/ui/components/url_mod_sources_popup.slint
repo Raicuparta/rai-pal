@@ -43,7 +43,7 @@ component UrlModSourceRow inherits Rectangle {
         }
 
         if !root.source.is-default : Button {
-            text: "Remove";
+            text: @tr("manualGames" => "Remove");
             enabled: !root.toggling;
 
             clicked => {

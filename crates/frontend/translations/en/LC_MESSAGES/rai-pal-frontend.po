@@ -97,6 +97,30 @@ msgctxt "refresh"
 msgid "Loading {0}..."
 msgstr "Loading {0}..."
 
+msgctxt "refresh"
+msgid "mods"
+msgstr "mods"
+
+msgctxt "refresh"
+msgid "remote data"
+msgstr "remote data"
+
+msgctxt "fileDialog"
+msgid "Select the game executable"
+msgstr "Select the game executable"
+
+msgctxt "fileDialog"
+msgid "Windows executable"
+msgstr "Windows executable"
+
+msgctxt "fileDialog"
+msgid "Other executable"
+msgstr "Other executable"
+
+msgctxt "fileDialog"
+msgid "Select a game directory"
+msgstr "Select a game directory"
+
 msgctxt "filterMenu"
 msgid "Filters"
 msgstr "Filters"
@@ -124,6 +148,10 @@ msgstr "Unlock filter value"
 msgctxt "filterMenu"
 msgid "Only show this value"
 msgstr "Only show this value"
+
+msgctxt "filterMenu"
+msgid "Only"
+msgstr "Only"
 
 msgctxt "filterMenu"
 msgid "Search..."
@@ -560,6 +588,26 @@ msgstr "Clear Rai Pal cache"
 msgctxt "appDropdownMenu"
 msgid "Clears the game list cache used by Rai Pal."
 msgstr "Clears the game list cache used by Rai Pal."
+
+msgctxt "appDropdownMenu"
+msgid "About..."
+msgstr "About..."
+
+msgctxt "about"
+msgid "About Rai Pal"
+msgstr "About Rai Pal"
+
+msgctxt "about"
+msgid "Version: {0}"
+msgstr "Version: {0}"
+
+msgctxt "about"
+msgid "Rendering backend: {0}"
+msgstr "Rendering backend: {0}"
+
+msgctxt "about"
+msgid "Platform: {0}"
+msgstr "Platform: {0}"
 
 msgctxt "userMenu"
 msgid "User menu"

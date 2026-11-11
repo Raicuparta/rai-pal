@@ -197,16 +197,17 @@ fn apply_initial_state(
 		app_settings
 			.borrow()
 			.override_language
-			.map(i18n::locale_code)
+			.map(AppLocale::code)
 			.unwrap_or_default()
 			.into(),
 	);
 	settings.set_detected_language_name(
 		detected_locale
-			.map(i18n::native_name)
+			.map(AppLocale::native_name)
 			.unwrap_or_default()
 			.into(),
 	);
+	crate::languages::refresh(window, &app_settings.borrow(), detected_locale);
 	settings.set_selected_color_scheme(app_settings.borrow().color_scheme.into());
 	settings.set_hide_game_thumbnails(app_settings.borrow().hide_game_thumbnails);
 

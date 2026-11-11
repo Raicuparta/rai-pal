@@ -18,6 +18,7 @@ mod fetch;
 mod filters;
 mod i18n;
 mod image_cache;
+mod languages;
 mod logging;
 mod model;
 mod notifications;

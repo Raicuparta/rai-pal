@@ -23,6 +23,52 @@ pub enum AppLocale {
 	WaWa,
 }
 
+impl AppLocale {
+	pub const ALL: [Self; 9] = [
+		Self::EnUs,
+		Self::DeDe,
+		Self::EsEs,
+		Self::FrFr,
+		Self::JaJp,
+		Self::KoKr,
+		Self::PtPt,
+		Self::ZhCn,
+		Self::WaWa,
+	];
+
+	pub const fn code(self) -> &'static str {
+		match self {
+			Self::EnUs => "en",
+			Self::DeDe => "de",
+			Self::EsEs => "es",
+			Self::FrFr => "fr",
+			Self::JaJp => "ja",
+			Self::KoKr => "ko",
+			Self::PtPt => "pt",
+			Self::ZhCn => "zh",
+			Self::WaWa => "wa",
+		}
+	}
+
+	pub const fn native_name(self) -> &'static str {
+		match self {
+			Self::EnUs => "English (US)",
+			Self::DeDe => "Deutsch (Deutschland)",
+			Self::EsEs => "Español (España)",
+			Self::FrFr => "Français (France)",
+			Self::JaJp => "日本語",
+			Self::KoKr => "한국어",
+			Self::PtPt => "Português (Portugal)",
+			Self::ZhCn => "简体中文",
+			Self::WaWa => "Wario (Waah!)",
+		}
+	}
+
+	pub fn from_code(code: &str) -> Option<Self> {
+		Self::ALL.into_iter().find(|locale| locale.code() == code)
+	}
+}
+
 #[serializable_enum]
 #[derive(Default)]
 pub enum TabId {

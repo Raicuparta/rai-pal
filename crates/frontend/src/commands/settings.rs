@@ -1,12 +1,15 @@
 use std::time::Duration;
 
 use rai_pal_backend::{
-	app_settings::AppSettings, game::Game, games_query::GamesSortBy,
-	local_database::game_database::GameDatabase, result::LogErrExt,
+	app_settings::{AppLocale, AppSettings},
+	game::Game,
+	games_query::GamesSortBy,
+	local_database::game_database::GameDatabase,
+	result::LogErrExt,
 };
 use slint::{ComponentHandle, Model as _};
 
-use crate::{AppColorScheme, AppTab, i18n, model::apply_game_to_row, selected};
+use crate::{AppColorScheme, AppTab, i18n, languages, model::apply_game_to_row, selected};
 
 use super::{CommandHandler, on_command};
 
@@ -64,6 +67,7 @@ impl CommandHandler {
 			.set_search_text("".into());
 		window.global::<crate::GamesQuery>().set_sort_index(0);
 		window.set_current_tab(AppTab::Games);
+		languages::refresh(&window, &self.settings.borrow(), self.detected_locale);
 		self.scheduler.set_thumbnails_enabled(true);
 
 		self.refresh_filters();
@@ -73,7 +77,7 @@ impl CommandHandler {
 	pub fn set_language(&self, value: &str) {
 		let override_language = if value.is_empty() {
 			None
-		} else if let Some(locale) = i18n::locale_from_code(value) {
+		} else if let Some(locale) = AppLocale::from_code(value) {
 			Some(locale)
 		} else {
 			log::error!("Invalid language selection {value}");
@@ -90,6 +94,7 @@ impl CommandHandler {
 			window
 				.global::<crate::AppSettings>()
 				.set_selected_language(value.into());
+			languages::refresh(&window, &self.settings.borrow(), self.detected_locale);
 		}
 	}
 

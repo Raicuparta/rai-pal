@@ -1,33 +1,5 @@
 use rai_pal_backend::app_settings::{AppLocale, AppSettings};
 
-pub const fn locale_code(locale: AppLocale) -> &'static str {
-	match locale {
-		AppLocale::EnUs => "en",
-		AppLocale::DeDe => "de",
-		AppLocale::EsEs => "es",
-		AppLocale::FrFr => "fr",
-		AppLocale::JaJp => "ja",
-		AppLocale::KoKr => "ko",
-		AppLocale::PtPt => "pt",
-		AppLocale::ZhCn => "zh",
-		AppLocale::WaWa => "wa",
-	}
-}
-
-pub const fn native_name(locale: AppLocale) -> &'static str {
-	match locale {
-		AppLocale::EnUs => "English (US)",
-		AppLocale::DeDe => "Deutsch (Deutschland)",
-		AppLocale::EsEs => "Español (España)",
-		AppLocale::FrFr => "Français (France)",
-		AppLocale::JaJp => "日本語",
-		AppLocale::KoKr => "한국어",
-		AppLocale::PtPt => "Português (Portugal)",
-		AppLocale::ZhCn => "简体中文",
-		AppLocale::WaWa => "Wario (Waah!)",
-	}
-}
-
 pub fn detect_locale() -> Option<AppLocale> {
 	let locale = sys_locale::get_locale()?;
 	let language_code = locale.split(['-', '_']).next()?;
@@ -60,7 +32,7 @@ pub fn effective_locale(settings: &AppSettings, detected: Option<AppLocale>) -> 
 }
 
 pub fn apply_translation(locale: AppLocale) {
-	let code = locale_code(locale);
+	let code = locale.code();
 
 	if let Err(err) = slint::select_bundled_translation(code) {
 		log::error!("Failed to select translation {code}: {err}");
@@ -70,19 +42,4 @@ pub fn apply_translation(locale: AppLocale) {
 	}
 
 	slint::update_all_translations();
-}
-
-pub fn locale_from_code(code: &str) -> Option<AppLocale> {
-	match code {
-		"en" => Some(AppLocale::EnUs),
-		"de" => Some(AppLocale::DeDe),
-		"es" => Some(AppLocale::EsEs),
-		"fr" => Some(AppLocale::FrFr),
-		"ja" => Some(AppLocale::JaJp),
-		"ko" => Some(AppLocale::KoKr),
-		"pt" => Some(AppLocale::PtPt),
-		"zh" => Some(AppLocale::ZhCn),
-		"wa" => Some(AppLocale::WaWa),
-		_ => None,
-	}
 }

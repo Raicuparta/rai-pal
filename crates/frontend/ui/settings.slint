@@ -1,7 +1,10 @@
 import { AppColorScheme } from "app_types.slint";
+import { SelectOption } from "components/select_menu.slint";
 
 export global AppSettings {
     in-out property <string> selected-language: "";
+    in property <[SelectOption]> language-options;
+    in-out property <int> selected-language-index: 0;
     in-out property <AppColorScheme> selected-color-scheme: auto;
     in property <string> detected-language-name: "";
     in-out property <bool> hide-game-thumbnails: false;

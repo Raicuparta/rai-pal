@@ -7,17 +7,17 @@ export global AppInfo {
 }
 
 export component AboutPopup inherits Modal {
-    title: "About Rai Pal";
+    title: @tr("about" => "About Rai Pal");
 
     Text {
-        text: "Version: \{AppInfo.version}";
+        text: @tr("about" => "Version: {0}", AppInfo.version);
     }
 
     Text {
-        text: "Rendering backend: \{AppInfo.renderer}";
+        text: @tr("about" => "Rendering backend: {0}", AppInfo.renderer);
     }
 
     Text {
-        text: "Platform: \{AppInfo.platform}";
+        text: @tr("about" => "Platform: {0}", AppInfo.platform);
     }
 }

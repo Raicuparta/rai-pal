@@ -35,6 +35,9 @@ impl CommandHandler {
 			.global::<crate::Refresh>()
 			.set_task_names("".into());
 
+		let strings = ui_window.global::<crate::HostStrings>();
+		let mods_task = strings.get_refresh_mods_task().to_string();
+		let remote_data_task = strings.get_refresh_remote_data_task().to_string();
 		let window = self.window();
 		let database = Arc::clone(&self.database);
 
@@ -63,14 +66,14 @@ impl CommandHandler {
 				);
 			}
 
-			push_task(&window, &mut tasks, "mods");
+			push_task(&window, &mut tasks, &mods_task);
 			if let Err(err) = refresh_mods(&database) {
 				log::error!("Failed to refresh mods: {err}");
 				notifications::error_async(&window, format!("Failed to refresh mods: {err}"));
 			}
-			pop_task(&window, &mut tasks, "mods");
+			pop_task(&window, &mut tasks, &mods_task);
 
-			push_task(&window, &mut tasks, "remote data");
+			push_task(&window, &mut tasks, &remote_data_task);
 			if let Err(err) = refresh_remote_database() {
 				log::error!("Failed to refresh remote database: {err}");
 				notifications::error_async(
@@ -78,7 +81,7 @@ impl CommandHandler {
 					format!("Failed to refresh remote database: {err}"),
 				);
 			}
-			pop_task(&window, &mut tasks, "remote data");
+			pop_task(&window, &mut tasks, &remote_data_task);
 
 			crate::runtime::invoke_on_ui(move || {
 				let Some(handler) = Self::current() else {
