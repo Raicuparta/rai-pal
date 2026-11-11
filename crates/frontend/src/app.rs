@@ -8,11 +8,7 @@ use slint::{ComponentHandle, winit_030::WinitWindowAccessor};
 
 use crate::{
 	AppTab, MainWindow, action_state, analytics,
-	commands::{
-		CommandHandler, os_integration,
-		query::load_game_ids,
-		settings::{refresh_sort_options, sort_option_index},
-	},
+	commands::{CommandHandler, os_integration, query::load_game_ids, settings::sort_option_index},
 	fetch::spawn_fetchers,
 	filters::{build_groups, load_mod_families},
 	i18n, logging,
@@ -232,7 +228,6 @@ fn apply_initial_state(
 	);
 	query.set_filter_groups(Rc::new(slint::VecModel::from(initial_groups)).into());
 	query.set_filters_have_changes(initial_have_changes);
-	refresh_sort_options(window);
 
 	window.global::<crate::GamesList>().set_total_count(
 		i32::try_from(games_total_count).unwrap_or_else(|err| {

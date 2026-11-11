@@ -11,6 +11,8 @@ use rai_pal_backend::{
 };
 use slint::ComponentHandle;
 
+use crate::{MessageContext, notifications};
+
 use super::{CommandHandler, on_command};
 
 impl CommandHandler {
@@ -32,7 +34,7 @@ impl CommandHandler {
 				.set_state(crate::ActionState::Loading);
 			window
 				.global::<crate::SteamCacheState>()
-				.set_error("".into());
+				.set_error(Default::default());
 		}
 
 		thread::spawn(move || {
@@ -59,7 +61,7 @@ impl CommandHandler {
 					Err(err) => {
 						window
 							.global::<crate::SteamCacheState>()
-							.set_error(err.to_string().into());
+							.set_error(notifications::data(MessageContext::ResetSteamCache, err));
 						window
 							.global::<crate::SteamCacheState>()
 							.set_state(crate::ActionState::Error);
@@ -88,7 +90,7 @@ impl CommandHandler {
 				.set_state(crate::ActionState::Loading);
 			window
 				.global::<crate::SteamShortcutState>()
-				.set_error("".into());
+				.set_error(Default::default());
 		}
 
 		thread::spawn(move || {
@@ -106,7 +108,7 @@ impl CommandHandler {
 					Err(err) => {
 						window
 							.global::<crate::SteamShortcutState>()
-							.set_error(err.to_string().into());
+							.set_error(notifications::data(MessageContext::AddSteamShortcut, err));
 						window
 							.global::<crate::SteamShortcutState>()
 							.set_state(crate::ActionState::Error);

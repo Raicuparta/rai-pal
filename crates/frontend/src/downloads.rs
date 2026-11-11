@@ -12,7 +12,7 @@ use rai_pal_backend::{
 	result::LogErrExt,
 };
 
-use crate::{DownloadItemData, DownloadPhase, MainWindow};
+use crate::{DownloadItemData, DownloadItemKind, DownloadPhase, MainWindow};
 
 const PUBLISH_INTERVAL: Duration = Duration::from_millis(100);
 const FINISHED_RETENTION: Duration = Duration::from_secs(5);
@@ -28,7 +28,8 @@ enum Phase {
 #[derive(Clone)]
 struct Item {
 	id: String,
-	name: String,
+	kind: DownloadItemKind,
+	mod_id: String,
 	progress: f64,
 	phase: Phase,
 }
@@ -52,13 +53,7 @@ impl Tracker {
 	pub fn pending_steps(&self, steps: &[InstallStep]) {
 		if let Some(mut items) = self.items.lock().ok_or_log("Failed to lock download items") {
 			for step in steps {
-				upsert(
-					&mut items,
-					&step.id(),
-					&step_name(step),
-					0.0,
-					Phase::Pending,
-				);
+				set_item(&mut items, step, Some(0.0), Phase::Pending);
 			}
 		}
 
@@ -66,54 +61,17 @@ impl Tracker {
 	}
 
 	pub fn record(&self, status: ProgressStatus) {
-		match status {
-			ProgressStatus::Pending { id, name } => {
-				if let Some(mut items) =
-					self.items.lock().ok_or_log("Failed to lock download items")
-				{
-					upsert(&mut items, &id, &name, 0.0, Phase::Pending);
-				}
-				self.publish();
-			}
-			ProgressStatus::InProgress { id, progress } => {
-				if let Some(mut items) =
-					self.items.lock().ok_or_log("Failed to lock download items")
-				{
-					let progress = progress * 100.0;
-					update_existing(&mut items, &id, Some(progress), Phase::InProgress);
-				}
-				self.publish_if_due();
-			}
-			ProgressStatus::Finished { id } => {
-				if let Some(mut items) =
-					self.items.lock().ok_or_log("Failed to lock download items")
-				{
-					update_existing(&mut items, &id, Some(100.0), Phase::Finished);
-				}
-				self.publish();
-				self.schedule_cleanup();
-			}
-			ProgressStatus::Failed { id, .. } => {
-				if let Some(mut items) =
-					self.items.lock().ok_or_log("Failed to lock download items")
-				{
-					update_existing(&mut items, &id, None, Phase::Failed);
-				}
-				self.publish();
-			}
+		if let Some(mut items) = self.items.lock().ok_or_log("Failed to lock download items") {
+			let progress = status.progress * 100.0;
+			set_item(&mut items, &status.step, Some(progress), Phase::InProgress);
 		}
+		self.publish_if_due();
 	}
 
 	pub fn finish_steps(&self, steps: &[InstallStep]) {
 		if let Some(mut items) = self.items.lock().ok_or_log("Failed to lock download items") {
 			for step in steps {
-				upsert(
-					&mut items,
-					&step.id(),
-					&step_name(step),
-					100.0,
-					Phase::Finished,
-				);
+				set_item(&mut items, step, Some(100.0), Phase::Finished);
 			}
 		}
 
@@ -124,7 +82,7 @@ impl Tracker {
 	pub fn fail_steps(&self, steps: &[InstallStep]) {
 		if let Some(mut items) = self.items.lock().ok_or_log("Failed to lock download items") {
 			for step in steps {
-				update_existing(&mut items, &step.id(), None, Phase::Failed);
+				set_item(&mut items, step, None, Phase::Failed);
 			}
 		}
 
@@ -201,7 +159,8 @@ impl Tracker {
 				.into_iter()
 				.map(|item| DownloadItemData {
 					id: item.id.into(),
-					name: item.name.into(),
+					kind: item.kind,
+					mod_id: item.mod_id.into(),
 					progress: progress_to_f32(item.progress),
 					phase: match item.phase {
 						Phase::Pending => DownloadPhase::Pending,
@@ -269,31 +228,20 @@ const fn progress_to_f32(progress: f64) -> f32 {
 	progress as f32
 }
 
-fn step_name(step: &InstallStep) -> String {
-	match step.kind {
-		InstallStepKind::Download => format!("Download {}", step.mod_id),
-		InstallStepKind::Extract => format!("Extract {}", step.mod_id),
+const fn item_kind(kind: InstallStepKind) -> DownloadItemKind {
+	match kind {
+		InstallStepKind::Download => DownloadItemKind::Download,
+		InstallStepKind::Extract => DownloadItemKind::Extract,
 	}
 }
 
-fn upsert(items: &mut Vec<Item>, id: &str, name: &str, progress: f64, phase: Phase) {
-	if let Some(item) = items.iter_mut().find(|item| item.id == id) {
-		item.name = name.to_string();
-		item.progress = progress;
-		item.phase = phase;
-		return;
-	}
+fn set_item(items: &mut Vec<Item>, step: &InstallStep, progress: Option<f64>, phase: Phase) {
+	let id = step.id();
+	let kind = item_kind(step.kind);
 
-	items.push(Item {
-		id: id.to_string(),
-		name: name.to_string(),
-		progress,
-		phase,
-	});
-}
-
-fn update_existing(items: &mut Vec<Item>, id: &str, progress: Option<f64>, phase: Phase) {
 	if let Some(item) = items.iter_mut().find(|item| item.id == id) {
+		item.kind = kind;
+		item.mod_id.clone_from(&step.mod_id);
 		if let Some(progress) = progress {
 			item.progress = progress;
 		}
@@ -302,8 +250,9 @@ fn update_existing(items: &mut Vec<Item>, id: &str, progress: Option<f64>, phase
 	}
 
 	items.push(Item {
-		id: id.to_string(),
-		name: id.to_string(),
+		id,
+		kind,
+		mod_id: step.mod_id.clone(),
 		progress: progress.unwrap_or_default(),
 		phase,
 	});

@@ -3,6 +3,8 @@ use std::cell::RefCell;
 use rai_pal_backend::{app_settings::SkipConfirmation, game::Game};
 use slint::ComponentHandle;
 
+use crate::ConfirmKind;
+
 use super::{CommandHandler, on_command};
 
 enum PendingAction {
@@ -20,47 +22,38 @@ struct PendingConfirmation {
 pub struct PendingState(RefCell<Option<PendingConfirmation>>);
 
 impl CommandHandler {
-	pub fn prompt_install_mod(
-		&self,
-		mod_id: String,
-		confirmation_text: String,
-		confirm_label: String,
-		skip: crate::SkipConfirmation,
-	) {
+	pub fn prompt_install_mod(&self, mod_id: String, skip: crate::SkipConfirmation) {
 		let Some((_, game)) = self.selected_game() else {
 			return;
 		};
 
 		self.prompt(
 			PendingAction::InstallMod { game, mod_id },
-			confirmation_text,
-			confirm_label,
+			ConfirmKind::InstallMod,
 			skip.into(),
 		);
 	}
 
-	pub fn prompt_uninstall_all_mods(&self, confirmation_text: String, confirm_label: String) {
+	pub fn prompt_uninstall_all_mods(&self) {
 		let Some((_, game)) = self.selected_game() else {
 			return;
 		};
 
 		self.prompt(
 			PendingAction::UninstallAllMods { game },
-			confirmation_text,
-			confirm_label,
+			ConfirmKind::UninstallAllMods,
 			None,
 		);
 	}
 
-	pub fn prompt_remove_game(&self, confirmation_text: String, confirm_label: String) {
+	pub fn prompt_remove_game(&self) {
 		let Some((_, game)) = self.selected_game() else {
 			return;
 		};
 
 		self.prompt(
 			PendingAction::RemoveGame { game },
-			confirmation_text,
-			confirm_label,
+			ConfirmKind::RemoveGame,
 			None,
 		);
 	}
@@ -92,13 +85,7 @@ impl CommandHandler {
 		run_action(self, pending.action);
 	}
 
-	fn prompt(
-		&self,
-		action: PendingAction,
-		confirmation_text: String,
-		confirm_label: String,
-		skip: Option<SkipConfirmation>,
-	) {
+	fn prompt(&self, action: PendingAction, kind: ConfirmKind, skip: Option<SkipConfirmation>) {
 		let Some(window) = self.ui() else {
 			return;
 		};
@@ -114,8 +101,7 @@ impl CommandHandler {
 		*self.pending_confirmation.0.borrow_mut() = Some(PendingConfirmation { action, skip });
 
 		let state = window.global::<crate::ConfirmationState>();
-		state.set_text(confirmation_text.into());
-		state.set_confirm_label(confirm_label.into());
+		state.set_kind(kind);
 		state.set_can_skip(can_skip);
 		state.set_dont_ask_again(false);
 		state.set_open(true);
@@ -134,18 +120,13 @@ pub fn register(window: &crate::MainWindow) {
 	on_command!(window, DialogActions, on_confirmation_response, |confirmed| handler => {
 		handler.respond_to_confirmation(confirmed);
 	});
-	on_command!(window, GamesActions, on_remove_game, |text, label| handler => {
-		handler.prompt_remove_game(text.to_string(), label.to_string());
+	on_command!(window, GamesActions, on_remove_game, || handler => {
+		handler.prompt_remove_game();
 	});
-	on_command!(window, ModActions, on_request_install, |mod_id, text, label, skip| handler => {
-		handler.prompt_install_mod(
-			mod_id.to_string(),
-			text.to_string(),
-			label.to_string(),
-			skip,
-		);
+	on_command!(window, ModActions, on_request_install, |mod_id, skip| handler => {
+		handler.prompt_install_mod(mod_id.to_string(), skip);
 	});
-	on_command!(window, ModActions, on_request_uninstall_all, |text, label| handler => {
-		handler.prompt_uninstall_all_mods(text.to_string(), label.to_string());
+	on_command!(window, ModActions, on_request_uninstall_all, || handler => {
+		handler.prompt_uninstall_all_mods();
 	});
 }

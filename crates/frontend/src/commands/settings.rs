@@ -1,4 +1,4 @@
-use std::{rc::Rc, time::Duration};
+use std::time::Duration;
 
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
@@ -10,56 +10,23 @@ use rai_pal_backend::{
 };
 use slint::{ComponentHandle, Model as _};
 
-use crate::{
-	AppColorScheme, AppTab, HostStrings, SelectOption, i18n, languages, model::apply_game_to_row,
-	selected,
-};
+use crate::{AppColorScheme, AppTab, i18n, languages, model::apply_game_to_row, selected};
 
 use super::{CommandHandler, on_command};
 
-struct SortOption {
-	sort_by: GamesSortBy,
-	descending: bool,
-	label: fn(&HostStrings) -> slint::SharedString,
-}
-
-const SORT_OPTIONS: [SortOption; 6] = [
-	SortOption {
-		sort_by: GamesSortBy::Title,
-		descending: false,
-		label: |host| host.get_sort_name_asc(),
-	},
-	SortOption {
-		sort_by: GamesSortBy::Title,
-		descending: true,
-		label: |host| host.get_sort_name_desc(),
-	},
-	SortOption {
-		sort_by: GamesSortBy::Engine,
-		descending: false,
-		label: |host| host.get_sort_engine_asc(),
-	},
-	SortOption {
-		sort_by: GamesSortBy::Engine,
-		descending: true,
-		label: |host| host.get_sort_engine_desc(),
-	},
-	SortOption {
-		sort_by: GamesSortBy::ReleaseDate,
-		descending: false,
-		label: |host| host.get_sort_date_asc(),
-	},
-	SortOption {
-		sort_by: GamesSortBy::ReleaseDate,
-		descending: true,
-		label: |host| host.get_sort_date_desc(),
-	},
+const SORT_OPTIONS: [(GamesSortBy, bool); 6] = [
+	(GamesSortBy::Title, false),
+	(GamesSortBy::Title, true),
+	(GamesSortBy::Engine, false),
+	(GamesSortBy::Engine, true),
+	(GamesSortBy::ReleaseDate, false),
+	(GamesSortBy::ReleaseDate, true),
 ];
 
 pub fn sort_option_index(sort_by: GamesSortBy, sort_descending: bool) -> i32 {
 	SORT_OPTIONS
 		.iter()
-		.position(|option| option.sort_by == sort_by && option.descending == sort_descending)
+		.position(|option| *option == (sort_by, sort_descending))
 		.and_then(|index| i32::try_from(index).ok_or_log("Sort option index does not fit in i32"))
 		.unwrap_or_default()
 }
@@ -67,25 +34,8 @@ pub fn sort_option_index(sort_by: GamesSortBy, sort_descending: bool) -> i32 {
 fn sort_option_from_index(index: i32) -> (GamesSortBy, bool) {
 	usize::try_from(index)
 		.ok_or_log("Sort option index is negative")
-		.and_then(|index| SORT_OPTIONS.get(index))
-		.map_or((GamesSortBy::Title, false), |option| {
-			(option.sort_by, option.descending)
-		})
-}
-
-pub fn refresh_sort_options(window: &crate::MainWindow) {
-	let host = window.global::<HostStrings>();
-	let options: Vec<SelectOption> = SORT_OPTIONS
-		.iter()
-		.map(|option| SelectOption {
-			label: (option.label)(&host),
-			value: "".into(),
-		})
-		.collect();
-
-	window
-		.global::<crate::GamesQuery>()
-		.set_sort_options(Rc::new(slint::VecModel::from(options)).into());
+		.and_then(|index| SORT_OPTIONS.get(index).copied())
+		.unwrap_or((GamesSortBy::Title, false))
 }
 
 impl CommandHandler {
@@ -119,7 +69,6 @@ impl CommandHandler {
 		window.global::<crate::GamesQuery>().set_sort_index(0);
 		window.set_current_tab(AppTab::Games);
 		languages::refresh(&window, &self.settings.borrow(), self.detected_locale);
-		refresh_sort_options(&window);
 		self.scheduler.set_thumbnails_enabled(true);
 
 		self.refresh_filters();
@@ -147,7 +96,6 @@ impl CommandHandler {
 				.global::<crate::AppSettings>()
 				.set_selected_language(value.into());
 			languages::refresh(&window, &self.settings.borrow(), self.detected_locale);
-			refresh_sort_options(&window);
 		}
 	}
 

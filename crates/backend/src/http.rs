@@ -5,6 +5,7 @@ use futures_util::StreamExt;
 use tokio::io::{AsyncWriteExt, BufWriter};
 
 use crate::{
+	mods::manifest::InstallStep,
 	progress_status::ProgressStatus,
 	result::{ContextResult, Result},
 };
@@ -37,7 +38,7 @@ pub static CLIENT_NO_REDIRECT: LazyLock<reqwest::Client> = LazyLock::new(|| {
 pub async fn download(
 	url: &str,
 	target_path: &Path,
-	id: &str,
+	step: &InstallStep,
 	status_callback: &(impl Fn(ProgressStatus) + Send + Sync),
 ) -> Result {
 	let response = CLIENT
@@ -52,7 +53,6 @@ pub async fn download(
 
 	let mut downloaded_bytes: usize = 0;
 
-	let id_str = id.to_string();
 	let total_bytes = response.content_length();
 
 	let mut stream = response.bytes_stream();
@@ -76,8 +76,8 @@ pub async fn download(
 			}
 		});
 
-		status_callback(ProgressStatus::InProgress {
-			id: id_str.clone(),
+		status_callback(ProgressStatus {
+			step: step.clone(),
 			progress: percentage,
 		});
 	}

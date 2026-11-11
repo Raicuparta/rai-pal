@@ -3,6 +3,7 @@ import { AddGamePhase } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
 import { DialogActions } from "../actions.slint";
+import { Tr } from "../translations.slint";
 
 export global AddGameState {
     in-out property <bool> open: false;
@@ -12,7 +13,7 @@ export global AddGameState {
     in property <int> executables-found: 0;
     in property <string> current-path: "";
     in property <int> games-count: 0;
-    in property <string> duration-text: "";
+    in property <float> duration-secs: 0;
     in-out property <string> directory: "";
     in property <[string]> manual-directories;
 }
@@ -77,7 +78,11 @@ export component AddGamePopup inherits Modal {
             height: Theme.control-height;
 
             clicked => {
-                DialogActions.select-game-executable();
+                DialogActions.select-game-executable(
+                    Tr.select-executable-title(),
+                    Tr.windows-executable-filter(),
+                    Tr.other-executable-filter(),
+                );
             }
         }
 
@@ -86,7 +91,7 @@ export component AddGamePopup inherits Modal {
             height: Theme.control-height;
 
             clicked => {
-                DialogActions.select-game-directory();
+                DialogActions.select-game-directory(Tr.select-directory-title());
             }
         }
 
@@ -134,7 +139,7 @@ export component AddGamePopup inherits Modal {
         alignment: start;
 
         Text {
-            text: @tr("manualGames" => "Found {0} executables in {1} seconds. Add this folder to Rai Pal?", AddGameState.games-count, AddGameState.duration-text);
+            text: @tr("manualGames" => "Found {0} executables in {1} seconds. Add this folder to Rai Pal?", AddGameState.games-count, AddGameState.duration-secs);
             wrap: word-wrap;
         }
 

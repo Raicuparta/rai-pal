@@ -17,6 +17,8 @@ for `msgid` and `msgctxt`. Other languages are under their short language code
 
 ## Adding or changing a string
 
+User-visible text always originates in `.slint` files. Rust never holds a translated sentence: it sends typed values (`MessageData`, `ConfirmKind`, `RefreshTaskData`, `DownloadItemKind`, ids, paths, version strings) and the mapping functions in `crates/frontend/ui/translations.slint` turn them into `@tr(...)` calls. When adding a message, add the enum variant in `crates/frontend/ui/app_types.slint` first, then the branch in `ui/translations.slint`, then the catalog entry.
+
 1. Add or update the entry in the English catalog first.
 2. Use the same `msgctxt` as the surrounding entries. The context comes from the
    `@tr("context" => "...")` call in the `.slint` file.

@@ -1,7 +1,7 @@
 use rai_pal_backend::local_database::mod_database::ModDatabase;
 use slint::ComponentHandle as _;
 
-use crate::{MainWindow, notifications};
+use crate::{MainWindow, MessageContext, notifications};
 
 use super::{CommandHandler, on_command};
 
@@ -18,7 +18,10 @@ impl CommandHandler {
 			Ok(json) => window
 				.global::<crate::DebugState>()
 				.set_details_json(json.into()),
-			Err(err) => notifications::error(&window, format!("Failed to serialize game: {err}")),
+			Err(err) => notifications::error(
+				&window,
+				notifications::data(MessageContext::DebugData, &err),
+			),
 		}
 	}
 
@@ -33,10 +36,16 @@ impl CommandHandler {
 					.global::<crate::DebugState>()
 					.set_details_json(json.into()),
 				Err(err) => {
-					notifications::error(&window, format!("Failed to serialize mod: {err}"));
+					notifications::error(
+						&window,
+						notifications::data(MessageContext::DebugData, &err),
+					);
 				}
 			},
-			Err(err) => notifications::error(&window, format!("Failed to load mod: {err}")),
+			Err(err) => notifications::error(
+				&window,
+				notifications::data(MessageContext::DebugData, &err),
+			),
 		}
 	}
 }

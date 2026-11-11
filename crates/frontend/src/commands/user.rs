@@ -6,7 +6,7 @@ use rai_pal_backend::{
 	user::auth::{AuthState, get_user_auth_state, logout_auth, start_auth},
 };
 
-use crate::{MainWindow, analytics, notifications, runtime, text};
+use crate::{MainWindow, MessageContext, analytics, notifications, runtime, text};
 
 use super::{CommandHandler, on_command};
 
@@ -92,7 +92,10 @@ fn apply_result(window: slint::Weak<MainWindow>, result: Result<AuthState, Strin
 			Ok(state) => apply_state(&window, &state),
 			Err(err) => {
 				log::error!("Failed to refresh user auth state: {err}");
-				notifications::error(&window, format!("Failed to refresh user auth state: {err}"));
+				notifications::error(
+					&window,
+					notifications::data(MessageContext::RefreshUserAuth, &err),
+				);
 			}
 		}
 	});

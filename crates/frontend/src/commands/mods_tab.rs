@@ -6,7 +6,7 @@ use rai_pal_backend::{
 	mods::{manifest::Mod, mod_groups},
 };
 
-use crate::{MainWindow, ModsTabItemData, ModsTabModData, notifications};
+use crate::{MainWindow, MessageContext, ModsTabItemData, ModsTabModData, notifications};
 
 use super::{
 	CommandHandler,
@@ -27,7 +27,7 @@ fn load(window: &MainWindow, database: &DbMutex) {
 	let groups = match mod_groups::get_mod_groups(database) {
 		Ok(groups) => groups,
 		Err(err) => {
-			notifications::error(window, format!("Failed to load mods: {err}"));
+			notifications::error(window, notifications::data(MessageContext::LoadMods, &err));
 			window
 				.global::<crate::ModsState>()
 				.set_items(Rc::new(slint::VecModel::from(Vec::<ModsTabItemData>::new())).into());

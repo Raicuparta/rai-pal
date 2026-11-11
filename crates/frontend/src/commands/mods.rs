@@ -16,7 +16,7 @@ use rai_pal_backend::{
 use slint::ComponentHandle;
 
 use crate::{
-	ActionKind, GameModData, MainWindow, PotentialModData, action_state, analytics,
+	ActionKind, GameModData, MainWindow, MessageContext, PotentialModData, action_state, analytics,
 	downloads::Tracker, notifications, runtime,
 };
 
@@ -82,7 +82,7 @@ impl CommandHandler {
 						&window,
 						action_id.clone(),
 						Err(err),
-						format!("Failed to install mod {mod_id}"),
+						MessageContext::InstallMod,
 					);
 					return;
 				}
@@ -111,7 +111,7 @@ impl CommandHandler {
 					&window,
 					action_id.clone(),
 					Err(err),
-					format!("Failed to install mod {mod_id}"),
+					MessageContext::InstallMod,
 				);
 				return;
 			}
@@ -122,7 +122,7 @@ impl CommandHandler {
 				&window,
 				action_id.clone(),
 				Ok::<(), rai_pal_backend::result::Error>(()),
-				"",
+				MessageContext::InstallMod,
 			);
 		});
 	}
@@ -156,7 +156,7 @@ impl CommandHandler {
 					&window,
 					action_id.clone(),
 					Err(err),
-					format!("Failed to download config for mod {mod_id}"),
+					MessageContext::DownloadModConfig,
 				);
 				return;
 			}
@@ -166,7 +166,7 @@ impl CommandHandler {
 				&window,
 				action_id.clone(),
 				Ok::<(), rai_pal_backend::result::Error>(()),
-				"",
+				MessageContext::DownloadModConfig,
 			);
 		});
 	}
@@ -206,7 +206,7 @@ impl CommandHandler {
 					&window,
 					action_id.clone(),
 					Err(err),
-					format!("Failed to uninstall mod {mod_id}"),
+					MessageContext::UninstallMod,
 				);
 				return;
 			}
@@ -216,7 +216,7 @@ impl CommandHandler {
 				&window,
 				action_id.clone(),
 				Ok::<(), rai_pal_backend::result::Error>(()),
-				"",
+				MessageContext::UninstallMod,
 			);
 		});
 	}
@@ -251,7 +251,7 @@ impl CommandHandler {
 					&window,
 					action_id.clone(),
 					Err(err),
-					"Failed to uninstall all mods",
+					MessageContext::UninstallAllMods,
 				);
 				return;
 			}
@@ -261,7 +261,7 @@ impl CommandHandler {
 				&window,
 				action_id.clone(),
 				Ok::<(), rai_pal_backend::result::Error>(()),
-				"",
+				MessageContext::UninstallAllMods,
 			);
 		});
 	}
@@ -284,12 +284,7 @@ impl CommandHandler {
 				.get_mod(&mod_id)
 				.and_then(|game_mod| game_mod.run(Some(&game)));
 
-			action_state::finish(
-				&window,
-				action_id.clone(),
-				result,
-				format!("Failed to run mod {mod_id}"),
-			);
+			action_state::finish(&window, action_id.clone(), result, MessageContext::RunMod);
 		});
 	}
 
@@ -309,7 +304,7 @@ impl CommandHandler {
 				&window,
 				action_id.clone(),
 				result,
-				format!("Failed to open mod folder {mod_id}"),
+				MessageContext::OpenModFolder,
 			);
 		});
 	}
@@ -334,7 +329,7 @@ impl CommandHandler {
 				&window,
 				action_id.clone(),
 				result,
-				format!("Failed to configure mod {mod_id}"),
+				MessageContext::ConfigureMod,
 			);
 		});
 	}
@@ -403,7 +398,7 @@ fn apply_mods(
 		Ok(loaded) => loaded,
 		Err(err) => {
 			log::error!("Failed to load mods: {err}");
-			notifications::error(window, format!("Failed to load mods: {err}"));
+			notifications::error(window, notifications::data(MessageContext::LoadMods, err));
 			return;
 		}
 	};

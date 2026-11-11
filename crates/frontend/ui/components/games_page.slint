@@ -28,7 +28,14 @@ export global GamesList {
 
 export global GamesQuery {
     in-out property <string> search-text: "";
-    in property <[SelectOption]> sort-options;
+    in property <[SelectOption]> sort-options: [
+        { label: @tr("gamesSort" => "Name A-Z"), value: "" },
+        { label: @tr("gamesSort" => "Name Z-A"), value: "" },
+        { label: @tr("gamesSort" => "Engine A-Z"), value: "" },
+        { label: @tr("gamesSort" => "Engine Z-A"), value: "" },
+        { label: @tr("gamesSort" => "Date Ascending"), value: "" },
+        { label: @tr("gamesSort" => "Date Descending"), value: "" },
+    ];
     in-out property <int> sort-index: 0;
     in property <[FilterGroupData]> filter-groups;
     in property <bool> filters-have-changes: false;

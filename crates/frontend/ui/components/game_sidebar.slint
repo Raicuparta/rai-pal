@@ -65,10 +65,7 @@ export component GameSidebar inherits Sidebar {
 
                 clicked => {
                     if action.action == ProviderAction.delete {
-                        GamesActions.remove-game(
-                            @tr("gameModal" => "Are you sure you want to remove this game from Rai Pal?"),
-                            @tr("gameModal" => "Remove from Rai Pal"),
-                        );
+                        GamesActions.remove-game();
                     } else {
                         GamesActions.run-provider-action(action.action);
                     }

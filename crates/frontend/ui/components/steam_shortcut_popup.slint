@@ -1,12 +1,14 @@
 import { Button } from "button.slint";
+import { MessageData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
 import { ActionState } from "../action_state.slint";
 import { DialogActions } from "../actions.slint";
+import { Tr } from "../translations.slint";
 
 export global SteamShortcutState {
     in property <ActionState> state: idle;
-    in property <string> error: "";
+    in-out property <MessageData> error;
 }
 
 export component SteamShortcutPopup inherits Modal {
@@ -24,8 +26,8 @@ export component SteamShortcutPopup inherits Modal {
         wrap: word-wrap;
     }
 
-    if SteamShortcutState.error != "" : Text {
-        text: SteamShortcutState.error;
+    if Tr.has-message(SteamShortcutState.error) : Text {
+        text: Tr.message(SteamShortcutState.error);
         color: red;
         wrap: word-wrap;
     }

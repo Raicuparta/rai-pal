@@ -69,11 +69,75 @@ export enum NotificationKind {
     info,
 }
 
+export enum DownloadItemKind {
+    download,
+    extract,
+}
+
 export struct DownloadItemData {
     id: string,
-    name: string,
+    kind: DownloadItemKind,
+    mod-id: string,
     progress: float,
     phase: DownloadPhase,
+}
+
+export enum RefreshTaskKind {
+    provider,
+    mods,
+    remote-data,
+}
+
+export struct RefreshTaskData {
+    kind: RefreshTaskKind,
+    provider: string,
+}
+
+export enum ConfirmKind {
+    none,
+    install-mod,
+    uninstall-all-mods,
+    remove-game,
+}
+
+export enum MessageContext {
+    none,
+    run-game,
+    open-game-folder,
+    open-game-mods-folder,
+    open-game-data-folder,
+    open-wine-prefix-folder,
+    open-wine-binary-folder,
+    open-local-mods-folder,
+    open-logs-folder,
+    install-mod,
+    download-mod-config,
+    uninstall-mod,
+    uninstall-all-mods,
+    run-mod,
+    open-mod-folder,
+    configure-mod,
+    refresh-game,
+    refresh-games,
+    refresh-installed-mods,
+    refresh-mods,
+    refresh-remote-data,
+    load-mods,
+    load-app-data,
+    refresh-user-auth,
+    install-app-update,
+    debug-data,
+    provider-command-running,
+    update-mod-sources,
+    empty-url,
+    reset-steam-cache,
+    add-steam-shortcut,
+}
+
+export struct MessageData {
+    context: MessageContext,
+    subject: string,
+    detail: string,
 }
 
 export enum FilterGroupId {
@@ -188,8 +252,8 @@ export struct ModsTabItemData {
 
 export struct NotificationData {
     id: int,
-    message: string,
     kind: NotificationKind,
+    message: MessageData,
 }
 
 export struct PatronData {

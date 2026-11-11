@@ -4,6 +4,7 @@ import { Theme } from "../theme.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
 import { AppActions } from "../actions.slint";
+import { Tr } from "../translations.slint";
 
 export global DownloadsState {
     in property <[DownloadItemData]> items;
@@ -60,7 +61,7 @@ export component DownloadProgress inherits Rectangle {
 
         for item in DownloadsState.items : PopupMenuItem {
             enabled: false;
-            text: "\{item.name}: \{round(item.progress)}%";
+            text: "\{Tr.download-step-label(item.kind, item.mod-id)}: \{round(item.progress)}%";
         }
     }
 

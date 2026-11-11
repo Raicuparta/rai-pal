@@ -108,9 +108,7 @@ needs an equivalent after that removal.
 - The `serializable_enum` proc macro now generates `ALL` value lists, so adding
   an enum variant automatically adds it to iteration without a separate copy.
   `FilterGroupKey` derives its persisted strings and iteration from strum.
-- Build the games sort option model from one `SORT_OPTIONS` list in Rust, with
-  labels read from the translated `HostStrings` global, so the menu no longer
-  keeps a duplicate option list.
+- Games sort labels live in Slint next to the menu that renders them, while Rust keeps the `(GamesSortBy, descending)` order for index mapping and persistence.
 - Centralized the current-thread Tokio runtime setup and shared `initials` in
   the Slint app.
 - Removed the unused `maps` helper module and `byteorder` dependency.
@@ -129,9 +127,8 @@ needs an equivalent after that removal.
   hand-written index mapping in `app_menu.slint`.
 - Replaced the thanks-page brand color string mapping with a typed `Brand` enum,
   and typed confirmation skip ids as persisted `SkipConfirmation` values.
-- Routed the remaining host- and Slint-side strings through gettext, using a
-  `HostStrings` global for text that Rust needs for native file dialogs and
-  refresh task names.
+- Routed the remaining host- and Slint-side strings through gettext. Rust no longer holds or reads translated text at all (see the typed messages entry below); the file dialog titles and filters are translated in Slint and passed to the native dialog as command arguments.
+- Rust never produces user-visible sentences. Anything it needs to say travels as a typed value and Slint turns it into text: `MessageData`/`MessageContext` for toasts and inline popup errors, `ConfirmKind` for confirmation dialogs, `RefreshTaskData` for load-task labels, `DownloadItemKind` for download rows, and `MessageContext`-free enums/labels for the rest. Adding a message means adding an enum variant plus one branch in `translations.slint`, never a `format!` in Rust. Backend and dependency error text still reaches the UI as the untranslated `detail` payload.
 - Derived mod row action visibility in Slint from the underlying mod facts
   (installed/outdated/compatibility plus which manifest operations exist)
   instead of carrying one Rust-computed boolean per action.

@@ -21,7 +21,7 @@ use semver::Version;
 use serde::Deserialize;
 use slint::{Timer, TimerMode};
 
-use crate::{MainWindow, fetch, notifications};
+use crate::{MainWindow, MessageContext, fetch, notifications};
 
 use super::on_command;
 
@@ -114,7 +114,10 @@ impl Updater {
 					window
 						.global::<crate::UpdateState>()
 						.set_state(crate::ActionState::Idle);
-					notifications::error(&window, format!("Failed to install app update: {err}"));
+					notifications::error(
+						&window,
+						notifications::data(MessageContext::InstallAppUpdate, &err),
+					);
 				});
 
 				// Keep the update available so the user can retry.

@@ -1,25 +1,52 @@
-import { FilterGroupId, FilterValueLabel, FilterValueNote, ProviderAction } from "app_types.slint";
-import { AppSettings } from "settings.slint";
-
-export global HostStrings {
-    in property <string> select-executable-title: @tr("fileDialog" => "Select the game executable");
-    in property <string> windows-executable-filter: @tr("fileDialog" => "Windows executable");
-    in property <string> other-executable-filter: @tr("fileDialog" => "Other executable");
-    in property <string> select-directory-title: @tr("fileDialog" => "Select a game directory");
-    in property <string> refresh-mods-task: @tr("refresh" => "mods");
-    in property <string> refresh-remote-data-task: @tr("refresh" => "remote data");
-    in property <string> auto-language-label: @tr("appDropdownMenu" => "Auto-detected - {0}", AppSettings.detected-language-name);
-    in property <string> sort-name-asc: @tr("gamesSort" => "Name A-Z");
-    in property <string> sort-name-desc: @tr("gamesSort" => "Name Z-A");
-    in property <string> sort-engine-asc: @tr("gamesSort" => "Engine A-Z");
-    in property <string> sort-engine-desc: @tr("gamesSort" => "Engine Z-A");
-    in property <string> sort-date-asc: @tr("gamesSort" => "Date Ascending");
-    in property <string> sort-date-desc: @tr("gamesSort" => "Date Descending");
-}
+import {
+    ConfirmKind,
+    DownloadItemKind,
+    FilterGroupId,
+    FilterValueLabel,
+    FilterValueNote,
+    MessageContext,
+    MessageData,
+    ProviderAction,
+    RefreshTaskData,
+    RefreshTaskKind,
+} from "app_types.slint";
 
 export global Tr {
-    public pure function refresh-loading(items: string) -> string {
-        return @tr("refresh" => "Loading {0}...", items);
+    public pure function select-executable-title() -> string {
+        return @tr("fileDialog" => "Select the game executable");
+    }
+
+    public pure function windows-executable-filter() -> string {
+        return @tr("fileDialog" => "Windows executable");
+    }
+
+    public pure function other-executable-filter() -> string {
+        return @tr("fileDialog" => "Other executable");
+    }
+
+    public pure function select-directory-title() -> string {
+        return @tr("fileDialog" => "Select a game directory");
+    }
+
+    public pure function refresh-loading() -> string {
+        return @tr("refresh" => "Loading...");
+    }
+
+    public pure function refresh-task(task: RefreshTaskData) -> string {
+        if task.kind == RefreshTaskKind.provider {
+            return task.provider;
+        }
+        if task.kind == RefreshTaskKind.mods {
+            return @tr("refresh" => "mods");
+        }
+        return @tr("refresh" => "remote data");
+    }
+
+    public pure function download-step-label(kind: DownloadItemKind, mod-id: string) -> string {
+        if kind == DownloadItemKind.download {
+            return @tr("downloads" => "Download {0}", mod-id);
+        }
+        return @tr("downloads" => "Extract {0}", mod-id);
     }
 
     public pure function filter-property(group: FilterGroupId) -> string {
@@ -111,5 +138,141 @@ export global Tr {
             return @tr("providerCommand" => "Open In Browser");
         }
         return @tr("gameModal" => "Remove from Rai Pal");
+    }
+
+    public pure function confirm-text(kind: ConfirmKind) -> string {
+        if kind == ConfirmKind.none {
+            return "";
+        }
+        if kind == ConfirmKind.install-mod {
+            return @tr("gameModRow" => "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless.");
+        }
+        if kind == ConfirmKind.uninstall-all-mods {
+            return @tr("gameModal" => "You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though.");
+        }
+        return @tr("gameModal" => "Are you sure you want to remove this game from Rai Pal?");
+    }
+
+    public pure function confirm-label(kind: ConfirmKind) -> string {
+        if kind == ConfirmKind.none {
+            return "";
+        }
+        if kind == ConfirmKind.install-mod {
+            return @tr("gameModRow" => "Install");
+        }
+        if kind == ConfirmKind.uninstall-all-mods {
+            return @tr("gameModal" => "Uninstall all mods");
+        }
+        return @tr("gameModal" => "Remove from Rai Pal");
+    }
+
+    public pure function has-message(data: MessageData) -> bool {
+        return data.context != MessageContext.none || data.detail != "";
+    }
+
+    public pure function message(data: MessageData) -> string {
+        let prefix = message-prefix(data);
+
+        if prefix == "" {
+            return data.detail;
+        }
+        if data.detail == "" {
+            return prefix;
+        }
+        return "\{prefix}: \{data.detail}";
+    }
+
+    pure function message-prefix(data: MessageData) -> string {
+        if data.context == MessageContext.run-game {
+            return @tr("messages" => "Failed to run game action");
+        }
+        if data.context == MessageContext.open-game-folder {
+            return @tr("messages" => "Failed to open game folder");
+        }
+        if data.context == MessageContext.open-game-mods-folder {
+            return @tr("messages" => "Failed to open game mods folder");
+        }
+        if data.context == MessageContext.open-game-data-folder {
+            return @tr("messages" => "Failed to open game data folder");
+        }
+        if data.context == MessageContext.open-wine-prefix-folder {
+            return @tr("messages" => "Failed to open Wine prefix folder");
+        }
+        if data.context == MessageContext.open-wine-binary-folder {
+            return @tr("messages" => "Failed to open Wine binary folder");
+        }
+        if data.context == MessageContext.open-local-mods-folder {
+            return @tr("messages" => "Failed to open local mods folder");
+        }
+        if data.context == MessageContext.open-logs-folder {
+            return @tr("messages" => "Failed to open logs folder");
+        }
+        if data.context == MessageContext.install-mod {
+            return @tr("messages" => "Failed to install mod {0}", data.subject);
+        }
+        if data.context == MessageContext.download-mod-config {
+            return @tr("messages" => "Failed to download config for mod {0}", data.subject);
+        }
+        if data.context == MessageContext.uninstall-mod {
+            return @tr("messages" => "Failed to uninstall mod {0}", data.subject);
+        }
+        if data.context == MessageContext.uninstall-all-mods {
+            return @tr("messages" => "Failed to uninstall all mods");
+        }
+        if data.context == MessageContext.run-mod {
+            return @tr("messages" => "Failed to run mod {0}", data.subject);
+        }
+        if data.context == MessageContext.open-mod-folder {
+            return @tr("messages" => "Failed to open mod folder {0}", data.subject);
+        }
+        if data.context == MessageContext.configure-mod {
+            return @tr("messages" => "Failed to configure mod {0}", data.subject);
+        }
+        if data.context == MessageContext.refresh-game {
+            return @tr("messages" => "Failed to refresh game");
+        }
+        if data.context == MessageContext.refresh-games {
+            return @tr("messages" => "Failed to refresh {0} games", data.subject);
+        }
+        if data.context == MessageContext.refresh-installed-mods {
+            return @tr("messages" => "Failed to refresh installed mods");
+        }
+        if data.context == MessageContext.refresh-mods {
+            return @tr("messages" => "Failed to refresh mods");
+        }
+        if data.context == MessageContext.refresh-remote-data {
+            return @tr("messages" => "Failed to refresh remote database");
+        }
+        if data.context == MessageContext.load-mods {
+            return @tr("messages" => "Failed to load mods");
+        }
+        if data.context == MessageContext.load-app-data {
+            return @tr("messages" => "Failed to get app data");
+        }
+        if data.context == MessageContext.refresh-user-auth {
+            return @tr("messages" => "Failed to refresh user auth state");
+        }
+        if data.context == MessageContext.install-app-update {
+            return @tr("messages" => "Failed to install app update");
+        }
+        if data.context == MessageContext.debug-data {
+            return @tr("messages" => "Failed to get debug data");
+        }
+        if data.context == MessageContext.provider-command-running {
+            return @tr("messages" => "Running command... This might take a few seconds.");
+        }
+        if data.context == MessageContext.update-mod-sources {
+            return @tr("messages" => "Failed to update mod sources");
+        }
+        if data.context == MessageContext.empty-url {
+            return @tr("messages" => "URL is empty");
+        }
+        if data.context == MessageContext.reset-steam-cache {
+            return @tr("messages" => "Failed to reset Steam cache");
+        }
+        if data.context == MessageContext.add-steam-shortcut {
+            return @tr("messages" => "Failed to add Rai Pal to your Steam library");
+        }
+        return "";
     }
 }

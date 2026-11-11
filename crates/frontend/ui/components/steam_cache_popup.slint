@@ -1,12 +1,14 @@
 import { Button } from "button.slint";
+import { MessageData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
 import { ActionState } from "../action_state.slint";
 import { DialogActions } from "../actions.slint";
+import { Tr } from "../translations.slint";
 
 export global SteamCacheState {
     in property <ActionState> state: idle;
-    in property <string> error: "";
+    in-out property <MessageData> error;
 }
 
 export component SteamCachePopup inherits Modal {
@@ -23,8 +25,8 @@ export component SteamCachePopup inherits Modal {
         wrap: word-wrap;
     }
 
-    if SteamCacheState.error != "" : Text {
-        text: SteamCacheState.error;
+    if Tr.has-message(SteamCacheState.error) : Text {
+        text: Tr.message(SteamCacheState.error);
         color: red;
         wrap: word-wrap;
     }

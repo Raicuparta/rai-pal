@@ -405,13 +405,12 @@ impl ModDownload {
 			let zip_path = temp_dir.join("download.zip");
 
 			if !zip_path.is_file() {
-				http::download(
-					&self.url,
-					&part_path,
-					&format!("{mod_id}:download"),
-					on_progress,
-				)
-				.await?;
+				let download_step = InstallStep {
+					mod_id: mod_id.to_string(),
+					kind: InstallStepKind::Download,
+				};
+
+				http::download(&self.url, &part_path, &download_step, on_progress).await?;
 				fs_err::tokio::rename(&part_path, &zip_path).await?;
 			}
 
@@ -428,8 +427,11 @@ impl ModDownload {
 					} else {
 						0.0
 					};
-					on_progress(ProgressStatus::InProgress {
-						id: format!("{mod_id}:extract"),
+					on_progress(ProgressStatus {
+						step: InstallStep {
+							mod_id: mod_id.to_string(),
+							kind: InstallStepKind::Extract,
+						},
 						progress: percentage,
 					});
 				},

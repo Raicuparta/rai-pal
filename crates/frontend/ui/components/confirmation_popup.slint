@@ -1,20 +1,21 @@
 import { CheckBox } from "std-widgets.slint";
+import { ConfirmKind } from "../app_types.slint";
 import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
+import { Tr } from "../translations.slint";
 import { Modal } from "modal.slint";
 import { DialogActions } from "../actions.slint";
 
 export global ConfirmationState {
     in-out property <bool> open: false;
-    in property <string> text: "";
-    in property <string> confirm-label: "";
+    in property <ConfirmKind> kind: none;
     in property <bool> can-skip: false;
     in-out property <bool> dont-ask-again: false;
 }
 
 export component ConfirmationPopup inherits Modal {
     open: ConfirmationState.open;
-    title: ConfirmationState.confirm-label;
+    title: Tr.confirm-label(ConfirmationState.kind);
 
     closed => {
         root.respond(false);
@@ -26,7 +27,7 @@ export component ConfirmationPopup inherits Modal {
     }
 
     Text {
-        text: ConfirmationState.text;
+        text: Tr.confirm-text(ConfirmationState.kind);
         wrap: word-wrap;
     }
 
@@ -48,7 +49,7 @@ export component ConfirmationPopup inherits Modal {
         }
 
         Button {
-            text: ConfirmationState.confirm-label;
+            text: Tr.confirm-label(ConfirmationState.kind);
             tint: Theme.primary;
 
             clicked => {

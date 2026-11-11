@@ -1,4 +1,4 @@
-import { AppColorScheme } from "../app_types.slint";
+import { AppColorScheme, MessageContext } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { NavButton } from "nav_button.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
@@ -75,7 +75,7 @@ export component AppMenu inherits Rectangle {
 
                 clicked => {
                     SteamShortcutState.state = ActionState.idle;
-                    SteamShortcutState.error = "";
+                    SteamShortcutState.error = { context: MessageContext.none, subject: "", detail: "" };
                     root.steam-shortcut-open = true;
                     menu.close();
                 }
@@ -86,7 +86,7 @@ export component AppMenu inherits Rectangle {
 
                 clicked => {
                     SteamCacheState.state = ActionState.idle;
-                    SteamCacheState.error = "";
+                    SteamCacheState.error = { context: MessageContext.none, subject: "", detail: "" };
                     root.steam-cache-open = true;
                     menu.close();
                 }
@@ -131,11 +131,12 @@ export component AppMenu inherits Rectangle {
                 SelectMenu {
                     options: AppSettings.language-options;
                     selected-index: AppSettings.selected-language-index;
+                    leading-label: AppSettings.detected-language-name == "" ? "" : @tr("appDropdownMenu" => "Auto-detected - {0}", AppSettings.detected-language-name);
                     icon: Icon.language;
 
                     selected(index) => {
                         AppSettings.selected-language-index = index;
-                        AppSettings.selected-language = AppSettings.language-options[index].value;
+                        AppSettings.selected-language = index < 0 ? "" : AppSettings.language-options[index].value;
                         AppActions.language-changed(AppSettings.selected-language);
                     }
                 }

@@ -10,7 +10,7 @@ use rai_pal_backend::{
 use slint::ComponentHandle as _;
 
 use crate::{
-	MainWindow,
+	MainWindow, MessageContext,
 	model::make_rows,
 	notifications,
 	scheduler::FetchScheduler,
@@ -102,7 +102,10 @@ fn run_query(
 				Ok(response) => response,
 				Err(err) => {
 					log::error!("Failed to get app data: {err}");
-					notifications::error(&window, format!("Failed to get app data: {err}"));
+					notifications::error(
+						&window,
+						notifications::data(MessageContext::LoadAppData, &err),
+					);
 					return;
 				}
 			};

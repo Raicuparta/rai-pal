@@ -36,7 +36,7 @@ export global GamesActions {
     callback open-game-data-folder;
     callback open-wine-prefix-folder;
     callback open-wine-binary-folder;
-    callback remove-game(confirmation-text: string, confirm-label: string);
+    callback remove-game;
     callback request-debug-data;
     callback request-mod-debug-data(mod-id: string);
 }
@@ -52,8 +52,8 @@ export global DialogActions {
     callback add-steam-shortcut;
     callback request-add-game;
     callback add-game-closed;
-    callback select-game-executable;
-    callback select-game-directory;
+    callback select-game-executable(title: string, windows-filter: string, other-filter: string);
+    callback select-game-directory(title: string);
     callback cancel-game-scan;
     callback confirm-game-directory;
     callback remove-game-directory(path: string);
@@ -61,7 +61,7 @@ export global DialogActions {
 }
 
 export global ModActions {
-    callback request-install(mod-id: string, confirmation-text: string, confirm-label: string, skip-confirmation: SkipConfirmation);
+    callback request-install(mod-id: string, skip-confirmation: SkipConfirmation);
     callback uninstall(mod-id: string);
     callback update(mod-id: string);
     callback reinstall(mod-id: string);
@@ -70,7 +70,7 @@ export global ModActions {
     callback download-config(mod-id: string);
     callback configure(mod-id: string);
     callback configure-folder(mod-id: string);
-    callback request-uninstall-all(confirmation-text: string, confirm-label: string);
+    callback request-uninstall-all;
     callback run-standalone(mod-id: string);
     callback install-standalone(mod-id: string);
     callback open-url(url: string);

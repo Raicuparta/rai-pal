@@ -5,7 +5,7 @@ use rai_pal_backend::{
 };
 use slint::ComponentHandle;
 
-use crate::{MainWindow, UrlModSourceData, runtime};
+use crate::{MainWindow, MessageContext, UrlModSourceData, notifications, runtime};
 
 use super::{CommandHandler, on_command, refresh};
 
@@ -17,7 +17,7 @@ impl CommandHandler {
 
 		window
 			.global::<crate::ModSourcesState>()
-			.set_error("".into());
+			.set_error(Default::default());
 		load_sources(&window);
 	}
 
@@ -31,7 +31,7 @@ impl CommandHandler {
 		if url.is_empty() {
 			window
 				.global::<crate::ModSourcesState>()
-				.set_error("URL is empty".into());
+				.set_error(notifications::data(MessageContext::EmptyUrl, ""));
 			return;
 		}
 
@@ -46,7 +46,7 @@ impl CommandHandler {
 			.set_state(crate::ActionState::Loading);
 		window
 			.global::<crate::ConfirmModSourceState>()
-			.set_error("".into());
+			.set_error(Default::default());
 		window
 			.global::<crate::ConfirmModSourceState>()
 			.set_open(true);
@@ -77,7 +77,7 @@ impl CommandHandler {
 					Err(err) => {
 						window
 							.global::<crate::ConfirmModSourceState>()
-							.set_error(err.into());
+							.set_error(notifications::data(MessageContext::UpdateModSources, &err));
 						window
 							.global::<crate::ConfirmModSourceState>()
 							.set_state(crate::ActionState::Error);
@@ -93,7 +93,7 @@ impl CommandHandler {
 		};
 
 		let state = window.global::<crate::ConfirmModSourceState>();
-		state.set_error("".into());
+		state.set_error(Default::default());
 		state.set_mods(slint::ModelRc::default());
 		state.set_state(crate::ActionState::Idle);
 	}
@@ -120,7 +120,7 @@ impl CommandHandler {
 			.set_state(crate::ActionState::Loading);
 		window
 			.global::<crate::ConfirmModSourceState>()
-			.set_error("".into());
+			.set_error(Default::default());
 
 		let window = window.as_weak();
 		let database = Arc::clone(&self.database);
@@ -142,7 +142,7 @@ impl CommandHandler {
 				if let Err(err) = result {
 					window
 						.global::<crate::ConfirmModSourceState>()
-						.set_error(err.to_string().into());
+						.set_error(notifications::data(MessageContext::UpdateModSources, &err));
 					window
 						.global::<crate::ConfirmModSourceState>()
 						.set_state(crate::ActionState::Error);
@@ -183,7 +183,7 @@ impl CommandHandler {
 			.set_state(crate::ActionState::Loading);
 		main_window
 			.global::<crate::ModSourcesState>()
-			.set_error("".into());
+			.set_error(Default::default());
 
 		let window_weak = main_window.as_weak();
 		let database = Arc::clone(&self.database);
@@ -205,7 +205,7 @@ impl CommandHandler {
 				if let Err(err) = result {
 					window
 						.global::<crate::ModSourcesState>()
-						.set_error(err.to_string().into());
+						.set_error(notifications::data(MessageContext::UpdateModSources, &err));
 					window
 						.global::<crate::ModSourcesState>()
 						.set_state(crate::ActionState::Error);
@@ -239,7 +239,7 @@ impl CommandHandler {
 			.set_state(crate::ActionState::Loading);
 		main_window
 			.global::<crate::ModSourcesState>()
-			.set_error("".into());
+			.set_error(Default::default());
 
 		let window_weak = main_window.as_weak();
 		let database = Arc::clone(&self.database);
@@ -265,7 +265,7 @@ impl CommandHandler {
 				if let Err(err) = result {
 					window
 						.global::<crate::ModSourcesState>()
-						.set_error(err.to_string().into());
+						.set_error(notifications::data(MessageContext::UpdateModSources, &err));
 				}
 
 				load_sources(&window);

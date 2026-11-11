@@ -12,7 +12,9 @@ use std::{
 use rai_pal_backend::result::LogErrExt;
 use slint::{ComponentHandle, SharedString, Weak};
 
-use crate::{ActionKey, ActionKind, ActionState, ActionStates, MainWindow, notifications};
+use crate::{
+	ActionKey, ActionKind, ActionState, ActionStates, MainWindow, MessageContext, notifications,
+};
 
 const SUCCESS_DURATION: Duration = Duration::from_secs(1);
 const ERROR_DURATION: Duration = Duration::from_secs(2);
@@ -67,7 +69,7 @@ pub fn finish<E: Display>(
 	window: &Weak<MainWindow>,
 	key: ActionKey,
 	result: std::result::Result<(), E>,
-	error_context: impl Into<String>,
+	context: MessageContext,
 ) {
 	match result {
 		Ok(()) => {
@@ -75,14 +77,10 @@ pub fn finish<E: Display>(
 			schedule_reset(window.clone(), key, ActionState::Success, SUCCESS_DURATION);
 		}
 		Err(err) => {
-			let error_context = error_context.into();
-			let message = if error_context.is_empty() {
-				err.to_string()
-			} else {
-				format!("{error_context}: {err}")
-			};
-
-			notifications::error_async(window, message);
+			notifications::error_async(
+				window,
+				notifications::data_with_subject(context, key.target.clone(), err),
+			);
 			set_async(window, &key, ActionState::Error);
 			schedule_reset(window.clone(), key, ActionState::Error, ERROR_DURATION);
 		}

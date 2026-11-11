@@ -1,5 +1,6 @@
 import { NotificationData, NotificationKind } from "../app_types.slint";
 import { Theme } from "../theme.slint";
+import { Tr } from "../translations.slint";
 import { IconButton } from "icon_button.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 import { AppActions } from "../actions.slint";
@@ -31,7 +32,7 @@ component NotificationToast inherits Rectangle {
 
         Text {
             horizontal-stretch: 1;
-            text: root.notification.message;
+            text: Tr.message(root.notification.message);
             wrap: word-wrap;
         }
 

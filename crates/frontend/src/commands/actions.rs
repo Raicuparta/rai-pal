@@ -2,7 +2,9 @@ use std::{sync::Arc, thread};
 
 use slint::ComponentHandle as _;
 
-use crate::{ActionKey, ActionKind, ProviderAction, action_state, analytics, notifications};
+use crate::{
+	ActionKey, ActionKind, MessageContext, ProviderAction, action_state, analytics, notifications,
+};
 
 use rai_pal_backend::{
 	app_paths,
@@ -37,7 +39,10 @@ impl CommandHandler {
 		);
 
 		if let Some(window) = self.ui() {
-			notifications::info(&window, "Running command... This might take a few seconds.");
+			notifications::info(
+				&window,
+				notifications::data(MessageContext::ProviderCommandRunning, ""),
+			);
 		}
 
 		self.run_game_action(
@@ -51,7 +56,7 @@ impl CommandHandler {
 		let database = Arc::clone(&self.database);
 		let window = self.window();
 
-		spawn_action(window, action_id, "Failed to run game action", move || {
+		spawn_action(window, action_id, MessageContext::RunGame, move || {
 			let provider_command = game
 				.get_provider_command(action)
 				.ok_or_else(|| Error::DataEntryNotFound(action.to_string()))?;
@@ -69,7 +74,7 @@ impl CommandHandler {
 	pub fn open_game_folder(&self) {
 		self.open_selected(
 			ActionKind::OpenGameFolder,
-			"Failed to open game folder",
+			MessageContext::OpenGameFolder,
 			Game::open_game_folder,
 		);
 	}
@@ -77,7 +82,7 @@ impl CommandHandler {
 	pub fn open_game_mods_folder(&self) {
 		self.open_selected(
 			ActionKind::OpenGameModsFolder,
-			"Failed to open game mods folder",
+			MessageContext::OpenGameModsFolder,
 			Game::open_mods_folder,
 		);
 	}
@@ -85,7 +90,7 @@ impl CommandHandler {
 	pub fn open_game_data_folder(&self) {
 		self.open_selected(
 			ActionKind::OpenGameDataFolder,
-			"Failed to open game data folder",
+			MessageContext::OpenGameDataFolder,
 			Game::open_data_folder,
 		);
 	}
@@ -93,7 +98,7 @@ impl CommandHandler {
 	pub fn open_wine_prefix_folder(&self) {
 		self.open_selected(
 			ActionKind::OpenWinePrefixFolder,
-			"Failed to open Wine prefix folder",
+			MessageContext::OpenWinePrefixFolder,
 			|game| {
 				game_provider::get_provider(game.provider_id)?
 					.get_wine_prefix_path(game)?
@@ -105,7 +110,7 @@ impl CommandHandler {
 	pub fn open_wine_binary_folder(&self) {
 		self.open_selected(
 			ActionKind::OpenWineBinaryFolder,
-			"Failed to open Wine binary folder",
+			MessageContext::OpenWineBinaryFolder,
 			|game| {
 				game_provider::get_provider(game.provider_id)?
 					.get_wine_binary_path(game)?
@@ -117,7 +122,7 @@ impl CommandHandler {
 	fn open_selected(
 		&self,
 		kind: ActionKind,
-		error: &'static str,
+		context: MessageContext,
 		open: impl FnOnce(&Game) -> Result + Send + 'static,
 	) {
 		let Some((_, game)) = self.selected_game() else {
@@ -127,7 +132,7 @@ impl CommandHandler {
 		spawn_action(
 			self.window(),
 			action_state::key(kind, ""),
-			error,
+			context,
 			move || open(&game),
 		);
 	}
@@ -141,7 +146,7 @@ impl CommandHandler {
 		spawn_action(
 			self.window(),
 			action_id,
-			format!("Failed to run mod {mod_id}"),
+			MessageContext::RunMod,
 			move || {
 				database
 					.get_mod(&mod_id)
@@ -170,7 +175,7 @@ impl CommandHandler {
 					&window,
 					action_id.clone(),
 					Err("Failed to create async runtime"),
-					format!("Failed to install mod {mod_id}"),
+					MessageContext::InstallMod,
 				);
 				return;
 			};
@@ -182,7 +187,7 @@ impl CommandHandler {
 						&window,
 						action_id.clone(),
 						Err(err),
-						format!("Failed to install mod {mod_id}"),
+						MessageContext::InstallMod,
 					);
 					return;
 				}
@@ -206,7 +211,7 @@ impl CommandHandler {
 						&window,
 						action_id.clone(),
 						Ok::<(), rai_pal_backend::result::Error>(()),
-						"",
+						MessageContext::InstallMod,
 					);
 				}
 				Err(err) => {
@@ -215,7 +220,7 @@ impl CommandHandler {
 						&window,
 						action_id.clone(),
 						Err(err),
-						format!("Failed to install mod {mod_id}"),
+						MessageContext::InstallMod,
 					);
 				}
 			}
@@ -226,7 +231,7 @@ impl CommandHandler {
 		spawn_action(
 			self.window(),
 			action_state::key(ActionKind::OpenLocalModsFolder, ""),
-			"Failed to open local mods folder",
+			MessageContext::OpenLocalModsFolder,
 			|| app_paths::local_mods_path()?.open_folder_or_parent(),
 		);
 	}
@@ -235,7 +240,7 @@ impl CommandHandler {
 		spawn_action(
 			self.window(),
 			action_state::key(ActionKind::OpenLogsFolder, ""),
-			"Failed to open logs folder",
+			MessageContext::OpenLogsFolder,
 			|| app_paths::logs_path()?.open_folder_or_parent(),
 		);
 	}
@@ -289,14 +294,13 @@ pub fn open_url(url: String) {
 fn spawn_action(
 	window: slint::Weak<crate::MainWindow>,
 	action_id: ActionKey,
-	error_context: impl Into<String>,
+	context: MessageContext,
 	action: impl FnOnce() -> Result + Send + 'static,
 ) {
-	let error_context = error_context.into();
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
 		let result = action();
-		action_state::finish(&window, action_id, result, error_context);
+		action_state::finish(&window, action_id, result, context);
 	});
 }

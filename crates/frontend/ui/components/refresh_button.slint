@@ -1,3 +1,4 @@
+import { RefreshTaskData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { Tr } from "../translations.slint";
 import { Icon } from "svg_icon.slint";
@@ -5,18 +6,33 @@ import { Button } from "button.slint";
 
 export global Refresh {
     in-out property <bool> refreshing: false;
-    in property <string> task-names: "";
+    in property <[RefreshTaskData]> tasks;
 
     callback refresh-all;
 }
 
-export component RefreshButton inherits Button {
-    text: Refresh.refreshing ? Tr.refresh-loading(Refresh.task-names) : @tr("refresh" => "Refresh");
-    icon: Refresh.refreshing ? Icon.refreshing : Icon.refresh;
-    tint: Theme.primary;
-    enabled: !Refresh.refreshing;
+export component RefreshButton inherits VerticalLayout {
+    spacing: Theme.space-2xs;
 
-    clicked => {
-        Refresh.refresh-all();
+    Button {
+        text: Refresh.refreshing ? Tr.refresh-loading() : @tr("refresh" => "Refresh");
+        icon: Refresh.refreshing ? Icon.refreshing : Icon.refresh;
+        tint: Theme.primary;
+        enabled: !Refresh.refreshing;
+
+        clicked => {
+            Refresh.refresh-all();
+        }
+    }
+
+    if Refresh.refreshing && Refresh.tasks.length > 0 : FlexboxLayout {
+        height: self.preferred-height;
+        spacing: Theme.space-2xs;
+
+        for task[index] in Refresh.tasks : Text {
+            text: index < Refresh.tasks.length - 1 ? "\{Tr.refresh-task(task)} |" : Tr.refresh-task(task);
+            font-size: Theme.font-xs;
+            color: Theme.dimmed-foreground;
+        }
     }
 }

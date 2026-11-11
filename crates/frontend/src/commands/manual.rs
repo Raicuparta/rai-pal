@@ -20,7 +20,7 @@ use rai_pal_backend::{
 };
 use slint::ComponentHandle;
 
-use crate::{AddGamePhase, MainWindow, notifications, runtime, selected};
+use crate::{AddGamePhase, MainWindow, MessageContext, notifications, runtime, selected};
 
 use super::{CommandHandler, on_command};
 
@@ -49,15 +49,11 @@ impl CommandHandler {
 		}
 	}
 
-	pub fn select_executable(&self) {
+	pub fn select_executable(&self, title: String, windows_filter: String, other_filter: String) {
 		let Some(window) = self.ui() else {
 			return;
 		};
 
-		let strings = window.global::<crate::HostStrings>();
-		let title = strings.get_select_executable_title().to_string();
-		let windows_filter = strings.get_windows_executable_filter().to_string();
-		let other_filter = strings.get_other_executable_filter().to_string();
 		let window_weak = window.as_weak();
 		let database = Arc::clone(&self.database);
 
@@ -87,23 +83,22 @@ impl CommandHandler {
 						}
 					}
 					Err(err) => {
-						notifications::error(&window, err);
+						notifications::error(
+							&window,
+							notifications::data(MessageContext::None, &err),
+						);
 					}
 				}
 			});
 		});
 	}
 
-	pub fn select_directory(&self) {
+	pub fn select_directory(&self, title: String) {
 		let Some(main_window) = self.ui() else {
 			return;
 		};
 
 		let generation = SCAN_GENERATION.fetch_add(1, Ordering::SeqCst) + 1;
-		let title = main_window
-			.global::<crate::HostStrings>()
-			.get_select_directory_title()
-			.to_string();
 		let window_weak = main_window.as_weak();
 		let progress_window = main_window.as_weak();
 
@@ -177,9 +172,14 @@ impl CommandHandler {
 						window
 							.global::<crate::AddGameState>()
 							.set_games_count(i32::try_from(result.games.len()).unwrap_or(i32::MAX));
+						#[expect(
+							clippy::cast_possible_truncation,
+							reason = "the duration is only shown with one decimal place"
+						)]
+						let duration_secs = result.duration_secs as f32;
 						window
 							.global::<crate::AddGameState>()
-							.set_duration_text(format!("{:.1}", result.duration_secs).into());
+							.set_duration_secs(duration_secs);
 						window
 							.global::<crate::AddGameState>()
 							.set_directory(path_text.into());
@@ -189,7 +189,10 @@ impl CommandHandler {
 					}
 					Err(err) => {
 						reset_scan(&window);
-						notifications::error(&window, err.to_string());
+						notifications::error(
+							&window,
+							notifications::data(MessageContext::None, &err),
+						);
 					}
 				}
 			});
@@ -242,7 +245,10 @@ impl CommandHandler {
 						}
 					}
 					Err(err) => {
-						notifications::error(&window, err);
+						notifications::error(
+							&window,
+							notifications::data(MessageContext::None, &err),
+						);
 					}
 				}
 			});
@@ -277,7 +283,10 @@ impl CommandHandler {
 						}
 					}
 					Err(err) => {
-						notifications::error(&window, err);
+						notifications::error(
+							&window,
+							notifications::data(MessageContext::None, &err),
+						);
 					}
 				}
 			});
@@ -316,7 +325,10 @@ impl CommandHandler {
 						}
 					}
 					Err(err) => {
-						notifications::error(&window, err);
+						notifications::error(
+							&window,
+							notifications::data(MessageContext::None, &err),
+						);
 					}
 				}
 			});
@@ -357,7 +369,10 @@ impl CommandHandler {
 						}
 					}
 					Err(err) => {
-						notifications::error(&window, err);
+						notifications::error(
+							&window,
+							notifications::data(MessageContext::None, &err),
+						);
 					}
 				}
 			});
@@ -399,7 +414,7 @@ fn reset_scan(window: &MainWindow) {
 	window.global::<crate::AddGameState>().set_games_count(0);
 	window
 		.global::<crate::AddGameState>()
-		.set_duration_text("".into());
+		.set_duration_secs(0.0);
 	window
 		.global::<crate::AddGameState>()
 		.set_directory("".into());
@@ -412,7 +427,7 @@ fn reload_directories(window: &MainWindow) {
 			.map(|path| path.display().to_string().into())
 			.collect::<Vec<slint::SharedString>>(),
 		Err(err) => {
-			notifications::error(window, err.to_string());
+			notifications::error(window, notifications::data(MessageContext::None, &err));
 			Vec::new()
 		}
 	};
@@ -429,11 +444,15 @@ pub fn register(window: &crate::MainWindow) {
 	on_command!(window, DialogActions, on_add_game_closed, || handler => {
 		handler.cancel_game_scan();
 	});
-	on_command!(window, DialogActions, on_select_game_executable, || handler => {
-		handler.select_executable();
+	on_command!(window, DialogActions, on_select_game_executable, |title, windows_filter, other_filter| handler => {
+		handler.select_executable(
+			title.to_string(),
+			windows_filter.to_string(),
+			other_filter.to_string(),
+		);
 	});
-	on_command!(window, DialogActions, on_select_game_directory, || handler => {
-		handler.select_directory();
+	on_command!(window, DialogActions, on_select_game_directory, |title| handler => {
+		handler.select_directory(title.to_string());
 	});
 	on_command!(window, DialogActions, on_cancel_game_scan, || handler => {
 		handler.cancel_game_scan();
