@@ -87,3 +87,7 @@ error can reach the user.
 
 Don't add tests unless asked. If a change warrants tests (especially near
 existing tests), ask first.
+
+## Comments
+
+Never write comments in your code, unless asked to. Rare exception only for extremely weird hacks that can't be understood without extra context, and in those cases the comments musto only explain why, never what. Never remove comments that were already there.

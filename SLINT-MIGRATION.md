@@ -116,6 +116,10 @@ needs an equivalent after that removal.
 - Removed the unused `maps` helper module and `byteorder` dependency.
 - Removed the single-field `ProviderActionItem` Slint struct; provider actions
   are now exposed as plain strings.
+- Buttons and sidebar actions share the spinner/status icon presentation through
+  `action_status_icon.slint` (the 500 ms long-loading timer, success/error
+  icons, and spinner rotation), and share tint contrast/hover/pressed math
+  through the `Contrast` global in `contrast.slint`.
 
 ## Further cleanup candidates
 
@@ -178,11 +182,6 @@ changing.
 - Action state is stored in a `HashMap<String, ActionState>` keyed by
   `format!("{:?}:{}", kind, target)`; if Slint's generated enums can be hashed,
   keying by `ActionKey` directly would remove the formatting and parsing.
-- Button and sidebar action duplicate the same spinner/status presentation
-  (500 ms long-loading timer, success/error icons, spinner angle) and the same
-  contrast/hover/pressed color math in `base_button.slint` and
-  `sidebar_action.slint`. Extracting these into shared components or `Theme`
-  helpers would keep the states consistent.
 - Some user-visible strings still bypass gettext: the manual-game file dialog
   titles and refresh task names are built in Rust, and a few Slint labels are
   plain literals (`"Only"` in `filter_group.slint`, `"Remove"` in

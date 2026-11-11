@@ -12,5 +12,6 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - button size and icon spacing needs to be adjusted to match the tauri one better.
 - maybe a bit too small on steam deck?
 - confused about confirmation.rs in frontend, seems overkill? can it be more in slint side?
+- Look for leftover AI comments.
 
 # Report:

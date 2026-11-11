@@ -1,0 +1,42 @@
+import { ActionState } from "../action_state.slint";
+import { Theme } from "../theme.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+
+export component ActionStatusIcon inherits SvgIcon {
+    in property <ActionState> state: ActionState.idle;
+    in property <Icon> base-icon: Icon.none;
+    in property <bool> reserve-slot: false;
+
+    out property <bool> shown:
+        root.reserve-slot || root.base-icon != Icon.none || root.has-status || root.shows-spinner;
+    out property <angle> rotation: root.shows-spinner ? root.spinner-angle : 0deg;
+
+    private property <bool> long-loading: false;
+    private property <bool> has-status:
+        root.state == ActionState.success || root.state == ActionState.error;
+    private property <bool> shows-spinner:
+        root.state == ActionState.loading && root.long-loading;
+    private property <angle> spinner-angle: mod(animation-tick(), 1s) / 1s * 360deg;
+    private property <Icon> display-icon:
+        root.state == ActionState.success ? Icon.success
+        : root.state == ActionState.error ? Icon.error
+        : root.shows-spinner ? Icon.loading
+        : root.base-icon;
+
+    width: root.shown ? root.size : 0px;
+    height: root.shown ? root.size : 0px;
+    icon: root.display-icon;
+
+    changed state => {
+        root.long-loading = false;
+    }
+
+    Timer {
+        interval: 500ms;
+        running: root.state == ActionState.loading && !root.long-loading;
+
+        triggered => {
+            root.long-loading = true;
+        }
+    }
+}
