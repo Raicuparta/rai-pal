@@ -1,18 +1,18 @@
 use std::{collections::HashSet, rc::Rc};
 
 use rai_pal_backend::{
-	filter_views::build_filter_views,
+	filter_views::{FilterGroupView, FilterValueView, build_filter_views},
 	games_query::{FilterGroupKey, GamesFilter},
 	local_database::{app_database::DbMutex, mod_database::ModDatabase},
 	result::LogErrExt,
 };
 
-use crate::{FilterGroupData, FilterValueData, convert};
+use crate::{FilterGroupData, FilterValueData, FilterValueLabel};
 
-fn value_data(value: rai_pal_backend::filter_views::FilterValueView) -> FilterValueData {
+fn value_data(value: FilterValueView) -> FilterValueData {
 	FilterValueData {
 		value: value.value.into(),
-		label: convert::filter_value_label(value.label),
+		label: value.label.map_or(FilterValueLabel::None, Into::into),
 		display: value.display.into(),
 		note: value.note.into(),
 		enabled: value.enabled,
@@ -20,7 +20,7 @@ fn value_data(value: rai_pal_backend::filter_views::FilterValueView) -> FilterVa
 	}
 }
 
-fn group_data(group: rai_pal_backend::filter_views::FilterGroupView) -> FilterGroupData {
+fn group_data(group: FilterGroupView) -> FilterGroupData {
 	FilterGroupData {
 		key: group.key.into(),
 		label: group.label.into(),

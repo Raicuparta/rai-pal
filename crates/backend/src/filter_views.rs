@@ -63,7 +63,7 @@ pub struct FilterGroupView {
 	pub expanded: bool,
 }
 
-pub trait FilterValue: Eq + Hash + Clone + Display + 'static {
+trait FilterValue: Eq + Hash + Clone + Display + 'static {
 	const VALUES: &'static [Self];
 	const HAS_UNKNOWN: bool = false;
 
@@ -159,7 +159,11 @@ impl FilterValue for UnityBackend {
 	const HAS_UNKNOWN: bool = true;
 
 	fn display_text(&self) -> String {
-		self.display_name().to_string()
+		match self {
+			Self::Il2Cpp => "IL2CPP",
+			Self::Mono => "Mono",
+		}
+		.to_string()
 	}
 }
 

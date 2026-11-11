@@ -91,10 +91,6 @@ slint_enum_conversions!(ColorScheme => AppColorScheme {
 	Light,
 });
 
-pub fn filter_value_label(label: Option<FilterValueLabel>) -> UiFilterValueLabel {
-	label.map_or(UiFilterValueLabel::None, UiFilterValueLabel::from)
-}
-
 pub const fn provider_id(provider: GameProviderId) -> ProviderId {
 	match provider {
 		GameProviderId::Amazon => ProviderId::Amazon,

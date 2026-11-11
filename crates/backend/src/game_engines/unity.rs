@@ -27,13 +27,6 @@ pub enum UnityBackend {
 
 impl UnityBackend {
 	pub const ALL: [Self; 2] = [Self::Il2Cpp, Self::Mono];
-
-	pub const fn display_name(self) -> &'static str {
-		match self {
-			Self::Il2Cpp => "IL2CPP",
-			Self::Mono => "Mono",
-		}
-	}
 }
 
 pub fn parse_version(string: &str) -> Option<EngineVersion> {
