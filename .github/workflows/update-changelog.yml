@@ -1,0 +1,23 @@
+name: Update Release Changelog
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag to update (leave empty to use the current version)"
+        required: false
+        type: string
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Update Release Changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ inputs.tag_name }}
+        run: bash scripts/update-release-changelog.sh "$TAG_NAME"

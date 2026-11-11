@@ -51,7 +51,10 @@ scripts/get-version.sh
 scripts/generate-release-body.sh <version>
 scripts/collect-build-artifacts.sh <windows|linux|macos> <version>
 scripts/merge-updater-json.sh <partials-dir>
+scripts/update-release-changelog.sh [tag]
 ```
+
+`update-release-changelog.sh` rewrites an existing release's body and the `notes` in its attached `latest.json` from `changelogs/v<version>.md`, without rebuilding anything. The tag defaults to the version in `Cargo.toml`. It runs from the "Update Release Changelog" workflow, and needs `GH_TOKEN` set.
 
 ## Containers
 
