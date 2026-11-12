@@ -7,6 +7,23 @@
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
 
+      slintPackage = pkgs.lib.findFirst (package: package.name == "slint") null (
+        builtins.fromTOML (builtins.readFile ./Cargo.lock)
+      ).package;
+
+      slintTrExtractor = pkgs.rustPlatform.buildRustPackage {
+        pname = "slint-tr-extractor";
+        version = slintPackage.version;
+        src = pkgs.fetchgit {
+          url = "https://github.com/slint-ui/slint";
+          rev = pkgs.lib.last (pkgs.lib.splitString "#" slintPackage.source);
+          hash = "sha256-j2kTViqiGNL4jDFKhYd1fkwqGLe3WzDEr/f9DC/8ntk=";
+        };
+        cargoHash = "sha256-5SAXsaKRxITsGHjE3iZkF10cdAonr6h36BOJDVInW38=";
+        buildAndTestSubdir = "tools/tr-extractor";
+        doCheck = false;
+      };
+
       linuxdeployAppImage =
         pkgs.runCommandLocal "linuxdeploy"
           {
@@ -54,6 +71,7 @@
           patchelf
           rustc
           rustfmt
+          slintTrExtractor
           squashfs-tools
           wayland
           xdg-utils
