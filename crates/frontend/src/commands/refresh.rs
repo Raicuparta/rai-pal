@@ -44,7 +44,24 @@ impl CommandHandler {
 		let database = Arc::clone(&self.database);
 
 		thread::spawn(move || {
-			let tasks = Mutex::new(Vec::<RefreshTaskData>::new());
+			let tasks = Arc::new(Mutex::new(Vec::<RefreshTaskData>::new()));
+
+			let remote_task = task(RefreshTaskKind::RemoteData);
+			push_task(&window, &tasks, remote_task.clone());
+
+			let remote_window = window.clone();
+			let remote_tasks = Arc::clone(&tasks);
+			let remote = thread::spawn(move || {
+				if let Err(err) = refresh_remote_database() {
+					log::error!("Failed to refresh remote database: {err}");
+					notifications::error_async(
+						&remote_window,
+						notifications::data(MessageContext::RefreshRemoteData, &err),
+					);
+				}
+
+				pop_task(&remote_window, &remote_tasks, &remote_task);
+			});
 
 			thread::scope(|scope| {
 				for provider in GameProviderId::ALL {
@@ -73,6 +90,15 @@ impl CommandHandler {
 				}
 			});
 
+			crate::runtime::invoke_on_ui(move || {
+				let Some(handler) = Self::current() else {
+					return;
+				};
+
+				handler.refresh_filters();
+				handler.start_query(Duration::ZERO, ScrollBehavior::Keep);
+			});
+
 			if let Err(err) = database.refresh_installed_mods() {
 				log::error!("Failed to refresh installed mods: {err}");
 				notifications::error_async(
@@ -92,16 +118,9 @@ impl CommandHandler {
 			}
 			pop_task(&window, &tasks, &mods_task);
 
-			let remote_task = task(RefreshTaskKind::RemoteData);
-			push_task(&window, &tasks, remote_task.clone());
-			if let Err(err) = refresh_remote_database() {
-				log::error!("Failed to refresh remote database: {err}");
-				notifications::error_async(
-					&window,
-					notifications::data(MessageContext::RefreshRemoteData, &err),
-				);
+			if remote.join().is_err() {
+				log::warn!("Remote database refresh thread panicked");
 			}
-			pop_task(&window, &tasks, &remote_task);
 
 			crate::runtime::invoke_on_ui(move || {
 				let Some(handler) = Self::current() else {

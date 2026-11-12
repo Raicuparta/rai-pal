@@ -23,7 +23,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Done
 
-- Refreshed game providers in parallel with a scoped thread per provider, so a slow provider no longer blocks the others; the task list now shows whichever providers are still running. Installed mods, mod sources, and remote data still refresh sequentially after all providers finish.
+- Refreshed game providers in parallel with a scoped thread per provider, and downloaded the remote database concurrently too. The games list is now reloaded as soon as providers finish, while installed mods and mod sources continue refreshing in the background.
 - Preserved the games list scroll position during refresh: `start_query` now takes `ScrollBehavior::Reset`/`Keep`, and restores the scroll on the next frame because replacing the model makes the ListView snap to a row boundary.
 - Made filter value rows shorter by adding a vertical padding override to `ListRow`; they went from 30px to 26px tall, matching the 25px filter group headers.
 - Removed border-radius clipping from game thumbnails and avatars, which doesn't work with the software renderer; images are square now and the once-circular borders are slightly rounded instead.
