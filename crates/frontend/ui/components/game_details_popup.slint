@@ -58,6 +58,7 @@ export component GameDetailsPopup inherits Modal {
     open: DebugState.details-json != "";
     title: @tr("debugData" => "Debug data");
     big: true;
+    fill-height: true;
 
     closed => {
         DebugState.details-json = "";

@@ -11,6 +11,7 @@ export global Viewport {
 export component Modal inherits Rectangle {
     in property <string> title;
     in property <bool> big: false;
+    in property <bool> fill-height: false;
     in-out property <bool> open: false;
     in property <bool> close-on-click-outside: true;
     in property <bool> show-close-button: true;
@@ -68,7 +69,7 @@ export component Modal inherits Rectangle {
             x: (parent.width - self.width) / 2;
             y: (parent.height - self.height) / 2;
             width: min(root.big ? root.modal-max-width : max(header.preferred-width, body-layout.preferred-width) + root.modal-padding * 2, root.modal-max-width, parent.width - root.modal-margin * 2);
-            height: root.big ? parent.height - root.modal-margin * 2 : min(header.preferred-height + body-layout.preferred-height + root.modal-padding * 2 + Theme.space-md, parent.height - root.modal-margin * 2);
+            height: root.fill-height ? parent.height - root.modal-margin * 2 : min(header.preferred-height + body-layout.preferred-height + root.modal-padding * 2 + Theme.space-md, parent.height - root.modal-margin * 2);
             background: Theme.background;
             border-width: Theme.border-width;
             border-color: Theme.border;
