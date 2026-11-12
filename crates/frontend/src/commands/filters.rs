@@ -1,7 +1,9 @@
 use std::{rc::Rc, time::Duration};
 
 use rai_pal_backend::{
-	filter_views::{apply_filter_action, reset_all_filters, reset_filter_group},
+	filter_views::{
+		apply_filter_action, collapse_all_filters, reset_all_filters, reset_filter_group,
+	},
 	games_query::{FilterAction, FilterGroupKey},
 };
 use slint::ComponentHandle as _;
@@ -22,7 +24,7 @@ impl CommandHandler {
 			build_groups(
 				&settings.games_query.filter,
 				&self.mod_families,
-				&settings.expanded_filters,
+				&settings.collapsed_filters,
 				&providers_with_games,
 			)
 		};
@@ -78,7 +80,7 @@ impl CommandHandler {
 	}
 
 	pub fn collapse_filters(&self) {
-		self.settings.borrow_mut().expanded_filters.clear();
+		collapse_all_filters(&mut self.settings.borrow_mut().collapsed_filters);
 		self.persist_settings();
 		self.refresh_filters();
 	}
@@ -88,9 +90,9 @@ impl CommandHandler {
 		{
 			let mut settings = self.settings.borrow_mut();
 			if expanded {
-				settings.expanded_filters.insert(group);
+				settings.collapsed_filters.remove(&group);
 			} else {
-				settings.expanded_filters.remove(&group);
+				settings.collapsed_filters.insert(group);
 			}
 		}
 

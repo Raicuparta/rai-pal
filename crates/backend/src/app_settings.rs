@@ -94,7 +94,7 @@ pub struct AppSettings {
 	#[serde(default)]
 	pub skip_confirm_dialogs: HashSet<SkipConfirmation>,
 	#[serde(default)]
-	pub expanded_filters: HashSet<FilterGroupKey>,
+	pub collapsed_filters: HashSet<FilterGroupKey>,
 	#[serde(default)]
 	pub color_scheme: ColorScheme,
 	#[serde(default)]

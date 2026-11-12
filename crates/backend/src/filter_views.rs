@@ -244,21 +244,21 @@ fn build_group<T: FilterValue>(
 	key: FilterGroupKey,
 	group: &FilterGroup<T>,
 	values: Vec<FilterValueView>,
-	expanded_filters: &HashSet<FilterGroupKey>,
+	collapsed_filters: &HashSet<FilterGroupKey>,
 ) -> FilterGroupView {
 	FilterGroupView {
 		key,
 		values,
 		has_changes: group.has_changes(T::VALUES, T::HAS_UNKNOWN),
 		has_locked: group.has_locked(),
-		expanded: expanded_filters.contains(&key),
+		expanded: !collapsed_filters.contains(&key),
 	}
 }
 
 fn mod_family_group(
 	filter: &GamesFilter,
 	mod_families: &[String],
-	expanded_filters: &HashSet<FilterGroupKey>,
+	collapsed_filters: &HashSet<FilterGroupKey>,
 ) -> FilterGroupView {
 	let mut values: Vec<FilterValueView> = mod_families
 		.iter()
@@ -271,14 +271,14 @@ fn mod_family_group(
 		values,
 		has_changes: filter.mod_families.has_changes(mod_families, false),
 		has_locked: filter.mod_families.has_locked(),
-		expanded: expanded_filters.contains(&FilterGroupKey::ModFamilies),
+		expanded: !collapsed_filters.contains(&FilterGroupKey::ModFamilies),
 	}
 }
 
 pub fn build_filter_views(
 	filter: &GamesFilter,
 	mod_families: &[String],
-	expanded_filters: &HashSet<FilterGroupKey>,
+	collapsed_filters: &HashSet<FilterGroupKey>,
 	providers_with_games: &HashSet<GameProviderId>,
 ) -> Vec<FilterGroupView> {
 	vec![
@@ -286,20 +286,20 @@ pub fn build_filter_views(
 			FilterGroupKey::Installed,
 			&filter.installed,
 			known_values(&filter.installed),
-			expanded_filters,
+			collapsed_filters,
 		),
 		build_group(
 			FilterGroupKey::Engines,
 			&filter.engines,
 			known_values(&filter.engines),
-			expanded_filters,
+			collapsed_filters,
 		),
-		mod_family_group(filter, mod_families, expanded_filters),
+		mod_family_group(filter, mod_families, collapsed_filters),
 		build_group(
 			FilterGroupKey::Tags,
 			&filter.tags,
 			known_values(&filter.tags),
-			expanded_filters,
+			collapsed_filters,
 		),
 		build_group(
 			FilterGroupKey::Providers,
@@ -307,31 +307,31 @@ pub fn build_filter_views(
 			known_values_with_availability(&filter.providers, |provider| {
 				providers_with_games.contains(provider)
 			}),
-			expanded_filters,
+			collapsed_filters,
 		),
 		build_group(
 			FilterGroupKey::UnityBackends,
 			&filter.unity_backends,
 			known_values(&filter.unity_backends),
-			expanded_filters,
+			collapsed_filters,
 		),
 		build_group(
 			FilterGroupKey::ExecutableOs,
 			&filter.executable_os,
 			known_values(&filter.executable_os),
-			expanded_filters,
+			collapsed_filters,
 		),
 		build_group(
 			FilterGroupKey::SupportedOs,
 			&filter.supported_os,
 			known_values(&filter.supported_os),
-			expanded_filters,
+			collapsed_filters,
 		),
 		build_group(
 			FilterGroupKey::Architectures,
 			&filter.architectures,
 			known_values(&filter.architectures),
-			expanded_filters,
+			collapsed_filters,
 		),
 	]
 }
@@ -437,6 +437,10 @@ pub fn reset_filter_group(filter: &mut GamesFilter, group_key: FilterGroupKey) {
 		FilterGroupKey::SupportedOs => filter.supported_os.keep_only_locked(),
 		FilterGroupKey::Architectures => filter.architectures.keep_only_locked(),
 	}
+}
+
+pub fn collapse_all_filters(collapsed_filters: &mut HashSet<FilterGroupKey>) {
+	collapsed_filters.extend(FilterGroupKey::iter());
 }
 
 pub fn reset_all_filters(filter: &mut GamesFilter) {

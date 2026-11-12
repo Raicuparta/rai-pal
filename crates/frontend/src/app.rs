@@ -60,7 +60,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let initial_groups = build_groups(
 		&initial_query.filter,
 		&mod_families,
-		&app_settings.borrow().expanded_filters,
+		&app_settings.borrow().collapsed_filters,
 		&providers_with_games,
 	);
 

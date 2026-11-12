@@ -40,13 +40,18 @@ fn group_data(group: FilterGroupView) -> FilterGroupData {
 pub fn build_groups(
 	filter: &GamesFilter,
 	mod_families: &[String],
-	expanded_filters: &HashSet<FilterGroupKey>,
+	collapsed_filters: &HashSet<FilterGroupKey>,
 	providers_with_games: &HashSet<GameProviderId>,
 ) -> Vec<FilterGroupData> {
-	build_filter_views(filter, mod_families, expanded_filters, providers_with_games)
-		.into_iter()
-		.map(group_data)
-		.collect()
+	build_filter_views(
+		filter,
+		mod_families,
+		collapsed_filters,
+		providers_with_games,
+	)
+	.into_iter()
+	.map(group_data)
+	.collect()
 }
 
 pub fn load_providers_with_games(database: &DbMutex) -> HashSet<GameProviderId> {
