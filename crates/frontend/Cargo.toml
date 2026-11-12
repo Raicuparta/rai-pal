@@ -26,7 +26,9 @@ chrono = { version = "0.4.44", default-features = false, features = [
   "std",
   "clock",
 ] }
-slint = { version = "1.18.1", features = ["unstable-winit-030"] }
+slint = { git = "https://github.com/slint-ui/slint", branch = "pre-release/1.19", features = [
+  "unstable-winit-030",
+] }
 sys-locale = "0.3.2"
 image = { version = "0.25", default-features = false, features = [
   "png",
@@ -41,7 +43,7 @@ winreg = "0.56.0"
 
 [build-dependencies]
 embed-resource = "3.0"
-slint-build = "1.18.1"
+slint-build = { git = "https://github.com/slint-ui/slint", branch = "pre-release/1.19" }
 
 [lints]
 workspace = true
