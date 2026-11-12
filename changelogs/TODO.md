@@ -6,8 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- mod_summary items need to always be a single line and never wrap. make it just clip the text with ellipsis.
-
 ## Do later:
 
 - Checkbox check icon looks a lil weird in software renderer. maybe due to downscale.
@@ -20,6 +18,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Notes, questions, decisions, etc.
 
 ## Done
+
+- Mod summary rows no longer wrap: the title, description, version and meta values (release date, author, engine, recommended config) are single-line texts with `overflow: elide`, so long values are clipped with an ellipsis instead of growing the row.
 
 - Audited `translations.slint`: the file-dialog title/filter helpers were pure `@tr` wrappers used in one place, so they're now inline `@tr` calls in `add_game_popup.slint`. The remaining functions all map typed backend values (`RefreshTaskData`, `DownloadItemKind`, filter ids/labels, `ProviderAction`, `ConfirmKind`, `MessageData`) to text, so they stay central.
 

@@ -20,6 +20,7 @@ component MetaItem inherits HorizontalLayout {
         text: root.text;
         font-size: Theme.font-xs;
         color: Theme.foreground;
+        overflow: elide;
 
         if root.tooltip != "" : Tooltip {
             text: @markdown("\{root.tooltip}");
@@ -65,7 +66,7 @@ export component ModSummaryView inherits HorizontalLayout {
             Text {
                 text: root.title;
                 font-weight: Theme.weight-semibold;
-                wrap: word-wrap;
+                overflow: elide;
                 horizontal-stretch: 1;
             }
 
@@ -114,6 +115,7 @@ export component ModSummaryView inherits HorizontalLayout {
                 font-size: Theme.font-xs;
                 color: Theme.foreground;
                 horizontal-stretch: 0;
+                overflow: elide;
             }
 
             if root.release-date != "" : MetaItem {
@@ -143,7 +145,7 @@ export component ModSummaryView inherits HorizontalLayout {
             text: root.description;
             font-size: Theme.font-sm;
             opacity: 0.75;
-            wrap: word-wrap;
+            overflow: elide;
             color: Theme.foreground;
         }
     }
