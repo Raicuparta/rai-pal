@@ -1,4 +1,5 @@
 use std::{
+	io::ErrorKind,
 	path::PathBuf,
 	sync::{
 		LazyLock,
@@ -43,10 +44,18 @@ pub fn contains(url: &str, width: u32, height: u32) -> bool {
 
 pub fn load(url: &str, width: u32, height: u32) -> Option<Vec<u8>> {
 	let path = cache_path(url, width, height)?;
-	fs::read(&path).ok_or_log(&format!(
-		"Failed to read thumbnail cache file {}",
-		path.display()
-	))
+
+	match fs::read(&path) {
+		Ok(bytes) => Some(bytes),
+		Err(err) if err.kind() == ErrorKind::NotFound => None,
+		Err(err) => {
+			log::warn!(
+				"Failed to read thumbnail cache file {}: {err}",
+				path.display()
+			);
+			None
+		}
+	}
 }
 
 pub fn store(url: &str, width: u32, height: u32, bytes: &[u8]) {
@@ -95,6 +104,10 @@ pub fn remove(url: &str, width: u32, height: u32) {
 	};
 
 	if let Err(err) = fs::remove_file(&path) {
+		if err.kind() == ErrorKind::NotFound {
+			return;
+		}
+
 		log::warn!(
 			"Failed to remove thumbnail cache file {}: {err}",
 			path.display()
