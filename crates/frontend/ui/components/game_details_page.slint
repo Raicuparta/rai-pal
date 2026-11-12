@@ -256,7 +256,6 @@ export component GameDetailsPage inherits HorizontalLayout {
                         alignment: start;
 
                         ActionButton {
-                            vertical-stretch: 0;
                             text: @tr("gameModal" => "Uninstall all mods");
                             icon: Icon.delete;
                             action-key: { kind: ActionKind.game-mod-uninstall-all, target: "" };
