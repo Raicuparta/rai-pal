@@ -706,8 +706,8 @@ msgid "Thanks"
 msgstr "Waaaah!"
 
 msgctxt "thanksPage"
-msgid "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io."
-msgstr "Waaaah I waah wah waah I waah waah waaah VR waah in wah waaah wah am waaaaaaah waaaaah on a waaaaaaah VR wah wah waaah waaaah If wah waah waah I wah wah waaah waah to wah waaah waaaah waaaaaah waaaaaaah wah wah waah waaaaah me by waaaah wah of my waah waah on waaaaaah!"
+msgid "Hello. I made Rai Pal, and I created some of the mods you see here too.\n\nIf you like what I do, and would like to see more, please consider donating via PayPal! You can also support me by buying one of my free mods on itch.io."
+msgstr "Waaaah I waah Rai Pal, waah I waah wah of wah waah wah wah waaah.\n\nIf wah waah waah I wah wah waaah waah to wah waaah waaaah waaaaaah waaaaaaah wah PayPal! Wah wah waah waaaaah me by waaaah wah of my waah waah on waaaaaah!"
 
 msgctxt "thanksPage"
 msgid "Ranked by total lifetime donation amount."

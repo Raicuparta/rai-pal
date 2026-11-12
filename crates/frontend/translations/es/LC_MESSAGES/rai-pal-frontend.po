@@ -706,8 +706,8 @@ msgid "Thanks"
 msgstr "Agradecimientos"
 
 msgctxt "thanksPage"
-msgid "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io."
-msgstr "Hola. Hice Rai Pal. También hice otros mods de VR en el pasado, y actualmente estoy trabajando en un mod universal de VR para juegos de Unity. Si te gusta lo que hago y te gustaría ver más, anímate a donar. También puedes apoyarme comprando uno de mis mods gratuitos en itch.io."
+msgid "Hello. I made Rai Pal, and I created some of the mods you see here too.\n\nIf you like what I do, and would like to see more, please consider donating via PayPal! You can also support me by buying one of my free mods on itch.io."
+msgstr "Hola. Hice Rai Pal, y también creé algunos de los mods que ves aquí.\n\nSi te gusta lo que hago y te gustaría ver más, ¡anímate a donar por PayPal! También puedes apoyarme comprando uno de mis mods gratuitos en itch.io."
 
 msgctxt "thanksPage"
 msgid "Ranked by total lifetime donation amount."
