@@ -3,6 +3,7 @@ import { Theme } from "../theme.slint";
 import { Tr } from "../translations.slint";
 import { Icon } from "svg_icon.slint";
 import { Button } from "button.slint";
+import { ActionState } from "../action_state.slint";
 
 export global Refresh {
     in-out property <bool> refreshing: false;
@@ -12,8 +13,9 @@ export global Refresh {
 }
 
 export component RefreshButton inherits Button {
-    text: Refresh.refreshing ? Tr.refresh-loading() : @tr("refresh" => "Refresh");
-    icon: Refresh.refreshing ? Icon.refreshing : Icon.refresh;
+    text: Refresh.refreshing ? @tr("refresh" => "Loading...") : @tr("refresh" => "Refresh");
+    icon: Icon.refresh;
+    state: Refresh.refreshing ? ActionState.loading : ActionState.idle;
     tint: Theme.primary;
     enabled: !Refresh.refreshing;
 

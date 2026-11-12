@@ -1,10 +1,15 @@
 import { Icon, SvgIcon } from "svg_icon.slint";
 
+export enum ChevronDirection {
+    down,
+    right,
+    up,
+}
+
 export component Chevron inherits SvgIcon {
-    in property <angle> rotation: 0deg;
+    in property <ChevronDirection> direction: ChevronDirection.down;
 
-    icon: Icon.chevron;
-    transform-rotation: root.rotation;
-
-    animate transform-rotation { duration: 150ms; easing: ease-in-out; }
+    icon: root.direction == ChevronDirection.up ? Icon.chevron-up
+        : root.direction == ChevronDirection.right ? Icon.chevron-right
+        : Icon.chevron-down;
 }

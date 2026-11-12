@@ -1,7 +1,7 @@
 import { ModsTabItemData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { ModsTabRow } from "mods_tab_row.slint";
-import { Chevron } from "chevron.slint";
+import { Chevron, ChevronDirection } from "chevron.slint";
 import { RowDivider } from "row_divider.slint";
 
 export component ModsTabFamilyRow inherits Rectangle {
@@ -28,7 +28,7 @@ export component ModsTabFamilyRow inherits Rectangle {
                 cross-axis-alignment: center;
 
                 Chevron {
-                    rotation: root.expanded ? 0deg : -90deg;
+                    direction: root.expanded ? ChevronDirection.down : ChevronDirection.right;
                     size: Theme.space-lg;
                     color: Theme.dimmed-foreground;
                 }

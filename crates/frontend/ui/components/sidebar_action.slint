@@ -46,12 +46,11 @@ export component SidebarAction inherits ListRow {
         padding-left: Theme.space-md;
         spacing: Theme.space-sm;
 
-        status-icon := ActionStatusIcon {
+        ActionStatusIcon {
             state: root.current-state;
             base-icon: root.icon;
             reserve-slot: true;
             color: root.content-color;
-            transform-rotation: status-icon.rotation;
         }
 
         Text {

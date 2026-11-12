@@ -6,7 +6,7 @@ import { Button } from "button.slint";
 import { IconButton } from "icon_button.slint";
 import { ListRow } from "list_row.slint";
 import { ResetButton } from "reset_button.slint";
-import { Chevron } from "chevron.slint";
+import { Chevron, ChevronDirection } from "chevron.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 import { GamesActions } from "../actions.slint";
 
@@ -124,7 +124,7 @@ export component FilterGroup inherits Rectangle {
                 cross-axis-alignment: center;
 
                 Chevron {
-                    rotation: root.group.expanded ? 0deg : -90deg;
+                    direction: root.group.expanded ? ChevronDirection.down : ChevronDirection.right;
                     color: Theme.dimmed-foreground;
                 }
 

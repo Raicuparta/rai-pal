@@ -28,10 +28,6 @@ export global Tr {
         return @tr("fileDialog" => "Select a game directory");
     }
 
-    public pure function refresh-loading() -> string {
-        return @tr("refresh" => "Loading...");
-    }
-
     public pure function refresh-task(task: RefreshTaskData) -> string {
         if task.kind == RefreshTaskKind.provider {
             return task.provider;

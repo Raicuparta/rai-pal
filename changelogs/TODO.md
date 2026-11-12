@@ -17,6 +17,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - missing expand animations in filters.
 - filter "collapse all" chevron is upside down. uhh actually all chevrons stuck in down position now? 1.19 bug?
 - icon buttons slightly uncentered? noticeable in filter reset button.
+- look at translations.slint and see if everything there still needs to be there (for instance stuff that can just be @tr inline in slint?).
 
 ## Notes, questions, decisions, etc.
 

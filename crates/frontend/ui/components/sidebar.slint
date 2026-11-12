@@ -3,6 +3,9 @@ import { Theme } from "../theme.slint";
 import { Refresh } from "refresh_button.slint";
 import { Tr } from "../translations.slint";
 import { Contrast } from "contrast.slint";
+import { ActionStatusIcon } from "action_status_icon.slint";
+import { ActionState } from "../action_state.slint";
+
 
 export component SidebarSection inherits VerticalLayout {
     vertical-stretch: 0;
@@ -31,7 +34,7 @@ export component Sidebar inherits Rectangle {
     background: Theme.background;
 
     private property <bool> loading: Refresh.refreshing && Refresh.tasks.length > 0;
-    private property <length> font-size: 10px;
+    private property <length> font-size: Theme.font-xs;
     private property <brush> status-background: root.loading ? Theme.primary.darker(1) : Theme.surface-background;
     private property <brush> status-color: Contrast.ink(root.status-background);
 
@@ -43,6 +46,7 @@ export component Sidebar inherits Rectangle {
         Rectangle {
             background: root.status-background;
             height: self.preferred-height;
+            clip: true;
 
             VerticalLayout {
                 Rectangle {
@@ -53,17 +57,23 @@ export component Sidebar inherits Rectangle {
 
                 HorizontalLayout {
                     alignment: start;
+                    cross-axis-alignment: center;
                     spacing: Theme.space-xs;
                     padding: Theme.space-xs;
 
-                    if !loading: Text {
+                    if !root.loading: Text {
                         text: root.status-text;
                         color: root.status-color;
                         width: 100%;
                         font-size: root.font-size;
                     }
 
-                    if loading: Text {
+                    ActionStatusIcon {
+                        color: root.status-color;
+                        state: ActionState.loading;
+                    }
+
+                    if root.loading: Text {
                         text: @tr("sidebar" => "Loading:");
                         color: root.status-color;
                         font-size: root.font-size;
