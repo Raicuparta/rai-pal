@@ -29,15 +29,18 @@ export component UserMenu inherits Rectangle {
             if UserState.logged-in: Rectangle {
                 width: root.avatar-size;
                 height: root.avatar-size;
-                border-radius: Theme.radius-sm;
+                border-radius: root.avatar-size / 2;
                 background: Theme.foreground;
+                clip: true;
 
                 Rectangle {
                     x: Theme.border-width * 2;
                     y: Theme.border-width * 2;
                     width: root.avatar-size - Theme.border-width * 4;
                     height: root.avatar-size - Theme.border-width * 4;
+                    border-radius: (root.avatar-size - Theme.border-width * 4) / 2;
                     background: Theme.background;
+                    clip: true;
 
                     if UserState.has-avatar: Image {
                         source: UserState.avatar;

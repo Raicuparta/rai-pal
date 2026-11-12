@@ -46,7 +46,9 @@ export component GameRow inherits VerticalLayout {
         if root.show-thumbnail: Rectangle {
             width: 90px;
             height: 54px;
+            clip: true;
             opacity: game-row.installed ? 1 : 0.5;
+            border-radius: Theme.radius-md;
             background: Branding.provider-background(game-row.provider);
 
             Image {

@@ -30,14 +30,17 @@ component PatronRow inherits Rectangle {
             height: root.avatar-size;
             border-width: root.rank-border-width;
             border-color: root.rank-color;
-            border-radius: Theme.radius-sm;
+            border-radius: root.avatar-size / 2;
             background: transparent;
+            clip: true;
 
             Rectangle {
                 x: root.rank-border-width;
                 y: root.rank-border-width;
                 width: parent.width - root.rank-border-width * 2;
                 height: parent.height - root.rank-border-width * 2;
+                border-radius: self.width / 2;
+                clip: true;
                 background: Theme.surface-background;
 
                 if root.patron.has-avatar: Image {
@@ -131,11 +134,18 @@ export component ThanksPage inherits Rectangle {
                                         alignment: start;
                                         cross-axis-alignment: center;
 
-                                        Image {
+                                        Rectangle {
                                             width: 72px;
                                             height: 72px;
-                                            source: @image-url("../images/raicuparta.png");
-                                            image-fit: cover;
+                                            border-radius: 36px;
+                                            clip: true;
+
+                                            Image {
+                                                source: @image-url("../images/raicuparta.png");
+                                                width: 100%;
+                                                height: 100%;
+                                                image-fit: cover;
+                                            }
                                         }
 
                                         Text {
