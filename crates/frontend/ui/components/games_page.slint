@@ -11,7 +11,7 @@ import { IconButton } from "icon_button.slint";
 import { LabeledDivider } from "labeled_divider.slint";
 import { ResetButton } from "reset_button.slint";
 import { FilterGroup } from "filter_group.slint";
-import { Sidebar, SidebarScroll, SidebarSection } from "sidebar.slint";
+import { Sidebar, SidebarScroll } from "sidebar.slint";
 import { ActionButton } from "action_button.slint";
 import { RowDivider } from "row_divider.slint";
 import { SearchInput } from "search_input.slint";
@@ -105,18 +105,12 @@ export component GamesPage inherits Rectangle {
             status-text: @tr("gamesPage" => "{} games", GamesList.rows.length == GamesList.total-count ? GamesList.total-count : "\{GamesList.rows.length} / \{GamesList.total-count}");
 
             VerticalLayout {
-                height: self.preferred-height;
+                vertical-stretch: 0;
                 spacing: Theme.space-sm;
                 padding-bottom: Theme.space-sm;
 
-                SidebarSection {
-                    spacing: Theme.space-sm;
-                    padding-left: 0;
-                    padding-right: 0;
-
-                    RefreshButton {
-                        inset: Theme.space-md;
-                    }
+                RefreshButton {
+                    inset: Theme.space-md;
                 }
 
                 ActionButton {
@@ -131,28 +125,26 @@ export component GamesPage inherits Rectangle {
 
                 RowDivider { }
 
-                SidebarSection {
-                    spacing: Theme.space-sm;
+                HorizontalLayout {
+                    padding-left: Theme.space-md;
+                    padding-right: Theme.space-md;
+                    spacing: Theme.space-xs;
+                    cross-axis-alignment: center;
 
-                    HorizontalLayout {
-                        spacing: Theme.space-xs;
-                        cross-axis-alignment: center;
+                    SearchInput {
+                        text <=> GamesQuery.search-text;
 
-                        SearchInput {
-                            text <=> GamesQuery.search-text;
-
-                            edited(text) => {
-                                GamesActions.search-changed(text);
-                            }
+                        edited(text) => {
+                            GamesActions.search-changed(text);
                         }
+                    }
 
-                        SortMenu {
-                            options: GamesQuery.sort-options;
-                            sort-index <=> GamesQuery.sort-index;
+                    SortMenu {
+                        options: GamesQuery.sort-options;
+                        sort-index <=> GamesQuery.sort-index;
 
-                            sort-changed(index) => {
-                                GamesActions.sort-changed(index);
-                            }
+                        sort-changed(index) => {
+                            GamesActions.sort-changed(index);
                         }
                     }
                 }
@@ -160,8 +152,8 @@ export component GamesPage inherits Rectangle {
 
             HorizontalLayout {
                 vertical-stretch: 0;
-                padding-left: Theme.space-sm;
-                padding-right: Theme.space-lg;
+                padding-left: Theme.space-md;
+                padding-right: Theme.space-md;
                 padding-bottom: Theme.space-xs;
                 spacing: Theme.space-xs;
                 cross-axis-alignment: center;

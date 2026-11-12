@@ -1,10 +1,8 @@
-import { ActionKind } from "../action_state.slint";
 import { ModActions, GamesActions } from "../actions.slint";
 import { ModsTabModData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
-import { ActionButton } from "action_button.slint";
-import { ExternalLink } from "external_link.slint";
 import { IconButton } from "icon_button.slint";
+import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
 import { ModSummaryView } from "mod_summary.slint";
 import { RowDivider } from "row_divider.slint";
 import { Icon } from "svg_icon.slint";
@@ -13,8 +11,57 @@ export component ModsTabRow inherits VerticalLayout {
     in property <ModsTabModData> mod-data;
     in property <bool> indented: false;
 
+    private property <bool> has-mod-actions: mod-data.can-run || mod-data.can-install || mod-data.source-code != "";
+
     vertical-stretch: 0;
     alignment: start;
+
+    menu := PopupMenu {
+        x: root.width - Theme.menu-width;
+        y: root.height;
+
+        if mod-data.can-run: PopupMenuItem {
+            text: @tr("modModal" => "Run");
+            icon: Icon.play;
+
+            clicked => {
+                ModActions.run-standalone(mod-data.id);
+                menu.close();
+            }
+        }
+
+        if mod-data.can-install: PopupMenuItem {
+            text: @tr("modModal" => "Download");
+            icon: Icon.download;
+
+            clicked => {
+                ModActions.install-standalone(mod-data.id);
+                menu.close();
+            }
+        }
+
+        if mod-data.source-code != "": PopupMenuItem {
+            text: @tr("modModal" => "Website");
+            icon: Icon.website;
+
+            clicked => {
+                ModActions.open-url(mod-data.source-code);
+                menu.close();
+            }
+        }
+
+        if root.has-mod-actions: PopupMenuSeparator { }
+
+        PopupMenuItem {
+            text: @tr("debugData" => "Debug data");
+            icon: Icon.bug;
+
+            clicked => {
+                GamesActions.request-mod-debug-data(mod-data.id);
+                menu.close();
+            }
+        }
+    }
 
     Rectangle {
         height: row-layout.preferred-height;
@@ -39,54 +86,14 @@ export component ModsTabRow inherits VerticalLayout {
                 deprecated: mod-data.deprecated;
             }
 
-            HorizontalLayout {
+            IconButton {
                 horizontal-stretch: 0;
-                alignment: end;
-                cross-axis-alignment: center;
-                spacing: Theme.space-xs;
+                icon: Icon.more;
+                icon-size: 22px;
+                tooltip: @tr("gameModRow" => "Mod actions");
 
-                if mod-data.can-run: ActionButton {
-                    text: @tr("modModal" => "Run");
-                    icon: Icon.play;
-                    action-key: { kind: ActionKind.standalone-run, target: mod-data.id };
-
-                    clicked => {
-                        ModActions.run-standalone(mod-data.id);
-                    }
-                }
-
-                if mod-data.can-install: ActionButton {
-                    text: @tr("modModal" => "Download");
-                    icon: Icon.download;
-                    action-key: { kind: ActionKind.standalone-install, target: mod-data.id };
-
-                    clicked => {
-                        ModActions.install-standalone(mod-data.id);
-                    }
-                }
-
-                VerticalLayout {
-                    cross-axis-alignment: end;
-                    spacing: Theme.space-sm;
-                    padding-right: Theme.space-md;
-
-                    HorizontalLayout {
-                        IconButton {
-                            icon: Icon.bug;
-                            tooltip: @tr("debugData" => "Debug data");
-                            icon-size: 18px;
-
-                            clicked => {
-                                GamesActions.request-mod-debug-data(mod-data.id);
-                            }
-                        }
-                    }
-
-                    if mod-data.source-code != "": ExternalLink {
-                        label: @tr("modModal" => "Website");
-                        size: Theme.font-sm;
-                        url: mod-data.source-code;
-                    }
+                clicked => {
+                    menu.show();
                 }
             }
         }

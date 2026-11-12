@@ -9,7 +9,7 @@ import { GameRow } from "game_row.slint";
 import { LabeledDivider } from "labeled_divider.slint";
 import { ModsSection } from "mods_section.slint";
 import { PotentialModsSection } from "potential_mods_section.slint";
-import { Sidebar, SidebarScroll, SidebarSection } from "sidebar.slint";
+import { Sidebar, SidebarScroll } from "sidebar.slint";
 import { Icon } from "svg_icon.slint";
 import {
     GameModData,
@@ -53,132 +53,127 @@ export component GameDetailsPage inherits HorizontalLayout {
 
     Sidebar {
         VerticalLayout {
+            vertical-stretch: 0;
             spacing: Theme.space-sm;
+            padding-bottom: Theme.space-sm;
 
-            SidebarSection {
-                padding-left: 0;
-                padding-right: 0;
+            Button {
+                inset: Theme.space-md;
+                text: @tr("subPage" => "Back");
+                icon: Icon.back;
 
-                Button {
-                    inset: Theme.space-md;
-                    text: @tr("subPage" => "Back");
-                    icon: Icon.back;
-
-                    clicked => {
-                        GamesActions.back();
-                    }
+                clicked => {
+                    GamesActions.back();
                 }
             }
+        }
 
-            SidebarScroll {
+        SidebarScroll {
+            VerticalLayout {
+                alignment: start;
+                spacing: Theme.space-sm;
+
+                if GameDetailsState.provider-actions.length > 0: VerticalLayout {
+                    alignment: start;
+
+                    LabeledDivider {
+                        label: GameDetailsState.provider-name;
+                        horizontal-stretch: 1;
+                        padding-left: Theme.space-md;
+                        padding-right: Theme.space-md;
+                        padding-bottom: Theme.space-xs;
+                    }
+
+                    for action[index] in GameDetailsState.provider-actions: ActionButton {
+                        inset: Theme.space-md;
+                        text: Tr.provider-command(action.action);
+                        icon: root.provider-command-icon(action.action);
+                        tint: index == 0 ? Theme.primary : transparent;
+                        action-key: { kind: ActionKind.provider-action, target: action.action-id };
+
+                        clicked => {
+                            if action.action == ProviderAction.delete {
+                                GamesActions.remove-game();
+                            } else {
+                                GamesActions.run-provider-action(action.action);
+                            }
+                        }
+                    }
+                }
+
+                if root.game-row.installed: VerticalLayout {
+                    alignment: start;
+
+                    LabeledDivider {
+                        label: @tr("gameModal" => "Folders");
+                        horizontal-stretch: 1;
+                        padding-left: Theme.space-md;
+                        padding-right: Theme.space-md;
+                        padding-bottom: Theme.space-xs;
+                    }
+
+                    ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("gameModal" => "Game Files");
+                        icon: Icon.folder;
+                        action-key: { kind: ActionKind.open-game-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-game-folder();
+                        }
+                    }
+
+                    ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("gameModal" => "Installed Mods");
+                        icon: Icon.folder-mods;
+                        action-key: { kind: ActionKind.open-game-mods-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-game-mods-folder();
+                        }
+                    }
+
+                    ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("gameModal" => "Game App Data");
+                        action-key: { kind: ActionKind.open-game-data-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-game-data-folder();
+                        }
+                    }
+
+                    if GameDetailsState.show-wine-folders: ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("gameModal" => "Wine Prefix");
+                        action-key: { kind: ActionKind.open-wine-prefix-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-wine-prefix-folder();
+                        }
+                    }
+
+                    if GameDetailsState.show-wine-folders: ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("gameModal" => "Wine Binary");
+                        action-key: { kind: ActionKind.open-wine-binary-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-wine-binary-folder();
+                        }
+                    }
+                }
+
                 VerticalLayout {
                     alignment: start;
-                    spacing: Theme.space-sm;
 
-                    if GameDetailsState.provider-actions.length > 0: VerticalLayout {
-                        alignment: start;
-
-                        SidebarSection {
-                            padding-top: Theme.space-xs;
-                            padding-bottom: Theme.space-xs;
-
-                            LabeledDivider {
-                                label: GameDetailsState.provider-name;
-                                horizontal-stretch: 1;
-                            }
-                        }
-
-                        for action[index] in GameDetailsState.provider-actions: ActionButton {
-                            inset: Theme.space-md;
-                            text: Tr.provider-command(action.action);
-                            icon: root.provider-command-icon(action.action);
-                            tint: index == 0 ? Theme.primary : transparent;
-                            action-key: { kind: ActionKind.provider-action, target: action.action-id };
-
-                            clicked => {
-                                if action.action == ProviderAction.delete {
-                                    GamesActions.remove-game();
-                                } else {
-                                    GamesActions.run-provider-action(action.action);
-                                }
-                            }
-                        }
-                    }
-
-                    if root.game-row.installed: VerticalLayout {
-                        alignment: start;
-
-                        SidebarSection {
-                            padding-top: Theme.space-xs;
-                            padding-bottom: Theme.space-xs;
-
-                            LabeledDivider {
-                                label: @tr("gameModal" => "Folders");
-                                horizontal-stretch: 1;
-                            }
-                        }
-
-                        ActionButton {
-                            inset: Theme.space-md;
-                            text: @tr("gameModal" => "Game Files");
-                            icon: Icon.folder;
-                            action-key: { kind: ActionKind.open-game-folder, target: "" };
-
-                            clicked => {
-                                GamesActions.open-game-folder();
-                            }
-                        }
-
-                        ActionButton {
-                            inset: Theme.space-md;
-                            text: @tr("gameModal" => "Installed Mods");
-                            icon: Icon.folder-mods;
-                            action-key: { kind: ActionKind.open-game-mods-folder, target: "" };
-
-                            clicked => {
-                                GamesActions.open-game-mods-folder();
-                            }
-                        }
-
-                        ActionButton {
-                            inset: Theme.space-md;
-                            text: @tr("gameModal" => "Game App Data");
-                            action-key: { kind: ActionKind.open-game-data-folder, target: "" };
-
-                            clicked => {
-                                GamesActions.open-game-data-folder();
-                            }
-                        }
-
-                        if GameDetailsState.show-wine-folders: ActionButton {
-                            inset: Theme.space-md;
-                            text: @tr("gameModal" => "Wine Prefix");
-                            action-key: { kind: ActionKind.open-wine-prefix-folder, target: "" };
-
-                            clicked => {
-                                GamesActions.open-wine-prefix-folder();
-                            }
-                        }
-
-                        if GameDetailsState.show-wine-folders: ActionButton {
-                            inset: Theme.space-md;
-                            text: @tr("gameModal" => "Wine Binary");
-                            action-key: { kind: ActionKind.open-wine-binary-folder, target: "" };
-
-                            clicked => {
-                                GamesActions.open-wine-binary-folder();
-                            }
-                        }
-                    }
-
-                    SidebarSection {
-                        padding-top: Theme.space-xs;
+                    LabeledDivider {
+                        label: "Data";
+                        horizontal-stretch: 1;
+                        padding-left: Theme.space-md;
+                        padding-right: Theme.space-md;
                         padding-bottom: Theme.space-xs;
-
-                        LabeledDivider {
-                            label: "Data";
-                            horizontal-stretch: 1;
-                        }
                     }
 
                     if root.game-row.installed: ActionButton {

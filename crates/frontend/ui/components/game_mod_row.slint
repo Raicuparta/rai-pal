@@ -113,7 +113,7 @@ export component GameModRow inherits VerticalLayout {
 
     Rectangle {
         height: row-layout.preferred-height;
-        background: !game-mod.incompatible && row-touch.has-hover ? Theme.hover-background : transparent;
+        background: transparent;
 
         row-touch := TouchArea {
             pointer-event(event) => {
@@ -191,7 +191,6 @@ export component GameModRow inherits VerticalLayout {
                     icon: Icon.more;
                     icon-size: 22px;
                     tooltip: @tr("gameModRow" => "Mod actions");
-                    tint: Theme.surface-background;
 
                     clicked => {
                         root.menu-x = actions-button.absolute-position.x - root.absolute-position.x + actions-button.width - Theme.menu-width;

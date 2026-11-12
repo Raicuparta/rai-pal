@@ -8,7 +8,7 @@ import { Theme } from "../theme.slint";
 import { ModsTabRow } from "mods_tab_row.slint";
 import { ModsTabFamilyRow } from "mods_tab_family_row.slint";
 import { RefreshButton } from "refresh_button.slint";
-import { Sidebar, SidebarScroll, SidebarSection } from "sidebar.slint";
+import { Sidebar, SidebarScroll } from "sidebar.slint";
 import { ActionButton } from "action_button.slint";
 import { Icon } from "svg_icon.slint";
 
@@ -25,19 +25,18 @@ export component ModsPage inherits Rectangle {
             status-text: @tr("modsPage" => "{} mods", ModsState.total-count);
 
             VerticalLayout {
+                vertical-stretch: 0;
                 spacing: Theme.space-sm;
+                padding-bottom: Theme.space-sm;
 
-                SidebarSection {
-                    padding-left: 0;
-                    padding-right: 0;
-
-                    RefreshButton {
-                        inset: Theme.space-md;
-                    }
+                RefreshButton {
+                    inset: Theme.space-md;
                 }
 
                 SidebarScroll {
                     VerticalLayout {
+                        alignment: start;
+
                         ActionButton {
                             inset: Theme.space-md;
                             text: @tr("urlModSources" => "Mod Sources");
