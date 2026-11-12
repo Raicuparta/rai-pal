@@ -6,6 +6,11 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
+- modal that shows when a rai pal update is available stretches vertically to fill the window for some reason, even though the content is small. can test if needed with `RAI_PAL_UPDATE_URL="https://pastebin.com/raw/FWJ8yKPA" ./scripts/dev.sh --live`
+- buttons on that same updatemodal look weird. they're stretched. they should be two buttons at the bottom, side by side, no wider than they need to be based on their content, on opposite sides of the modal (space-between equivalent).
+- when the user presses ignore on the update notification, let's give them a way to update without restarting rai pal. add a small "update" icon with "Theme.highlight" color as an overlay on the app bar menu button (kinda like chrome does), bottom left corner of the icon. then inside the the app menu the first item becomes "update now", using primary color, using same translation and icon as the button in the modal.
+- Should expand all filter groups by default like tauri app did. And persist their expand state if not already. Unless tauri was using web storage for that state, we should make sure we're using the same (i think app settings? not sure).
+
 ## Do later:
 
 - colored buttons probably need a "subtle" mode or something like in tauri.
