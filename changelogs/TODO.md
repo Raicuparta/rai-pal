@@ -10,6 +10,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - Missing total count and filtered count.
 - keep getting the thumbnail cache errors in logs, what gives?
 - entire game list blinks when refreshing.
+- error if deleting rai pal local databases while app running.
+- delete databases, restart, first visible rows dont load thumbnails (and stay without thumbnail until restarting again)
 
 ## Do later:
 

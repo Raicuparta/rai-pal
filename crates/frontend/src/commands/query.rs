@@ -7,11 +7,11 @@ use rai_pal_backend::{
 		game_database::{GameDatabase, GameIdsResponse},
 	},
 };
-use slint::ComponentHandle as _;
+use slint::{ComponentHandle as _, Model as _};
 
 use crate::{
-	MainWindow, MessageContext,
-	model::make_rows,
+	GameRowData, MainWindow, MessageContext,
+	model::sync_rows,
 	notifications,
 	scheduler::FetchScheduler,
 	scheduler::{enqueue_index, schedule_visible_range},
@@ -118,34 +118,29 @@ fn run_query(
 				}
 			};
 
-			let rows = make_rows(&response.game_ids);
 			ui_scheduler.begin_query();
 
 			let list = window.global::<crate::GamesList>();
-			let scroll_y = match scroll {
-				ScrollBehavior::Reset => 0.0,
-				ScrollBehavior::Keep => list.get_scroll_y(),
+			let model = list.get_rows();
+			let Some(model) = model.as_any().downcast_ref::<slint::VecModel<GameRowData>>() else {
+				log::error!("Games list model is not a VecModel");
+				return;
 			};
 
-			window.global::<crate::GamesList>().set_total_count(
+			sync_rows(model, &response.game_ids);
+
+			list.set_total_count(
 				i32::try_from(response.total_count).unwrap_or_else(|err| {
 					log::warn!("Games count exceeds i32: {err}");
 					i32::MAX
 				}),
 			);
-			let model = std::rc::Rc::new(slint::VecModel::from(rows));
-			list.set_rows(model.into());
-			list.set_scroll_y(scroll_y);
 
-			let window = window.as_weak();
+			if matches!(scroll, ScrollBehavior::Reset) {
+				list.set_scroll_y(0.0);
+			}
 
-			// Replacing the model makes the ListView snap content-y to a row boundary,
-			// so the scroll position has to be restored after the next layout pass.
-			slint::Timer::single_shot(Duration::from_millis(16), move || {
-				if let Some(window) = window.upgrade() {
-					window.global::<crate::GamesList>().set_scroll_y(scroll_y);
-				}
-			});
+			list.set_rows_revision(list.get_rows_revision() + 1);
 		});
 	});
 }

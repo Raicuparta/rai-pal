@@ -131,6 +131,11 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	scheduler.set_thumbnails_enabled(!app_settings.borrow().hide_game_thumbnails);
 	scheduler.begin_query();
 
+	let rows = Rc::new(slint::VecModel::from(initial_rows));
+	main_window
+		.global::<crate::GamesList>()
+		.set_rows(rows.clone().into());
+
 	let ctx = CommandHandler::create(
 		window_weak,
 		Arc::clone(&app_database),
@@ -173,10 +178,6 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		});
 	});
 
-	let model = Rc::new(slint::VecModel::from(initial_rows));
-	main_window
-		.global::<crate::GamesList>()
-		.set_rows(model.into());
 	ctx.refresh_all();
 	main_window.run()
 }

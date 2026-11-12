@@ -25,6 +25,7 @@ export global GamesList {
     in property <[GameRowData]> rows;
     in property <int> total-count: 0;
     in-out property <length> scroll-y: 0px;
+    in-out property <int> rows-revision: 0;
 }
 
 export global GamesQuery {
@@ -49,6 +50,7 @@ export component GamesPage inherits Rectangle {
     private property <length> row-height: Theme.game-row-height + Theme.border-width;
     private property <length> shared-scroll-y <=> GamesList.scroll-y;
     private property <[GameRowData]> rows: GamesList.rows;
+    private property <int> rows-revision: GamesList.rows-revision;
 
     function empty-message() -> string {
         if GamesList.total-count == 0 {
@@ -82,6 +84,10 @@ export component GamesPage inherits Rectangle {
     }
 
     changed rows => {
+        root.notify-visible-range();
+    }
+
+    changed rows-revision => {
         root.notify-visible-range();
     }
 

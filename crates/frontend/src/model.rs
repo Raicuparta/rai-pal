@@ -1,9 +1,12 @@
-use std::rc::Rc;
+use std::{collections::HashMap, rc::Rc};
 
 use rai_pal_backend::{
-	game::Game, local_database::game_database::GameId, operating_system::OperatingSystem,
+	game::Game, game_providers::game_provider::GameProviderId,
+	local_database::game_database::GameId, operating_system::OperatingSystem,
 	result::LogErrExt,
 };
+
+use slint::Model as _;
 
 use crate::{EngineId, GameRowData};
 
@@ -83,27 +86,61 @@ fn month_name(month: u32) -> &'static str {
 	}
 }
 
+pub fn make_row(game_id: &GameId) -> GameRowData {
+	GameRowData {
+		provider: game_id.provider_id.into(),
+		game_id: game_id.game_id.clone().into(),
+		title: "...".into(),
+		thumbnail: slint::Image::default(),
+		has_thumbnail: false,
+		installed: false,
+		tags: slint::ModelRc::default(),
+		loaded: false,
+		engine: EngineId::None,
+		engine_name: "".into(),
+		engine_version: "".into(),
+		engine_details: "".into(),
+		release_day: "".into(),
+		release_month: "".into(),
+		release_year: "".into(),
+	}
+}
+
 pub fn make_rows(game_ids: &[GameId]) -> Vec<GameRowData> {
-	game_ids
-		.iter()
-		.map(|game_id| GameRowData {
-			provider: game_id.provider_id.into(),
-			game_id: game_id.game_id.clone().into(),
-			title: "...".into(),
-			thumbnail: slint::Image::default(),
-			has_thumbnail: false,
-			installed: false,
-			tags: slint::ModelRc::default(),
-			loaded: false,
-			engine: EngineId::None,
-			engine_name: "".into(),
-			engine_version: "".into(),
-			engine_details: "".into(),
-			release_day: "".into(),
-			release_month: "".into(),
-			release_year: "".into(),
+	game_ids.iter().map(make_row).collect()
+}
+
+pub fn sync_rows(model: &slint::VecModel<GameRowData>, game_ids: &[GameId]) {
+	let mut reusable: HashMap<(GameProviderId, String), GameRowData> = (0..model.row_count())
+		.filter_map(|index| model.row_data(index))
+		.filter_map(|row| {
+			let provider = Option::<GameProviderId>::from(row.provider)?;
+			Some(((provider, row.game_id.to_string()), row))
 		})
-		.collect()
+		.collect();
+
+	let rows = game_ids
+		.iter()
+		.map(|game_id| {
+			reusable
+				.remove(&(game_id.provider_id, game_id.game_id.clone()))
+				.unwrap_or_else(|| make_row(game_id))
+		})
+		.collect::<Vec<_>>();
+
+	let row_count = model.row_count();
+
+	for (index, row) in rows.iter().enumerate() {
+		if index < row_count {
+			model.set_row_data(index, row.clone());
+		} else {
+			model.push(row.clone());
+		}
+	}
+
+	while model.row_count() > rows.len() {
+		model.remove(model.row_count() - 1);
+	}
 }
 
 pub fn reset_row(row: &mut GameRowData) {
