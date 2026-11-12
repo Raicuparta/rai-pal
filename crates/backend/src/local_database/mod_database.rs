@@ -45,7 +45,6 @@ pub struct GameEnvironment {
 }
 
 pub trait ModDatabase {
-	fn setup_mod_tables(&self) -> Result;
 	fn insert_mod(&self, game_mod: &Mod, provider_id: ModProviderId, source_hash: &str);
 	fn get_mod(&self, mod_id: &str) -> Result<Mod>;
 	fn get_installed_mod(
@@ -99,10 +98,9 @@ pub(crate) fn scope_id<'a>(scope: &'a str, original_id: &'a str) -> Cow<'a, str>
 	}
 }
 
-impl ModDatabase for DbMutex {
-	fn setup_mod_tables(&self) -> Result {
-		self.lock_db()?.execute_batch(
-			r"
+pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
+	connection.execute_batch(
+		r"
 			CREATE TABLE IF NOT EXISTS mods (
 				id TEXT NOT NULL PRIMARY KEY,
 				scope TEXT NOT NULL DEFAULT '',
@@ -153,11 +151,12 @@ impl ModDatabase for DbMutex {
 
 			CREATE INDEX IF NOT EXISTS idx_installed_mods_hash ON installed_mods(exe_path_hash);
 		",
-		)?;
+	)?;
 
-		Ok(())
-	}
+	Ok(())
+}
 
+impl ModDatabase for DbMutex {
 	fn insert_mod(&self, game_mod: &Mod, provider_id: ModProviderId, source_hash: &str) {
 		if let Err(err) = try_insert_mod(self, game_mod, provider_id, source_hash) {
 			log::error!(

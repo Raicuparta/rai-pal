@@ -8,7 +8,7 @@ use rai_pal_backend::{
 	game_providers::game_provider::GameProviderId,
 	local_database::{
 		app_database::DbMutex,
-		game_database::{GameDatabase, attach_remote},
+		game_database::{GameDatabase, attach_remote, recreate_if_missing},
 		mod_database::ModDatabase,
 	},
 	mod_providers::mod_provider,
@@ -44,6 +44,10 @@ impl CommandHandler {
 		let database = Arc::clone(&self.database);
 
 		thread::spawn(move || {
+			if let Err(err) = recreate_if_missing(&database) {
+				log::error!("Failed to recreate missing local database: {err}");
+			}
+
 			let tasks = RefreshTasks::new(window.clone());
 
 			thread::scope(|scope| {

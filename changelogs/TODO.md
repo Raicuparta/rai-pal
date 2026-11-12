@@ -6,16 +6,15 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- Refresh progress labels need to go somewhere else.
-- Missing total count and filtered count.
-- keep getting the thumbnail cache errors in logs, what gives?
-- entire game list blinks when refreshing.
-- error if deleting rai pal local databases while app running.
-- delete databases, restart, first visible rows dont load thumbnails (and stay without thumbnail until restarting again)
+- Currently the refresh progress text shows below the refresh button only while loading the refresh. Let's make that text always visible and reuse it for two different purposes. While loading, it shows that same loading list. While not loading, it falls back to some static text provided by the page. In the games page, that text is "{number of games after filters} / {total number of games}". If both numbers are the same, the text becomes just the total number. On the mods page, that text is just the total number of mods.
+- keep getting the thumbnail cache errors in logs, what gives? if i scroll really fast the logs are flooded with . explain what the problem is and if there's anything we should do to fix it:
+  - 2026-11-12 11:03:42.612 [WARN] rai_pal_backend::result: Failed to read thumbnail cache file /home/rai/.local/share/rai-pal/thumbnail-cache/41ee5df9e0790997ea3f57d97cc796541495963cd83fef635c345046842d01e4.img: failed to open file `/home/rai/.local/share/rai-pal/thumbnail-cache/41ee5df9e0790997ea3f57d97cc796541495963cd83fef635c345046842d01e4.img`: No such file or directory (os error 2)
+    2026-11-12 11:03:42.860 [WARN] rai_pal_backend::result: Failed to read thumbnail cache file /home/rai/.local/share/rai-pal/thumbnail-cache/143d376666497e0949bdd8086fe3e67a59213ff2bc566adb6c91f650a4f80c73.img: failed to open file `/home/rai/.local/share/rai-pal/thumbnail-cache/143d376666497e0949bdd8086fe3e67a59213ff2bc566adb6c91f650a4f80c73.img`: No such file or directory (os error 2)
+    2026-11-12 11:03:42.864 [WARN] rai_pal_backend::result: Failed to read thumbnail cache file /home/rai/.local/share/rai-pal/thumbnail-cache/e429948a7e72a00d15cf883154eabbfbabdb53bf897b91944cc2af9b7f421296.img: failed to open file `/home/rai/.local/share/rai-pal/thumbnail-cache/e429948a7e72a00d15cf883154eabbfbabdb53bf897b91944cc2af9b7f421296.img`: No such file or directory (os error 2)
 
 ## Do later:
 
-- update the intro text.
+- Refresh progress labels need to go somewhere else.
 - colored buttons probably need a "subtle" mode or something like in tauri.
 - button size and icon spacing needs to be adjusted to match the tauri one better.
 - maybe a bit too small on steam deck?

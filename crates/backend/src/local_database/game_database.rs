@@ -17,7 +17,7 @@ use crate::{
 	games_query::{FilterGroup, GamesQuery, GamesSortBy, InstallState},
 	local_database::{
 		app_database::{AppDatabase, DbMutex},
-		mod_database::ModDatabase,
+		mod_database::{self, ModDatabase},
 		rusqlite_extensions::{JsonData, RowExt},
 	},
 	operating_system::OperatingSystem,
@@ -685,7 +685,35 @@ pub fn try_create() -> Result<DbMutex> {
 	}
 }
 
+pub fn recreate_if_missing(database: &DbMutex) -> Result {
+	let path = db_file_path()?;
+	if path.is_file() {
+		return Ok(());
+	}
+
+	log::warn!(
+		"Local database file is missing, recreating it: {}",
+		path.display()
+	);
+
+	let mut connection = database.lock_db()?;
+
+	drop(std::mem::replace(
+		&mut *connection,
+		rusqlite::Connection::open_in_memory()?,
+	));
+
+	*connection = create_connection()?;
+
+	Ok(())
+}
+
 pub fn attach_remote(database: &DbMutex, path: &Path) -> Result {
+	let mut connection = database.lock_db()?;
+	attach_remote_to_connection(&mut connection, path)
+}
+
+fn attach_remote_to_connection(connection: &mut rusqlite::Connection, path: &Path) -> Result {
 	let mut instant = Instant::now();
 	instant.log_next("Attaching remote database...");
 
@@ -693,8 +721,7 @@ pub fn attach_remote(database: &DbMutex, path: &Path) -> Result {
 		return Ok(());
 	}
 
-	let mut connection = database.lock_db()?;
-	if is_database_attached(&connection, "remote_db")? {
+	if is_database_attached(connection, "remote_db")? {
 		connection.execute("DETACH DATABASE remote_db;", [])?;
 	}
 
@@ -773,7 +800,7 @@ pub fn attach_remote(database: &DbMutex, path: &Path) -> Result {
 		Ok(())
 	})();
 
-	let detach_result = match is_database_attached(&connection, "remote_db") {
+	let detach_result = match is_database_attached(connection, "remote_db") {
 		Ok(true) => connection
 			.execute("DETACH DATABASE remote_db;", [])
 			.map(|_| ())
@@ -827,8 +854,22 @@ fn create() -> Result<DbMutex> {
 	let mut instant = Instant::now();
 	instant.log_next("Creating local database...");
 
-	let connection = open_database_connection()?;
+	let mutex = DbMutex::new(create_connection()?);
 
+	instant.log_next("Created local database!");
+
+	Ok(mutex)
+}
+
+fn create_connection() -> Result<rusqlite::Connection> {
+	let mut connection = open_database_connection()?;
+	create_tables(&connection)?;
+	mod_database::create_tables(&connection)?;
+	attach_remote_to_connection(&mut connection, &remote_game::get_database_file_path()?)?;
+	Ok(connection)
+}
+
+fn create_tables(connection: &rusqlite::Connection) -> Result {
 	connection.execute_batch(
 		r"
 		CREATE TABLE IF NOT EXISTS games (
@@ -891,15 +932,7 @@ fn create() -> Result<DbMutex> {
 	",
 	)?;
 
-	let remote_database_path = remote_game::get_database_file_path()?;
-
-	let mutex = DbMutex::new(connection);
-
-	attach_remote(&mutex, &remote_database_path)?;
-
-	instant.log_next("Created local database!");
-
-	Ok(mutex)
+	Ok(())
 }
 
 fn open_database_connection() -> Result<rusqlite::Connection> {

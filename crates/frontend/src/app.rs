@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
-	local_database::{game_database::try_create, mod_database::ModDatabase},
+	local_database::game_database::try_create,
 };
 use slint::{ComponentHandle, winit_030::WinitWindowAccessor};
 
@@ -48,10 +48,6 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			return Ok(());
 		}
 	};
-
-	if let Err(err) = app_database.setup_mod_tables() {
-		log::error!("Failed to set up mod tables: {err}");
-	}
 
 	let app_settings = Rc::new(RefCell::new(AppSettings::read()));
 	let detected_locale = i18n::detect_locale();
