@@ -14,6 +14,7 @@ import { Icon } from "svg_icon.slint";
 
 export global ModsState {
     in property <[ModsTabItemData]> items;
+    in property <int> total-count: 0;
 }
 
 export component ModsPage inherits Rectangle {
@@ -22,7 +23,9 @@ export component ModsPage inherits Rectangle {
     HorizontalLayout {
         Sidebar {
             SidebarSection {
-                RefreshButton { }
+                RefreshButton {
+                    summary: "\{ModsState.total-count}";
+                }
             }
 
             SidebarScroll {

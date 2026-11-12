@@ -106,7 +106,9 @@ export component GamesPage inherits Rectangle {
             SidebarSection {
                 spacing: Theme.space-sm;
 
-                RefreshButton { }
+                RefreshButton {
+                    summary: GamesList.rows.length == GamesList.total-count ? "\{GamesList.total-count}" : "\{GamesList.rows.length} / \{GamesList.total-count}";
+                }
             }
 
             SidebarAction {

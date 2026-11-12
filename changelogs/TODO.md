@@ -6,8 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- Currently the refresh progress text shows below the refresh button only while loading the refresh. Let's make that text always visible and reuse it for two different purposes. While loading, it shows that same loading list. While not loading, it falls back to some static text provided by the page. In the games page, that text is "{number of games after filters} / {total number of games}". If both numbers are the same, the text becomes just the total number. On the mods page, that text is just the total number of mods.
-
 ## Do later:
 
 - Checkbox check icon looks a lil weird in software renderer. maybe due to downscale.
@@ -22,6 +20,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Done
 
+- Made the text below the refresh button always visible: it shows the refresh task list while loading and otherwise a page-provided summary. The games page shows `filtered / total` (or just the total when equal), and the mods page shows the total mod count from a new `ModsState.total-count`.
 - Refreshed game providers in parallel with a scoped thread per provider, and downloaded the remote database concurrently too. The games list is now reloaded as soon as providers finish, while installed mods and mod sources continue refreshing in the background.
 - Preserved the games list scroll position during refresh: `start_query` now takes `ScrollBehavior::Reset`/`Keep`, and restores the scroll on the next frame because replacing the model makes the ListView snap to a row boundary.
 - Made filter value rows shorter by adding a vertical padding override to `ListRow`; they went from 30px to 26px tall, matching the 25px filter group headers.

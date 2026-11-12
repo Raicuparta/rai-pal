@@ -28,12 +28,14 @@ fn load(window: &MainWindow, database: &DbMutex) {
 		Ok(groups) => groups,
 		Err(err) => {
 			notifications::error(window, notifications::data(MessageContext::LoadMods, &err));
-			window
-				.global::<crate::ModsState>()
-				.set_items(Rc::new(slint::VecModel::from(Vec::<ModsTabItemData>::new())).into());
+			let state = window.global::<crate::ModsState>();
+			state.set_items(Rc::new(slint::VecModel::from(Vec::<ModsTabItemData>::new())).into());
+			state.set_total_count(0);
 			return;
 		}
 	};
+
+	let total_count = groups.iter().map(|group| group.mods.len()).sum::<usize>();
 
 	let items = groups
 		.into_iter()
@@ -67,9 +69,12 @@ fn load(window: &MainWindow, database: &DbMutex) {
 		})
 		.collect::<Vec<_>>();
 
-	window
-		.global::<crate::ModsState>()
-		.set_items(Rc::new(slint::VecModel::from(items)).into());
+	let state = window.global::<crate::ModsState>();
+	state.set_items(Rc::new(slint::VecModel::from(items)).into());
+	state.set_total_count(i32::try_from(total_count).unwrap_or_else(|err| {
+		log::warn!("Mods count exceeds i32: {err}");
+		i32::MAX
+	}));
 }
 
 fn mod_data(game_mod: Mod) -> ModsTabModData {

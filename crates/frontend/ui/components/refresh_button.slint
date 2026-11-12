@@ -12,6 +12,7 @@ export global Refresh {
 }
 
 export component RefreshButton inherits VerticalLayout {
+    in property <string> summary: "";
     spacing: Theme.space-2xs;
 
     Button {
@@ -34,5 +35,12 @@ export component RefreshButton inherits VerticalLayout {
             font-size: Theme.font-xs;
             color: Theme.dimmed-foreground;
         }
+    }
+
+    if !(Refresh.refreshing && Refresh.tasks.length > 0) && summary != "" : Text {
+        height: self.preferred-height;
+        text: summary;
+        font-size: Theme.font-xs;
+        color: Theme.dimmed-foreground;
     }
 }
