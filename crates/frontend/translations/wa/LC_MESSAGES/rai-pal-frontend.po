@@ -154,10 +154,6 @@ msgid "Reset"
 msgstr "Waaah!"
 
 msgctxt "filterMenu"
-msgid "Search..."
-msgstr "Waaaaaaah!"
-
-msgctxt "filterMenu"
 msgid "Collapse all filters"
 msgstr "Waaaaaah wah waaaaah!"
 

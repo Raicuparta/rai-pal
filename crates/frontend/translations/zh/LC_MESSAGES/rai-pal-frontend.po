@@ -154,10 +154,6 @@ msgid "Reset"
 msgstr "重置"
 
 msgctxt "filterMenu"
-msgid "Search..."
-msgstr "搜索..."
-
-msgctxt "filterMenu"
 msgid "Collapse all filters"
 msgstr "折叠所有筛选器"
 

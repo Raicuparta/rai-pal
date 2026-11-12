@@ -154,10 +154,6 @@ msgid "Reset"
 msgstr "Réinitialiser"
 
 msgctxt "filterMenu"
-msgid "Search..."
-msgstr "Rechercher..."
-
-msgctxt "filterMenu"
 msgid "Collapse all filters"
 msgstr "Réduire tous les filtres"
 

@@ -1,13 +1,13 @@
 import { Theme } from "../theme.slint";
 import { ResetButton } from "reset_button.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
 
 export component SearchInput inherits Rectangle {
-    in property <string> placeholder-text;
     in-out property <string> text;
 
     callback edited(text: string);
 
-    height: Theme.control-height;
+    height: Theme.control-height - Theme.space-xs;
     border-radius: Theme.radius-sm;
     border-width: Theme.border-width;
     border-color: input.has-focus ? Theme.primary : Theme.border;
@@ -15,24 +15,21 @@ export component SearchInput inherits Rectangle {
     forward-focus: input;
 
     HorizontalLayout {
-        padding-left: Theme.space-md;
-        padding-right: Theme.space-sm;
+        padding-left: Theme.space-sm;
+        padding-right: Theme.space-xs;
         spacing: Theme.space-xs;
         cross-axis-alignment: center;
+
+        if root.text == "": SvgIcon {
+            icon: Icon.search;
+            size: Theme.font-md;
+            color: Theme.dimmed-foreground;
+        }
 
         Rectangle {
             horizontal-stretch: 1;
             height: 100%;
             clip: true;
-
-            if root.text == "": Text {
-                width: 100%;
-                height: 100%;
-                vertical-alignment: center;
-                text: root.placeholder-text;
-                font-size: Theme.font-md;
-                color: Theme.dimmed-foreground;
-            }
 
             input := TextInput {
                 property <length> computed-x;
@@ -41,7 +38,7 @@ export component SearchInput inherits Rectangle {
                 width: max(parent.width - self.text-cursor-width, self.preferred-width);
                 height: 100%;
                 vertical-alignment: center;
-                font-size: Theme.font-md;
+                font-size: Theme.font-sm;
                 color: Theme.foreground;
                 text <=> root.text;
 
@@ -60,7 +57,7 @@ export component SearchInput inherits Rectangle {
         }
 
         if root.text != "": ResetButton {
-            icon-size: Theme.font-md;
+            icon-size: Theme.font-sm;
             tooltip: @tr("filterMenu" => "Clear search");
 
             clicked => {

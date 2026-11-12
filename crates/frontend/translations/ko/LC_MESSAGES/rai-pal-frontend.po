@@ -154,10 +154,6 @@ msgid "Reset"
 msgstr "재설정"
 
 msgctxt "filterMenu"
-msgid "Search..."
-msgstr "검색..."
-
-msgctxt "filterMenu"
 msgid "Collapse all filters"
 msgstr "모든 필터 접기"
 

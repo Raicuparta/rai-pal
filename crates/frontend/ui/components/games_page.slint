@@ -129,21 +129,25 @@ export component GamesPage inherits Rectangle {
                 SidebarSection {
                     spacing: Theme.space-sm;
 
-                    SearchInput {
-                        text <=> GamesQuery.search-text;
-                        placeholder-text: @tr("filterMenu" => "Search...");
+                    HorizontalLayout {
+                        spacing: Theme.space-xs;
+                        cross-axis-alignment: center;
 
-                        edited(text) => {
-                            GamesActions.search-changed(text);
+                        SearchInput {
+                            text <=> GamesQuery.search-text;
+
+                            edited(text) => {
+                                GamesActions.search-changed(text);
+                            }
                         }
-                    }
 
-                    SortMenu {
-                        options: GamesQuery.sort-options;
-                        sort-index <=> GamesQuery.sort-index;
+                        SortMenu {
+                            options: GamesQuery.sort-options;
+                            sort-index <=> GamesQuery.sort-index;
 
-                        sort-changed(index) => {
-                            GamesActions.sort-changed(index);
+                            sort-changed(index) => {
+                                GamesActions.sort-changed(index);
+                            }
                         }
                     }
                 }

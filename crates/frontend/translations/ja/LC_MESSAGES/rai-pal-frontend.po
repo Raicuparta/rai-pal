@@ -154,10 +154,6 @@ msgid "Reset"
 msgstr "リセット"
 
 msgctxt "filterMenu"
-msgid "Search..."
-msgstr "検索..."
-
-msgctxt "filterMenu"
 msgid "Collapse all filters"
 msgstr "すべてのフィルターを折りたたむ"
 

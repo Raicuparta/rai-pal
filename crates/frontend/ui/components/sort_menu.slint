@@ -1,25 +1,46 @@
 import { Theme } from "../theme.slint";
-import { SelectMenu, SelectOption } from "select_menu.slint";
-import { Icon } from "svg_icon.slint";
+import { BaseButton } from "base_button.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+import { PopupMenu, PopupMenuItem } from "menu.slint";
+import { SelectOption } from "select_menu.slint";
 
-
-export component SortMenu inherits Rectangle {
+export component SortMenu inherits BaseButton {
     in property <[SelectOption]> options;
     in-out property <int> sort-index: 0;
 
     callback sort-changed(index: int);
 
-    horizontal-stretch: 1;
-    height: Theme.control-height;
+    width: self.height;
+    height: Theme.control-height - Theme.space-xs;
+    horizontal-stretch: 0;
+    accessible-label: root.sort-index >= 0 && root.sort-index < root.options.length ? root.options[root.sort-index].label : "";
 
-    SelectMenu {
-        options: root.options;
-        selected-index <=> root.sort-index;
+    SvgIcon {
         icon: Icon.sort;
+        color: root.ink-color;
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+    }
 
-        selected(index) => {
-            root.sort-index = index;
-            root.sort-changed(index);
+    clicked => {
+        menu.show();
+    }
+
+    menu := PopupMenu {
+        x: 0;
+        y: root.height;
+        fit-content: true;
+
+        for option[index] in root.options: PopupMenuItem {
+            text: option.label;
+            checkable: true;
+            checked: index == root.sort-index;
+
+            clicked => {
+                root.sort-index = index;
+                root.sort-changed(index);
+                menu.close();
+            }
         }
     }
 }
