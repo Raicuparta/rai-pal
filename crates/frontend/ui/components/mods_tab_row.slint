@@ -21,77 +21,76 @@ export component ModsTabRow inherits VerticalLayout {
         height: row-layout.preferred-height;
 
         row-layout := HorizontalLayout {
-        padding: Theme.space-sm;
-        spacing: Theme.space-sm;
-        cross-axis-alignment: center;
-
-        if root.indented: Rectangle {
-            width: Theme.space-xl;
-        }
-
-        ModSummaryView {
-            horizontal-stretch: 1;
-            title: mod-data.title;
-            description: mod-data.description;
-            version-text: mod-data.version-text;
-            release-date: mod-data.release-date;
-            author: mod-data.author;
-            engine-text: mod-data.engine-text;
-            deprecated: mod-data.deprecated;
-        }
-
-        HorizontalLayout {
-            horizontal-stretch: 0;
-            alignment: end;
+            padding: Theme.space-sm;
+            spacing: Theme.space-sm;
             cross-axis-alignment: center;
-            spacing: Theme.space-xs;
 
-            if mod-data.can-run: ActionButton {
-                text: @tr("modModal" => "Run");
-                icon: Icon.play;
-                action-key: { kind: ActionKind.standalone-run, target: mod-data.id };
-
-                clicked => {
-                    ModActions.run-standalone(mod-data.id);
-                }
+            if root.indented: Rectangle {
+                width: Theme.space-xl;
             }
 
-            if mod-data.can-install: ActionButton {
-                text: @tr("modModal" => "Download");
-                icon: Icon.download;
-                action-key: { kind: ActionKind.standalone-install, target: mod-data.id };
-
-                clicked => {
-                    ModActions.install-standalone(mod-data.id);
-                }
+            ModSummaryView {
+                horizontal-stretch: 1;
+                title: mod-data.title;
+                description: mod-data.description;
+                version-text: mod-data.version-text;
+                release-date: mod-data.release-date;
+                author: mod-data.author;
+                engine-text: mod-data.engine-text;
+                deprecated: mod-data.deprecated;
             }
 
-            VerticalLayout {
-                cross-axis-alignment: end;
-                spacing: Theme.space-sm;
-                padding-right: Theme.space-md;
+            HorizontalLayout {
+                horizontal-stretch: 0;
+                alignment: end;
+                cross-axis-alignment: center;
+                spacing: Theme.space-xs;
 
-                HorizontalLayout {
-                    IconButton {
-                        icon: Icon.bug;
-                        tooltip: @tr("debugData" => "Debug data");
-                        icon-size: 18px;
+                if mod-data.can-run: ActionButton {
+                    text: @tr("modModal" => "Run");
+                    icon: Icon.play;
+                    action-key: { kind: ActionKind.standalone-run, target: mod-data.id };
 
-                        clicked => {
-                            GamesActions.request-mod-debug-data(mod-data.id);
-                        }
+                    clicked => {
+                        ModActions.run-standalone(mod-data.id);
                     }
                 }
 
-                if mod-data.source-code != "": ExternalLink {
-                    label: @tr("modModal" => "Website");
-                    text-size: Theme.font-sm;
-                    url: mod-data.source-code;
+                if mod-data.can-install: ActionButton {
+                    text: @tr("modModal" => "Download");
+                    icon: Icon.download;
+                    action-key: { kind: ActionKind.standalone-install, target: mod-data.id };
+
+                    clicked => {
+                        ModActions.install-standalone(mod-data.id);
+                    }
+                }
+
+                VerticalLayout {
+                    cross-axis-alignment: end;
+                    spacing: Theme.space-sm;
+                    padding-right: Theme.space-md;
+
+                    HorizontalLayout {
+                        IconButton {
+                            icon: Icon.bug;
+                            tooltip: @tr("debugData" => "Debug data");
+                            icon-size: 18px;
+
+                            clicked => {
+                                GamesActions.request-mod-debug-data(mod-data.id);
+                            }
+                        }
+                    }
+
+                    if mod-data.source-code != "": ExternalLink {
+                        label: @tr("modModal" => "Website");
+                        size: Theme.font-sm;
+                        url: mod-data.source-code;
+                    }
                 }
             }
         }
-    }
-
     }
 
     RowDivider { }

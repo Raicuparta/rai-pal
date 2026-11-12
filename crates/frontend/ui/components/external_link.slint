@@ -6,7 +6,7 @@ export component ExternalLink inherits Rectangle {
     in property <string> label;
     in property <Icon> icon: Icon.none;
     in property <brush> icon-color: Theme.foreground;
-    in property <length> text-size: Theme.font-lg;
+    in property <length> size: Theme.font-lg;
     in property <string> url;
 
     horizontal-stretch: 0;
@@ -19,6 +19,7 @@ export component ExternalLink inherits Rectangle {
     HorizontalLayout {
         alignment: start;
         cross-axis-alignment: center;
+        spacing: root.size * 0.15;
 
         if root.icon != Icon.none: HorizontalLayout {
             padding-right: Theme.space-sm;
@@ -37,7 +38,7 @@ export component ExternalLink inherits Rectangle {
             label-text := Text {
                 text: root.label;
                 color: Theme.strong-foreground;
-                font-size: root.text-size;
+                font-size: root.size;
                 font-weight: Theme.weight-bold;
                 vertical-alignment: center;
             }
