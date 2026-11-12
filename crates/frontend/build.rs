@@ -46,19 +46,15 @@ fn embed_windows_icon() {
 
 fn check_ui_diagnostics() {
 	let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-	let path = manifest_dir.join("ui/main_window.slint");
-	let source = fs::read_to_string(&path).expect("failed to read the UI source");
-	let mut diag = i_slint_compiler::diagnostics::BuildDiagnostics::default();
-	let syntax_node = i_slint_compiler::parser::parse(
-		source,
-		Some(i_slint_compiler::source_path::SourcePath::new(&path)),
-		&mut diag,
-	);
-	// Without the project file, the compiler warns about the missing edition.
 	let project_file = i_slint_compiler::project_file::ProjectFile::load(
 		manifest_dir.join(i_slint_compiler::project_file::FILE_NAME),
 	)
 	.expect("failed to load the Slint project file");
+	let main = project_file.main().expect("Slint project file has no 'main'");
+	let path = main.as_native_path().expect("Slint project file 'main' has no local path");
+	let source = fs::read_to_string(path).expect("failed to read the UI source");
+	let mut diag = i_slint_compiler::diagnostics::BuildDiagnostics::default();
+	let syntax_node = i_slint_compiler::parser::parse(source, Some(main.clone()), &mut diag);
 	let mut config = i_slint_compiler::CompilerConfiguration::new(
 		i_slint_compiler::generator::OutputFormat::Rust,
 	);
@@ -89,7 +85,7 @@ fn main() {
 
 	let config = slint_build::CompilerConfiguration::new().with_bundled_translations(translations);
 
-	slint_build::compile_with_config("ui/main_window.slint", config).unwrap();
+	slint_build::compile_with_config(env!("CARGO_MANIFEST_DIR"), config).unwrap();
 
 	embed_windows_icon();
 }
