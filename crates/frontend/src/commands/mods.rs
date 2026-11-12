@@ -445,19 +445,19 @@ fn apply_mods(
 		}
 	};
 	window
-		.global::<crate::GameMods>()
+		.global::<crate::GameDetailsState>()
 		.set_installed(Rc::new(slint::VecModel::from(loaded.installed)).into());
 	window
-		.global::<crate::GameMods>()
+		.global::<crate::GameDetailsState>()
 		.set_available(Rc::new(slint::VecModel::from(loaded.available)).into());
 	window
-		.global::<crate::GameMods>()
+		.global::<crate::GameDetailsState>()
 		.set_hidden(Rc::new(slint::VecModel::from(loaded.hidden)).into());
 	window
-		.global::<crate::GameMods>()
+		.global::<crate::GameDetailsState>()
 		.set_incompatible(Rc::new(slint::VecModel::from(loaded.incompatible)).into());
 	window
-		.global::<crate::GameMods>()
+		.global::<crate::GameDetailsState>()
 		.set_potential(Rc::new(slint::VecModel::from(loaded.potential)).into());
 }
 
