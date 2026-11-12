@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- look at translations.slint and see if everything there still needs to be there (for instance stuff that can just be @tr inline in slint, etc).
 - mod_summary items need to always be a single line and never wrap. make it just clip the text with ellipsis.
 
 ## Do later:
@@ -21,6 +20,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Notes, questions, decisions, etc.
 
 ## Done
+
+- Audited `translations.slint`: the file-dialog title/filter helpers were pure `@tr` wrappers used in one place, so they're now inline `@tr` calls in `add_game_popup.slint`. The remaining functions all map typed backend values (`RefreshTaskData`, `DownloadItemKind`, filter ids/labels, `ProviderAction`, `ConfirmKind`, `MessageData`) to text, so they stay central.
 
 - Made the text below the refresh button always visible: it shows the refresh task list while loading and otherwise a page-provided summary. The games page shows `filtered / total` (or just the total when equal), and the mods page shows the total mod count from a new `ModsState.total-count`.
 - Refreshed game providers in parallel with a scoped thread per provider, and downloaded the remote database concurrently too. The games list is now reloaded as soon as providers finish, while installed mods and mod sources continue refreshing in the background.

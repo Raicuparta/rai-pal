@@ -12,22 +12,6 @@ import {
 } from "app_types.slint";
 
 export global Tr {
-    public pure function select-executable-title() -> string {
-        return @tr("fileDialog" => "Select the game executable");
-    }
-
-    public pure function windows-executable-filter() -> string {
-        return @tr("fileDialog" => "Windows executable");
-    }
-
-    public pure function other-executable-filter() -> string {
-        return @tr("fileDialog" => "Other executable");
-    }
-
-    public pure function select-directory-title() -> string {
-        return @tr("fileDialog" => "Select a game directory");
-    }
-
     public pure function refresh-task(task: RefreshTaskData) -> string {
         if task.kind == RefreshTaskKind.provider {
             return task.provider;
