@@ -1,6 +1,7 @@
 import { CheckBox } from "std-widgets.slint";
 import { ConfirmKind } from "../app_types.slint";
 import { Button } from "button.slint";
+import { Icon } from "svg_icon.slint";
 import { Theme } from "../theme.slint";
 import { Tr } from "../translations.slint";
 import { Modal } from "modal.slint";
@@ -42,6 +43,7 @@ export component ConfirmationPopup inherits Modal {
 
         Button {
             text: @tr("commandButton" => "Cancel");
+            icon: Icon.close;
 
             clicked => {
                 root.respond(false);
@@ -50,6 +52,7 @@ export component ConfirmationPopup inherits Modal {
 
         Button {
             text: Tr.confirm-label(ConfirmationState.kind);
+            icon: ConfirmationState.kind == ConfirmKind.install-mod ? Icon.install : ConfirmationState.kind == ConfirmKind.none ? Icon.none : Icon.delete;
             tint: Theme.primary;
 
             clicked => {

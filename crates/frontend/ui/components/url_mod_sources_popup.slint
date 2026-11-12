@@ -1,5 +1,6 @@
 import { CheckBox, LineEdit } from "std-widgets.slint";
 import { Button } from "button.slint";
+import { Icon } from "svg_icon.slint";
 import { MessageData, UrlModSourceData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
@@ -45,6 +46,7 @@ component UrlModSourceRow inherits Rectangle {
 
         if !root.source.is-default : Button {
             text: @tr("manualGames" => "Remove");
+            icon: Icon.delete;
             enabled: !root.toggling;
 
             clicked => {
@@ -97,6 +99,7 @@ export component UrlModSourcesPopup inherits Modal {
 
         Button {
             text: @tr("urlModSources" => "Add source");
+            icon: Icon.plus;
             enabled: ModSourcesState.new-url != "";
 
             clicked => {

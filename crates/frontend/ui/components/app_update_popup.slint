@@ -1,4 +1,5 @@
 import { Button } from "button.slint";
+import { Icon } from "svg_icon.slint";
 import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
 import { AppActions } from "../actions.slint";
@@ -28,6 +29,7 @@ export component AppUpdatePopup inherits Modal {
 
         Button {
             text: @tr("appUpdate" => "Ignore (won't ask again until you restart Rai Pal)");
+            icon: Icon.close;
             enabled: UpdateState.state != ActionState.loading;
             horizontal-stretch: 1;
 
@@ -39,6 +41,7 @@ export component AppUpdatePopup inherits Modal {
 
         Button {
             text: @tr("appUpdate" => "Update now");
+            icon: Icon.update;
             enabled: UpdateState.state != ActionState.loading;
             tint: Theme.primary;
             horizontal-stretch: 1;

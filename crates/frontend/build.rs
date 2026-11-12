@@ -50,8 +50,12 @@ fn check_ui_diagnostics() {
 		manifest_dir.join(i_slint_compiler::project_file::FILE_NAME),
 	)
 	.expect("failed to load the Slint project file");
-	let main = project_file.main().expect("Slint project file has no 'main'");
-	let path = main.as_native_path().expect("Slint project file 'main' has no local path");
+	let main = project_file
+		.main()
+		.expect("Slint project file has no 'main'");
+	let path = main
+		.as_native_path()
+		.expect("Slint project file 'main' has no local path");
 	let source = fs::read_to_string(path).expect("failed to read the UI source");
 	let mut diag = i_slint_compiler::diagnostics::BuildDiagnostics::default();
 	let syntax_node = i_slint_compiler::parser::parse(source, Some(main.clone()), &mut diag);

@@ -1,4 +1,5 @@
 import { Button } from "button.slint";
+import { Icon } from "svg_icon.slint";
 import { MessageData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
@@ -37,6 +38,7 @@ export component SteamShortcutPopup inherits Modal {
 
         Button {
             text: @tr("steamShortcut" => "Add Rai Pal to Steam library");
+            icon: Icon.steam;
             enabled: SteamShortcutState.state != ActionState.loading;
             tint: Theme.primary;
             horizontal-stretch: 1;

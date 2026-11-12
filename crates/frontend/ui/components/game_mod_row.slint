@@ -89,7 +89,7 @@ export component GameModRow inherits VerticalLayout {
 
         if root.can-uninstall: PopupMenuItem {
             text: @tr("gameModRow" => "Uninstall");
-            icon: Icon.uninstall;
+            icon: Icon.delete;
             enabled: !game-mod.has-installed-dependants;
 
             clicked => {
@@ -130,75 +130,74 @@ export component GameModRow inherits VerticalLayout {
             spacing: Theme.space-sm;
             cross-axis-alignment: center;
 
-        ModSummaryView {
-            horizontal-stretch: 1;
-            title: game-mod.title;
-            description: game-mod.description;
-            version-text: game-mod.version-text;
-            release-date: game-mod.release-date;
-            author: game-mod.author;
-            engine-text: game-mod.engine-text;
-            deprecated: game-mod.deprecated;
-            has-remote-config: game-mod.has-remote-config;
-            show-status: root.can-show-actions;
-            installed: game-mod.installed;
-            outdated: game-mod.outdated;
-        }
+            ModSummaryView {
+                horizontal-stretch: 1;
+                title: game-mod.title;
+                description: game-mod.description;
+                version-text: game-mod.version-text;
+                release-date: game-mod.release-date;
+                author: game-mod.author;
+                engine-text: game-mod.engine-text;
+                deprecated: game-mod.deprecated;
+                has-remote-config: game-mod.has-remote-config;
+                show-status: root.can-show-actions;
+                installed: game-mod.installed;
+                outdated: game-mod.outdated;
+            }
 
-        HorizontalLayout {
-            horizontal-stretch: 0;
-            alignment: end;
-            spacing: Theme.space-xs;
-            min-width: self.preferred-width;
+            HorizontalLayout {
+                horizontal-stretch: 0;
+                alignment: end;
+                spacing: Theme.space-xs;
+                min-width: self.preferred-width;
 
-            if root.can-install: ActionButton {
-                text: @tr("gameModRow" => "Install");
-                icon: Icon.install;
-                action-key: { kind: ActionKind.game-mod-install, target: game-mod.mod-id };
+                if root.can-install: ActionButton {
+                    text: @tr("gameModRow" => "Install");
+                    icon: Icon.install;
+                    action-key: { kind: ActionKind.game-mod-install, target: game-mod.mod-id };
 
-                clicked => {
-                    ModActions.request-install(
+                    clicked => {
+                        ModActions.request-install(
                         game-mod.mod-id,
                         SkipConfirmation.install-mod,
                     );
+                    }
                 }
-            }
 
-            if root.can-update: ActionButton {
-                text: @tr("gameModRow" => "Update");
-                icon: Icon.update;
-                tint: Theme.status-success;
-                action-key: { kind: ActionKind.game-mod-install, target: game-mod.mod-id };
+                if root.can-update: ActionButton {
+                    text: @tr("gameModRow" => "Update");
+                    icon: Icon.update;
+                    tint: Theme.status-success;
+                    action-key: { kind: ActionKind.game-mod-install, target: game-mod.mod-id };
 
-                clicked => {
-                    ModActions.update(game-mod.mod-id);
+                    clicked => {
+                        ModActions.update(game-mod.mod-id);
+                    }
                 }
-            }
 
-            if root.can-run: ActionButton {
-                text: @tr("gameModRow" => "Run");
-                icon: Icon.play;
-                action-key: { kind: ActionKind.game-mod-run, target: game-mod.mod-id };
+                if root.can-run: ActionButton {
+                    text: @tr("gameModRow" => "Run");
+                    icon: Icon.play;
+                    action-key: { kind: ActionKind.game-mod-run, target: game-mod.mod-id };
 
-                clicked => {
-                    ModActions.run(game-mod.mod-id);
+                    clicked => {
+                        ModActions.run(game-mod.mod-id);
+                    }
                 }
-            }
 
-            actions-button := IconButton {
-                icon: Icon.more;
-                icon-size: 22px;
-                tooltip: @tr("gameModRow" => "Mod actions");
+                actions-button := IconButton {
+                    icon: Icon.more;
+                    icon-size: 22px;
+                    tooltip: @tr("gameModRow" => "Mod actions");
 
-                clicked => {
-                    root.menu-x = actions-button.absolute-position.x - root.absolute-position.x + actions-button.width - Theme.menu-width;
-                    root.menu-y = actions-button.absolute-position.y - root.absolute-position.y + actions-button.height;
-                    menu.show();
+                    clicked => {
+                        root.menu-x = actions-button.absolute-position.x - root.absolute-position.x + actions-button.width - Theme.menu-width;
+                        root.menu-y = actions-button.absolute-position.y - root.absolute-position.y + actions-button.height;
+                        menu.show();
+                    }
                 }
             }
         }
-    }
-
     }
 
     RowDivider { }

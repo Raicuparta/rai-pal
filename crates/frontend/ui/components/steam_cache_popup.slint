@@ -1,6 +1,7 @@
 import { Button } from "button.slint";
 import { MessageData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
+import { Icon } from "svg_icon.slint";
 import { Modal } from "modal.slint";
 import { ActionState } from "../action_state.slint";
 import { DialogActions } from "../actions.slint";
@@ -19,13 +20,13 @@ export component SteamCachePopup inherits Modal {
         wrap: word-wrap;
     }
 
-    if SteamCacheState.state == ActionState.success : Text {
+    if SteamCacheState.state == ActionState.success: Text {
         text: @tr("steamCache" => "The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal.");
         color: Theme.status-success;
         wrap: word-wrap;
     }
 
-    if Tr.has-message(SteamCacheState.error) : Text {
+    if Tr.has-message(SteamCacheState.error): Text {
         text: Tr.message(SteamCacheState.error);
         color: red;
         wrap: word-wrap;
@@ -39,7 +40,7 @@ export component SteamCachePopup inherits Modal {
             enabled: SteamCacheState.state != ActionState.loading;
             tint: Theme.primary;
             horizontal-stretch: 1;
-
+            icon: Icon.delete;
             clicked => {
                 DialogActions.reset-steam-cache();
             }

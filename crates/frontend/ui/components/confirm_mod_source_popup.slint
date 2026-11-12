@@ -1,4 +1,5 @@
 import { Button } from "button.slint";
+import { Icon } from "svg_icon.slint";
 import { MessageData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
@@ -62,6 +63,7 @@ export component ConfirmModSourcePopup inherits Modal {
 
         Button {
             text: @tr("urlModSources" => "Cancel");
+            icon: Icon.close;
             enabled: ConfirmModSourceState.state != ActionState.loading || ConfirmModSourceState.mods.length == 0;
 
             clicked => {
@@ -71,6 +73,7 @@ export component ConfirmModSourcePopup inherits Modal {
 
         Button {
             text: @tr("urlModSources" => "Add Source");
+            icon: Icon.plus;
             enabled: ConfirmModSourceState.state != ActionState.loading && !Tr.has-message(ConfirmModSourceState.error);
 
             clicked => {

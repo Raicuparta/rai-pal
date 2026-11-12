@@ -91,6 +91,7 @@ component FilterValueRow inherits ListRow {
 
         only-button := Button {
             text: @tr("filterMenu" => "Only");
+            icon: Icon.filter;
             text-size: 10px;
             tooltip: @tr("filterMenu" => "Only show this value");
             visible: !root.item.locked;
