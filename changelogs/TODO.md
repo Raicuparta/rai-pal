@@ -6,6 +6,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
+- why is it saying no edition is set even though i did set it.
+
 ## Do later:
 
 - Checkbox check icon looks a lil weird in software renderer. maybe due to downscale.

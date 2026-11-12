@@ -34,7 +34,6 @@ component SavedDirectoryRow inherits Rectangle {
             Text {
                 text: root.path;
                 font-size: Theme.font-sm;
-                vertical-alignment: center;
                 x: Theme.space-sm;
                 width: parent.width - Theme.space-lg;
                 overflow: elide;
@@ -60,7 +59,6 @@ export component AddGamePopup inherits Modal {
     }
     title: @tr("manualGames" => "Manually Added Games");
 
-
     Text {
         text: @tr("manualGames" => "Note: you can also add your non-Steam games to Steam, and they will still be detected by Rai Pal.");
         font-size: Theme.font-sm;
@@ -68,7 +66,7 @@ export component AddGamePopup inherits Modal {
         wrap: word-wrap;
     }
 
-    if AddGameState.phase == AddGamePhase.idle : VerticalLayout {
+    if AddGameState.phase == AddGamePhase.idle: VerticalLayout {
         spacing: Theme.space-md;
 
         Button {
@@ -102,7 +100,7 @@ export component AddGamePopup inherits Modal {
         }
     }
 
-    if AddGameState.phase == AddGamePhase.scanning : VerticalLayout {
+    if AddGameState.phase == AddGamePhase.scanning: VerticalLayout {
         spacing: Theme.space-md;
         alignment: start;
 
@@ -133,7 +131,7 @@ export component AddGamePopup inherits Modal {
         }
     }
 
-    if AddGameState.phase == AddGamePhase.confirming : VerticalLayout {
+    if AddGameState.phase == AddGamePhase.confirming: VerticalLayout {
         spacing: Theme.space-md;
         alignment: start;
 
@@ -164,7 +162,7 @@ export component AddGamePopup inherits Modal {
         }
     }
 
-    if AddGameState.phase == AddGamePhase.idle && AddGameState.manual-directories.length > 0 : VerticalLayout {
+    if AddGameState.phase == AddGamePhase.idle && AddGameState.manual-directories.length > 0: VerticalLayout {
         spacing: Theme.space-sm;
 
         Rectangle {
@@ -179,7 +177,7 @@ export component AddGamePopup inherits Modal {
             wrap: word-wrap;
         }
 
-        for directory in AddGameState.manual-directories : SavedDirectoryRow {
+        for directory in AddGameState.manual-directories: SavedDirectoryRow {
             path: directory;
 
             removed => {

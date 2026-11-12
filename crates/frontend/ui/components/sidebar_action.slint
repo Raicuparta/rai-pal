@@ -1,4 +1,9 @@
-import { ActionKind, ActionKey, ActionState, ActionStates } from "../action_state.slint";
+import {
+    ActionKind,
+    ActionKey,
+    ActionState,
+    ActionStates,
+} from "../action_state.slint";
 import { Theme } from "../theme.slint";
 import { ActionStatusIcon } from "action_status_icon.slint";
 import { Contrast } from "contrast.slint";
@@ -57,7 +62,6 @@ export component SidebarAction inherits ListRow {
             text: root.text;
             font-size: Theme.font-sm;
             color: root.content-color;
-            vertical-alignment: center;
             overflow: elide;
             horizontal-stretch: 1;
             font-weight: Theme.weight-semibold;

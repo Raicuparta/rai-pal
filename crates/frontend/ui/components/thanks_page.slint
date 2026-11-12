@@ -51,8 +51,6 @@ component PatronRow inherits Rectangle {
                     text: root.patron.initials;
                     font-size: Theme.font-sm;
                     font-weight: Theme.weight-bold;
-                    horizontal-alignment: center;
-                    vertical-alignment: center;
                 }
             }
         }
@@ -65,7 +63,6 @@ component PatronRow inherits Rectangle {
         Text {
             text: root.patron.name;
             horizontal-stretch: 1;
-            vertical-alignment: center;
             font-weight: root.patron.ranking <= 3 ? Theme.weight-bold : Theme.weight-normal;
             overflow: elide;
         }

@@ -89,7 +89,6 @@ export component Modal inherits Rectangle {
                         text: root.title;
                         font-size: Theme.font-xl;
                         font-weight: Theme.weight-bold;
-                        vertical-alignment: center;
                         wrap: word-wrap;
                     }
 
@@ -97,7 +96,7 @@ export component Modal inherits Rectangle {
                         horizontal-stretch: 1;
                     }
 
-                    if root.header-action-icon != Icon.none : IconButton {
+                    if root.header-action-icon != Icon.none: IconButton {
                         icon: root.header-action-icon;
                         tooltip: root.header-action-tooltip;
 
@@ -106,7 +105,7 @@ export component Modal inherits Rectangle {
                         }
                     }
 
-                    if root.show-close-button : IconButton {
+                    if root.show-close-button: IconButton {
                         icon: Icon.close;
                         icon-size: Theme.font-xl;
                         tooltip: @tr("debugData" => "Close");

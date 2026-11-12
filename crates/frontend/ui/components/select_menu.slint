@@ -38,7 +38,6 @@ export component SelectMenu inherits Rectangle {
         Text {
             text: root.current-label;
             horizontal-stretch: 1;
-            vertical-alignment: center;
             overflow: elide;
         }
 
@@ -60,7 +59,7 @@ export component SelectMenu inherits Rectangle {
         y: root.height;
         menu-width: root.width;
 
-        if root.leading-label != "" : PopupMenuItem {
+        if root.leading-label != "": PopupMenuItem {
             text: root.leading-label;
             checkable: true;
             checked: root.selected-index < 0;

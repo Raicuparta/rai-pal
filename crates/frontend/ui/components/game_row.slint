@@ -20,153 +20,152 @@ export component GameRow inherits VerticalLayout {
         background: touch-area.has-hover ? Theme.hover-background : Theme.background;
 
         HorizontalLayout {
-        cross-axis-alignment: center;
+            cross-axis-alignment: center;
 
-        Rectangle {
-            width: 30px;
-            opacity: game-row.installed ? 1 : 0.5;
+            Rectangle {
+                width: 30px;
+                opacity: game-row.installed ? 1 : 0.5;
 
-            VerticalLayout {
-                alignment: center;
-                cross-axis-alignment: center;
-                spacing: Theme.space-2xs;
-
-                ProviderIcon {
-                    provider: game-row.provider;
-                }
-
-                SvgIcon {
-                    icon: game-row.installed ? Icon.game-installed : Icon.game-not-installed;
-                    color: game-row.installed && Theme.dark ? white : Theme.foreground;
-                }
-            }
-        }
-
-        if root.show-thumbnail: Rectangle {
-            width: 90px;
-            height: 54px;
-            clip: true;
-            opacity: game-row.installed ? 1 : 0.5;
-            border-radius: Theme.radius-md;
-            background: Branding.provider-background(game-row.provider);
-
-            Image {
-                source: @image-url("../images/fallback-thumbnail.png");
-                width: 100%;
-                height: 100%;
-                image-fit: contain;
-            }
-
-            if game-row.has-thumbnail: Image {
-                source: game-row.thumbnail;
-                width: 100%;
-                height: 100%;
-                image-fit: contain;
-            }
-        }
-
-        FlexboxLayout {
-            horizontal-stretch: 1;
-            padding: Theme.space-sm;
-            spacing: Theme.space-2xs;
-            cross-axis-self-alignment: center;
-
-            Text {
-                text: game-row.title;
-                color: game-row.installed ? Theme.strong-foreground : Theme.foreground;
-                font-weight: game-row.installed ? Theme.weight-bold : Theme.weight-normal;
-                wrap: word-wrap;
-            }
-
-            for tag in game-row.tags: Rectangle {
-                width: tag-text.preferred-width + Theme.space-sm;
-                height: tag-text.preferred-height + Theme.space-xs;
-                background: Theme.tag-background;
-                border-radius: Theme.radius-sm;
-
-                tag-text := Text {
-                    text: tag;
-                    font-size: Theme.font-2xs;
-                    font-weight: Theme.weight-light;
-                    horizontal-alignment: center;
-                    vertical-alignment: center;
-                }
-            }
-        }
-
-        Rectangle {
-            width: 130px;
-            clip: true;
-
-            VerticalLayout {
-                alignment: center;
-                padding-left: Theme.space-sm;
-                padding-right: Theme.space-sm;
-
-                if game-row.engine != EngineId.none: HorizontalLayout {
+                VerticalLayout {
                     alignment: center;
-                    spacing: Theme.space-xs;
                     cross-axis-alignment: center;
+                    spacing: Theme.space-2xs;
 
-                    EngineIcon {
-                        engine: game-row.engine;
-                        size: 12px;
+                    ProviderIcon {
+                        provider: game-row.provider;
                     }
 
-                    Text {
-                        text: game-row.engine-name.to-uppercase();
-                        color: Branding.engine-foreground(game-row.engine);
-                        font-weight: Theme.weight-bold;
+                    SvgIcon {
+                        icon: game-row.installed ? Icon.game-installed : Icon.game-not-installed;
+                        color: game-row.installed && Theme.dark ? white : Theme.foreground;
+                    }
+                }
+            }
+
+            if root.show-thumbnail: Rectangle {
+                width: 90px;
+                height: 54px;
+                clip: true;
+                opacity: game-row.installed ? 1 : 0.5;
+                border-radius: Theme.radius-md;
+                background: Branding.provider-background(game-row.provider);
+
+                Image {
+                    source: @image-url("../images/fallback-thumbnail.png");
+                    width: 100%;
+                    height: 100%;
+                    image-fit: contain;
+                }
+
+                if game-row.has-thumbnail: Image {
+                    source: game-row.thumbnail;
+                    width: 100%;
+                    height: 100%;
+                    image-fit: contain;
+                }
+            }
+
+            FlexboxLayout {
+                horizontal-stretch: 1;
+                padding: Theme.space-sm;
+                spacing: Theme.space-2xs;
+                cross-axis-self-alignment: center;
+
+                Text {
+                    text: game-row.title;
+                    color: game-row.installed ? Theme.strong-foreground : Theme.foreground;
+                    font-weight: game-row.installed ? Theme.weight-bold : Theme.weight-normal;
+                    wrap: word-wrap;
+                }
+
+                for tag in game-row.tags: Rectangle {
+                    width: tag-text.preferred-width + Theme.space-sm;
+                    height: tag-text.preferred-height + Theme.space-xs;
+                    background: Theme.tag-background;
+                    border-radius: Theme.radius-sm;
+
+                    tag-text := Text {
+                        text: tag;
+                        font-size: Theme.font-2xs;
+                        font-weight: Theme.weight-light;
                         horizontal-alignment: center;
+                    }
+                }
+            }
+
+            Rectangle {
+                width: 130px;
+                clip: true;
+
+                VerticalLayout {
+                    alignment: center;
+                    padding-left: Theme.space-sm;
+                    padding-right: Theme.space-sm;
+
+                    if game-row.engine != EngineId.none: HorizontalLayout {
+                        alignment: center;
+                        spacing: Theme.space-xs;
+                        cross-axis-alignment: center;
+
+                        EngineIcon {
+                            engine: game-row.engine;
+                            size: 12px;
+                        }
+
+                        Text {
+                            text: game-row.engine-name.to-uppercase();
+                            color: Branding.engine-foreground(game-row.engine);
+                            font-weight: Theme.weight-bold;
+                            horizontal-alignment: center;
+                            overflow: elide;
+                        }
+                    }
+
+                    if game-row.engine-version != "": Text {
+                        text: game-row.engine-version;
+                        horizontal-alignment: center;
+                        color: Theme.foreground;
+                        font-size: Theme.font-xs;
+                        overflow: elide;
+                    }
+
+                    if game-row.engine-details != "": Text {
+                        text: game-row.engine-details;
+                        horizontal-alignment: center;
+                        color: Theme.foreground;
+                        opacity: 0.5;
+                        font-size: Theme.font-xs;
                         overflow: elide;
                     }
                 }
+            }
 
-                if game-row.engine-version != "": Text {
-                    text: game-row.engine-version;
+            VerticalLayout {
+                width: 80px;
+                alignment: center;
+
+                Text {
+                    text: game-row.release-day;
+                    font-size: Theme.font-xs;
                     horizontal-alignment: center;
                     color: Theme.foreground;
-                    font-size: Theme.font-xs;
-                    overflow: elide;
                 }
 
-                if game-row.engine-details != "": Text {
-                    text: game-row.engine-details;
+                Text {
+                    text: game-row.release-month;
+                    font-size: Theme.font-xs;
+                    horizontal-alignment: center;
+                    overflow: elide;
+                    color: Theme.foreground;
+                }
+
+                Text {
+                    text: game-row.release-year;
+                    font-size: Theme.font-xs;
                     horizontal-alignment: center;
                     color: Theme.foreground;
-                    opacity: 0.5;
-                    font-size: Theme.font-xs;
-                    overflow: elide;
                 }
             }
-        }
-
-        VerticalLayout {
-            width: 80px;
-            alignment: center;
-
-            Text {
-                text: game-row.release-day;
-                font-size: Theme.font-xs;
-                horizontal-alignment: center;
-                color: Theme.foreground;
-            }
-
-            Text {
-                text: game-row.release-month;
-                font-size: Theme.font-xs;
-                horizontal-alignment: center;
-                overflow: elide;
-                color: Theme.foreground;
-            }
-
-            Text {
-                text: game-row.release-year;
-                font-size: Theme.font-xs;
-                horizontal-alignment: center;
-                color: Theme.foreground;
-            }
-        }
         }
 
         touch-area := TouchArea {

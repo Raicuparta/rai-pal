@@ -22,7 +22,7 @@ component MetaItem inherits HorizontalLayout {
         color: Theme.foreground;
         overflow: elide;
 
-        if root.tooltip != "" : Tooltip {
+        if root.tooltip != "": Tooltip {
             text: @markdown("\{root.tooltip}");
         }
     }
@@ -48,7 +48,7 @@ export component ModSummaryView inherits HorizontalLayout {
     spacing: Theme.space-sm;
     cross-axis-alignment: center;
 
-    if show-status : SvgIcon {
+    if show-status: SvgIcon {
         icon: outdated ? Icon.outdated : installed ? Icon.success : Icon.mod-not-installed;
         size: 15px;
         color: outdated ? Theme.status-warning : installed ? Theme.status-success : Theme.dimmed-foreground;
@@ -70,7 +70,7 @@ export component ModSummaryView inherits HorizontalLayout {
                 horizontal-stretch: 1;
             }
 
-            if root.deprecated : Rectangle {
+            if root.deprecated: Rectangle {
                 width: deprecated-content.preferred-width + Theme.space-sm;
                 height: 18px;
                 border-radius: Theme.radius-sm;
@@ -97,20 +97,19 @@ export component ModSummaryView inherits HorizontalLayout {
                         font-size: Theme.font-xs;
                         font-weight: Theme.weight-bold;
                         color: Theme.deprecated-foreground;
-                        vertical-alignment: center;
                     }
                 }
             }
         }
 
-        if root.has-details : FlexboxLayout {
+        if root.has-details: FlexboxLayout {
             height: self.preferred-height;
             opacity: 0.4;
             spacing-horizontal: Theme.space-md;
             spacing-vertical: Theme.space-2xs;
             cross-axis-alignment: center;
 
-            if root.version-text != "" : Text {
+            if root.version-text != "": Text {
                 text: root.version-text;
                 font-size: Theme.font-xs;
                 color: Theme.foreground;
@@ -118,29 +117,29 @@ export component ModSummaryView inherits HorizontalLayout {
                 overflow: elide;
             }
 
-            if root.release-date != "" : MetaItem {
+            if root.release-date != "": MetaItem {
                 icon: Icon.calendar;
                 text: root.release-date;
             }
 
-            if root.author != "" : MetaItem {
+            if root.author != "": MetaItem {
                 icon: Icon.user;
                 text: root.author;
             }
 
-            if root.engine-text != "" : MetaItem {
+            if root.engine-text != "": MetaItem {
                 icon: Icon.engine;
                 text: root.engine-text;
             }
 
-            if root.has-remote-config : MetaItem {
+            if root.has-remote-config: MetaItem {
                 icon: Icon.settings;
                 text: @tr("gameModRow" => "Recommended config");
                 tooltip: @tr("gameModRow" => "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu.");
             }
         }
 
-        if root.description != "" : Text {
+        if root.description != "": Text {
             height: self.preferred-height;
             text: root.description;
             font-size: Theme.font-sm;
