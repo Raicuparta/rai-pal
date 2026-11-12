@@ -27,6 +27,7 @@ use super::on_command;
 
 const LATEST_JSON_URL: &str =
 	"https://github.com/Raicuparta/rai-pal/releases/latest/download/latest.json";
+const LATEST_JSON_URL_ENV_VAR: &str = "RAI_PAL_UPDATE_URL";
 const PUBLIC_KEY: &str = "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNGMzI5QUM1RjMwMjM0OTMKUldTVE5BTHp4Wm95UDcvaWgyKzRENVkzZVc2K1JTOEhidUR4OFVENWVqemloUWRmZDllbzJGaSsK";
 const CHECK_INTERVAL: Duration = Duration::from_mins(2);
 
@@ -211,9 +212,13 @@ fn check_for_update(
 	});
 }
 
+fn latest_json_url() -> String {
+	std::env::var(LATEST_JSON_URL_ENV_VAR).unwrap_or_else(|_| LATEST_JSON_URL.to_string())
+}
+
 fn fetch_update() -> Result<Option<Release>, String> {
 	let release = fetch::http_client()
-		.get(LATEST_JSON_URL)
+		.get(latest_json_url())
 		.send()
 		.map_err(|err| err.to_string())?
 		.error_for_status()
