@@ -128,12 +128,6 @@ impl Updater {
 
 	pub fn ignore(&self, window: &MainWindow) {
 		self.ignored.store(true, Ordering::SeqCst);
-		match self.pending.lock() {
-			Ok(mut pending) => {
-				pending.take();
-			}
-			Err(err) => log::warn!("Failed to lock pending update: {err}"),
-		}
 		window.global::<crate::UpdateState>().set_open(false);
 	}
 }
@@ -193,16 +187,12 @@ fn check_for_update(
 						return;
 					}
 
-					window
-						.global::<crate::UpdateState>()
-						.set_version(release.version.clone().into());
-					window
-						.global::<crate::UpdateState>()
-						.set_notes(release.notes.clone().into());
-					window
-						.global::<crate::UpdateState>()
-						.set_state(crate::ActionState::Idle);
-					window.global::<crate::UpdateState>().set_open(true);
+					let update_state = window.global::<crate::UpdateState>();
+					update_state.set_version(release.version.clone().into());
+					update_state.set_notes(release.notes.clone().into());
+					update_state.set_state(crate::ActionState::Idle);
+					update_state.set_available(true);
+					update_state.set_open(true);
 					*pending = Some(release);
 				}
 				Ok(None) => {}

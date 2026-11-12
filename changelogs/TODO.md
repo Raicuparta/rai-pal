@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- when the user presses ignore on the update notification, let's give them a way to update without restarting rai pal. add a small "update" icon with "Theme.highlight" color as an overlay on the app bar menu button (kinda like chrome does), bottom left corner of the icon. then inside the the app menu the first item becomes "update now", using primary color, using same translation and icon as the button in the modal.
 - Should expand all filter groups by default like tauri app did. And persist their expand state if not already. Unless tauri was using web storage for that state, we should make sure we're using the same (i think app settings? not sure).
 
 ## Do later:
@@ -21,6 +20,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Done
 
+- Ignoring an app update now leaves it available: a highlight update badge appears on the app bar menu button and the app menu shows a primary-colored "Update now" item, so the user can update without restarting.
 - Update modal buttons now sit at the bottom on opposite sides and size to their content instead of stretching across the modal.
 - Fixed the app update modal stretching to fill the window: modals are now content-sized unless they opt into filling the height, which only the debug data popup does.
 - Mod summary rows no longer wrap: the title, description, version and meta values (release date, author, engine, recommended config) are single-line texts with `overflow: elide`, so long values are clipped with an ellipsis instead of growing the row.

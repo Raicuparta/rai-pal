@@ -29,6 +29,9 @@ export component PopupMenu inherits PopupWindow {
             vertical-scrollbar-policy: ScrollBarPolicy.as-needed;
 
             menu-layout := VerticalLayout {
+                padding-top: Theme.space-xs;
+                padding-bottom: Theme.space-xs;
+
                 @children
             }
         }
@@ -41,7 +44,7 @@ export component PopupMenuItem inherits BaseButton {
     in property <bool> checkable: false;
     in property <bool> checked: false;
 
-    inset: Theme.space-sm;
+    inset: Theme.space-xs;
     accessible-label: root.text;
 
     HorizontalLayout {
@@ -54,12 +57,12 @@ export component PopupMenuItem inherits BaseButton {
 
         SvgIcon {
             icon: root.checked ? Icon.check : root.icon;
-            color: root.enabled ? Theme.foreground : Theme.dimmed-foreground;
+            color: root.ink-color;
         }
 
         Text {
             text: root.text;
-            color: root.enabled ? Theme.foreground : Theme.dimmed-foreground;
+            color: root.ink-color;
             wrap: word-wrap;
             horizontal-stretch: 1;
         }

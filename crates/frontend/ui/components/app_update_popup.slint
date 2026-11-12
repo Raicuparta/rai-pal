@@ -10,6 +10,7 @@ export global UpdateState {
     in property <string> version: "";
     in property <string> notes: "";
     in property <ActionState> state: idle;
+    in property <bool> available: false;
 }
 
 export component AppUpdatePopup inherits Modal {
@@ -33,6 +34,7 @@ export component AppUpdatePopup inherits Modal {
             icon: Icon.close;
             enabled: UpdateState.state != ActionState.loading;
             horizontal-stretch: 0;
+            tint: Theme.surface-background;
 
             clicked => {
                 UpdateState.open = false;

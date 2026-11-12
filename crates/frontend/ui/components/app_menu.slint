@@ -13,6 +13,7 @@ import {
 } from "steam_shortcut_popup.slint";
 import { AboutPopup } from "about_popup.slint";
 import { ActionState } from "../action_state.slint";
+import { UpdateState } from "app_update_popup.slint";
 
 export component AppMenu inherits Rectangle {
     private property <bool> about-open: false;
@@ -47,6 +48,26 @@ export component AppMenu inherits Rectangle {
         }
     }
 
+    if UpdateState.available: Rectangle {
+        background: Theme.background;
+        height: Theme.space-lg;
+        width: Theme.space-lg;
+        border-radius: Theme.space-lg / 2;
+        x: 0;
+
+        HorizontalLayout {
+            alignment: center;
+            cross-axis-alignment: center;
+
+            SvgIcon {
+                icon: Icon.update;
+                height: 100%;
+                width: 100%;
+                color: Theme.status-warning;
+            }
+        }
+    }
+
     menu := PopupMenu {
         x: root.width - Theme.menu-width;
         y: root.height;
@@ -54,6 +75,19 @@ export component AppMenu inherits Rectangle {
         VerticalLayout {
             padding-top: Theme.space-xs;
             padding-bottom: Theme.space-xs;
+
+            if UpdateState.available: PopupMenuItem {
+                text: @tr("appUpdate" => "Update now");
+                icon: Icon.update;
+                tint: Theme.primary;
+
+                clicked => {
+                    AppActions.install-update();
+                    menu.close();
+                }
+            }
+
+            if UpdateState.available: PopupMenuSeparator { }
 
             PopupMenuItem {
                 checkable: true;
