@@ -9,7 +9,7 @@ import { ModsTabRow } from "mods_tab_row.slint";
 import { ModsTabFamilyRow } from "mods_tab_family_row.slint";
 import { RefreshButton } from "refresh_button.slint";
 import { Sidebar, SidebarScroll, SidebarSection } from "sidebar.slint";
-import { SidebarAction } from "sidebar_action.slint";
+import { ActionButton } from "action_button.slint";
 import { Icon } from "svg_icon.slint";
 
 export global ModsState {
@@ -28,12 +28,18 @@ export component ModsPage inherits Rectangle {
                 spacing: Theme.space-sm;
 
                 SidebarSection {
-                    RefreshButton { }
+                    padding-left: 0;
+                    padding-right: 0;
+
+                    RefreshButton {
+                        inset: Theme.space-md;
+                    }
                 }
 
                 SidebarScroll {
                     VerticalLayout {
-                        SidebarAction {
+                        ActionButton {
+                            inset: Theme.space-md;
                             text: @tr("urlModSources" => "Mod Sources");
                             icon: Icon.mod-sources;
 
@@ -43,7 +49,8 @@ export component ModsPage inherits Rectangle {
                             }
                         }
 
-                        SidebarAction {
+                        ActionButton {
+                            inset: Theme.space-md;
                             text: @tr("modsPage" => "Open Local Mods Folder");
                             icon: Icon.folder-mods;
                             action-key: { kind: ActionKind.open-local-mods-folder, target: "" };

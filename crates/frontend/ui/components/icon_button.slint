@@ -13,9 +13,15 @@ export component IconButton inherits BaseButton {
 
     accessible-label: root.tooltip;
 
-    if root.icon != Icon.none: SvgIcon {
-        icon: root.icon;
-        size: root.icon-size;
-        color: root.ink-color;
+    HorizontalLayout {
+        horizontal-stretch: 1;
+        alignment: center;
+        cross-axis-alignment: center;
+
+        if root.icon != Icon.none: SvgIcon {
+            icon: root.icon;
+            size: root.icon-size;
+            color: root.ink-color;
+        }
     }
 }

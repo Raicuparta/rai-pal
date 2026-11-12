@@ -1,7 +1,7 @@
 import { ScrollView } from "std-widgets.slint";
 import { Theme } from "../theme.slint";
 import { LabeledDivider } from "labeled_divider.slint";
-import { ListRow } from "list_row.slint";
+import { BaseButton } from "base_button.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 
 export component PopupMenu inherits PopupWindow {
@@ -35,24 +35,34 @@ export component PopupMenu inherits PopupWindow {
     }
 }
 
-export component PopupMenuItem inherits ListRow {
+export component PopupMenuItem inherits BaseButton {
     in property <string> text;
     in property <Icon> icon: Icon.none;
     in property <bool> checkable: false;
     in property <bool> checked: false;
 
+    inset: Theme.space-sm;
     accessible-label: root.text;
 
-    SvgIcon {
-        icon: root.checked ? Icon.check : root.icon;
-        color: root.enabled ? Theme.foreground : Theme.dimmed-foreground;
-    }
+    HorizontalLayout {
+        padding-left: root.inset + Theme.space-sm;
+        padding-right: root.inset + Theme.space-sm;
+        padding-top: Theme.space-xs;
+        padding-bottom: Theme.space-xs;
+        spacing: Theme.space-sm;
+        cross-axis-alignment: center;
 
-    Text {
-        text: root.text;
-        color: root.enabled ? Theme.foreground : Theme.dimmed-foreground;
-        wrap: word-wrap;
-        horizontal-stretch: 1;
+        SvgIcon {
+            icon: root.checked ? Icon.check : root.icon;
+            color: root.enabled ? Theme.foreground : Theme.dimmed-foreground;
+        }
+
+        Text {
+            text: root.text;
+            color: root.enabled ? Theme.foreground : Theme.dimmed-foreground;
+            wrap: word-wrap;
+            horizontal-stretch: 1;
+        }
     }
 }
 

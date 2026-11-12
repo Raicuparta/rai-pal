@@ -11,12 +11,13 @@ export component Button inherits BaseButton {
     in property <ActionState> state: ActionState.idle;
     in property <bool> reserve-icon-space: true;
 
-    base-color: root.state == ActionState.success ? Theme.status-success : root.state == ActionState.error ? Theme.status-error : root.enabled ? root.tint : Theme.surface-background;
+    base-color: root.state == ActionState.success ? Theme.status-success : root.state == ActionState.error ? Theme.status-error : root.tint;
     interactive: root.enabled && root.state != ActionState.loading;
     accessible-label: root.text;
 
     HorizontalLayout {
-        padding-left: status-icon.shown ? Theme.space-sm : 0px;
+        padding-left: root.inset + (status-icon.shown ? Theme.space-sm : 0px);
+        padding-right: root.inset;
         cross-axis-alignment: center;
 
         status-icon := ActionStatusIcon {

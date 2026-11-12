@@ -14,12 +14,17 @@ export component SortMenu inherits BaseButton {
     height: Theme.control-height - Theme.space-xs;
     horizontal-stretch: 0;
     accessible-label: root.sort-index >= 0 && root.sort-index < root.options.length ? root.options[root.sort-index].label : "";
+    tint: Theme.surface-background;
 
-    SvgIcon {
-        icon: Icon.sort;
-        color: root.ink-color;
-        x: (root.width - self.width) / 2;
-        y: (root.height - self.height) / 2;
+    HorizontalLayout {
+        horizontal-stretch: 1;
+        alignment: center;
+        cross-axis-alignment: center;
+
+        SvgIcon {
+            icon: Icon.sort;
+            color: root.ink-color;
+        }
     }
 
     clicked => {

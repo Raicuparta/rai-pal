@@ -155,6 +155,7 @@ export component GameModRow inherits VerticalLayout {
                     text: @tr("gameModRow" => "Install");
                     icon: Icon.install;
                     action-key: { kind: ActionKind.game-mod-install, target: game-mod.mod-id };
+                    tint: Theme.surface-background;
 
                     clicked => {
                         ModActions.request-install(
@@ -179,6 +180,7 @@ export component GameModRow inherits VerticalLayout {
                     text: @tr("gameModRow" => "Run");
                     icon: Icon.play;
                     action-key: { kind: ActionKind.game-mod-run, target: game-mod.mod-id };
+                    tint: Theme.surface-background;
 
                     clicked => {
                         ModActions.run(game-mod.mod-id);
@@ -189,6 +191,7 @@ export component GameModRow inherits VerticalLayout {
                     icon: Icon.more;
                     icon-size: 22px;
                     tooltip: @tr("gameModRow" => "Mod actions");
+                    tint: Theme.surface-background;
 
                     clicked => {
                         root.menu-x = actions-button.absolute-position.x - root.absolute-position.x + actions-button.width - Theme.menu-width;

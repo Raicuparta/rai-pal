@@ -12,7 +12,7 @@ import { LabeledDivider } from "labeled_divider.slint";
 import { ResetButton } from "reset_button.slint";
 import { FilterGroup } from "filter_group.slint";
 import { Sidebar, SidebarScroll, SidebarSection } from "sidebar.slint";
-import { SidebarAction } from "sidebar_action.slint";
+import { ActionButton } from "action_button.slint";
 import { RowDivider } from "row_divider.slint";
 import { SearchInput } from "search_input.slint";
 import { SelectOption } from "select_menu.slint";
@@ -111,11 +111,16 @@ export component GamesPage inherits Rectangle {
 
                 SidebarSection {
                     spacing: Theme.space-sm;
+                    padding-left: 0;
+                    padding-right: 0;
 
-                    RefreshButton { }
+                    RefreshButton {
+                        inset: Theme.space-md;
+                    }
                 }
 
-                SidebarAction {
+                ActionButton {
+                    inset: Theme.space-md;
                     text: @tr("manualGames" => "Add games");
                     clicked => {
                         AddGameState.open = true;

@@ -9,13 +9,13 @@ import { Theme } from "../theme.slint";
 import { Button } from "button.slint";
 import { Contrast } from "contrast.slint";
 import { IconButton } from "icon_button.slint";
-import { ListRow } from "list_row.slint";
+import { BaseButton } from "base_button.slint";
 import { ResetButton } from "reset_button.slint";
 import { Chevron, ChevronDirection } from "chevron.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 import { GamesActions } from "../actions.slint";
 
-component FilterValueRow inherits ListRow {
+component FilterValueRow inherits BaseButton {
     in property <FilterValueData> item;
 
     private property <bool> checked: root.item.enabled && root.item.available;
@@ -25,7 +25,7 @@ component FilterValueRow inherits ListRow {
     callback only;
 
     extra-hovered: only-button.hovered || lock-button.hovered;
-    vertical-padding: Theme.space-2xs;
+    inset: Theme.space-sm;
     enabled: root.item.available;
     accessible-label: root.item.label == FilterValueLabel.none ? root.item.display : Tr.filter-value(root.item.label);
 
@@ -35,14 +35,16 @@ component FilterValueRow inherits ListRow {
         }
     }
 
-    HorizontalLayout {
+    filter-content := Rectangle {
         horizontal-stretch: 1;
-        spacing: Theme.space-xs;
-        cross-axis-alignment: center;
+        height: label-row.preferred-height;
 
-        HorizontalLayout {
+        label-row := HorizontalLayout {
             horizontal-stretch: 1;
-            padding-left: Theme.space-sm;
+            padding-left: root.inset + Theme.space-lg;
+            padding-right: root.inset + Theme.space-sm;
+            padding-top: Theme.space-xs;
+            padding-bottom: Theme.space-xs;
             spacing: Theme.space-sm;
             cross-axis-alignment: center;
             alignment: start;
@@ -89,29 +91,39 @@ component FilterValueRow inherits ListRow {
             }
         }
 
-        only-button := Button {
-            text: @tr("filterMenu" => "Only");
-            text-size: Theme.font-xs;
-            tooltip: @tr("filterMenu" => "Only show this value");
-            visible: !root.item.locked;
-            enabled: !root.item.locked && root.item.available;
-            opacity: root.hovered ? 1 : 0;
-            reserve-icon-space: false;
+        HorizontalLayout {
+            x: parent.width - self.width - root.inset - Theme.space-sm;
+            y: (parent.height - self.height) / 2;
+            width: self.preferred-width;
+            height: self.preferred-height;
+            spacing: Theme.space-xs;
+            cross-axis-alignment: center;
 
-            clicked => {
-                root.only();
+            only-button := Button {
+                tint: Theme.surface-background;
+                text: @tr("filterMenu" => "Only");
+                text-size: Theme.font-xs;
+                tooltip: @tr("filterMenu" => "Only show this value");
+                visible: !root.item.locked;
+                enabled: !root.item.locked && root.item.available;
+                opacity: root.hovered ? 1 : 0;
+                reserve-icon-space: false;
+
+                clicked => {
+                    root.only();
+                }
             }
-        }
 
-        lock-button := IconButton {
-            icon: root.item.locked ? Icon.locked : Icon.unlocked;
-            tooltip: root.item.locked ? @tr("filterMenu" => "Unlock filter value") : @tr("filterMenu" => "Lock filter value");
-            visible: root.item.locked || root.hovered;
-            enabled: !root.item.enabled && root.item.available;
-            tint: root.item.locked ? Theme.highlight : Theme.surface-background;
+            lock-button := IconButton {
+                icon: root.item.locked ? Icon.locked : Icon.unlocked;
+                tooltip: root.item.locked ? @tr("filterMenu" => "Unlock filter value") : @tr("filterMenu" => "Lock filter value");
+                visible: root.item.locked || root.hovered;
+                enabled: !root.item.enabled && root.item.available;
+                tint: root.item.locked ? Theme.highlight : Theme.surface-background;
 
-            clicked => {
-                root.lock-toggled();
+                clicked => {
+                    root.lock-toggled();
+                }
             }
         }
     }
@@ -124,8 +136,9 @@ export component FilterGroup inherits Rectangle {
         alignment: start;
         spacing: Theme.border-width;
 
-        ListRow {
+        filter-row := BaseButton {
             extra-hovered: reset-button.hovered;
+            inset: Theme.space-sm;
             accessible-label: Tr.filter-property(root.group.key);
 
             clicked => {
@@ -133,8 +146,11 @@ export component FilterGroup inherits Rectangle {
             }
 
             HorizontalLayout {
-                horizontal-stretch: 1;
-                spacing: Theme.space-xs;
+                padding-left: filter-row.inset + Theme.space-sm;
+                padding-right: filter-row.inset + Theme.space-sm;
+                padding-top: Theme.space-xs;
+                padding-bottom: Theme.space-xs;
+                spacing: Theme.space-sm;
                 cross-axis-alignment: center;
 
                 Chevron {

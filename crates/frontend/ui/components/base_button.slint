@@ -1,35 +1,27 @@
 import { Contrast } from "contrast.slint";
 import { Theme } from "../theme.slint";
 
-global ButtonOutlines {
-    out property <brush> on-light-fill: Theme.dark ? @linear-gradient(180deg, #FFFFFF14 90.67%, #00000024 100%) : @linear-gradient(180deg, #0000000F 90.58%, #00000029 100%);
-    out property <brush> on-dark-fill: Theme.dark ? @linear-gradient(180deg, #FFFFFF17 0%, #00000012 8.33%) : @linear-gradient(180deg, #FFFFFF14 90.67%, #00000066 100%);
-}
-
 export component BaseButton inherits Rectangle {
-    in property <brush> tint: Theme.surface-background;
+    in property <brush> tint: transparent;
+    in property <brush> base-color: root.tint;
+    in property <length> inset: 0px;
+    in property <bool> extra-hovered: false;
     in property <string> tooltip: "";
     in property <bool> enabled: true;
     in property <bool> interactive: root.enabled;
 
-    in property <brush> base-color: root.enabled ? root.tint : Theme.surface-background;
+    out property <bool> hovered: touch-area.has-hover || root.extra-hovered;
+    out property <brush> ink-color: !root.enabled ? Theme.dimmed-foreground : root.tinted ? Contrast.ink(root.base-color) : Theme.strong-foreground;
 
-    out property <bool> hovered: touch-area.has-hover;
-    out property <brush> ink-color: root.enabled ? root.ink : root.ink.transparentize(0.75);
-
-    private property <bool> needs-dark-ink: Contrast.needs-dark-ink(root.base-color);
-    private property <brush> ink: Contrast.ink(root.base-color);
-    private property <brush> hover-fill: Contrast.hover-fill(root.base-color);
-    private property <brush> pressed-fill: Contrast.pressed-fill(root.base-color);
-    private property <brush> fill: !root.enabled ? transparent : touch-area.pressed ? root.pressed-fill : touch-area.has-hover ? root.hover-fill : root.base-color;
-    private property <brush> outline: root.enabled ? (root.needs-dark-ink ? ButtonOutlines.on-light-fill : ButtonOutlines.on-dark-fill) : transparent;
+    private property <bool> tinted: root.base-color.to-oklch().alpha > 0;
+    private property <brush> hover-fill: root.tinted ? Contrast.hover-fill(root.base-color) : Theme.hover-background;
+    private property <brush> pressed-fill: root.tinted ? Contrast.pressed-fill(root.base-color) : Theme.pressed-background;
+    private property <brush> fill: !root.enabled ? transparent : touch-area.pressed ? root.pressed-fill : root.hovered ? root.hover-fill : root.base-color;
 
     callback clicked;
 
+    vertical-stretch: 0;
     border-radius: Theme.radius-md;
-    border-width: Theme.border-width;
-    border-color: root.outline;
-    background: root.fill;
     forward-focus: focus-scope;
 
     accessible-role: button;
@@ -40,7 +32,13 @@ export component BaseButton inherits Rectangle {
         }
     }
 
-    @children
+    Rectangle {
+        x: root.inset;
+        width: parent.width - root.inset * 2;
+        height: 100%;
+        border-radius: root.border-radius;
+        background: root.fill;
+    }
 
     touch-area := TouchArea {
         enabled: root.interactive;
@@ -51,10 +49,14 @@ export component BaseButton inherits Rectangle {
         }
     }
 
+    HorizontalLayout {
+        @children
+    }
+
     focus-scope := FocusScope {
         width: 0;
         height: 0;
-        enabled: root.enabled;
+        enabled: root.interactive;
 
         key-pressed(event) => {
             if event.text == Key.Space || event.text == Key.Return {

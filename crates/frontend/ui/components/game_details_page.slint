@@ -10,7 +10,6 @@ import { LabeledDivider } from "labeled_divider.slint";
 import { ModsSection } from "mods_section.slint";
 import { PotentialModsSection } from "potential_mods_section.slint";
 import { Sidebar, SidebarScroll, SidebarSection } from "sidebar.slint";
-import { SidebarAction } from "sidebar_action.slint";
 import { Icon } from "svg_icon.slint";
 import {
     GameModData,
@@ -57,7 +56,11 @@ export component GameDetailsPage inherits HorizontalLayout {
             spacing: Theme.space-sm;
 
             SidebarSection {
+                padding-left: 0;
+                padding-right: 0;
+
                 Button {
+                    inset: Theme.space-md;
                     text: @tr("subPage" => "Back");
                     icon: Icon.back;
 
@@ -85,10 +88,11 @@ export component GameDetailsPage inherits HorizontalLayout {
                             }
                         }
 
-                        for action[index] in GameDetailsState.provider-actions: SidebarAction {
+                        for action[index] in GameDetailsState.provider-actions: ActionButton {
+                            inset: Theme.space-md;
                             text: Tr.provider-command(action.action);
                             icon: root.provider-command-icon(action.action);
-                            highlighted: index == 0;
+                            tint: index == 0 ? Theme.primary : transparent;
                             action-key: { kind: ActionKind.provider-action, target: action.action-id };
 
                             clicked => {
@@ -114,7 +118,8 @@ export component GameDetailsPage inherits HorizontalLayout {
                             }
                         }
 
-                        SidebarAction {
+                        ActionButton {
+                            inset: Theme.space-md;
                             text: @tr("gameModal" => "Game Files");
                             icon: Icon.folder;
                             action-key: { kind: ActionKind.open-game-folder, target: "" };
@@ -124,7 +129,8 @@ export component GameDetailsPage inherits HorizontalLayout {
                             }
                         }
 
-                        SidebarAction {
+                        ActionButton {
+                            inset: Theme.space-md;
                             text: @tr("gameModal" => "Installed Mods");
                             icon: Icon.folder-mods;
                             action-key: { kind: ActionKind.open-game-mods-folder, target: "" };
@@ -134,7 +140,8 @@ export component GameDetailsPage inherits HorizontalLayout {
                             }
                         }
 
-                        SidebarAction {
+                        ActionButton {
+                            inset: Theme.space-md;
                             text: @tr("gameModal" => "Game App Data");
                             action-key: { kind: ActionKind.open-game-data-folder, target: "" };
 
@@ -143,7 +150,8 @@ export component GameDetailsPage inherits HorizontalLayout {
                             }
                         }
 
-                        if GameDetailsState.show-wine-folders: SidebarAction {
+                        if GameDetailsState.show-wine-folders: ActionButton {
+                            inset: Theme.space-md;
                             text: @tr("gameModal" => "Wine Prefix");
                             action-key: { kind: ActionKind.open-wine-prefix-folder, target: "" };
 
@@ -152,7 +160,8 @@ export component GameDetailsPage inherits HorizontalLayout {
                             }
                         }
 
-                        if GameDetailsState.show-wine-folders: SidebarAction {
+                        if GameDetailsState.show-wine-folders: ActionButton {
+                            inset: Theme.space-md;
                             text: @tr("gameModal" => "Wine Binary");
                             action-key: { kind: ActionKind.open-wine-binary-folder, target: "" };
 
@@ -172,7 +181,8 @@ export component GameDetailsPage inherits HorizontalLayout {
                         }
                     }
 
-                    if root.game-row.installed: SidebarAction {
+                    if root.game-row.installed: ActionButton {
+                        inset: Theme.space-md;
                         text: @tr("gameModal" => "Refresh game");
                         icon: Icon.refresh;
                         action-key: { kind: ActionKind.refresh-game, target: "" };
@@ -182,7 +192,8 @@ export component GameDetailsPage inherits HorizontalLayout {
                         }
                     }
 
-                    SidebarAction {
+                    ActionButton {
+                        inset: Theme.space-md;
                         text: @tr("debugData" => "Debug data");
                         icon: Icon.bug;
 
