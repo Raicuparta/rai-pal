@@ -6,6 +6,10 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
+- Refresh progress labels need to go somewhere else.
+- Missing total count and filtered count.
+- keep getting the thumbnail cache errors in logs, what gives?
+
 ## Do later:
 
 - update the intro text.
@@ -16,7 +20,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - try to reduce content shifts when seeing a game page, usually caused by the recommended config tag popping up.
 
 ## Notes, questions, decisions, etc.
-
 
 ## Done
 
