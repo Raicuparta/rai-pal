@@ -11,36 +11,13 @@ export global Refresh {
     callback refresh-all;
 }
 
-export component RefreshButton inherits VerticalLayout {
-    in property <string> summary: "";
-    spacing: Theme.space-2xs;
+export component RefreshButton inherits Button {
+    text: Refresh.refreshing ? Tr.refresh-loading() : @tr("refresh" => "Refresh");
+    icon: Refresh.refreshing ? Icon.refreshing : Icon.refresh;
+    tint: Theme.primary;
+    enabled: !Refresh.refreshing;
 
-    Button {
-        text: Refresh.refreshing ? Tr.refresh-loading() : @tr("refresh" => "Refresh");
-        icon: Refresh.refreshing ? Icon.refreshing : Icon.refresh;
-        tint: Theme.primary;
-        enabled: !Refresh.refreshing;
-
-        clicked => {
-            Refresh.refresh-all();
-        }
-    }
-
-    if Refresh.refreshing && Refresh.tasks.length > 0 : FlexboxLayout {
-        height: self.preferred-height;
-        spacing: Theme.space-2xs;
-
-        for task[index] in Refresh.tasks : Text {
-            text: index < Refresh.tasks.length - 1 ? "\{Tr.refresh-task(task)} |" : Tr.refresh-task(task);
-            font-size: Theme.font-xs;
-            color: Theme.dimmed-foreground;
-        }
-    }
-
-    if !(Refresh.refreshing && Refresh.tasks.length > 0) && summary != "" : Text {
-        height: self.preferred-height;
-        text: summary;
-        font-size: Theme.font-xs;
-        color: Theme.dimmed-foreground;
+    clicked => {
+        Refresh.refresh-all();
     }
 }

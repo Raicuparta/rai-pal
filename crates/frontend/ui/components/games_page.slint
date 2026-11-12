@@ -102,44 +102,49 @@ export component GamesPage inherits Rectangle {
 
     HorizontalLayout {
         Sidebar {
+            status-text: @tr("gamesPage" => "{} games", GamesList.rows.length == GamesList.total-count ? GamesList.total-count : "\{GamesList.rows.length} / \{GamesList.total-count}");
 
-            SidebarSection {
+            VerticalLayout {
+                height: self.preferred-height;
                 spacing: Theme.space-sm;
+                padding-bottom: Theme.space-sm;
 
-                RefreshButton {
-                    summary: GamesList.rows.length == GamesList.total-count ? "\{GamesList.total-count}" : "\{GamesList.rows.length} / \{GamesList.total-count}";
+                SidebarSection {
+                    spacing: Theme.space-sm;
+
+                    RefreshButton { }
                 }
-            }
 
-            SidebarAction {
-                text: @tr("manualGames" => "Add games");
-                clicked => {
-                    AddGameState.open = true;
-                    DialogActions.request-add-game();
-                }
-                icon: Icon.games;
-            }
-
-            RowDivider { }
-
-            SidebarSection {
-                spacing: Theme.space-sm;
-
-                SearchInput {
-                    text <=> GamesQuery.search-text;
-                    placeholder-text: @tr("filterMenu" => "Search...");
-
-                    edited(text) => {
-                        GamesActions.search-changed(text);
+                SidebarAction {
+                    text: @tr("manualGames" => "Add games");
+                    clicked => {
+                        AddGameState.open = true;
+                        DialogActions.request-add-game();
                     }
+                    icon: Icon.games;
                 }
 
-                SortMenu {
-                    options: GamesQuery.sort-options;
-                    sort-index <=> GamesQuery.sort-index;
+                RowDivider { }
 
-                    sort-changed(index) => {
-                        GamesActions.sort-changed(index);
+                SidebarSection {
+                    spacing: Theme.space-sm;
+
+                    SearchInput {
+                        text <=> GamesQuery.search-text;
+                        placeholder-text: @tr("filterMenu" => "Search...");
+
+                        edited(text) => {
+                            GamesActions.search-changed(text);
+                        }
+                    }
+
+                    SortMenu {
+                        options: GamesQuery.sort-options;
+                        sort-index <=> GamesQuery.sort-index;
+
+                        sort-changed(index) => {
+                            GamesActions.sort-changed(index);
+                        }
                     }
                 }
             }
@@ -212,7 +217,6 @@ export component GamesPage inherits Rectangle {
                 }
             }
         }
-
     }
 
     AddGamePopup { }

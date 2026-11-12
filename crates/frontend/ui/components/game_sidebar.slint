@@ -27,144 +27,147 @@ export component GameSidebar inherits Sidebar {
         return Icon.none;
     }
 
-    SidebarSection {
-        Button {
-            text: @tr("subPage" => "Back");
-            icon: Icon.back;
-
-            clicked => {
-                GamesActions.back();
-            }
-        }
-    }
-
-    SidebarScroll {
-        VerticalLayout {
-            alignment: start;
-            spacing: Theme.space-sm;
-
-            if GameSidebarState.provider-actions.length > 0: VerticalLayout {
-            alignment: start;
-            spacing: 0px;
-
-            SidebarSection {
-                padding-top: Theme.space-xs;
-                padding-bottom: Theme.space-xs;
-
-                LabeledDivider {
-                    label: GameSidebarState.provider-name;
-                    horizontal-stretch: 1;
-                }
-            }
-
-            for action[index] in GameSidebarState.provider-actions: SidebarAction {
-                text: Tr.provider-command(action.action);
-                icon: root.provider-command-icon(action.action);
-                highlighted: index == 0;
-                action-key: { kind: ActionKind.provider-action, target: action.action-id };
+    VerticalLayout {
+        spacing: Theme.space-sm;
+        SidebarSection {
+            Button {
+                text: @tr("subPage" => "Back");
+                icon: Icon.back;
 
                 clicked => {
-                    if action.action == ProviderAction.delete {
-                        GamesActions.remove-game();
-                    } else {
-                        GamesActions.run-provider-action(action.action);
+                    GamesActions.back();
+                }
+            }
+        }
+
+        SidebarScroll {
+            VerticalLayout {
+                alignment: start;
+                spacing: Theme.space-sm;
+
+                if GameSidebarState.provider-actions.length > 0: VerticalLayout {
+                    alignment: start;
+                    spacing: 0px;
+
+                    SidebarSection {
+                        padding-top: Theme.space-xs;
+                        padding-bottom: Theme.space-xs;
+
+                        LabeledDivider {
+                            label: GameSidebarState.provider-name;
+                            horizontal-stretch: 1;
+                        }
+                    }
+
+                    for action[index] in GameSidebarState.provider-actions: SidebarAction {
+                        text: Tr.provider-command(action.action);
+                        icon: root.provider-command-icon(action.action);
+                        highlighted: index == 0;
+                        action-key: { kind: ActionKind.provider-action, target: action.action-id };
+
+                        clicked => {
+                            if action.action == ProviderAction.delete {
+                                GamesActions.remove-game();
+                            } else {
+                                GamesActions.run-provider-action(action.action);
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        if GameSidebarState.has-exe-path: VerticalLayout {
-            alignment: start;
-            spacing: 0px;
+                if GameSidebarState.has-exe-path: VerticalLayout {
+                    alignment: start;
+                    spacing: 0px;
 
-            SidebarSection {
-                padding-top: Theme.space-xs;
-                padding-bottom: Theme.space-xs;
+                    SidebarSection {
+                        padding-top: Theme.space-xs;
+                        padding-bottom: Theme.space-xs;
 
-                LabeledDivider {
-                    label: @tr("gameModal" => "Folders");
-                    horizontal-stretch: 1;
+                        LabeledDivider {
+                            label: @tr("gameModal" => "Folders");
+                            horizontal-stretch: 1;
+                        }
+                    }
+
+                    SidebarAction {
+                        text: @tr("gameModal" => "Game Files");
+                        icon: Icon.folder;
+                        action-key: { kind: ActionKind.open-game-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-game-folder();
+                        }
+                    }
+
+                    SidebarAction {
+                        text: @tr("gameModal" => "Installed Mods");
+                        icon: Icon.folder-mods;
+                        action-key: { kind: ActionKind.open-game-mods-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-game-mods-folder();
+                        }
+                    }
+
+                    SidebarAction {
+                        text: @tr("gameModal" => "Game App Data");
+                        action-key: { kind: ActionKind.open-game-data-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-game-data-folder();
+                        }
+                    }
+
+                    if GameSidebarState.show-wine-folders: SidebarAction {
+                        text: @tr("gameModal" => "Wine Prefix");
+                        action-key: { kind: ActionKind.open-wine-prefix-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-wine-prefix-folder();
+                        }
+                    }
+
+                    if GameSidebarState.show-wine-folders: SidebarAction {
+                        text: @tr("gameModal" => "Wine Binary");
+                        action-key: { kind: ActionKind.open-wine-binary-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-wine-binary-folder();
+                        }
+                    }
                 }
-            }
 
-            SidebarAction {
-                text: @tr("gameModal" => "Game Files");
-                icon: Icon.folder;
-                action-key: { kind: ActionKind.open-game-folder, target: "" };
+                VerticalLayout {
+                    alignment: start;
+                    spacing: 0px;
 
-                clicked => {
-                    GamesActions.open-game-folder();
-                }
-            }
+                    SidebarSection {
+                        padding-top: Theme.space-xs;
+                        padding-bottom: Theme.space-xs;
 
-            SidebarAction {
-                text: @tr("gameModal" => "Installed Mods");
-                icon: Icon.folder-mods;
-                action-key: { kind: ActionKind.open-game-mods-folder, target: "" };
+                        LabeledDivider {
+                            label: "Data";
+                            horizontal-stretch: 1;
+                        }
+                    }
 
-                clicked => {
-                    GamesActions.open-game-mods-folder();
-                }
-            }
+                    if GameSidebarState.has-exe-path: SidebarAction {
+                        text: @tr("gameModal" => "Refresh game");
+                        icon: Icon.refresh;
+                        action-key: { kind: ActionKind.refresh-game, target: "" };
 
-            SidebarAction {
-                text: @tr("gameModal" => "Game App Data");
-                action-key: { kind: ActionKind.open-game-data-folder, target: "" };
+                        clicked => {
+                            GamesActions.refresh-game();
+                        }
+                    }
 
-                clicked => {
-                    GamesActions.open-game-data-folder();
-                }
-            }
+                    SidebarAction {
+                        text: @tr("debugData" => "Debug data");
+                        icon: Icon.bug;
 
-            if GameSidebarState.show-wine-folders: SidebarAction {
-                text: @tr("gameModal" => "Wine Prefix");
-                action-key: { kind: ActionKind.open-wine-prefix-folder, target: "" };
-
-                clicked => {
-                    GamesActions.open-wine-prefix-folder();
-                }
-            }
-
-            if GameSidebarState.show-wine-folders: SidebarAction {
-                text: @tr("gameModal" => "Wine Binary");
-                action-key: { kind: ActionKind.open-wine-binary-folder, target: "" };
-
-                clicked => {
-                    GamesActions.open-wine-binary-folder();
-                }
-            }
-        }
-
-        VerticalLayout {
-            alignment: start;
-            spacing: 0px;
-
-            SidebarSection {
-                padding-top: Theme.space-xs;
-                padding-bottom: Theme.space-xs;
-
-                LabeledDivider {
-                    label: "Data";
-                    horizontal-stretch: 1;
-                }
-            }
-
-            if GameSidebarState.has-exe-path: SidebarAction {
-                text: @tr("gameModal" => "Refresh game");
-                icon: Icon.refresh;
-                action-key: { kind: ActionKind.refresh-game, target: "" };
-
-                clicked => {
-                    GamesActions.refresh-game();
-                }
-            }
-
-                SidebarAction {
-                    text: @tr("debugData" => "Debug data");
-                    icon: Icon.bug;
-
-                    clicked => {
-                        GamesActions.request-debug-data();
+                        clicked => {
+                            GamesActions.request-debug-data();
+                        }
                     }
                 }
             }

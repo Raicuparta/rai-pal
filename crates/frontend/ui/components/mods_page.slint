@@ -22,35 +22,36 @@ export component ModsPage inherits Rectangle {
 
     HorizontalLayout {
         Sidebar {
-            SidebarSection {
-                RefreshButton {
-                    summary: "\{ModsState.total-count}";
+            status-text: @tr("modsPage" => "{} mods", ModsState.total-count);
+
+            VerticalLayout {
+                spacing: Theme.space-sm;
+
+                SidebarSection {
+                    RefreshButton { }
                 }
-            }
 
-            SidebarScroll {
-                VerticalLayout {
-                    alignment: start;
-                    spacing: Theme.space-sm;
+                SidebarScroll {
+                    VerticalLayout {
+                        SidebarAction {
+                            text: @tr("urlModSources" => "Mod Sources");
+                            icon: Icon.mod-sources;
 
-                    SidebarAction {
-                        text: @tr("urlModSources" => "Mod Sources");
-                        icon: Icon.mod-sources;
-
-                        clicked => {
-                            root.url-mod-sources-open = true;
-                            DialogActions.request-url-mod-sources();
+                            clicked => {
+                                root.url-mod-sources-open = true;
+                                DialogActions.request-url-mod-sources();
+                            }
                         }
-                    }
 
-                    SidebarAction {
-                        text: @tr("modsPage" => "Open Local Mods Folder");
-                        icon: Icon.folder-mods;
-                        action-key: { kind: ActionKind.open-local-mods-folder, target: "" };
-                        tooltip: @tr("modsPage" => "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database.");
+                        SidebarAction {
+                            text: @tr("modsPage" => "Open Local Mods Folder");
+                            icon: Icon.folder-mods;
+                            action-key: { kind: ActionKind.open-local-mods-folder, target: "" };
+                            tooltip: @tr("modsPage" => "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database.");
 
-                        clicked => {
-                            ModActions.open-local-mods-folder();
+                            clicked => {
+                                ModActions.open-local-mods-folder();
+                            }
                         }
                     }
                 }
@@ -82,6 +83,7 @@ export component ModsPage inherits Rectangle {
             }
         }
     }
+
     UrlModSourcesPopup {
         x: -root.absolute-position.x;
         y: -root.absolute-position.y;

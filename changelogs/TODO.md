@@ -9,12 +9,14 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Do later:
 
 - Checkbox check icon looks a lil weird in software renderer. maybe due to downscale.
-- Refresh progress labels need to go somewhere else.
 - colored buttons probably need a "subtle" mode or something like in tauri.
 - button size and icon spacing needs to be adjusted to match the tauri one better.
 - maybe a bit too small on steam deck?
 - macOS automatic updates are implemented, but release bundles are still ad-hoc signed and not notarized; first launch still needs the usual Gatekeeper bypass.
 - try to reduce content shifts when seeing a game page, usually caused by the recommended config tag popping up.
+- missing expand animations in filters.
+- filter "collapse all" chevron is upside down. uhh actually all chevrons stuck in down position now? 1.19 bug?
+- icon buttons slightly uncentered? noticeable in filter reset button.
 
 ## Notes, questions, decisions, etc.
 
