@@ -342,7 +342,7 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 
 	let appimage_path = fs::read_dir(&extract_dir)
 		.map_err(|err| err.to_string())?
-		.filter_map(|entry| entry.ok())
+		.filter_map(|entry| entry.ok_or_log("Failed to read update directory entry"))
 		.map(|entry| entry.path())
 		.find(|path| {
 			path.extension()
@@ -400,7 +400,7 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 
 	let installer = fs::read_dir(&extract_dir)
 		.map_err(|err| err.to_string())?
-		.filter_map(|entry| entry.ok())
+		.filter_map(|entry| entry.ok_or_log("Failed to read update directory entry"))
 		.map(|entry| entry.path())
 		.find(|path| path.extension().is_some_and(|extension| extension == "exe"))
 		.ok_or_else(|| "Could not find the updated installer".to_string())?;
@@ -448,7 +448,7 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 
 	let new_bundle = fs::read_dir(&extract_dir)
 		.map_err(|err| err.to_string())?
-		.filter_map(|entry| entry.ok())
+		.filter_map(|entry| entry.ok_or_log("Failed to read update directory entry"))
 		.map(|entry| entry.path())
 		.find(|path| path.extension().is_some_and(|extension| extension == "app"))
 		.ok_or_else(|| "Could not find the updated app bundle".to_string())?;

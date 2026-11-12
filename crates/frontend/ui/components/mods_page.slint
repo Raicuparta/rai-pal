@@ -64,12 +64,10 @@ export component ModsPage inherits Rectangle {
             ScrollView {
                 VerticalLayout {
                     alignment: start;
-                    spacing: 0px;
 
                     for item in ModsState.items: VerticalLayout {
                         alignment: start;
                         vertical-stretch: 0;
-                        spacing: 0px;
 
                         if item.is-family: ModsTabFamilyRow {
                             item: item;

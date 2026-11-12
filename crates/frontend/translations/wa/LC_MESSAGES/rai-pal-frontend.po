@@ -397,6 +397,10 @@ msgctxt "gamesPage"
 msgid "Nothing! All of your games are hidden because of the filters you selected. Clear your filters to see your beautiful games again."
 msgstr "Waaaaaah wah of waah waaah wah waaaah waaaaah of wah waaaaah wah waaaaaaah waaah waah waaaaah to wah waah waaaaaaah waaah waaaah!"
 
+msgctxt "gamesPage"
+msgid "{} games"
+msgstr "Waah, {} waahs!"
+
 msgctxt "gamesSort"
 msgid "Name A-Z"
 msgstr "Waah wah!"
@@ -614,6 +618,10 @@ msgid "Deprecated"
 msgstr "Waaaaaaaah!"
 
 msgctxt "modsPage"
+msgid "{} mods"
+msgstr "{} waahs!"
+
+msgctxt "modsPage"
 msgid "Open Local Mods Folder"
 msgstr "Waah waaah waah waaaah!"
 
@@ -776,3 +784,7 @@ msgstr "Waah in waah waaaaah!"
 msgctxt "userMenu"
 msgid "Mods can use this to access your Discord username, avatar, roles, etc."
 msgstr "Waah wah wah waah to waaaah waah waaaaah waaaaaaah waaaaah waaaah waah!"
+
+msgctxt "sidebar"
+msgid "Loading:"
+msgstr "Waahing:"

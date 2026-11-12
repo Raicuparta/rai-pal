@@ -13,11 +13,9 @@ export component ModsTabFamilyRow inherits Rectangle {
 
     VerticalLayout {
         alignment: start;
-        spacing: 0px;
 
         VerticalLayout {
             alignment: start;
-            spacing: 0px;
 
             Rectangle {
                 background: header-touch.has-hover ? Theme.hover-background : transparent;
@@ -69,7 +67,6 @@ export component ModsTabFamilyRow inherits Rectangle {
 
         if root.expanded: VerticalLayout {
             alignment: start;
-            spacing: 0px;
 
             for mod-row in root.item.mods: ModsTabRow {
                 mod-data: mod-row;

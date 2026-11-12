@@ -397,6 +397,10 @@ msgctxt "gamesPage"
 msgid "Nothing! All of your games are hidden because of the filters you selected. Clear your filters to see your beautiful games again."
 msgstr "아무것도 없어요! 선택한 필터 때문에 게임이 전부 숨겨졌어요. 필터 지우면 다시 보여요."
 
+msgctxt "gamesPage"
+msgid "{} games"
+msgstr "게임 {}개"
+
 msgctxt "gamesSort"
 msgid "Name A-Z"
 msgstr "이름 A-Z"
@@ -614,6 +618,10 @@ msgid "Deprecated"
 msgstr "사용 중지됨"
 
 msgctxt "modsPage"
+msgid "{} mods"
+msgstr "모드 {}개"
+
+msgctxt "modsPage"
 msgid "Open Local Mods Folder"
 msgstr "모드 폴더 열기"
 
@@ -776,3 +784,7 @@ msgstr "Discord로 로그인"
 msgctxt "userMenu"
 msgid "Mods can use this to access your Discord username, avatar, roles, etc."
 msgstr "모드가 이걸로 Discord 사용자 이름, 아바타, 역할 등에 접근할 수 있어요."
+
+msgctxt "sidebar"
+msgid "Loading:"
+msgstr "불러오는 중:"

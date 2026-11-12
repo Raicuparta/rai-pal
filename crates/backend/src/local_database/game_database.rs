@@ -511,19 +511,25 @@ impl GameDatabase for DbMutex {
 
 	fn get_providers_with_games(&self) -> Result<HashSet<GameProviderId>> {
 		let mut providers = HashSet::new();
-		let db = self.lock_db()?;
-		let mut statement = db.prepare_cached("SELECT DISTINCT provider_id FROM main.games;")?;
-		let rows = statement.query_map([], |row| row.get::<_, GameProviderId>(0))?;
+		{
+			let db = self.lock_db()?;
+			let mut statement =
+				db.prepare_cached("SELECT DISTINCT provider_id FROM main.games;")?;
+			let rows = statement.query_map([], |row| row.get::<_, GameProviderId>(0))?;
 
-		for provider in rows {
-			match provider {
-				Ok(provider) => {
-					providers.insert(provider);
-				}
-				Err(err) => {
-					log::warn!("Failed to read provider with games from local database: {err}");
+			for provider in rows {
+				match provider {
+					Ok(provider) => {
+						providers.insert(provider);
+					}
+					Err(err) => {
+						log::warn!("Failed to read provider with games from local database: {err}");
+					}
 				}
 			}
+
+			drop(statement);
+			drop(db);
 		}
 
 		Ok(providers)
@@ -704,6 +710,7 @@ pub fn recreate_if_missing(database: &DbMutex) -> Result {
 	));
 
 	*connection = create_connection()?;
+	drop(connection);
 
 	Ok(())
 }

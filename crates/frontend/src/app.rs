@@ -130,7 +130,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let rows = Rc::new(slint::VecModel::from(initial_rows));
 	main_window
 		.global::<crate::GamesList>()
-		.set_rows(rows.clone().into());
+		.set_rows(rows.into());
 
 	let ctx = CommandHandler::create(
 		window_weak,

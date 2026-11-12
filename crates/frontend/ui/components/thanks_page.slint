@@ -18,8 +18,6 @@ component PatronRow inherits Rectangle {
     private property <length> rank-border-width: 2px;
     private property <brush> rank-color: root.patron.ranking == 1 ? Theme.highlight : root.patron.ranking == 2 ? (Theme.dark ? #ced4da : #adb5bd) : root.patron.ranking == 3 ? (Theme.dark ? #e8a06a : #b87333) : transparent;
 
-    background: transparent;
-
     HorizontalLayout {
         spacing: Theme.space-sm;
         alignment: start;
@@ -31,7 +29,6 @@ component PatronRow inherits Rectangle {
             border-width: root.rank-border-width;
             border-color: root.rank-color;
             border-radius: root.avatar-size / 2;
-            background: transparent;
             clip: true;
 
             Rectangle {

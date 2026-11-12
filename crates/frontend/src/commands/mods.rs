@@ -35,7 +35,7 @@ thread_local! {
 }
 
 fn game_key(game: &Game) -> (GameProviderId, String) {
-	(game.provider_id.clone(), game.game_id.clone())
+	(game.provider_id, game.game_id.clone())
 }
 
 fn cached_remote_config_ids(game: &Game) -> HashSet<String> {

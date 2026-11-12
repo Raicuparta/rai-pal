@@ -397,6 +397,10 @@ msgctxt "gamesPage"
 msgid "Nothing! All of your games are hidden because of the filters you selected. Clear your filters to see your beautiful games again."
 msgstr "何もありません！選択したフィルターのために、すべてのゲームが非表示になっています。フィルターをクリアして、美しいゲームを再び見てください。"
 
+msgctxt "gamesPage"
+msgid "{} games"
+msgstr "{} ゲーム"
+
 msgctxt "gamesSort"
 msgid "Name A-Z"
 msgstr "名前 A-Z"
@@ -614,6 +618,10 @@ msgid "Deprecated"
 msgstr "非推奨"
 
 msgctxt "modsPage"
+msgid "{} mods"
+msgstr "{} Mod"
+
+msgctxt "modsPage"
 msgid "Open Local Mods Folder"
 msgstr "Modフォルダーを開く"
 
@@ -776,3 +784,7 @@ msgstr "Discordでサインイン"
 msgctxt "userMenu"
 msgid "Mods can use this to access your Discord username, avatar, roles, etc."
 msgstr "Mod はこれを使ってあなたのDiscordユーザー名、アバター、ロールなどにアクセスできます。"
+
+msgctxt "sidebar"
+msgid "Loading:"
+msgstr "読み込み中:"

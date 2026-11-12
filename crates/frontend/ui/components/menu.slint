@@ -28,8 +28,6 @@ export component PopupMenu inherits PopupWindow {
             vertical-scrollbar-policy: ScrollBarPolicy.as-needed;
 
             menu-layout := VerticalLayout {
-                spacing: 0px;
-
                 @children
             }
         }
@@ -61,7 +59,6 @@ export component PopupMenuItem inherits ListRow {
 export component PopupMenuSeparator inherits Rectangle {
     vertical-stretch: 0;
     height: Theme.space-sm;
-    background: transparent;
 
     Rectangle {
         x: Theme.space-sm;

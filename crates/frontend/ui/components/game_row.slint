@@ -14,7 +14,6 @@ export component GameRow inherits VerticalLayout {
     callback selected(index: int);
 
     alignment: start;
-    spacing: 0px;
 
     Rectangle {
         height: Theme.game-row-height;
@@ -70,8 +69,6 @@ export component GameRow inherits VerticalLayout {
             horizontal-stretch: 1;
             padding: Theme.space-sm;
             spacing: Theme.space-2xs;
-            flex-wrap: wrap;
-            alignment: start;
             cross-axis-self-alignment: center;
 
             Text {

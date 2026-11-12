@@ -397,6 +397,10 @@ msgctxt "gamesPage"
 msgid "Nothing! All of your games are hidden because of the filters you selected. Clear your filters to see your beautiful games again."
 msgstr "¡Nada! Todos tus juegos están ocultos debido a los filtros que seleccionaste. Limpia tus filtros para ver tus hermosos juegos de nuevo."
 
+msgctxt "gamesPage"
+msgid "{} games"
+msgstr "{} juegos"
+
 msgctxt "gamesSort"
 msgid "Name A-Z"
 msgstr "Nombre A-Z"
@@ -614,6 +618,10 @@ msgid "Deprecated"
 msgstr "Obsoleto"
 
 msgctxt "modsPage"
+msgid "{} mods"
+msgstr "{} mods"
+
+msgctxt "modsPage"
 msgid "Open Local Mods Folder"
 msgstr "Abrir carpeta de mods locales"
 
@@ -776,3 +784,7 @@ msgstr "Iniciar sesión con Discord"
 msgctxt "userMenu"
 msgid "Mods can use this to access your Discord username, avatar, roles, etc."
 msgstr "Los mods pueden usar esto para acceder a tu nombre de usuario de Discord, avatar, roles, etc."
+
+msgctxt "sidebar"
+msgid "Loading:"
+msgstr "Cargando:"

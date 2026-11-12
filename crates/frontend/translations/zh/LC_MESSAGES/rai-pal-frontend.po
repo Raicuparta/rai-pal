@@ -397,6 +397,10 @@ msgctxt "gamesPage"
 msgid "Nothing! All of your games are hidden because of the filters you selected. Clear your filters to see your beautiful games again."
 msgstr "什么都没有！因为你选的筛选条件，所有游戏都被隐藏了。清除筛选，再看看你的游戏吧。"
 
+msgctxt "gamesPage"
+msgid "{} games"
+msgstr "{} 个游戏"
+
 msgctxt "gamesSort"
 msgid "Name A-Z"
 msgstr "名称 A-Z"
@@ -614,6 +618,10 @@ msgid "Deprecated"
 msgstr "已弃用"
 
 msgctxt "modsPage"
+msgid "{} mods"
+msgstr "{} 个模组"
+
+msgctxt "modsPage"
 msgid "Open Local Mods Folder"
 msgstr "打开本地模组文件夹"
 
@@ -776,3 +784,7 @@ msgstr "使用 Discord 登录"
 msgctxt "userMenu"
 msgid "Mods can use this to access your Discord username, avatar, roles, etc."
 msgstr "模组可以使用此功能访问你的 Discord 用户名、头像、身份组等。"
+
+msgctxt "sidebar"
+msgid "Loading:"
+msgstr "加载中："
