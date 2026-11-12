@@ -1,5 +1,10 @@
 import { CheckBox } from "std-widgets.slint";
-import { FilterGroupData, FilterValueData, FilterValueLabel, FilterValueNote } from "../app_types.slint";
+import {
+    FilterGroupData,
+    FilterValueData,
+    FilterValueLabel,
+    FilterValueNote,
+} from "../app_types.slint";
 import { Tr } from "../translations.slint";
 import { Theme } from "../theme.slint";
 import { Button } from "button.slint";
@@ -38,7 +43,7 @@ component FilterValueRow inherits ListRow {
             height: 100%;
 
             check-box := CheckBox {
-                x: Theme.space-lg;
+                x: Theme.space-sm;
                 y: (parent.height - self.height) / 2;
                 text: root.item.label == FilterValueLabel.none ? root.item.display : Tr.filter-value(root.item.label);
                 checked: root.item.enabled && root.item.available;

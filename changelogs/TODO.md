@@ -6,8 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- why is it saying no edition is set even though i did set it.
-
 ## Do later:
 
 - Checkbox check icon looks a lil weird in software renderer. maybe due to downscale.
@@ -15,7 +13,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - button size and icon spacing needs to be adjusted to match the tauri one better.
 - maybe a bit too small on steam deck?
 - macOS automatic updates are implemented, but release bundles are still ad-hoc signed and not notarized; first launch still needs the usual Gatekeeper bypass.
-- icon buttons slightly uncentered? noticeable in filter reset button.
+- use a switch instead of checkark in app menu.
 
 ## Notes, questions, decisions, etc.
 
