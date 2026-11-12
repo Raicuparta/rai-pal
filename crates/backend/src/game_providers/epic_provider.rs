@@ -23,10 +23,7 @@ use crate::{
 };
 
 #[cfg(target_os = "windows")]
-use crate::{
-	game_providers::game_provider::{ProviderActions, WineProviderActions},
-	local_database::{app_database::DbMutex, game_database::GameDatabase},
-};
+use crate::game_providers::game_provider::{ProviderActions, WineProviderActions};
 
 #[derive(serde::Deserialize)]
 pub struct EpicManifest {
@@ -145,7 +142,8 @@ impl EpicCatalogItem {
 impl ProviderParser for Epic {
 	type Source = PathBuf;
 
-	fn parse_games(&self, app_data_path: &Self::Source, insert: &mut impl FnMut(Game)) -> Result {
+	fn parse_games(&self, app_data_path: &Self::Source) -> Result<Vec<Game>> {
+		let mut games = Vec::new();
 		let mut exe_paths: HashMap<String, PathBuf> = HashMap::new();
 
 		let manifests_path = app_data_path.join("Manifests");
@@ -205,7 +203,7 @@ impl ProviderParser for Epic {
 						);
 					}
 
-					insert(game);
+					games.push(game);
 				}
 			}
 		} else {
@@ -214,13 +212,13 @@ impl ProviderParser for Epic {
 			);
 		}
 
-		Ok(())
+		Ok(games)
 	}
 }
 
 #[cfg(target_os = "windows")]
 impl ProviderActions for Epic {
-	fn insert_games(&self, db: &DbMutex) -> Result {
+	fn get_games(&self) -> Result<Vec<Game>> {
 		let app_data_path = match RegKey::predef(HKEY_LOCAL_MACHINE)
 			.open_subkey(r"SOFTWARE\Epic Games\EpicGamesLauncher")
 			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
@@ -231,13 +229,11 @@ impl ProviderActions for Epic {
 				log::info!(
 					"Epic Games Launcher not found in registry. Probably means Epic Games Launcher isn't installed. Error: {err}"
 				);
-				return Ok(());
+				return Ok(Vec::new());
 			}
 		};
 
-		self.parse_games(&app_data_path, &mut |game| {
-			db.insert_game(&game);
-		})
+		self.parse_games(&app_data_path)
 	}
 }
 

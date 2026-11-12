@@ -44,26 +44,39 @@ impl CommandHandler {
 		let database = Arc::clone(&self.database);
 
 		thread::spawn(move || {
-			let tasks = Arc::new(Mutex::new(Vec::<RefreshTaskData>::new()));
-
-			let remote_task = task(RefreshTaskKind::RemoteData);
-			push_task(&window, &tasks, remote_task.clone());
-
-			let remote_window = window.clone();
-			let remote_tasks = Arc::clone(&tasks);
-			let remote = thread::spawn(move || {
-				if let Err(err) = refresh_remote_database() {
-					log::error!("Failed to refresh remote database: {err}");
-					notifications::error_async(
-						&remote_window,
-						notifications::data(MessageContext::RefreshRemoteData, &err),
-					);
-				}
-
-				pop_task(&remote_window, &remote_tasks, &remote_task);
-			});
+			let tasks = RefreshTasks::new(window.clone());
 
 			thread::scope(|scope| {
+				scope.spawn(|| {
+					let task = task(RefreshTaskKind::RemoteData);
+					tasks.push(task.clone());
+
+					if let Err(err) = refresh_remote_database(&database) {
+						log::error!("Failed to refresh remote database: {err}");
+						notifications::error_async(
+							&window,
+							notifications::data(MessageContext::RefreshRemoteData, &err),
+						);
+					}
+
+					tasks.pop(&task);
+				});
+
+				scope.spawn(|| {
+					let task = task(RefreshTaskKind::Mods);
+					tasks.push(task.clone());
+
+					if let Err(err) = refresh_mods(&database) {
+						log::error!("Failed to refresh mods: {err}");
+						notifications::error_async(
+							&window,
+							notifications::data(MessageContext::RefreshMods, &err),
+						);
+					}
+
+					tasks.pop(&task);
+				});
+
 				for provider in GameProviderId::ALL {
 					let window = &window;
 					let database = &database;
@@ -71,32 +84,26 @@ impl CommandHandler {
 
 					scope.spawn(move || {
 						let task = provider_task(provider);
-						push_task(window, tasks, task.clone());
+						tasks.push(task.clone());
 
-						if let Err(err) = provider.insert_games(database) {
-							log::error!("Failed to refresh {provider} games: {err}");
-							notifications::error_async(
-								window,
-								notifications::data_with_subject(
-									MessageContext::RefreshGames,
-									provider.to_string(),
-									&err,
-								),
-							);
+						match provider.insert_games(database) {
+							Ok(()) => reload_games_from_database(),
+							Err(err) => {
+								log::error!("Failed to refresh {provider} games: {err}");
+								notifications::error_async(
+									window,
+									notifications::data_with_subject(
+										MessageContext::RefreshGames,
+										provider.to_string(),
+										&err,
+									),
+								);
+							}
 						}
 
-						pop_task(window, tasks, &task);
+						tasks.pop(&task);
 					});
 				}
-			});
-
-			crate::runtime::invoke_on_ui(move || {
-				let Some(handler) = Self::current() else {
-					return;
-				};
-
-				handler.refresh_filters();
-				handler.start_query(Duration::ZERO, ScrollBehavior::Keep);
 			});
 
 			if let Err(err) = database.refresh_installed_mods() {
@@ -105,21 +112,6 @@ impl CommandHandler {
 					&window,
 					notifications::data(MessageContext::RefreshInstalledMods, &err),
 				);
-			}
-
-			let mods_task = task(RefreshTaskKind::Mods);
-			push_task(&window, &tasks, mods_task.clone());
-			if let Err(err) = refresh_mods(&database) {
-				log::error!("Failed to refresh mods: {err}");
-				notifications::error_async(
-					&window,
-					notifications::data(MessageContext::RefreshMods, &err),
-				);
-			}
-			pop_task(&window, &tasks, &mods_task);
-
-			if remote.join().is_err() {
-				log::warn!("Remote database refresh thread panicked");
 			}
 
 			crate::runtime::invoke_on_ui(move || {
@@ -258,10 +250,10 @@ pub fn refresh_mods(database: &DbMutex) -> Result<(), String> {
 	runtime::block_on(mod_provider::refresh_all_mods(database))
 }
 
-fn refresh_remote_database() -> Result<(), String> {
+fn refresh_remote_database(database: &DbMutex) -> Result<(), String> {
 	runtime::block_on(async {
 		let path = remote_game::download_database().await?;
-		attach_remote(&path)
+		attach_remote(database, &path)
 	})
 }
 
@@ -279,50 +271,67 @@ fn task(kind: RefreshTaskKind) -> RefreshTaskData {
 	}
 }
 
-fn push_task(
-	window: &slint::Weak<MainWindow>,
-	tasks: &Mutex<Vec<RefreshTaskData>>,
-	task: RefreshTaskData,
-) {
-	let Some(mut tasks) = tasks.lock().ok_or_log("Failed to lock refresh tasks") else {
-		return;
-	};
-
-	tasks.push(task);
-	publish_tasks(window, &tasks);
-}
-
-fn pop_task(
-	window: &slint::Weak<MainWindow>,
-	tasks: &Mutex<Vec<RefreshTaskData>>,
-	task: &RefreshTaskData,
-) {
-	let Some(mut tasks) = tasks.lock().ok_or_log("Failed to lock refresh tasks") else {
-		return;
-	};
-
-	if let Some(index) = tasks.iter().position(|item| item == task) {
-		tasks.remove(index);
-	}
-
-	publish_tasks(window, &tasks);
-}
-
-fn publish_tasks(window: &slint::Weak<MainWindow>, tasks: &[RefreshTaskData]) {
-	let window = window.clone();
-	let tasks = tasks.to_vec();
-	let active = !tasks.is_empty();
-
-	crate::runtime::invoke_on_ui(move || {
-		let Some(window) = window.upgrade() else {
+fn reload_games_from_database() {
+	crate::runtime::invoke_on_ui(|| {
+		let Some(handler) = CommandHandler::current() else {
 			return;
 		};
 
-		window.global::<crate::Refresh>().set_refreshing(active);
-		window
-			.global::<crate::Refresh>()
-			.set_tasks(std::rc::Rc::new(slint::VecModel::from(tasks)).into());
+		handler.refresh_filters();
+		handler.start_query(Duration::from_millis(100), ScrollBehavior::Keep);
 	});
+}
+
+struct RefreshTasks {
+	window: slint::Weak<MainWindow>,
+	tasks: Mutex<Vec<RefreshTaskData>>,
+}
+
+impl RefreshTasks {
+	fn new(window: slint::Weak<MainWindow>) -> Self {
+		Self {
+			window,
+			tasks: Mutex::default(),
+		}
+	}
+
+	fn push(&self, task: RefreshTaskData) {
+		let Some(mut tasks) = self.tasks.lock().ok_or_log("Failed to lock refresh tasks") else {
+			return;
+		};
+
+		tasks.push(task);
+		self.publish(&tasks);
+	}
+
+	fn pop(&self, task: &RefreshTaskData) {
+		let Some(mut tasks) = self.tasks.lock().ok_or_log("Failed to lock refresh tasks") else {
+			return;
+		};
+
+		if let Some(index) = tasks.iter().position(|item| item == task) {
+			tasks.remove(index);
+		}
+
+		self.publish(&tasks);
+	}
+
+	fn publish(&self, tasks: &[RefreshTaskData]) {
+		let window = self.window.clone();
+		let tasks = tasks.to_vec();
+		let active = !tasks.is_empty();
+
+		crate::runtime::invoke_on_ui(move || {
+			let Some(window) = window.upgrade() else {
+				return;
+			};
+
+			window.global::<crate::Refresh>().set_refreshing(active);
+			window
+				.global::<crate::Refresh>()
+				.set_tasks(std::rc::Rc::new(slint::VecModel::from(tasks)).into());
+		});
+	}
 }
 
 pub fn register(window: &MainWindow) {

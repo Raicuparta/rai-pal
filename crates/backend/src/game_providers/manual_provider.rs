@@ -12,7 +12,6 @@ use crate::{
 	app_paths,
 	game::Game,
 	game_providers::game_provider::WineProviderActions,
-	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	path_extensions::PathExt,
 	result::{Error, Result},
 };
@@ -52,7 +51,7 @@ pub struct DirectoryScanResult {
 }
 
 impl ProviderActions for Manual {
-	fn insert_games(&self, db: &DbMutex) -> Result {
+	fn get_games(&self) -> Result<Vec<Game>> {
 		let config = read_games_config(&games_config_path()?);
 
 		// Games that are still configured in this refresh. Anything not in here is
@@ -122,13 +121,9 @@ impl ProviderActions for Manual {
 
 		compute_title_discriminators(&mut games);
 
-		for game in &games {
-			db.insert_game(game);
-		}
-
 		clean_up_stale_ignored_paths(&config)?;
 
-		Ok(())
+		Ok(games)
 	}
 
 	fn delete_game(&self, game: &Game) -> Result {

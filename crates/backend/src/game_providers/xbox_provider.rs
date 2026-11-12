@@ -11,7 +11,6 @@ use winreg::{
 use crate::{
 	game::Game,
 	game_providers::game_provider::{GameProviderId, ProviderActions, WineProviderActions},
-	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	path_extensions::PathExt,
 	result::{LogErrExt, Result},
 };
@@ -20,23 +19,24 @@ use crate::{
 pub struct Xbox {}
 
 impl ProviderActions for Xbox {
-	fn insert_games(&self, db: &DbMutex) -> Result {
-		if let Err(error) = get_games(db) {
-			if error.kind() == io::ErrorKind::NotFound {
+	fn get_games(&self) -> Result<Vec<Game>> {
+		match read_games() {
+			Ok(games) => Ok(games),
+			Err(error) if error.kind() == io::ErrorKind::NotFound => {
 				log::info!(
 					"Failed to find installed Xbox PC games. This probably means the Xbox PC app isn't installed, or there are no Windows Store games or something. Error: {error}"
 				);
-				return Ok(());
+				Ok(Vec::new())
 			}
+			Err(error) => Err(error.into()),
 		}
-
-		Ok(())
 	}
 }
 
 impl WineProviderActions for Xbox {}
 
-fn get_games(db: &DbMutex) -> io::Result<()> {
+fn read_games() -> io::Result<Vec<Game>> {
+	let mut games = Vec::new();
 	let gaming_services =
 		RegKey::predef(HKEY_LOCAL_MACHINE).open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;
 	let package_roots = gaming_services.open_subkey("PackageRepository\\Root")?;
@@ -108,7 +108,7 @@ fn get_games(db: &DbMutex) -> io::Result<()> {
 
 											game.set_executable(&executable_path);
 
-											db.insert_game(&game);
+											games.push(game);
 										}
 									}
 								}
@@ -120,5 +120,5 @@ fn get_games(db: &DbMutex) -> io::Result<()> {
 		}
 	}
 
-	Ok(())
+	Ok(games)
 }

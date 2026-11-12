@@ -55,7 +55,7 @@ impl GameProviderId {
 }
 
 pub trait ProviderActions {
-	fn insert_games(&self, db: &DbMutex) -> Result;
+	fn get_games(&self) -> Result<Vec<Game>>;
 
 	fn delete_game(&self, game: &Game) -> Result {
 		Err(Error::UnsupportedProviderOperation(
@@ -68,7 +68,7 @@ pub trait ProviderActions {
 pub(crate) trait ProviderParser {
 	type Source;
 
-	fn parse_games(&self, source: &Self::Source, insert: &mut impl FnMut(Game)) -> Result;
+	fn parse_games(&self, source: &Self::Source) -> Result<Vec<Game>>;
 }
 
 pub trait WineProviderActions {
@@ -184,11 +184,8 @@ pub fn get_provider(provider_id: GameProviderId) -> Result<Box<dyn GameProvider>
 impl GameProviderId {
 	pub fn insert_games(&self, db: &DbMutex) -> Result {
 		let start_time = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
+		let games = get_provider(*self)?.get_games()?;
 
-		get_provider(*self)?.insert_games(db)?;
-
-		db.remove_stale_games(self, start_time)?;
-
-		Ok(())
+		db.refresh_games(self, &games, start_time)
 	}
 }

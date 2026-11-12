@@ -19,7 +19,6 @@ use crate::{
 use crate::{
 	app_paths,
 	game_providers::game_provider::{ProviderActions, WineProviderActions},
-	local_database::{app_database::DbMutex, game_database::GameDatabase},
 };
 
 #[derive(Clone)]
@@ -72,7 +71,9 @@ impl Gog {
 impl ProviderParser for Gog {
 	type Source = GogParseSource;
 
-	fn parse_games(&self, source: &Self::Source, insert: &mut impl FnMut(Game)) -> Result {
+	fn parse_games(&self, source: &Self::Source) -> Result<Vec<Game>> {
+		let mut games = Vec::new();
+
 		if let Some(database) = get_database(&source.database_path)? {
 			for db_entry in database {
 				let mut game = Self::get_game(&db_entry, &source.launcher_path);
@@ -90,20 +91,20 @@ impl ProviderParser for Gog {
 					);
 				}
 
-				insert(game);
+				games.push(game);
 			}
 		} else {
 			log::info!(
 				"GOG database file not found. Probably means user hasn't installed GOG Galaxy."
 			);
 		}
-		Ok(())
+		Ok(games)
 	}
 }
 
 #[cfg(target_os = "windows")]
 impl ProviderActions for Gog {
-	fn insert_games(&self, db: &DbMutex) -> Result {
+	fn get_games(&self) -> Result<Vec<Game>> {
 		let database_path =
 			app_paths::try_get_program_data_path().join("GOG.com/Galaxy/storage/galaxy-2.0.db");
 
@@ -111,7 +112,7 @@ impl ProviderActions for Gog {
 			log::info!(
 				"GOG database file not found. Probably means user hasn't installed GOG Galaxy."
 			);
-			return Ok(());
+			return Ok(Vec::new());
 		}
 
 		let source = GogParseSource {
@@ -119,9 +120,7 @@ impl ProviderActions for Gog {
 			launcher_path: get_launcher_path()?,
 		};
 
-		self.parse_games(&source, &mut |game| {
-			db.insert_game(&game);
-		})
+		self.parse_games(&source)
 	}
 }
 

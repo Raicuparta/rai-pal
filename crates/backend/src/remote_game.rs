@@ -29,7 +29,7 @@ pub fn parse_version(version: &str) -> Option<EngineVersion> {
 				"Failed to parse version number from capture `{capture_str}` in version string `{version}`",
 			))
 		})
-		.take(2)
+		.take(3)
 		.collect::<Vec<_>>();
 
 	version_numbers.first().map(|major| EngineVersion {

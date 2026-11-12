@@ -2,8 +2,7 @@ use std::{collections::HashMap, rc::Rc};
 
 use rai_pal_backend::{
 	game::Game, game_providers::game_provider::GameProviderId,
-	local_database::game_database::GameId, operating_system::OperatingSystem,
-	result::LogErrExt,
+	local_database::game_database::GameId, operating_system::OperatingSystem, result::LogErrExt,
 };
 
 use slint::Model as _;
@@ -92,6 +91,7 @@ pub fn make_row(game_id: &GameId) -> GameRowData {
 		game_id: game_id.game_id.clone().into(),
 		title: "...".into(),
 		thumbnail: slint::Image::default(),
+		thumbnail_url: "".into(),
 		has_thumbnail: false,
 		installed: false,
 		tags: slint::ModelRc::default(),
@@ -146,6 +146,7 @@ pub fn sync_rows(model: &slint::VecModel<GameRowData>, game_ids: &[GameId]) {
 pub fn reset_row(row: &mut GameRowData) {
 	row.title = "...".into();
 	row.thumbnail = slint::Image::default();
+	row.thumbnail_url = "".into();
 	row.has_thumbnail = false;
 	row.installed = false;
 	row.tags = slint::ModelRc::default();
@@ -170,6 +171,7 @@ pub fn apply_game_to_row(row: &mut GameRowData, game: &Game) {
 	let release_date = ReleaseDate::parse(game.release_date_rfc3339.as_deref());
 
 	row.title = game.full_title().into();
+	row.thumbnail_url = game.thumbnail_url.clone().unwrap_or_default().into();
 	row.installed = game.exe_path.is_some();
 	row.tags = Rc::new(slint::VecModel::from(
 		tags.into_iter()

@@ -56,9 +56,8 @@ where
 	TParser: ProviderParser<Source = PathBuf>,
 {
 	let root = fixture(name);
-	let mut games = Vec::new();
-	parser
-		.parse_games(&root, &mut |game| games.push(game))
+	let games = parser
+		.parse_games(&root)
 		.unwrap_or_else(|error| panic!("provider parse failed: {error}"));
 	(root, games)
 }
@@ -103,9 +102,8 @@ fn steam_appinfo_basic() {
 fn itch_database_basic() {
 	let root = fixture("itch/database-basic");
 	let db_path = root.join("db/butler.db");
-	let mut games = Vec::new();
-	Itch {}
-		.parse_games(&db_path, &mut |game| games.push(game))
+	let games = Itch {}
+		.parse_games(&db_path)
 		.unwrap_or_else(|error| panic!("provider parse failed: {error}"));
 	assert_expected_games(&root, &games);
 }
@@ -144,9 +142,8 @@ fn gog_with_installed() {
 		database_path: root.join("galaxy-2.0.db"),
 		launcher_path: root.join("GalaxyClient.exe"),
 	};
-	let mut games = Vec::new();
-	Gog {}
-		.parse_games(&source, &mut |game| games.push(game))
+	let games = Gog {}
+		.parse_games(&source)
 		.unwrap_or_else(|error| panic!("provider parse failed: {error}"));
 	assert_expected_games(&root, &games);
 }
@@ -158,9 +155,8 @@ fn gog_without_installed() {
 		database_path: root.join("galaxy-2.0.db"),
 		launcher_path: root.join("GalaxyClient.exe"),
 	};
-	let mut games = Vec::new();
-	Gog {}
-		.parse_games(&source, &mut |game| games.push(game))
+	let games = Gog {}
+		.parse_games(&source)
 		.unwrap_or_else(|error| panic!("provider parse failed: {error}"));
 	assert_expected_games(&root, &games);
 }

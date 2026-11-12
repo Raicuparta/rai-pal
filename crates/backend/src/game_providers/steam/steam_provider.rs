@@ -19,7 +19,6 @@ use crate::{
 		steam::appinfo::SteamAppInfoReader,
 	},
 	game_tag::GameTag,
-	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	path_extensions::PathExt,
 	result::Result,
 };
@@ -225,7 +224,8 @@ impl Steam {
 impl ProviderParser for Steam {
 	type Source = PathBuf;
 
-	fn parse_games(&self, steam_path: &Self::Source, insert: &mut impl FnMut(Game)) -> Result {
+	fn parse_games(&self, steam_path: &Self::Source) -> Result<Vec<Game>> {
+		let mut games = Vec::new();
 		let steam_dir = SteamDir::from_dir(steam_path)?;
 		let appinfo_path = get_appinfo_path(steam_dir.path());
 
@@ -328,11 +328,9 @@ impl ProviderParser for Steam {
 							.unwrap_or_default();
 
 						if installed_games.is_empty() {
-							insert(game);
+							games.push(game);
 						} else {
-							for installed_game in installed_games {
-								insert(installed_game);
-							}
+							games.extend(installed_games);
 						}
 					}
 					Err(error) => {
@@ -347,21 +345,17 @@ impl ProviderParser for Steam {
 			);
 		}
 
-		for game in Self::get_shortcut_games(&steam_dir) {
-			insert(game);
-		}
+		games.extend(Self::get_shortcut_games(&steam_dir));
 
-		Ok(())
+		Ok(games)
 	}
 }
 
 impl ProviderActions for Steam {
-	fn insert_games(&self, db: &DbMutex) -> Result {
+	fn get_games(&self) -> Result<Vec<Game>> {
 		let steam_dir = find_steam_dir()?;
 
-		self.parse_games(&steam_dir.path().to_path_buf(), &mut |game| {
-			db.insert_game(&game);
-		})
+		self.parse_games(&steam_dir.path().to_path_buf())
 	}
 }
 

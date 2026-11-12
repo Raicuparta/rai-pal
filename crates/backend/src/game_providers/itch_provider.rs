@@ -14,7 +14,6 @@ use crate::{
 	game_providers::game_provider::{
 		GameProviderId, ProviderActions, ProviderParser, WineProviderActions,
 	},
-	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	result::{ContextResult, LogErrExt, Result},
 };
 
@@ -124,10 +123,11 @@ pub struct ItchDatabase {
 impl ProviderParser for Itch {
 	type Source = PathBuf;
 
-	fn parse_games(&self, db_path: &Self::Source, insert: &mut impl FnMut(Game)) -> Result {
+	fn parse_games(&self, db_path: &Self::Source) -> Result<Vec<Game>> {
 		let Some(database) = get_database(db_path)? else {
-			return Ok(());
+			return Ok(Vec::new());
 		};
+		let mut games = Vec::new();
 		let caves_map: HashMap<_, _> = database
 			.caves
 			.into_iter()
@@ -139,25 +139,23 @@ impl ProviderParser for Itch {
 			if let Some(exe_path) = caves_map.get(&db_entry.id).and_then(Self::get_exe_path) {
 				game.set_executable(&exe_path);
 			}
-			insert(game);
+			games.push(game);
 		}
 
-		Ok(())
+		Ok(games)
 	}
 }
 
 impl ProviderActions for Itch {
-	fn insert_games(&self, db: &DbMutex) -> Result {
+	fn get_games(&self) -> Result<Vec<Game>> {
 		let Some(db_path) = find_butler_db()? else {
 			log::info!(
 				"Itch database file not found. Probably means user hasn't installed the Itch app."
 			);
-			return Ok(());
+			return Ok(Vec::new());
 		};
 
-		self.parse_games(&db_path, &mut |game| {
-			db.insert_game(&game);
-		})
+		self.parse_games(&db_path)
 	}
 }
 

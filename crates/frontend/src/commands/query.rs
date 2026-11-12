@@ -122,19 +122,20 @@ fn run_query(
 
 			let list = window.global::<crate::GamesList>();
 			let model = list.get_rows();
-			let Some(model) = model.as_any().downcast_ref::<slint::VecModel<GameRowData>>() else {
+			let Some(model) = model
+				.as_any()
+				.downcast_ref::<slint::VecModel<GameRowData>>()
+			else {
 				log::error!("Games list model is not a VecModel");
 				return;
 			};
 
 			sync_rows(model, &response.game_ids);
 
-			list.set_total_count(
-				i32::try_from(response.total_count).unwrap_or_else(|err| {
-					log::warn!("Games count exceeds i32: {err}");
-					i32::MAX
-				}),
-			);
+			list.set_total_count(i32::try_from(response.total_count).unwrap_or_else(|err| {
+				log::warn!("Games count exceeds i32: {err}");
+				i32::MAX
+			}));
 
 			if matches!(scroll, ScrollBehavior::Reset) {
 				list.set_scroll_y(0.0);

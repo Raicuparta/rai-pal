@@ -15,7 +15,6 @@ use crate::{
 		game_provider::{GameProviderId, ProviderActions, ProviderParser, WineProviderActions},
 		heroic_provider,
 	},
-	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	result::{LogErrExt, Result},
 };
 
@@ -84,7 +83,9 @@ impl HeroicAmazon {
 impl ProviderParser for HeroicAmazon {
 	type Source = PathBuf;
 
-	fn parse_games(&self, root: &Self::Source, insert: &mut impl FnMut(Game)) -> Result {
+	fn parse_games(&self, root: &Self::Source) -> Result<Vec<Game>> {
+		let mut games = Vec::new();
+
 		if let Some(parsed_games) = get_detected_games(root)? {
 			for parsed_game in parsed_games {
 				let mut game = Game::new(
@@ -120,19 +121,17 @@ impl ProviderParser for HeroicAmazon {
 					game.set_executable(&exe_path);
 				}
 
-				insert(game);
+				games.push(game);
 			}
 		}
 
-		Ok(())
+		Ok(games)
 	}
 }
 
 impl ProviderActions for HeroicAmazon {
-	fn insert_games(&self, db: &DbMutex) -> Result {
-		self.parse_games(&heroic_provider::config_path()?, &mut |game| {
-			db.insert_game(&game);
-		})
+	fn get_games(&self) -> Result<Vec<Game>> {
+		self.parse_games(&heroic_provider::config_path()?)
 	}
 }
 

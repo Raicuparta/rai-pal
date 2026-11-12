@@ -538,9 +538,19 @@ pub fn schedule_visible_range(
 
 	let generation = scheduler.generation();
 	let requests = indices
-		.into_iter()
-		.filter_map(|index| make_request(rows, index, generation))
+		.iter()
+		.filter_map(|index| make_request(rows, *index, generation))
 		.collect();
 
 	scheduler.set_visible_requests(requests);
+
+	for index in indices {
+		let Some(row) = rows.row_data(index) else {
+			continue;
+		};
+
+		if row.loaded && !row.has_thumbnail && !row.thumbnail_url.is_empty() {
+			scheduler.enqueue_thumbnail(index, generation, row.thumbnail_url.to_string());
+		}
+	}
 }

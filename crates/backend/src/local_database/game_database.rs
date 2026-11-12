@@ -28,10 +28,10 @@ use crate::{
 
 pub trait GameDatabase {
 	fn insert_game(&self, game: &Game);
+	fn refresh_games(&self, provider_id: &GameProviderId, games: &[Game], max_time: u64) -> Result;
 	fn get_game(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Game>;
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse>;
 	fn get_providers_with_games(&self) -> Result<HashSet<GameProviderId>>;
-	fn remove_stale_games(&self, provider_id: &GameProviderId, max_time: u64) -> Result;
 }
 
 pub struct GameId {
@@ -140,7 +140,7 @@ fn build_supported_os_inclusion_filter(
 
 impl GameDatabase for DbMutex {
 	fn insert_game(&self, game: &Game) {
-		if let Err(err) = try_insert_game(self, game) {
+		if let Err(err) = try_insert_games(self, std::slice::from_ref(game)) {
 			log::error!(
 				"Failed to insert game ({}/{}) into local database: {}",
 				game.provider_id,
@@ -148,6 +148,19 @@ impl GameDatabase for DbMutex {
 				err
 			);
 		}
+	}
+
+	fn refresh_games(&self, provider_id: &GameProviderId, games: &[Game], max_time: u64) -> Result {
+		let mut connection = self.lock_db()?;
+		let transaction = connection.transaction()?;
+
+		insert_games_in_transaction(&transaction, games)?;
+		remove_stale_games(&transaction, *provider_id, max_time)?;
+
+		transaction.commit()?;
+		drop(connection);
+
+		Ok(())
 	}
 
 	fn get_game(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Game> {
@@ -508,36 +521,65 @@ impl GameDatabase for DbMutex {
 					providers.insert(provider);
 				}
 				Err(err) => {
-					log::warn!("Failed to read provider with games from local database: {err}")
+					log::warn!("Failed to read provider with games from local database: {err}");
 				}
 			}
 		}
 
 		Ok(providers)
 	}
-
-	fn remove_stale_games(&self, provider_id: &GameProviderId, max_time: u64) -> Result {
-		let db = self.lock_db()?;
-		db.prepare_cached(
-			"DELETE FROM main.installed_games WHERE provider_id = $1 AND game_id IN (SELECT game_id FROM main.games WHERE provider_id = $1 AND created_at < $2)",
-		)?
-		.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
-		db.prepare_cached(
-			"DELETE FROM main.normalized_titles WHERE provider_id = $1 AND game_id IN (SELECT game_id FROM main.games WHERE provider_id = $1 AND created_at < $2)",
-		)?
-		.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
-		db.prepare_cached("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2")?
-			.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
-
-		drop(db);
-		Ok(())
-	}
 }
 
-fn try_insert_game(connection_mutex: &DbMutex, game: &Game) -> Result {
+fn remove_stale_games(
+	transaction: &rusqlite::Transaction,
+	provider_id: GameProviderId,
+	max_time: u64,
+) -> Result {
+	transaction.prepare_cached(
+		"DELETE FROM main.installed_games WHERE provider_id = $1 AND game_id IN (SELECT game_id FROM main.games WHERE provider_id = $1 AND created_at < $2)",
+	)?
+	.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
+	transaction.prepare_cached(
+		"DELETE FROM main.normalized_titles WHERE provider_id = $1 AND game_id IN (SELECT game_id FROM main.games WHERE provider_id = $1 AND created_at < $2)",
+	)?
+	.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
+	transaction
+		.prepare_cached("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2")?
+		.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
+
+	Ok(())
+}
+
+fn try_insert_games(connection_mutex: &DbMutex, games: &[Game]) -> Result {
 	let mut connection = connection_mutex.lock_db()?;
 	let transaction = connection.transaction()?;
 
+	insert_games_in_transaction(&transaction, games)?;
+
+	transaction.commit()?;
+	drop(connection);
+
+	Ok(())
+}
+
+fn insert_games_in_transaction(transaction: &rusqlite::Transaction, games: &[Game]) -> Result {
+	let created_at = SystemTime::now()
+		.duration_since(UNIX_EPOCH)?
+		.as_secs()
+		.cast_signed();
+
+	for game in games {
+		insert_game_in_transaction(transaction, game, created_at)?;
+	}
+
+	Ok(())
+}
+
+fn insert_game_in_transaction(
+	transaction: &rusqlite::Transaction,
+	game: &Game,
+	created_at: i64,
+) -> Result {
 	transaction
 		.prepare_cached(
 			"INSERT OR REPLACE INTO games (
@@ -568,10 +610,7 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &Game) -> Result {
 			game.exe_path
 				.as_ref()
 				.map(|exe_path| exe_path.as_path().hash_string()),
-			SystemTime::now()
-				.duration_since(UNIX_EPOCH)?
-				.as_secs()
-				.cast_signed(),
+			created_at,
 			JsonData(game.supported_os.clone()),
 		])?;
 
@@ -621,12 +660,6 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &Game) -> Result {
 			])?;
 	}
 
-	transaction.commit()?;
-
-	// tbh only here due to a clippy warning,
-	// Clippy does't seem to realize connection is needed as long as transaction.
-	drop(connection);
-
 	Ok(())
 }
 
@@ -652,7 +685,7 @@ pub fn try_create() -> Result<DbMutex> {
 	}
 }
 
-pub fn attach_remote(path: &Path) -> Result {
+pub fn attach_remote(database: &DbMutex, path: &Path) -> Result {
 	let mut instant = Instant::now();
 	instant.log_next("Attaching remote database...");
 
@@ -660,7 +693,7 @@ pub fn attach_remote(path: &Path) -> Result {
 		return Ok(());
 	}
 
-	let mut connection = open_attach_database_connection()?;
+	let mut connection = database.lock_db()?;
 	if is_database_attached(&connection, "remote_db")? {
 		connection.execute("DETACH DATABASE remote_db;", [])?;
 	}
@@ -794,7 +827,7 @@ fn create() -> Result<DbMutex> {
 	let mut instant = Instant::now();
 	instant.log_next("Creating local database...");
 
-	let connection = open_main_database_connection()?;
+	let connection = open_database_connection()?;
 
 	connection.execute_batch(
 		r"
@@ -862,22 +895,14 @@ fn create() -> Result<DbMutex> {
 
 	let mutex = DbMutex::new(connection);
 
-	attach_remote(&remote_database_path)?;
+	attach_remote(&mutex, &remote_database_path)?;
 
 	instant.log_next("Created local database!");
 
 	Ok(mutex)
 }
 
-fn open_main_database_connection() -> Result<rusqlite::Connection> {
-	open_local_database_connection()
-}
-
-fn open_attach_database_connection() -> Result<rusqlite::Connection> {
-	open_local_database_connection()
-}
-
-fn open_local_database_connection() -> Result<rusqlite::Connection> {
+fn open_database_connection() -> Result<rusqlite::Connection> {
 	let path = db_file_path()?;
 	if let Some(parent) = path.parent() {
 		fs_err::create_dir_all(parent)?;
