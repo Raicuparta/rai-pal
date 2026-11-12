@@ -80,3 +80,7 @@ Never write comments in your code, unless asked to. Rare exception only for extr
 ## Markdown
 
 Any time you're writing markdown, never enforce a max width by adding newlines. Let lines be as long as they can except for specific stuff like tables etc.
+
+## Verifying results
+
+By default, don't try to verify results via slow processes like looking at the node tree via MCP, screenshots, etc, unless asked to iterate on many tasks and testing is really necessary. If visual validation is required, prefer asking the user to check, explaining what needs to be verified. The slower verification via MCP and possibly visually via screenshots is acceptable when doing lots of unattended iteration, or when specifically asked to validate by yourself.
