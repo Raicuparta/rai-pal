@@ -25,13 +25,14 @@ export component AppUpdatePopup inherits Modal {
     }
 
     HorizontalLayout {
+        alignment: space-between;
         spacing: Theme.space-sm;
 
         Button {
             text: @tr("appUpdate" => "Ignore (won't ask again until you restart Rai Pal)");
             icon: Icon.close;
             enabled: UpdateState.state != ActionState.loading;
-            horizontal-stretch: 1;
+            horizontal-stretch: 0;
 
             clicked => {
                 UpdateState.open = false;
@@ -44,7 +45,7 @@ export component AppUpdatePopup inherits Modal {
             icon: Icon.update;
             enabled: UpdateState.state != ActionState.loading;
             tint: Theme.primary;
-            horizontal-stretch: 1;
+            horizontal-stretch: 0;
 
             clicked => {
                 AppActions.install-update();
