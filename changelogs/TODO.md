@@ -6,6 +6,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
+- Logs file changed name maybe? Should use the same as tauri used.
+- "check" CI too slow, need to reduce what it does.
 
 ## Do later:
 
