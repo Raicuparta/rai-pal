@@ -9,6 +9,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - Refresh progress labels need to go somewhere else.
 - Missing total count and filtered count.
 - keep getting the thumbnail cache errors in logs, what gives?
+- entire game list blinks when refreshing.
 
 ## Do later:
 
