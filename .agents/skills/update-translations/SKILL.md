@@ -5,32 +5,15 @@ description: "Use when asked to update translations, localize strings, add new l
 
 # Update Translations
 
-Translations are gettext catalogs:
-
-```text
-crates/frontend/translations/<language>/LC_MESSAGES/rai-pal-frontend.po
-```
-
-Languages use their short code (`de`, `es`, `fr`, `ja`, `ko`, `pt`, `wa`, `zh`). There is no English catalog: English comes from the `@tr` msgids in the `.slint` files, which are index 0 of Slint's bundled translation table.
+Translations are gettext catalogs at `crates/frontend/translations/<language>/LC_MESSAGES/rai-pal-frontend.po`. Languages use their short codes (`de`, `es`, `fr`, `ja`, `ko`, `pt`, `wa`, `zh`). There is no English catalog: English comes from the `@tr` msgids in the `.slint` files.
 
 ## Adding or changing a string
 
-User-visible text always originates in `.slint` files. Rust never holds a translated sentence: it sends typed values (`MessageData`, `ConfirmKind`, `RefreshTaskData`, `DownloadItemKind`, ids, paths, version strings) and the mapping functions in `crates/frontend/ui/translations.slint` turn them into `@tr(...)` calls. When adding a message, add the enum variant in `crates/frontend/ui/app_types.slint` first, then the branch in `ui/translations.slint`, then the catalog entry.
+User-visible text always originates in `.slint` files. Rust never holds a translated sentence: it sends typed values (`MessageData`, `ConfirmKind`, `RefreshTaskData`, `DownloadItemKind`, ids, paths, version strings) and the mapping functions in `crates/frontend/ui/translations.slint` turn them into `@tr(...)` calls. When adding a message, add the enum variant in `crates/frontend/ui/app_types.slint` first, then the branch in `ui/translations.slint`, then the catalog entries.
 
-1. Add or update the `@tr` call in the `.slint` file. That is the source of truth for `msgid` and `msgctxt`.
-2. Use the same `msgctxt` as the surrounding entries. The context comes from the
-   `@tr("context" => "...")` call in the `.slint` file.
-3. Keep placeholders exactly as numbered arguments: `{0}`, `{1}`, and so on.
-   Never reorder or rename them.
-4. Add the translated entry to every catalog in the same change. Catalogs are
-   always complete; there is no "untranslated until later" state.
-
-## Keeping catalogs in sync
-
-Every catalog must translate every string, with the same `msgctxt`, the same
-placeholders, and no extra or obsolete entries. When a string changes in the UI,
-update all catalogs in the same change. Never fill entries with copied English,
-`TODO`, or placeholder text.
+1. Add or update the `@tr` call. Its context is the `@tr("context" => "...")` first argument and becomes the `msgctxt`.
+2. Keep numbered placeholders (`{0}`, `{1}`, ...) exactly as they are. Never reorder or rename them.
+3. Add the entry to every catalog in the same change. Catalogs are always complete, with no extra, obsolete, or English-copied entries.
 
 ## Validation
 
@@ -38,11 +21,4 @@ update all catalogs in the same change. Never fill entries with copied English,
 scripts/check-translations.sh
 ```
 
-The script extracts `@tr` strings from `crates/frontend/ui` with
-`slint-tr-extractor` (the UI is the source of truth, not the English catalog),
-then checks every catalog for missing, unused, empty, fuzzy, obsolete, or
-duplicate entries and for placeholder mismatches. `scripts/check-translations.sh
---install-tool` installs the extractor version that matches Slint.
-
-The check is not part of the build, so normal builds never run it; CI runs the
-same script from `.github/workflows/check.yml`.
+Extracts the `@tr` strings from `crates/frontend/ui` with `slint-tr-extractor` and checks every catalog for missing, unused, empty, fuzzy, obsolete, or duplicate entries and for placeholder mismatches. Also runs as part of `scripts/check.sh`.

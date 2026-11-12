@@ -43,7 +43,14 @@ winreg = "0.56.0"
 
 [build-dependencies]
 embed-resource = "3.0"
+i-slint-compiler = { git = "https://github.com/slint-ui/slint", branch = "pre-release/1.19", features = [
+  "default",
+  "rust",
+  "display-diagnostics",
+  "bundle-translations",
+] }
 slint-build = { git = "https://github.com/slint-ui/slint", branch = "pre-release/1.19" }
+spin_on = "0.1"
 
 [lints]
 workspace = true

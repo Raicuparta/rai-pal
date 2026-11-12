@@ -44,7 +44,39 @@ fn embed_windows_icon() {
 		.expect("failed to embed Windows icon");
 }
 
+fn check_ui_diagnostics() {
+	let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("ui/main_window.slint");
+	let source = fs::read_to_string(&path).expect("failed to read the UI source");
+	let mut diag = i_slint_compiler::diagnostics::BuildDiagnostics::default();
+	let syntax_node = i_slint_compiler::parser::parse(
+		source,
+		Some(i_slint_compiler::source_path::SourcePath::new(&path)),
+		&mut diag,
+	);
+	let config = i_slint_compiler::CompilerConfiguration::new(
+		i_slint_compiler::generator::OutputFormat::Rust,
+	);
+
+	let (_, diag, _) = spin_on::spin_on(i_slint_compiler::compile_syntax_node(
+		syntax_node,
+		diag,
+		config,
+	));
+
+	if diag.is_empty() {
+		return;
+	}
+
+	diag.print();
+	std::process::exit(1);
+}
+
 fn main() {
+	println!("cargo:rerun-if-env-changed=RAI_PAL_CHECK_UI_DIAGNOSTICS");
+	if std::env::var_os("RAI_PAL_CHECK_UI_DIAGNOSTICS").is_some() {
+		check_ui_diagnostics();
+	}
+
 	let translations = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("translations");
 	emit_translation_reruns(&translations);
 

@@ -26,7 +26,7 @@ None of the crates in this repo are meant for external usage. We don't have to c
 
 ## Formatting
 
-Ignore warnings, clippy, and formatting until the implementation is confirmed correct. Run `scripts/format.sh` before committing if asked to commit.
+Ignore warnings, clippy, and formatting until the implementation is confirmed correct. Run `scripts/check.sh` before committing if asked to commit.
 
 ## Running the app
 
@@ -54,7 +54,7 @@ Prefer content-driven sizing. Let layouts and children set dimensions with paddi
 - Mark user-visible strings with `@tr`, and use `{}` placeholders instead of string concatenation so translations can reorder arguments. Translations are gettext catalogs in `crates/frontend/translations` and the source of truth for user-visible strings.
 - Reserve space for hover-only controls and track hover across the whole row so layouts don't shift or flicker.
 
-For visual/runtime checks, use the Slint MCP server or `slint-viewer`, not only source inspection.
+For visual/runtime checks, use the Slint MCP server, not only source inspection.
 
 ### Layout gotchas
 
