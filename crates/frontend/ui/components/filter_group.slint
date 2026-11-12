@@ -1,4 +1,3 @@
-import { CheckBox } from "std-widgets.slint";
 import {
     FilterGroupData,
     FilterValueData,
@@ -8,6 +7,7 @@ import {
 import { Tr } from "../translations.slint";
 import { Theme } from "../theme.slint";
 import { Button } from "button.slint";
+import { Contrast } from "contrast.slint";
 import { IconButton } from "icon_button.slint";
 import { ListRow } from "list_row.slint";
 import { ResetButton } from "reset_button.slint";
@@ -18,11 +18,13 @@ import { GamesActions } from "../actions.slint";
 component FilterValueRow inherits ListRow {
     in property <FilterValueData> item;
 
+    private property <bool> checked: root.item.enabled && root.item.available;
+
     callback toggled(checked: bool);
     callback lock-toggled;
     callback only;
 
-    extra-hovered: checkbox-touch.has-hover || only-button.hovered || lock-button.hovered;
+    extra-hovered: only-button.hovered || lock-button.hovered;
     vertical-padding: Theme.space-2xs;
     enabled: root.item.available;
     accessible-label: root.item.label == FilterValueLabel.none ? root.item.display : Tr.filter-value(root.item.label);
@@ -38,35 +40,42 @@ component FilterValueRow inherits ListRow {
         spacing: Theme.space-xs;
         cross-axis-alignment: center;
 
-        Rectangle {
+        HorizontalLayout {
             horizontal-stretch: 1;
-            height: 100%;
+            padding-left: Theme.space-sm;
+            spacing: Theme.space-sm;
+            cross-axis-alignment: center;
+            alignment: start;
+            opacity: root.item.available ? 1 : 0.5;
 
-            check-box := CheckBox {
-                x: Theme.space-sm;
-                y: (parent.height - self.height) / 2;
-                text: root.item.label == FilterValueLabel.none ? root.item.display : Tr.filter-value(root.item.label);
-                checked: root.item.enabled && root.item.available;
-                enabled: !root.item.locked && root.item.available;
-            }
+            Rectangle {
+                width: Theme.icon-size;
+                height: Theme.icon-size;
+                border-width: root.checked ? 0 : Theme.border-width;
+                border-radius: Theme.radius-sm;
+                border-color: Theme.border;
+                background: root.checked ? Theme.primary : transparent;
 
-            checkbox-touch := TouchArea {
-                width: root.item.note == FilterValueNote.none ? parent.width : check-box.preferred-width;
-                height: parent.height;
-                enabled: root.item.available;
-                mouse-cursor: pointer;
-
-                clicked => {
-                    if !root.item.locked && root.item.available {
-                        root.toggled(!root.item.enabled);
-                    }
+                if root.checked: SvgIcon {
+                    icon: Icon.check;
+                    size: Theme.icon-size;
+                    color: Contrast.ink(Theme.primary);
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
                 }
             }
 
+            Text {
+                text: root.item.label == FilterValueLabel.none ? root.item.display : Tr.filter-value(root.item.label);
+                color: root.item.available ? Theme.foreground : Theme.dimmed-foreground;
+                horizontal-stretch: 0;
+                overflow: elide;
+            }
+
             if root.item.note != FilterValueNote.none: Rectangle {
-                x: check-box.preferred-width + Theme.space-lg;
-                y: (parent.height - self.height) / 2;
                 width: 12px;
+                height: 12px;
+                horizontal-stretch: 0;
 
                 SvgIcon {
                     icon: Icon.help;

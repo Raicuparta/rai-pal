@@ -8,7 +8,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do later:
 
-- Checkbox check icon looks a lil weird in software renderer. maybe due to downscale.
 - colored buttons probably need a "subtle" mode or something like in tauri.
 - button size and icon spacing needs to be adjusted to match the tauri one better.
 - maybe a bit too small on steam deck?
