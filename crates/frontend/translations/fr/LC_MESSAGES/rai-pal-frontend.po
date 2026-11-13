@@ -262,8 +262,8 @@ msgid "Edit Mod Config"
 msgstr "Modifier la configuration du mod"
 
 msgctxt "gameModRow"
-msgid "Open folder containing this mod's config files"
-msgstr "Ouvrir le dossier contenant les fichiers de configuration de ce mod"
+msgid "Open Config Folder"
+msgstr "Ouvrir le dossier de configuration"
 
 msgctxt "gameModRow"
 msgid "Open Mod Folder"

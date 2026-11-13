@@ -262,8 +262,8 @@ msgid "Edit Mod Config"
 msgstr "编辑模组配置"
 
 msgctxt "gameModRow"
-msgid "Open folder containing this mod's config files"
-msgstr "打开包含此模组配置文件的文件夹"
+msgid "Open Config Folder"
+msgstr "打开配置文件夹"
 
 msgctxt "gameModRow"
 msgid "Open Mod Folder"

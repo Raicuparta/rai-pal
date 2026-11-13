@@ -262,8 +262,8 @@ msgid "Edit Mod Config"
 msgstr "Waah wah waaaah!"
 
 msgctxt "gameModRow"
-msgid "Open folder containing this mod's config files"
-msgstr "Waah waaaah waaaaaaaah waah waaah waaaah waaah!"
+msgid "Open Config Folder"
+msgstr "Waah wah waaaah waaah!"
 
 msgctxt "gameModRow"
 msgid "Open Mod Folder"

@@ -262,8 +262,8 @@ msgid "Edit Mod Config"
 msgstr "Mod設定"
 
 msgctxt "gameModRow"
-msgid "Open folder containing this mod's config files"
-msgstr "このModの設定ファイルがあるフォルダーを開く"
+msgid "Open Config Folder"
+msgstr "設定フォルダーを開く"
 
 msgctxt "gameModRow"
 msgid "Open Mod Folder"

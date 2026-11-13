@@ -262,8 +262,8 @@ msgid "Edit Mod Config"
 msgstr "모드 설정 편집"
 
 msgctxt "gameModRow"
-msgid "Open folder containing this mod's config files"
-msgstr "이 모드의 설정 파일이 포함된 폴더 열기"
+msgid "Open Config Folder"
+msgstr "설정 폴더 열기"
 
 msgctxt "gameModRow"
 msgid "Open Mod Folder"
