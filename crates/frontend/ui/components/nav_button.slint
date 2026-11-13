@@ -5,8 +5,6 @@ export component NavButton inherits Rectangle {
 
     callback clicked;
 
-    horizontal-stretch: 0;
-    vertical-stretch: 0;
     background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
 
     HorizontalLayout {
