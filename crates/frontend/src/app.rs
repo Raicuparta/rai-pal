@@ -1,8 +1,9 @@
-use std::{cell::RefCell, rc::Rc, sync::Arc};
+use std::{cell::RefCell, collections::HashSet, rc::Rc, sync::Arc};
 
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
 	app_variant::AppVariant,
+	game_providers::game_provider::GameProviderId,
 	local_database::game_database::try_create,
 	operating_system::Platform,
 };
@@ -53,22 +54,13 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 	let app_settings = Rc::new(RefCell::new(AppSettings::read()));
 	let detected_locale = i18n::detect_locale();
-	let initial_locale = i18n::effective_locale(&app_settings.borrow(), detected_locale);
 	let mod_families = load_mod_families(&app_database);
 	let providers_with_games = load_providers_with_games(&app_database);
 
 	let initial_query = app_settings.borrow().games_query.clone();
-	let initial_tab = app_settings.borrow().selected_tab.into();
-	let initial_groups = build_groups(
-		&initial_query.filter,
-		&mod_families,
-		&app_settings.borrow().collapsed_filters,
-		&providers_with_games,
-	);
+	let initial_tab: AppTab = app_settings.borrow().selected_tab.into();
 
-	let initial_have_changes = initial_groups.iter().any(|group| group.has_changes);
-
-	let response = load_game_ids(&app_database, initial_query.clone()).unwrap_or_else(|err| {
+	let response = load_game_ids(&app_database, initial_query).unwrap_or_else(|err| {
 		log::error!("Failed to load initial games: {err}");
 		rai_pal_backend::local_database::game_database::GameIdsResponse {
 			game_ids: Vec::new(),
@@ -101,11 +93,8 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		&main_window,
 		&app_settings,
 		detected_locale,
-		initial_locale,
-		&initial_query,
-		initial_tab,
-		initial_groups,
-		initial_have_changes,
+		&mod_families,
+		&providers_with_games,
 		games_total_count,
 	);
 
@@ -201,19 +190,24 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	main_window.run()
 }
 
-#[allow(clippy::too_many_arguments)]
 fn apply_initial_state(
 	window: &MainWindow,
 	app_settings: &Rc<RefCell<AppSettings>>,
 	detected_locale: Option<AppLocale>,
-	initial_locale: AppLocale,
-	initial_query: &rai_pal_backend::games_query::GamesQuery,
-	initial_tab: AppTab,
-	initial_groups: Vec<crate::FilterGroupData>,
-	initial_have_changes: bool,
+	mod_families: &[String],
+	providers_with_games: &HashSet<GameProviderId>,
 	games_total_count: u32,
 ) {
-	i18n::apply_translation(initial_locale);
+	let app_settings = app_settings.borrow();
+	let query = &app_settings.games_query;
+	let filter_groups = build_groups(
+		&query.filter,
+		mod_families,
+		&app_settings.collapsed_filters,
+		providers_with_games,
+	);
+
+	i18n::apply_translation(i18n::effective_locale(&app_settings, detected_locale));
 	let settings = window.global::<crate::AppSettings>();
 	settings.set_detected_language_name(
 		detected_locale
@@ -221,27 +215,20 @@ fn apply_initial_state(
 			.unwrap_or_default()
 			.into(),
 	);
-	crate::languages::refresh(window, &app_settings.borrow(), detected_locale);
-	settings.set_selected_color_scheme(app_settings.borrow().color_scheme.into());
-	settings.set_hide_game_thumbnails(app_settings.borrow().hide_game_thumbnails);
+	crate::languages::refresh(window, &app_settings, detected_locale);
+	settings.set_selected_color_scheme(app_settings.color_scheme.into());
+	settings.set_hide_game_thumbnails(app_settings.hide_game_thumbnails);
 
 	window
 		.global::<crate::AppInfo>()
 		.set_version(env!("CARGO_PKG_VERSION").into());
 
-	let query = window.global::<crate::GamesQuery>();
-	query.set_search_text(initial_query.search.clone().into());
-	query.set_sort_index(sort_option_index(
-		initial_query.sort_by,
-		initial_query.sort_descending,
-	));
-	query.set_filters_have_expanded(
-		initial_groups
-			.iter()
-			.any(|filter_group| filter_group.expanded),
-	);
-	query.set_filter_groups(Rc::new(slint::VecModel::from(initial_groups)).into());
-	query.set_filters_have_changes(initial_have_changes);
+	let query_ui = window.global::<crate::GamesQuery>();
+	query_ui.set_search_text(query.search.clone().into());
+	query_ui.set_sort_index(sort_option_index(query.sort_by, query.sort_descending));
+	query_ui.set_filters_have_expanded(filter_groups.iter().any(|group| group.expanded));
+	query_ui.set_filters_have_changes(filter_groups.iter().any(|group| group.has_changes));
+	query_ui.set_filter_groups(Rc::new(slint::VecModel::from(filter_groups)).into());
 
 	window.global::<crate::GamesList>().set_total_count(
 		i32::try_from(games_total_count).unwrap_or_else(|err| {
@@ -249,5 +236,5 @@ fn apply_initial_state(
 			i32::MAX
 		}),
 	);
-	window.set_current_tab(initial_tab);
+	window.set_current_tab(app_settings.selected_tab.into());
 }

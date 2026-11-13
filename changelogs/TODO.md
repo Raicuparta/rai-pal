@@ -18,6 +18,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - Removed the write-only `AppSettings.selected-language` Slint property; the selected language index is the only state now.
 - Simplified the thumbnail cache path helper.
 - Removed unused `Modal` header action props and the no-op `PopupMenuItem.checkable` property.
+- `apply_initial_state` now derives the initial query/filters/tab from the saved settings instead of taking 5 precomputed arguments.
 - The selected game state is a plain `RefCell` instead of an `Arc<Mutex>`, since it is only ever touched on the UI thread.
 - `make_row` now gets its defaults from `reset_row` instead of listing every field twice.
 - Dropped unused UI data: `GameModData.family` and four unused `Theme` popup size constants.
