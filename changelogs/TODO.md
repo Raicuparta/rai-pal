@@ -14,5 +14,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 - Added the missing translation for the "Data" section label in the game details sidebar.
 - Removed the write-only `AppSettings.selected-language` Slint property; the selected language index is the only state now.
+- Added a shared `CommandHandler::spawn_action` and reused it (plus `runtime::block_on`) for all game/mod actions, removing the repeated thread + runtime + action-state boilerplate.
 - Merged the three duplicated URL mod source actions into one shared helper in `commands/mod_sources.rs`.
 - Replaced the hardcoded red dialog error texts with a shared `ErrorMessage` component using `Theme.status-error`.

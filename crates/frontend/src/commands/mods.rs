@@ -99,112 +99,65 @@ impl CommandHandler {
 		let window = self.window();
 		let downloads = self.downloads.clone();
 
-		let action_id = action_state::key(ActionKind::GameModInstall, mod_id.clone());
-		action_state::start(&window, action_id.clone());
+		self.spawn_action(
+			action_state::key(ActionKind::GameModInstall, mod_id.clone()),
+			MessageContext::InstallMod,
+			move || {
+				let (game_mod, deps_to_install) = collect_install_mods(&database, &game, &mod_id)
+					.map_err(|err| err.to_string())?;
 
-		thread::spawn(move || {
-			let Some(runtime) =
-				runtime::current_thread().ok_or_log("Failed to create async runtime")
-			else {
-				return;
-			};
+				let all_owned = deps_to_install
+					.iter()
+					.chain(std::iter::once(&game_mod))
+					.cloned()
+					.collect::<Vec<_>>();
+				let steps = install_steps(&all_owned);
+				downloads.pending_steps(&steps);
 
-			let (game_mod, deps_to_install) = match collect_install_mods(&database, &game, &mod_id)
-			{
-				Ok(mods) => mods,
-				Err(err) => {
-					log::error!("Failed to prepare mod install {mod_id}: {err}");
-					action_state::finish(
-						&window,
-						action_id.clone(),
-						Err(err),
-						MessageContext::InstallMod,
-					);
-					return;
+				let result = runtime::block_on(install_mod(
+					&database,
+					&game,
+					game_mod,
+					deps_to_install,
+					&downloads,
+				));
+
+				match &result {
+					Ok(()) => {
+						downloads.finish_steps(&steps);
+						refresh_after_action(&window, &database, &game);
+					}
+					Err(_) => downloads.fail_steps(&steps),
 				}
-			};
 
-			let all_owned = deps_to_install
-				.iter()
-				.chain(std::iter::once(&game_mod))
-				.cloned()
-				.collect::<Vec<_>>();
-			let steps = install_steps(&all_owned);
-			downloads.pending_steps(&steps);
-
-			let result = runtime.block_on(install_mod_inner(
-				&database,
-				&game,
-				game_mod,
-				deps_to_install,
-				&downloads,
-			));
-
-			if let Err(err) = result {
-				log::error!("Failed to install mod {mod_id}: {err}");
-				downloads.fail_steps(&steps);
-				action_state::finish(
-					&window,
-					action_id.clone(),
-					Err(err),
-					MessageContext::InstallMod,
-				);
-				return;
-			}
-
-			downloads.finish_steps(&steps);
-			refresh_after_action(&window, &database, &game);
-			action_state::finish(
-				&window,
-				action_id.clone(),
-				Ok::<(), rai_pal_backend::result::Error>(()),
-				MessageContext::InstallMod,
-			);
-		});
+				result
+			},
+		);
 	}
 
 	pub fn download_mod_config(&self, game: Game, mod_id: String) {
 		let database = Arc::clone(&self.database);
 		let window = self.window();
 
-		let action_id = action_state::key(ActionKind::GameModDownloadConfig, mod_id.clone());
-		action_state::start(&window, action_id.clone());
+		self.spawn_action(
+			action_state::key(ActionKind::GameModDownloadConfig, mod_id.clone()),
+			MessageContext::DownloadModConfig,
+			move || {
+				let result = runtime::block_on(async {
+					database
+						.get_mod(&mod_id)?
+						.download_remote_config(&game, true)
+						.await?;
+					database.refresh_installed_mods()
+				});
 
-		thread::spawn(move || {
-			let Some(runtime) =
-				runtime::current_thread().ok_or_log("Failed to create async runtime")
-			else {
-				return;
-			};
+				if result.is_ok() {
+					refresh_after_action(&window, &database, &game);
+				}
 
-			let result = runtime.block_on(async {
-				database
-					.get_mod(&mod_id)?
-					.download_remote_config(&game, true)
-					.await?;
-				database.refresh_installed_mods()?;
-				Ok::<(), rai_pal_backend::result::Error>(())
-			});
-
-			if let Err(err) = result {
-				log::error!("Failed to download config for mod {mod_id}: {err}");
-				action_state::finish(
-					&window,
-					action_id.clone(),
-					Err(err),
-					MessageContext::DownloadModConfig,
-				);
-				return;
-			}
-
-			refresh_after_action(&window, &database, &game);
-			action_state::finish(
-				&window,
-				action_id.clone(),
-				Ok::<(), rai_pal_backend::result::Error>(()),
-				MessageContext::DownloadModConfig,
-			);
-		});
+				result
+			},
+		);
 	}
 
 	pub fn uninstall_mod(&self, game: Game, mod_id: String) {
@@ -217,89 +170,51 @@ impl CommandHandler {
 		let database = Arc::clone(&self.database);
 		let window = self.window();
 
-		let action_id = action_state::key(ActionKind::GameModUninstall, mod_id.clone());
-		action_state::start(&window, action_id.clone());
+		self.spawn_action(
+			action_state::key(ActionKind::GameModUninstall, mod_id.clone()),
+			MessageContext::UninstallMod,
+			move || {
+				let result = runtime::block_on(async {
+					database
+						.try_get_installed_mod(&game.provider_id, &game.game_id, &mod_id)?
+						.uninstall()
+						.await?;
+					database.refresh_installed_mods()
+				});
 
-		thread::spawn(move || {
-			let Some(runtime) =
-				runtime::current_thread().ok_or_log("Failed to create async runtime")
-			else {
-				return;
-			};
+				if result.is_ok() {
+					refresh_after_action(&window, &database, &game);
+				}
 
-			let result = runtime.block_on(async {
-				database
-					.try_get_installed_mod(&game.provider_id, &game.game_id, &mod_id)?
-					.uninstall()
-					.await?;
-				database.refresh_installed_mods()?;
-				Ok::<(), rai_pal_backend::result::Error>(())
-			});
-
-			if let Err(err) = result {
-				log::error!("Failed to uninstall mod {mod_id}: {err}");
-				action_state::finish(
-					&window,
-					action_id.clone(),
-					Err(err),
-					MessageContext::UninstallMod,
-				);
-				return;
-			}
-
-			refresh_after_action(&window, &database, &game);
-			action_state::finish(
-				&window,
-				action_id.clone(),
-				Ok::<(), rai_pal_backend::result::Error>(()),
-				MessageContext::UninstallMod,
-			);
-		});
+				result
+			},
+		);
 	}
 
 	pub fn uninstall_all_mods(&self, game: Game) {
 		let database = Arc::clone(&self.database);
 		let window = self.window();
 
-		let action_id = action_state::key(ActionKind::GameModUninstallAll, "");
-		action_state::start(&window, action_id.clone());
+		self.spawn_action(
+			action_state::key(ActionKind::GameModUninstallAll, ""),
+			MessageContext::UninstallAllMods,
+			move || {
+				let result = runtime::block_on(async {
+					for installed_mod in database.get_installed_mods_for_game(&game)? {
+						installed_mod.uninstall().await?;
+					}
 
-		thread::spawn(move || {
-			let Some(runtime) =
-				runtime::current_thread().ok_or_log("Failed to create async runtime")
-			else {
-				return;
-			};
+					game.delete_mods_folder().await?;
+					database.refresh_installed_mods()
+				});
 
-			let result = runtime.block_on(async {
-				for installed_mod in database.get_installed_mods_for_game(&game)? {
-					installed_mod.uninstall().await?;
+				if result.is_ok() {
+					refresh_after_action(&window, &database, &game);
 				}
 
-				game.delete_mods_folder().await?;
-				database.refresh_installed_mods()?;
-				Ok::<(), rai_pal_backend::result::Error>(())
-			});
-
-			if let Err(err) = result {
-				log::error!("Failed to uninstall all mods: {err}");
-				action_state::finish(
-					&window,
-					action_id.clone(),
-					Err(err),
-					MessageContext::UninstallAllMods,
-				);
-				return;
-			}
-
-			refresh_after_action(&window, &database, &game);
-			action_state::finish(
-				&window,
-				action_id.clone(),
-				Ok::<(), rai_pal_backend::result::Error>(()),
-				MessageContext::UninstallAllMods,
-			);
-		});
+				result
+			},
+		);
 	}
 
 	pub fn run_mod(&self, game: Game, mod_id: String) {
@@ -310,64 +225,49 @@ impl CommandHandler {
 		);
 
 		let database = Arc::clone(&self.database);
-		let window = self.window();
 
-		let action_id = action_state::key(ActionKind::GameModRun, mod_id.clone());
-		action_state::start(&window, action_id.clone());
-
-		thread::spawn(move || {
-			let result = database
-				.get_mod(&mod_id)
-				.and_then(|game_mod| game_mod.run(Some(&game)));
-
-			action_state::finish(&window, action_id.clone(), result, MessageContext::RunMod);
-		});
+		self.spawn_action(
+			action_state::key(ActionKind::GameModRun, mod_id.clone()),
+			MessageContext::RunMod,
+			move || {
+				database
+					.get_mod(&mod_id)
+					.and_then(|game_mod| game_mod.run(Some(&game)))
+			},
+		);
 	}
 
 	pub fn open_mod_folder(&self, game: Game, mod_id: String) {
 		let database = Arc::clone(&self.database);
-		let window = self.window();
 
-		let action_id = action_state::key(ActionKind::GameModOpenFolder, mod_id.clone());
-		action_state::start(&window, action_id.clone());
-
-		thread::spawn(move || {
-			let result = database
-				.try_get_installed_mod(&game.provider_id, &game.game_id, &mod_id)
-				.and_then(|installed_mod| installed_mod.open_folder());
-
-			action_state::finish(
-				&window,
-				action_id.clone(),
-				result,
-				MessageContext::OpenModFolder,
-			);
-		});
+		self.spawn_action(
+			action_state::key(ActionKind::GameModOpenFolder, mod_id.clone()),
+			MessageContext::OpenModFolder,
+			move || {
+				database
+					.try_get_installed_mod(&game.provider_id, &game.game_id, &mod_id)
+					.and_then(|installed_mod| installed_mod.open_folder())
+			},
+		);
 	}
 
 	pub fn configure_mod(&self, game: Game, mod_id: String, open_folder: bool) {
 		let database = Arc::clone(&self.database);
-		let window = self.window();
-
-		let action_id = if open_folder {
-			action_state::key(ActionKind::GameModConfigureFolder, mod_id.clone())
+		let kind = if open_folder {
+			ActionKind::GameModConfigureFolder
 		} else {
-			action_state::key(ActionKind::GameModConfigure, mod_id.clone())
+			ActionKind::GameModConfigure
 		};
-		action_state::start(&window, action_id.clone());
 
-		thread::spawn(move || {
-			let result = database
-				.try_get_installed_mod(&game.provider_id, &game.game_id, &mod_id)
-				.and_then(|installed_mod| installed_mod.configure(open_folder));
-
-			action_state::finish(
-				&window,
-				action_id.clone(),
-				result,
-				MessageContext::ConfigureMod,
-			);
-		});
+		self.spawn_action(
+			action_state::key(kind, mod_id.clone()),
+			MessageContext::ConfigureMod,
+			move || {
+				database
+					.try_get_installed_mod(&game.provider_id, &game.game_id, &mod_id)
+					.and_then(|installed_mod| installed_mod.configure(open_folder))
+			},
+		);
 	}
 }
 
@@ -652,7 +552,7 @@ fn collect_install_mods(database: &DbMutex, game: &Game, mod_id: &str) -> Result
 	Ok((game_mod, deps_to_install))
 }
 
-async fn install_mod_inner(
+async fn install_mod(
 	database: &DbMutex,
 	game: &Game,
 	game_mod: Mod,

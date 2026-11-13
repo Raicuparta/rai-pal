@@ -4,6 +4,7 @@ use slint::ComponentHandle as _;
 
 use crate::{
 	ActionKey, ActionKind, MessageContext, ProviderAction, action_state, analytics, notifications,
+	runtime,
 };
 
 use rai_pal_backend::{
@@ -14,7 +15,7 @@ use rai_pal_backend::{
 	mods::manifest::install_steps,
 	open_better,
 	path_extensions::PathExt,
-	result::{Error, LogErrExt, Result},
+	result::{Error, Result},
 };
 
 use super::{CommandHandler, on_command};
@@ -54,9 +55,8 @@ impl CommandHandler {
 
 	fn run_game_action(&self, game: Game, action: ProviderCommandAction, action_id: ActionKey) {
 		let database = Arc::clone(&self.database);
-		let window = self.window();
 
-		spawn_action(window, action_id, MessageContext::RunGame, move || {
+		self.spawn_action(action_id, MessageContext::RunGame, move || {
 			let provider_command = game
 				.get_provider_command(action)
 				.ok_or_else(|| Error::DataEntryNotFound(action.to_string()))?;
@@ -129,12 +129,7 @@ impl CommandHandler {
 			return;
 		};
 
-		spawn_action(
-			self.window(),
-			action_state::key(kind, ""),
-			context,
-			move || open(&game),
-		);
+		self.spawn_action(action_state::key(kind, ""), context, move || open(&game));
 	}
 
 	pub fn run_standalone_mod(&self, mod_id: String) {
@@ -143,93 +138,46 @@ impl CommandHandler {
 		let database = Arc::clone(&self.database);
 		let action_id = action_state::key(ActionKind::StandaloneRun, mod_id.clone());
 
-		spawn_action(
-			self.window(),
-			action_id,
-			MessageContext::RunMod,
-			move || {
-				database
-					.get_mod(&mod_id)
-					.and_then(|game_mod| game_mod.run(None))
-			},
-		);
+		self.spawn_action(action_id, MessageContext::RunMod, move || {
+			database
+				.get_mod(&mod_id)
+				.and_then(|game_mod| game_mod.run(None))
+		});
 	}
 
 	pub fn install_standalone_mod(&self, mod_id: String) {
 		analytics::send_mod(rai_pal_backend::analytics::Event::InstallMod, &mod_id, None);
 
 		let database = Arc::clone(&self.database);
-		let window = self.window();
 		let downloads = self.downloads.clone();
 
-		let action_id = action_state::key(ActionKind::StandaloneInstall, mod_id.clone());
-		action_state::start(&window, action_id.clone());
+		self.spawn_action(
+			action_state::key(ActionKind::StandaloneInstall, mod_id.clone()),
+			MessageContext::InstallMod,
+			move || {
+				let game_mod = database.get_mod(&mod_id).map_err(|err| err.to_string())?;
+				let steps = install_steps(std::slice::from_ref(&game_mod));
+				downloads.pending_steps(&steps);
 
-		thread::spawn(move || {
-			let Some(runtime) = tokio::runtime::Builder::new_current_thread()
-				.enable_all()
-				.build()
-				.ok_or_log("Failed to create async runtime")
-			else {
-				action_state::finish(
-					&window,
-					action_id.clone(),
-					Err("Failed to create async runtime"),
-					MessageContext::InstallMod,
-				);
-				return;
-			};
+				let result = runtime::block_on(async {
+					game_mod
+						.install(None, |status| downloads.record(&status))
+						.await?;
+					database.refresh_installed_mods()
+				});
 
-			let game_mod = match database.get_mod(&mod_id) {
-				Ok(game_mod) => game_mod,
-				Err(err) => {
-					action_state::finish(
-						&window,
-						action_id.clone(),
-						Err(err),
-						MessageContext::InstallMod,
-					);
-					return;
+				match &result {
+					Ok(()) => downloads.finish_steps(&steps),
+					Err(_) => downloads.fail_steps(&steps),
 				}
-			};
 
-			let steps = install_steps(std::slice::from_ref(&game_mod));
-			downloads.pending_steps(&steps);
-
-			let result = runtime.block_on(async {
-				game_mod
-					.install(None, |status| downloads.record(&status))
-					.await?;
-				database.refresh_installed_mods()?;
-				Ok::<(), rai_pal_backend::result::Error>(())
-			});
-
-			match result {
-				Ok(()) => {
-					downloads.finish_steps(&steps);
-					action_state::finish(
-						&window,
-						action_id.clone(),
-						Ok::<(), rai_pal_backend::result::Error>(()),
-						MessageContext::InstallMod,
-					);
-				}
-				Err(err) => {
-					downloads.fail_steps(&steps);
-					action_state::finish(
-						&window,
-						action_id.clone(),
-						Err(err),
-						MessageContext::InstallMod,
-					);
-				}
-			}
-		});
+				result
+			},
+		);
 	}
 
 	pub fn open_local_mods_folder(&self) {
-		spawn_action(
-			self.window(),
+		self.spawn_action(
 			action_state::key(ActionKind::OpenLocalModsFolder, ""),
 			MessageContext::OpenLocalModsFolder,
 			|| app_paths::local_mods_path()?.open_folder_or_parent(),
@@ -237,8 +185,7 @@ impl CommandHandler {
 	}
 
 	pub fn open_logs_folder(&self) {
-		spawn_action(
-			self.window(),
+		self.spawn_action(
 			action_state::key(ActionKind::OpenLogsFolder, ""),
 			MessageContext::OpenLogsFolder,
 			|| app_paths::logs_path()?.open_folder_or_parent(),
@@ -288,19 +235,5 @@ pub fn open_url(url: String) {
 		if let Err(err) = open_better::open_detached_better(url) {
 			log::error!("Failed to open URL: {err}");
 		}
-	});
-}
-
-fn spawn_action(
-	window: slint::Weak<crate::MainWindow>,
-	action_id: ActionKey,
-	context: MessageContext,
-	action: impl FnOnce() -> Result + Send + 'static,
-) {
-	action_state::start(&window, action_id.clone());
-
-	thread::spawn(move || {
-		let result = action();
-		action_state::finish(&window, action_id, result, context);
 	});
 }

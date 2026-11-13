@@ -1,5 +1,6 @@
 use std::{
 	cell::RefCell,
+	fmt::Display,
 	rc::Rc,
 	sync::{Arc, Mutex},
 };
@@ -13,7 +14,8 @@ use rai_pal_backend::{
 };
 
 use crate::{
-	MainWindow, downloads::Tracker, scheduler::FetchScheduler, selected::SelectedGameState,
+	ActionKey, MainWindow, MessageContext, action_state, downloads::Tracker,
+	scheduler::FetchScheduler, selected::SelectedGameState,
 };
 
 use self::{confirmation::PendingState, updater::Updater};
@@ -161,6 +163,26 @@ impl CommandHandler {
 
 	pub fn query(&self) -> GamesQuery {
 		self.settings.borrow().games_query.clone()
+	}
+
+	pub fn spawn_action<E: Display>(
+		&self,
+		action_id: ActionKey,
+		context: MessageContext,
+		action: impl FnOnce() -> std::result::Result<(), E> + Send + 'static,
+	) {
+		let window = self.window();
+		action_state::start(&window, action_id.clone());
+
+		std::thread::spawn(move || {
+			let result = action();
+
+			if let Err(err) = &result {
+				log::error!("{context:?} failed: {err}");
+			}
+
+			action_state::finish(&window, action_id, result, context);
+		});
 	}
 
 	pub fn persist_settings(&self) {
