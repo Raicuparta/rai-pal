@@ -6,6 +6,7 @@ use std::{
 };
 
 use crate::{
+	app_paths,
 	game_providers::steam::steam_dir::find_steam_dir,
 	path_extensions::{AsValidStr, PathExt},
 	result::{ContextResult, Error, LogErrExt, Result},
@@ -29,10 +30,7 @@ struct ShortcutSummary {
 	start_byte: usize,
 	end_byte: usize,
 }
-pub fn add_current_executable_to_steam_shortcuts(
-	executable_path: &Path,
-	artwork_dir: &Path,
-) -> Result {
+pub fn add_current_executable_to_steam_shortcuts(artwork_dir: &Path) -> Result {
 	let steam_dir = find_steam_dir()?;
 	let shortcuts_paths = get_target_shortcuts_paths(steam_dir.path())?;
 	log::info!(
@@ -44,14 +42,10 @@ pub fn add_current_executable_to_steam_shortcuts(
 			.join(", ")
 	);
 
-	// AppImage Support:
-	// AppImages run from a temporary `/tmp/.mount_...` directory.
-	// The `APPIMAGE` env var holds the path to the actual `.AppImage` file.
-	let actual_executable =
-		std::env::var_os("APPIMAGE").map_or_else(|| executable_path.to_path_buf(), PathBuf::from);
+	let executable = app_paths::exe_path()?;
 
-	let quoted_executable = quote_path(&actual_executable)?;
-	let start_dir = quote_path(actual_executable.try_parent()?)?;
+	let quoted_executable = quote_path(&executable)?;
+	let start_dir = quote_path(executable.try_parent()?)?;
 
 	let app_id = calculate_shortcut_app_id(RAI_PAL_SHORTCUT_NAME, &quoted_executable);
 

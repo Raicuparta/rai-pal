@@ -1,5 +1,8 @@
 use fs_err as fs;
-use std::{self, env, path::PathBuf};
+use std::{
+	self, env,
+	path::{Path, PathBuf},
+};
 
 use directories::{BaseDirs, ProjectDirs};
 use log;
@@ -41,12 +44,27 @@ fn project_data_path() -> Result<PathBuf> {
 	Ok(project_dirs.data_dir().to_path_buf())
 }
 
-fn portable_data_path() -> Result<PathBuf> {
-	let exe_path = std::env::current_exe()?;
-	let app_folder = exe_path
+pub fn appimage_path() -> Option<PathBuf> {
+	env::var_os("APPIMAGE").map(PathBuf::from)
+}
+
+pub fn exe_path() -> Result<PathBuf> {
+	match appimage_path() {
+		Some(path) => Ok(path),
+		None => Ok(env::current_exe()?),
+	}
+}
+
+pub fn exe_folder() -> Result<PathBuf> {
+	let exe_path = exe_path()?;
+	exe_path
 		.parent()
-		.ok_or_else(|| Error::PathParentNotFound(exe_path.clone()))?;
-	Ok(app_folder.join("Data"))
+		.map(Path::to_path_buf)
+		.ok_or(Error::PathParentNotFound(exe_path))
+}
+
+fn portable_data_path() -> Result<PathBuf> {
+	Ok(exe_folder()?.join("Data"))
 }
 
 pub fn app_data_file(file_name: &str) -> Result<PathBuf> {

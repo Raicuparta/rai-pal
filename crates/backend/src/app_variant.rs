@@ -6,6 +6,8 @@ use std::{
 use fs_err::File;
 use rai_pal_proc_macros::serde_enum;
 
+use crate::app_paths;
+
 const PORTABLE_MARKER: &[u8] = b"RAI_PAL_PORTABLE";
 
 #[serde_enum]
@@ -33,7 +35,7 @@ impl AppVariant {
 		}
 
 		if cfg!(target_os = "linux") {
-			return if std::env::var_os("APPIMAGE").is_some() {
+			return if app_paths::appimage_path().is_some() {
 				Self::LinuxAppImage
 			} else {
 				Self::Unknown

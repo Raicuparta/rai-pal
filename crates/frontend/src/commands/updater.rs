@@ -4,9 +4,10 @@ use rai_pal_backend::path_extensions::AsValidStr;
 use slint::ComponentHandle as _;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 use std::path::Path;
+#[cfg(target_os = "windows")]
+use std::path::PathBuf;
 use std::{
 	collections::HashMap,
-	path::PathBuf,
 	sync::{
 		Arc, Mutex,
 		atomic::{AtomicBool, Ordering},
@@ -301,11 +302,8 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 
 	use rai_pal_backend::files;
 
-	let target = match std::env::var_os("APPIMAGE") {
-		Some(path) => PathBuf::from(path),
-		None => std::env::current_exe()
-			.map_err(|err| format!("Could not find the AppImage path: {err}"))?,
-	};
+	let target = app_paths::exe_path()
+		.map_err(|err| format!("Could not find the AppImage path: {err}"))?;
 	let target = fs::canonicalize(&target).unwrap_or_else(|err| {
 		log::warn!(
 			"Failed to canonicalize AppImage path {}: {err}",
@@ -491,11 +489,10 @@ fn install_portable_and_restart(bytes: &[u8]) -> Result<(), String> {
 
 #[cfg(target_os = "windows")]
 fn portable_update_paths() -> Result<(PathBuf, PathBuf, PathBuf), String> {
-	let target =
-		std::env::current_exe().map_err(|err| format!("Could not find the app path: {err}"))?;
-	let parent = target
-		.parent()
-		.ok_or_else(|| "Could not find the app folder".to_string())?;
+	let target = app_paths::exe_path()
+		.map_err(|err| format!("Could not find the app path: {err}"))?;
+	let parent = app_paths::exe_folder()
+		.map_err(|err| format!("Could not find the app folder: {err}"))?;
 	let file_name = target
 		.file_name()
 		.and_then(|name| name.to_str())
@@ -532,8 +529,8 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 
 	use rai_pal_backend::files;
 
-	let current_exe =
-		std::env::current_exe().map_err(|err| format!("Could not find the app path: {err}"))?;
+	let current_exe = app_paths::exe_path()
+		.map_err(|err| format!("Could not find the app path: {err}"))?;
 	let bundle = current_exe
 		.ancestors()
 		.find(|path| path.extension().is_some_and(|extension| extension == "app"))

@@ -197,7 +197,10 @@ fn register_linux() {
 		return;
 	}
 
-	let executable = current_executable();
+	let Some(executable) = app_paths::exe_path().ok_or_log("Failed to get current executable path")
+	else {
+		return;
+	};
 	// Deep links only need a hidden handler, the visible app entry with its icon ships
 	// inside the AppImage's own `.desktop` file.
 	let desktop_file = applications_dir.join("Rai-Pal-handler.desktop");
@@ -229,6 +232,11 @@ fn register_linux() {
 fn register_windows() {
 	use winreg::{RegKey, enums::HKEY_CURRENT_USER};
 
+	let Some(executable) = app_paths::exe_path().ok_or_log("Failed to get current executable path")
+	else {
+		return;
+	};
+
 	let result = (|| -> std::io::Result<()> {
 		let hkcu = RegKey::predef(HKEY_CURRENT_USER);
 		let (key, _) = hkcu.create_subkey(r"Software\Classes\rai-pal")?;
@@ -236,13 +244,10 @@ fn register_windows() {
 		key.set_value("URL Protocol", &"")?;
 
 		let (icon, _) = key.create_subkey("DefaultIcon")?;
-		icon.set_value("", &format!("\"{}\"", current_executable().display()))?;
+		icon.set_value("", &format!("\"{}\"", executable.display()))?;
 
 		let (command, _) = key.create_subkey(r"shell\open\command")?;
-		command.set_value(
-			"",
-			&format!("\"{}\" \"%1\"", current_executable().display()),
-		)?;
+		command.set_value("", &format!("\"{}\" \"%1\"", executable.display()))?;
 
 		Ok(())
 	})();
@@ -252,9 +257,3 @@ fn register_windows() {
 	}
 }
 
-fn current_executable() -> std::path::PathBuf {
-	std::env::var_os("APPIMAGE")
-		.map(std::path::PathBuf::from)
-		.or_else(|| std::env::current_exe().ok_or_log("Failed to get current executable path"))
-		.unwrap_or_default()
-}

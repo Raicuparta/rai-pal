@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- I see lots of repeated code handling appimage stuff, especially finding the current appimage path, or current rai pal exe path, etc. should be in core. avoid repeating things like this! check if we're doing any of this kind of repeated work elsewhere, especially in the frontend crate repeating work already done by the backend crate.
 
 ## Do later:
 
@@ -19,6 +18,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Notes, questions, decisions, etc.
 
 ## Done
+
+- Centralized app executable/AppImage path resolution in `app_paths` (`appimage_path`, `exe_path`, `exe_folder`) and reused it for app variant detection, portable data path, deep link registration, the Steam shortcut, and all three platform updaters, removing the duplicated `APPIMAGE`/`current_exe` handling.
 
 - Determine the About menu renderer from the actual graphics API reported by the rendering notifier: `NativeOpenGL` shows as "OpenGL" (the only OpenGL renderer in the build), anything else is logged and reported as unknown, and an unsupported notifier still means the software renderer.
 

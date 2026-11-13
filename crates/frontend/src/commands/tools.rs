@@ -149,10 +149,9 @@ const STEAM_ARTWORK: &[(&str, &[u8])] = &[
 ];
 
 fn add_shortcut() -> Result {
-	let executable = std::env::current_exe()?;
 	let artwork_dir = write_steam_artwork()?;
 
-	steam_shortcut::add_current_executable_to_steam_shortcuts(&executable, &artwork_dir)
+	steam_shortcut::add_current_executable_to_steam_shortcuts(&artwork_dir)
 }
 
 fn write_steam_artwork() -> Result<PathBuf> {
