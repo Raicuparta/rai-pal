@@ -16,6 +16,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 - Added the missing translation for the "Data" section label in the game details sidebar.
 - Removed the write-only `AppSettings.selected-language` Slint property; the selected language index is the only state now.
+- Simplified the thumbnail cache path helper.
 - `make_row` now gets its defaults from `reset_row` instead of listing every field twice.
 - Dropped unused UI data: `GameModData.family` and four unused `Theme` popup size constants.
 - Removed the unused dev-mode command handler from the user socket (the dev socket scripts are gone).

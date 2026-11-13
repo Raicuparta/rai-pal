@@ -31,11 +31,9 @@ fn cache_path(url: &str, width: u32, height: u32) -> Option<PathBuf> {
 	hasher.update(height.to_le_bytes());
 	hasher.update(url.as_bytes());
 
-	Some(
-		CACHE_DIR
-			.as_ref()?
-			.join(format!("{:x}.img", hasher.finalize())),
-	)
+	CACHE_DIR
+		.as_ref()
+		.map(|dir| dir.join(format!("{:x}.img", hasher.finalize())))
 }
 
 pub fn contains(url: &str, width: u32, height: u32) -> bool {
