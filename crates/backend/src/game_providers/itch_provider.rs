@@ -66,7 +66,7 @@ impl Itch {
 	fn get_game(row: &ItchDatabaseGame) -> Game {
 		let mut game = Game::new(GameProviderId::Itch, row.id.to_string(), row.title.clone());
 
-		game.thumbnail_url.clone_from(&row.cover_url);
+		game.thumbnail_url = row.cover_url.clone().filter(|url| !url.is_empty());
 
 		if let Some(date_time) = row.published_at.as_ref().and_then(|published_at| {
 			DateTime::parse_from_rfc3339(published_at).ok_or_log(&format!(

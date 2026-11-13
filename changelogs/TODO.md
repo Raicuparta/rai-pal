@@ -6,11 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
-- Manual provider games seem to cause this warning to show in the logs over and over: rai_pal_backend::result: Failed to request image: builder error . i think it's the manual ones, and it happens even while i'm not doing anything. A few things:
-  - Manual games probably shouldn't even by trying to get a thumbnail at all? If they are the culprits anyway.
-  - Why are thumbnails being retried over and over (like once a second?) without me scrolling or anything like that? I do want them to be retried if we see them again, but not if we're just standing there looking at them without even using the app.
-  - I see these warnings show one by one even while the window is unfocused, or while the window is minimized. Might also be something to think about, but as a separate task and only if super simple. maybe while minimized the app should be a bit more dead. but probably not worth thinking about, you can give me some options if you think there's some clear wins.
-
 ## Do later
 
 - "Manual" should be renamed to something but dunno what.
@@ -18,7 +13,11 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Notes, questions, decisions, etc
 
+- Minimized/unfocused window: the visible range stays the same, so visible thumbnails and game fetches still happen. The easy version would be to treat a minimized window as an empty visible range (nothing gets fetched while minimized). Unfocused windows are harder to infer reliably and probably not worth it.
+
 ## Done
+
+- The repeating `Failed to request image: builder error` spam came from itch games with an empty cover URL: itch stored `Some("")` instead of no thumbnail, and failed thumbnails were retried immediately (plus a 1s sleep) forever. itch now stores `None` for empty covers, empty URLs are skipped before fetching, a failed thumbnail is not retried until its row leaves and re-enters the visible margin, and the error log names the URL. Manual games have no thumbnail URL, so they were never the cause.
 
 - Added the missing translation for the "Data" section label in the game details sidebar.
 - Removed the write-only `AppSettings.selected-language` Slint property; the selected language index is the only state now.

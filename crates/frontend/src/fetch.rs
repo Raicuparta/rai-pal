@@ -88,7 +88,7 @@ where
 	let Some(response) = HTTP_CLIENT
 		.get(url)
 		.send()
-		.ok_or_log("Failed to request image")
+		.ok_or_log(&format!("Failed to request image `{url}`"))
 	else {
 		return ImageBytesOutcome::Failed;
 	};
@@ -238,7 +238,7 @@ fn spawn_worker(
 						rows.set_row_data(result.index, row);
 						ui_scheduler.mark_loaded(result.index);
 
-						if let Some(url) = thumbnail_url {
+						if let Some(url) = thumbnail_url.filter(|url| !url.is_empty()) {
 							ui_scheduler.enqueue_thumbnail(result.index, result.generation, url);
 						}
 					}
@@ -316,7 +316,6 @@ fn spawn_image_worker(scheduler: Arc<FetchScheduler>, window: slint::Weak<MainWi
 					scheduler.finish_thumbnail(&job, ThumbnailOutcome::Cancelled);
 				}
 				ImageFetchOutcome::Failed => {
-					thread::sleep(Duration::from_secs(1));
 					scheduler.finish_thumbnail(&job, ThumbnailOutcome::Failed);
 				}
 			}

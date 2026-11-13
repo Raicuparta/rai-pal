@@ -53,6 +53,7 @@ struct SchedulerState {
 	thumbnail_queue: VecDeque<ThumbnailJob>,
 	thumbnail_queued: HashSet<ThumbnailJob>,
 	thumbnail_in_flight: HashSet<ThumbnailJob>,
+	thumbnail_failed: HashSet<ThumbnailJob>,
 	thumbnail_subscribers: HashMap<ThumbnailJob, Vec<usize>>,
 	visible_since: HashMap<usize, Instant>,
 }
@@ -220,6 +221,12 @@ impl FetchScheduler {
 			!indices.is_empty()
 		});
 
+		let subscribed: HashSet<ThumbnailJob> =
+			state.thumbnail_subscribers.keys().cloned().collect();
+		state
+			.thumbnail_failed
+			.retain(|job| subscribed.contains(job));
+
 		self.condvar.notify_all();
 
 		evicted
@@ -269,6 +276,10 @@ impl FetchScheduler {
 
 		if !subscribers.contains(&index) {
 			subscribers.push(index);
+		}
+
+		if state.thumbnail_failed.contains(&job) {
+			return;
 		}
 
 		if state.thumbnail_in_flight.contains(&job) || !state.thumbnail_queued.insert(job.clone()) {
@@ -381,7 +392,7 @@ impl FetchScheduler {
 				indices.retain(|index| Self::index_in_visible_margin(&state, *index));
 				indices
 			}
-			ThumbnailOutcome::Cancelled | ThumbnailOutcome::Failed => {
+			ThumbnailOutcome::Cancelled => {
 				if self.thumbnails_enabled()
 					&& job.generation == self.generation()
 					&& Self::thumbnail_job_wanted(&state, job)
@@ -394,6 +405,10 @@ impl FetchScheduler {
 					state.thumbnail_subscribers.remove(job);
 				}
 
+				Vec::new()
+			}
+			ThumbnailOutcome::Failed => {
+				state.thumbnail_failed.insert(job.clone());
 				Vec::new()
 			}
 		}
@@ -445,6 +460,7 @@ impl FetchScheduler {
 			state.thumbnail_queue.clear();
 			state.thumbnail_queued.clear();
 			state.thumbnail_in_flight.clear();
+			state.thumbnail_failed.clear();
 			state.thumbnail_subscribers.clear();
 			state.visible_since.clear();
 		}
@@ -466,6 +482,7 @@ impl FetchScheduler {
 		{
 			state.thumbnail_queue.clear();
 			state.thumbnail_queued.clear();
+			state.thumbnail_failed.clear();
 			state.thumbnail_subscribers.clear();
 		}
 
