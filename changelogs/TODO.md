@@ -6,6 +6,9 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
+- I see lots of repeated appimage thing handling, especially fingind the current appimage path, or current rai pal exe path, etc. should be in core. avoid repeating things like this!
+- Femto opengl guy is hardcoded, should be smarter about it.
+
 ## Do later:
 
 - colored buttons probably need a "subtle" mode or something like in tauri.
