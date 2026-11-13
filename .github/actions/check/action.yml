@@ -1,0 +1,33 @@
+name: Check
+description: Run the project checks inside the nix dev shell.
+
+inputs:
+  full:
+    description: Also run the slow compile-heavy checks (clippy, UI diagnostics).
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - uses: cachix/install-nix-action@v31
+
+    - name: Cache Cargo
+      if: inputs.full == 'true'
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-check-full-${{ hashFiles('Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-check-full-
+
+    - name: Check
+      shell: bash
+      run: |
+        args=(--check)
+        if [[ "${{ inputs.full }}" == "true" ]]; then
+          args+=(--full)
+        fi
+        nix develop --command scripts/check.sh "${args[@]}"

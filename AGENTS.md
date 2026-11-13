@@ -26,7 +26,7 @@ None of the crates in this repo are meant for external usage. We don't have to c
 
 ## Formatting
 
-Ignore warnings, clippy, and formatting until the implementation is confirmed correct. Run `scripts/check.sh` before committing if asked to commit.
+Ignore warnings, clippy, and formatting until the implementation is confirmed correct. Run `scripts/check.sh --full` before committing if asked to commit (`scripts/check.sh` alone only runs the fast checks: formatting and translations).
 
 ## Running the app
 
