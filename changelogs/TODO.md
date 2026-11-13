@@ -10,10 +10,13 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Notes, questions, decisions, etc
 
+- `DownloadItemData.id` and `.phase` are sent to the UI but never read there. Failed downloads show their last percentage forever. Either show the phase in the downloads menu, or drop both fields.
+
 ## Done
 
 - Added the missing translation for the "Data" section label in the game details sidebar.
 - Removed the write-only `AppSettings.selected-language` Slint property; the selected language index is the only state now.
+- Dropped unused UI data: `GameModData.family` and four unused `Theme` popup size constants.
 - Removed the unused dev-mode command handler from the user socket (the dev socket scripts are gone).
 - Restored camelCase field names for the saved games filter, so settings written by 1.0.0 still deserialize (the old app wrote `unityBackends`, etc.).
 - Removed the redundant selected-game checks before applying refreshed mod lists.

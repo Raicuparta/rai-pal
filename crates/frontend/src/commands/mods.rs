@@ -407,7 +407,6 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		mod_id: manifest.id.into(),
 		title: manifest.title.into(),
 		description: manifest.description.into(),
-		family: manifest.family.unwrap_or_default().into(),
 		version_text: version_text.into(),
 		release_date: release_date.into(),
 		author: manifest.author.into(),
