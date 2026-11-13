@@ -1,0 +1,11 @@
+import { Theme } from "../theme.slint";
+
+export component FocusRing inherits Rectangle {
+    in property <bool> active;
+    in property <length> radius: 0px;
+
+    visible: root.active;
+    border-width: Theme.border-width * 2;
+    border-color: Theme.primary;
+    border-radius: root.radius;
+}

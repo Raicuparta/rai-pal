@@ -1,4 +1,6 @@
 import { Theme } from "../theme.slint";
+import { ActivationScope } from "activation_scope.slint";
+import { FocusRing } from "focus_ring.slint";
 
 export component NavButton inherits Rectangle {
     in property <bool> selected;
@@ -25,10 +27,9 @@ export component NavButton inherits Rectangle {
         background: Theme.primary;
     }
 
-    if focus-scope.has-focus: Rectangle {
-        border-width: Theme.border-width * 2;
-        border-color: Theme.primary;
-        border-radius: Theme.radius-sm;
+    FocusRing {
+        active: focus-scope.has-focus;
+        radius: Theme.radius-sm;
     }
 
     touch-area := TouchArea {
@@ -39,15 +40,9 @@ export component NavButton inherits Rectangle {
         }
     }
 
-    focus-scope := FocusScope {
-        width: 0;
-        height: 0;
-        key-pressed(event) => {
-            if event.text == Key.Space || event.text == Key.Return {
-                root.clicked();
-                return accept;
-            }
-            return reject;
+    focus-scope := ActivationScope {
+        activated => {
+            root.clicked();
         }
     }
 }

@@ -6,7 +6,7 @@ import {
     AppTab,
     GameRowData,
 } from "app_types.slint";
-import { ModActions } from "actions.slint";
+import { AppActions, GamesActions, ModActions } from "actions.slint";
 import { GamesPage } from "components/games_page.slint";
 import { GameDetailsPage } from "components/game_details_page.slint";
 import { NavTab } from "components/nav_tab.slint";
@@ -21,10 +21,9 @@ import { NotificationsOverlay } from "components/notifications.slint";
 import { GameDetailsPopup } from "components/game_details_popup.slint";
 import { AppSettings } from "settings.slint";
 import { Viewport } from "components/modal.slint";
-import { AppActions } from "actions.slint";
-import { GamesActions } from "actions.slint";
 import { Theme } from "theme.slint";
 import { Icon } from "components/svg_icon.slint";
+import { EscapeScope } from "components/escape_scope.slint";
 
 export {
     ActionState,
@@ -90,14 +89,6 @@ export component MainWindow inherits Window {
         }
     }
 
-    function handle-escape() -> bool {
-        if root.current-tab == AppTab.games && root.game-selected {
-            GamesActions.back();
-            return true;
-        }
-        return false;
-    }
-
     init => {
         Viewport.width = root.width;
         Viewport.height = root.height;
@@ -126,13 +117,11 @@ export component MainWindow inherits Window {
         root.apply-color-scheme();
     }
 
-    escape-handler := FocusScope {
+    escape-handler := EscapeScope {
+        enabled: root.current-tab == AppTab.games && root.game-selected;
 
-        key-pressed(event) => {
-            if event.text == Key.Escape && root.handle-escape() {
-                return accept;
-            }
-            return reject;
+        escaped => {
+            GamesActions.back();
         }
 
         VerticalLayout {

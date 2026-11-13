@@ -3,6 +3,7 @@ import { Theme } from "../theme.slint";
 import { LabeledDivider } from "labeled_divider.slint";
 import { BaseButton } from "base_button.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
+import { EscapeScope } from "escape_scope.slint";
 
 export component PopupMenu inherits PopupWindow {
     in property <length> menu-width: Theme.menu-width;
@@ -13,14 +14,9 @@ export component PopupMenu inherits PopupWindow {
     width: root.fit-content ? menu-layout.preferred-width + Theme.border-width * 2 : root.menu-width;
     height: menu-surface.height;
 
-    menu-scope := FocusScope {
-
-        key-pressed(event) => {
-            if event.text == Key.Escape {
-                root.close();
-                return accept;
-            }
-            return reject;
+    menu-scope := EscapeScope {
+        escaped => {
+            root.close();
         }
 
         menu-surface := Rectangle {

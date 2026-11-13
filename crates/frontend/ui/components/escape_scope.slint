@@ -1,0 +1,11 @@
+export component EscapeScope inherits FocusScope {
+    callback escaped;
+
+    key-pressed(event) => {
+        if root.enabled && event.text == Key.Escape {
+            root.escaped();
+            return accept;
+        }
+        return reject;
+    }
+}

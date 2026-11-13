@@ -1,0 +1,14 @@
+export component ActivationScope inherits FocusScope {
+    callback activated;
+
+    width: 0;
+    height: 0;
+
+    key-pressed(event) => {
+        if event.text == Key.Space || event.text == Key.Return {
+            root.activated();
+            return accept;
+        }
+        return reject;
+    }
+}

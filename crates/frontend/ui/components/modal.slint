@@ -2,6 +2,7 @@ import { ScrollView } from "std-widgets.slint";
 import { Theme } from "../theme.slint";
 import { IconButton } from "icon_button.slint";
 import { Icon } from "svg_icon.slint";
+import { EscapeScope } from "escape_scope.slint";
 
 export global Viewport {
     in-out property <length> width: 0;
@@ -75,14 +76,11 @@ export component Modal inherits Rectangle {
 
             TouchArea { }
 
-            modal-scope := FocusScope {
+            modal-scope := EscapeScope {
+                enabled: root.show-close-button;
 
-                key-pressed(event) => {
-                    if event.text == Key.Escape && root.show-close-button {
-                        root.dismiss();
-                        return accept;
-                    }
-                    return reject;
+                escaped => {
+                    root.dismiss();
                 }
 
                 VerticalLayout {

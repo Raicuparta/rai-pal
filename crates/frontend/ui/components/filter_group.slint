@@ -19,6 +19,7 @@ component FilterValueRow inherits BaseButton {
     in property <FilterValueData> item;
 
     private property <bool> checked: root.item.enabled && root.item.available;
+    private property <bool> show-actions: root.hovered || root.focused || only-button.focused || lock-button.focused;
 
     callback toggled(checked: bool);
     callback lock-toggled;
@@ -106,7 +107,7 @@ component FilterValueRow inherits BaseButton {
                 tooltip: @tr("filterMenu" => "Only show this value");
                 visible: !root.item.locked;
                 enabled: !root.item.locked && root.item.available;
-                opacity: root.hovered || root.focused || only-button.focused || lock-button.focused ? 1 : 0;
+                opacity: root.show-actions ? 1 : 0;
                 reserve-icon-space: false;
 
                 clicked => {
@@ -117,7 +118,8 @@ component FilterValueRow inherits BaseButton {
             lock-button := IconButton {
                 icon: root.item.locked ? Icon.locked : Icon.unlocked;
                 tooltip: root.item.locked ? @tr("filterMenu" => "Unlock") : @tr("filterMenu" => "Disable and lock");
-                opacity: root.item.locked || root.hovered || root.focused || only-button.focused || lock-button.focused ? 1 : 0;                enabled: root.item.available;
+                opacity: root.item.locked || root.show-actions ? 1 : 0;
+                enabled: root.item.available;
                 tint: root.item.locked ? Theme.highlight : Theme.surface-background;
 
                 clicked => {

@@ -1,6 +1,7 @@
 import { ModActions } from "../actions.slint";
 import { Theme } from "../theme.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
+import { ActivationScope } from "activation_scope.slint";
 
 export component ExternalLink inherits Rectangle {
     in property <string> label;
@@ -65,15 +66,9 @@ export component ExternalLink inherits Rectangle {
         }
     }
 
-    focus-scope := FocusScope {
-        width: 0;
-        height: 0;
-        key-pressed(event) => {
-            if event.text == Key.Space || event.text == Key.Return {
-                ModActions.open-url(root.url);
-                return accept;
-            }
-            return reject;
+    focus-scope := ActivationScope {
+        activated => {
+            ModActions.open-url(root.url);
         }
     }
 }

@@ -5,6 +5,8 @@ import { ProviderIcon } from "provider_icon.slint";
 import { RowDivider } from "row_divider.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 import { EngineIcon } from "engine_icon.slint";
+import { ActivationScope } from "activation_scope.slint";
+import { FocusRing } from "focus_ring.slint";
 
 export component GameRow inherits VerticalLayout {
     in property <GameRowData> game-row;
@@ -25,9 +27,8 @@ export component GameRow inherits VerticalLayout {
         height: Theme.game-row-height;
         background: touch-area.has-hover ? Theme.hover-background : Theme.background;
 
-        if focus-scope.has-focus: Rectangle {
-            border-width: Theme.border-width * 2;
-            border-color: Theme.primary;
+        FocusRing {
+            active: focus-scope.has-focus;
         }
 
         HorizontalLayout {
@@ -186,17 +187,11 @@ export component GameRow inherits VerticalLayout {
                 root.selected(root.row-index);
             }
         }
-    }
 
-    focus-scope := FocusScope {
-        width: 0;
-        height: 0;
-        key-pressed(event) => {
-            if event.text == Key.Space || event.text == Key.Return {
+        focus-scope := ActivationScope {
+            activated => {
                 root.selected(root.row-index);
-                return accept;
             }
-            return reject;
         }
     }
 

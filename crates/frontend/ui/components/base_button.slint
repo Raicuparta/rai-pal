@@ -1,5 +1,7 @@
 import { Contrast } from "contrast.slint";
 import { Theme } from "../theme.slint";
+import { ActivationScope } from "activation_scope.slint";
+import { FocusRing } from "focus_ring.slint";
 
 export component BaseButton inherits Rectangle {
     in property <brush> tint: transparent;
@@ -41,10 +43,9 @@ export component BaseButton inherits Rectangle {
         background: root.fill;
     }
 
-    if focus-scope.has-focus: Rectangle {
-        border-width: Theme.border-width * 2;
-        border-color: Theme.primary;
-        border-radius: root.border-radius;
+    FocusRing {
+        active: focus-scope.has-focus;
+        radius: root.border-radius;
     }
 
     touch-area := TouchArea {
@@ -60,19 +61,13 @@ export component BaseButton inherits Rectangle {
         @children
     }
 
-    focus-scope := FocusScope {
-        width: 0;
-        height: 0;
+    focus-scope := ActivationScope {
         enabled: root.interactive;
 
-        key-pressed(event) => {
-            if event.text == Key.Space || event.text == Key.Return {
-                if root.interactive {
-                    root.clicked();
-                }
-                return accept;
+        activated => {
+            if root.interactive {
+                root.clicked();
             }
-            return reject;
         }
     }
 
