@@ -142,12 +142,12 @@ msgid "Only show this value"
 msgstr "Waah waah waah waaah!"
 
 msgctxt "filterMenu"
-msgid "Unlock filter value"
-msgstr "Waaaah waaaah waaah!"
+msgid "Unlock"
+msgstr "Waaaah waah!"
 
 msgctxt "filterMenu"
-msgid "Lock filter value"
-msgstr "Waah waaaah waaah!"
+msgid "Disable and lock"
+msgstr "Waaah waaah waaah!"
 
 msgctxt "filterMenu"
 msgid "Reset"

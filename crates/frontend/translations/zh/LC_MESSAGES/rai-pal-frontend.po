@@ -142,12 +142,12 @@ msgid "Only show this value"
 msgstr "仅显示此值"
 
 msgctxt "filterMenu"
-msgid "Unlock filter value"
-msgstr "解锁筛选值"
+msgid "Unlock"
+msgstr "解锁"
 
 msgctxt "filterMenu"
-msgid "Lock filter value"
-msgstr "锁定筛选值"
+msgid "Disable and lock"
+msgstr "禁用并锁定"
 
 msgctxt "filterMenu"
 msgid "Reset"

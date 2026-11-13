@@ -116,9 +116,9 @@ component FilterValueRow inherits BaseButton {
 
             lock-button := IconButton {
                 icon: root.item.locked ? Icon.locked : Icon.unlocked;
-                tooltip: root.item.locked ? @tr("filterMenu" => "Unlock filter value") : @tr("filterMenu" => "Lock filter value");
+                tooltip: root.item.locked ? @tr("filterMenu" => "Unlock") : @tr("filterMenu" => "Disable and lock");
                 visible: root.item.locked || root.hovered;
-                enabled: !root.item.enabled && root.item.available;
+                enabled: root.item.available;
                 tint: root.item.locked ? Theme.highlight : Theme.surface-background;
 
                 clicked => {
@@ -158,23 +158,29 @@ export component FilterGroup inherits Rectangle {
                     color: Theme.dimmed-foreground;
                 }
 
-                Text {
-                    text: Tr.filter-property(root.group.key);
-                    font-weight: Theme.weight-bold;
-                    overflow: elide;
-                    color: Theme.strong-foreground;
-                }
+                HorizontalLayout {
+                    alignment: start;
+                    cross-axis-alignment: center;
+                    spacing: Theme.space-xs;
 
-                if root.group.has-locked: Rectangle {
-                    width: 6px;
-                    height: 6px;
-                    border-radius: 6px / 2;
-                    background: Theme.highlight;
+                    Text {
+                        text: Tr.filter-property(root.group.key);
+                        font-weight: Theme.weight-bold;
+                        overflow: elide;
+                        color: Theme.strong-foreground;
+                    }
+
+                    if root.group.has-locked: Rectangle {
+                        width: 6px;
+                        height: 6px;
+                        border-radius: 6px / 2;
+                        background: Theme.highlight;
+                    }
                 }
 
                 reset-button := ResetButton {
                     tooltip: @tr("filterMenu" => "Reset");
-                    enabled: root.group.has-changes;
+                    visible: root.group.has-changes;
 
                     clicked => {
                         GamesActions.filter-reset(root.group.key);

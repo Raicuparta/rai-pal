@@ -142,12 +142,12 @@ msgid "Only show this value"
 msgstr "この値のみ表示"
 
 msgctxt "filterMenu"
-msgid "Unlock filter value"
-msgstr "フィルター値のロックを解除"
+msgid "Unlock"
+msgstr "ロックを解除"
 
 msgctxt "filterMenu"
-msgid "Lock filter value"
-msgstr "フィルター値をロック"
+msgid "Disable and lock"
+msgstr "無効化してロック"
 
 msgctxt "filterMenu"
 msgid "Reset"

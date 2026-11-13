@@ -174,7 +174,15 @@ impl<T: Hash + Eq + Clone> FilterGroup<T> {
 			FilterAction::Lock => {
 				let mut item = self.item(target.as_ref());
 				item.locked = !item.locked;
+				if item.locked {
+					item.enabled = false;
+				}
+				let locked = item.locked;
 				self.set_item(target, item);
+
+				if locked && !self.has_any_unlocked_enabled(possible_values, has_unknown) {
+					self.keep_only_locked();
+				}
 			}
 			FilterAction::Only => {
 				for value in possible_values {

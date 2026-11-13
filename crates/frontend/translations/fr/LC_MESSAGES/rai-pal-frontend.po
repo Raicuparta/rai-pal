@@ -142,12 +142,12 @@ msgid "Only show this value"
 msgstr "Afficher uniquement cette valeur"
 
 msgctxt "filterMenu"
-msgid "Unlock filter value"
-msgstr "Déverrouiller la valeur du filtre"
+msgid "Unlock"
+msgstr "Déverrouiller"
 
 msgctxt "filterMenu"
-msgid "Lock filter value"
-msgstr "Verrouiller la valeur du filtre"
+msgid "Disable and lock"
+msgstr "Désactiver et verrouiller"
 
 msgctxt "filterMenu"
 msgid "Reset"

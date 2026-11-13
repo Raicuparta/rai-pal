@@ -105,7 +105,7 @@ fn log_file() -> Option<PathBuf> {
 			return None;
 		}
 	}
-	.join("rai-pal.log");
+	.join("Rai Pal.log");
 	Some(path)
 }
 
@@ -123,7 +123,7 @@ fn rotate_if_needed(path: &PathBuf) {
 		return;
 	}
 
-	let old_path = path.with_file_name("rai-pal.old.log");
+	let old_path = path.with_file_name("Rai Pal.old.log");
 	if let Err(err) = fs::rename(path, old_path) {
 		eprintln!("Failed to rotate log file: {err}");
 	}

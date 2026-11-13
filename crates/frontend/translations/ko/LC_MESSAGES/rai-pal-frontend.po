@@ -142,12 +142,12 @@ msgid "Only show this value"
 msgstr "이 값만 표시"
 
 msgctxt "filterMenu"
-msgid "Unlock filter value"
-msgstr "필터 값 잠금 해제"
+msgid "Unlock"
+msgstr "잠금 해제"
 
 msgctxt "filterMenu"
-msgid "Lock filter value"
-msgstr "필터 값 잠금"
+msgid "Disable and lock"
+msgstr "비활성화하고 잠금"
 
 msgctxt "filterMenu"
 msgid "Reset"
