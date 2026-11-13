@@ -204,28 +204,3 @@ pub fn fix_gamescope_scale_factor() {
 		std::env::set_var("SLINT_SCALE_FACTOR", "1");
 	}
 }
-
-pub fn platform_name() -> String {
-	#[cfg(target_os = "linux")]
-	{
-		if std::env::var("WAYLAND_DISPLAY").is_ok_and(|value| !value.is_empty()) {
-			return "Linux (Wayland)".to_string();
-		}
-
-		if std::env::var("DISPLAY").is_ok_and(|value| !value.is_empty()) {
-			return "Linux (X11)".to_string();
-		}
-
-		"Linux".to_string()
-	}
-
-	#[cfg(target_os = "windows")]
-	{
-		"Windows".to_string()
-	}
-
-	#[cfg(not(any(target_os = "linux", target_os = "windows")))]
-	{
-		std::env::consts::OS.to_string()
-	}
-}

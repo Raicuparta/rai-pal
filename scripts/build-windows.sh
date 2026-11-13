@@ -90,5 +90,9 @@ makensis \
 	-DSIDEBAR_FILE="$INSTALLER_SIDEBAR" \
 	"$INSTALLER_SCRIPT"
 
+# Marks the standalone exe as the portable build. Must stay in sync with
+# PORTABLE_MARKER in crates/backend/src/app_variant.rs.
+printf 'RAI_PAL_PORTABLE' >> "$FINAL_EXE"
+
 echo "Built $FINAL_EXE"
 echo "Built $FINAL_INSTALLER"

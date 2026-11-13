@@ -1,9 +1,11 @@
 use rai_pal_backend::{
 	app_settings::{ColorScheme, SkipConfirmation as CoreSkipConfirmation, TabId},
+	app_variant::AppVariant,
 	filter_views::{FilterValueLabel, FilterValueNote},
 	game_engines::game_engine::EngineBrand,
 	game_providers::{game_provider::GameProviderId, provider_command::ProviderCommandAction},
 	games_query::FilterGroupKey,
+	operating_system::Platform,
 };
 
 use crate::{
@@ -100,6 +102,24 @@ slint_enum_conversions!(ColorScheme => AppColorScheme {
 	Auto,
 	Dark,
 	Light,
+});
+
+slint_enum_conversions!(AppVariant => crate::AppVariant {
+	WindowsNsis,
+	WindowsPortable,
+	LinuxAppImage,
+	MacosBundle,
+	Development,
+	Unknown,
+});
+
+slint_enum_conversions!(Platform => crate::AppPlatform {
+	Windows,
+	LinuxWayland,
+	LinuxX11,
+	Linux,
+	Macos,
+	Unknown,
 });
 
 slint_optional_enum_conversions!(GameProviderId => ProviderId {

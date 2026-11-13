@@ -2,10 +2,11 @@ use fs_err as fs;
 #[cfg(target_os = "linux")]
 use rai_pal_backend::path_extensions::AsValidStr;
 use slint::ComponentHandle as _;
-#[cfg(target_os = "linux")]
-use std::path::{Path, PathBuf};
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+use std::path::Path;
 use std::{
 	collections::HashMap,
+	path::PathBuf,
 	sync::{
 		Arc, Mutex,
 		atomic::{AtomicBool, Ordering},
@@ -18,7 +19,7 @@ use base64::{Engine as _, engine::general_purpose::STANDARD};
 use minisign_verify::{PublicKey, Signature};
 #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
 use rai_pal_backend::app_paths;
-use rai_pal_backend::result::LogErrExt;
+use rai_pal_backend::{app_variant::AppVariant, result::LogErrExt};
 use semver::Version;
 use serde::Deserialize;
 use slint::{Timer, TimerMode};
@@ -63,6 +64,9 @@ pub struct Updater {
 
 impl Updater {
 	pub fn start(window: slint::Weak<MainWindow>) -> Self {
+		#[cfg(target_os = "windows")]
+		cleanup_portable_update_files();
+
 		let pending = Arc::new(Mutex::new(None::<Release>));
 		let ignored = Arc::new(AtomicBool::new(false));
 		let checking = Arc::new(AtomicBool::new(false));
@@ -243,17 +247,14 @@ fn fetch_update() -> Result<Option<Release>, String> {
 	}))
 }
 
-const fn platform_key() -> Option<&'static str> {
-	if cfg!(all(target_os = "linux", target_arch = "x86_64")) {
-		Some("linux-x86_64")
-	} else if cfg!(all(target_os = "windows", target_arch = "x86_64")) {
-		Some("windows-x86_64")
-	} else if cfg!(all(target_os = "macos", target_arch = "aarch64")) {
-		Some("darwin-aarch64")
-	} else if cfg!(all(target_os = "macos", target_arch = "x86_64")) {
-		Some("darwin-x86_64")
-	} else {
-		None
+fn platform_key() -> Option<&'static str> {
+	match AppVariant::get_current() {
+		AppVariant::WindowsNsis => Some("windows-x86_64"),
+		AppVariant::WindowsPortable => Some("windows-x86_64-portable"),
+		AppVariant::LinuxAppImage => Some("linux-x86_64"),
+		AppVariant::MacosBundle if cfg!(target_arch = "aarch64") => Some("darwin-aarch64"),
+		AppVariant::MacosBundle => Some("darwin-x86_64"),
+		AppVariant::Development | AppVariant::Unknown => None,
 	}
 }
 
@@ -372,28 +373,46 @@ fn shell_quote(path: &Path) -> Result<String, String> {
 }
 
 #[cfg(target_os = "windows")]
-fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
-	use std::{ffi::OsStr, os::windows::ffi::OsStrExt};
-
+fn extract_update_archive(
+	bytes: &[u8],
+	archive_name: &str,
+	extract_dir_name: &str,
+) -> Result<PathBuf, String> {
 	use rai_pal_backend::files;
-	use windows_sys::Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOWNORMAL};
 
 	let update_dir = app_paths::temp_dir("update").map_err(|err| err.to_string())?;
-	let archive_path = update_dir.join("updater-windows.zip");
+	let archive_path = update_dir.join(archive_name);
 	fs::write(&archive_path, bytes).map_err(|err| err.to_string())?;
 
-	let extract_dir = update_dir.join("extracted-windows");
+	let extract_dir = update_dir.join(extract_dir_name);
 	if extract_dir.exists() {
 		fs::remove_dir_all(&extract_dir).map_err(|err| err.to_string())?;
 	}
 	files::extract(&archive_path, &extract_dir, &|_, _| {}).map_err(|err| err.to_string())?;
 
-	let installer = fs::read_dir(&extract_dir)
-		.map_err(|err| err.to_string())?
-		.filter_map(|entry| entry.ok_or_log("Failed to read update directory entry"))
-		.map(|entry| entry.path())
-		.find(|path| path.extension().is_some_and(|extension| extension == "exe"))
-		.ok_or_else(|| "Could not find the updated installer".to_string())?;
+	Ok(extract_dir)
+}
+
+#[cfg(target_os = "windows")]
+fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
+	if AppVariant::get_current() == AppVariant::WindowsPortable {
+		install_portable_and_restart(bytes)
+	} else {
+		install_installer_and_restart(bytes)
+	}
+}
+
+#[cfg(target_os = "windows")]
+fn install_installer_and_restart(bytes: &[u8]) -> Result<(), String> {
+	use std::{ffi::OsStr, os::windows::ffi::OsStrExt};
+
+	use windows_sys::Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOWNORMAL};
+
+	let extract_dir = extract_update_archive(bytes, "updater-windows.zip", "extracted-windows")?;
+	let installer = extract_dir.join("RaiPal-Setup.exe");
+	if !installer.is_file() {
+		return Err("Could not find the updated installer".to_string());
+	}
 
 	let wide =
 		|value: &OsStr| -> Vec<u16> { value.encode_wide().chain(std::iter::once(0)).collect() };
@@ -422,6 +441,89 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 
 	crate::single_instance::release();
 	std::process::exit(0);
+}
+
+#[cfg(target_os = "windows")]
+fn install_portable_and_restart(bytes: &[u8]) -> Result<(), String> {
+	use std::process::Command;
+
+	let extract_dir = extract_update_archive(
+		bytes,
+		"updater-windows-portable.zip",
+		"extracted-windows-portable",
+	)?;
+	let new_exe = extract_dir.join("RaiPal-Portable.exe");
+	if !new_exe.is_file() {
+		return Err("Could not find the updated portable executable".to_string());
+	}
+
+	let (target, staged, backup) = portable_update_paths()?;
+
+	cleanup_portable_update_files();
+	fs::copy(&new_exe, &staged).map_err(|err| err.to_string())?;
+
+	fs::rename(&target, &backup).map_err(|err| {
+		format!(
+			"Failed to move the current executable out of the way ({}): {err}",
+			target.display()
+		)
+	})?;
+
+	if let Err(err) = fs::rename(&staged, &target) {
+		if let Err(rollback_err) = fs::rename(&backup, &target) {
+			log::error!(
+				"Failed to restore the previous executable after a failed update: {rollback_err}"
+			);
+		}
+		return Err(format!(
+			"Failed to move the updated executable into place ({}): {err}",
+			target.display()
+		));
+	}
+
+	crate::single_instance::release();
+	Command::new(&target)
+		.spawn()
+		.map_err(|err| err.to_string())?;
+
+	std::process::exit(0);
+}
+
+#[cfg(target_os = "windows")]
+fn portable_update_paths() -> Result<(PathBuf, PathBuf, PathBuf), String> {
+	let target =
+		std::env::current_exe().map_err(|err| format!("Could not find the app path: {err}"))?;
+	let parent = target
+		.parent()
+		.ok_or_else(|| "Could not find the app folder".to_string())?;
+	let file_name = target
+		.file_name()
+		.and_then(|name| name.to_str())
+		.unwrap_or("Rai-Pal.exe");
+
+	Ok((
+		target.clone(),
+		parent.join(format!(".{file_name}.update")),
+		parent.join(format!(".{file_name}.old")),
+	))
+}
+
+#[cfg(target_os = "windows")]
+fn cleanup_portable_update_files() {
+	let Ok((_, staged, backup)) = portable_update_paths() else {
+		return;
+	};
+
+	for path in [staged, backup] {
+		if let Err(err) = fs::remove_file(&path)
+			&& err.kind() != std::io::ErrorKind::NotFound
+		{
+			log::warn!(
+				"Failed to remove leftover update file {}: {err}",
+				path.display()
+			);
+		}
+	}
 }
 
 #[cfg(target_os = "macos")]

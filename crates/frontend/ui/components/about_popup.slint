@@ -1,9 +1,12 @@
+import { AppPlatform, AppVariant, Renderer } from "../app_types.slint";
+import { Tr } from "../translations.slint";
 import { Modal } from "modal.slint";
 
 export global AppInfo {
     in property <string> version: "";
-    in property <string> renderer: "";
-    in property <string> platform: "";
+    in property <AppVariant> variant: AppVariant.unknown;
+    in property <AppPlatform> platform: AppPlatform.unknown;
+    in property <Renderer> renderer: Renderer.unknown;
 }
 
 export component AboutPopup inherits Modal {
@@ -14,10 +17,14 @@ export component AboutPopup inherits Modal {
     }
 
     Text {
-        text: @tr("about" => "Rendering backend: {0}", AppInfo.renderer);
+        text: @tr("about" => "Variant: {0}", Tr.app-variant(AppInfo.variant));
     }
 
     Text {
-        text: @tr("about" => "Platform: {0}", AppInfo.platform);
+        text: @tr("about" => "Platform: {0}", Tr.platform(AppInfo.platform));
+    }
+
+    Text {
+        text: @tr("about" => "Rendering backend: {0}", Tr.renderer(AppInfo.renderer));
     }
 }

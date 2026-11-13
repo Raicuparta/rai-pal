@@ -2,7 +2,9 @@ use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
+	app_variant::AppVariant,
 	local_database::game_database::try_create,
+	operating_system::Platform,
 };
 use slint::{ComponentHandle, winit_030::WinitWindowAccessor};
 
@@ -107,20 +109,23 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		games_total_count,
 	);
 
-	let renderer_name = match main_window.window().set_rendering_notifier(|_, _| {}) {
-		Ok(()) => "FemtoVG (OpenGL)",
-		Err(slint::SetRenderingNotifierError::Unsupported) => "Software",
+	let renderer = match main_window.window().set_rendering_notifier(|_, _| {}) {
+		Ok(()) => crate::Renderer::FemtoVgOpenGl,
+		Err(slint::SetRenderingNotifierError::Unsupported) => crate::Renderer::Software,
 		Err(err) => {
 			log::warn!("Failed to determine renderer name: {err}");
-			"Unknown"
+			crate::Renderer::Unknown
 		}
 	};
 	main_window
 		.global::<crate::AppInfo>()
-		.set_renderer(renderer_name.into());
+		.set_renderer(renderer);
 	main_window
 		.global::<crate::AppInfo>()
-		.set_platform(window_state::platform_name().into());
+		.set_variant(AppVariant::get_current().into());
+	main_window
+		.global::<crate::AppInfo>()
+		.set_platform(Platform::get_current().into());
 
 	let window_weak = main_window.as_weak();
 	let scheduler = spawn_fetchers(&app_database, &window_weak);

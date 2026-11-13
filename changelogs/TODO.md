@@ -21,6 +21,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Done
 
+- Branded the Windows portable exe by appending a marker at packaging time, and added a typed app variant (NSIS, Portable, AppImage, macOS bundle, Development, Unknown), platform, and renderer enums to the About menu. Portable installs now self-update by swapping the exe in place, using a separate `updater-windows-portable.zip` with its own `windows-x86_64-portable` platform key.
+
 - Filter groups now start expanded. Expand state is still persisted, but as the set of collapsed groups in app settings, so the default is all expanded.
 - Ignoring an app update now leaves it available: a highlight update badge appears on the app bar menu button and the app menu shows a primary-colored "Update now" item, so the user can update without restarting.
 - Update modal buttons now sit at the bottom on opposite sides and size to their content instead of stretching across the modal.

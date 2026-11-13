@@ -277,3 +277,27 @@ export struct UrlModSourceData {
     enabled: bool,
     is-default: bool,
 }
+
+export enum AppVariant {
+    windows-nsis,
+    windows-portable,
+    linux-app-image,
+    macos-bundle,
+    development,
+    unknown,
+}
+
+export enum AppPlatform {
+    windows,
+    linux-wayland,
+    linux-x11,
+    linux,
+    macos,
+    unknown,
+}
+
+export enum Renderer {
+    femto-vg-open-gl,
+    software,
+    unknown,
+}

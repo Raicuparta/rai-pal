@@ -14,6 +14,10 @@ msgid "Version: {0}"
 msgstr "버전: {0}"
 
 msgctxt "about"
+msgid "Variant: {0}"
+msgstr "변형: {0}"
+
+msgctxt "about"
 msgid "Rendering backend: {0}"
 msgstr "렌더링 백엔드: {0}"
 

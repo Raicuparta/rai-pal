@@ -23,6 +23,42 @@ impl OperatingSystem {
 	}
 }
 
+#[serde_enum]
+pub enum Platform {
+	Windows,
+	LinuxWayland,
+	LinuxX11,
+	Linux,
+	Macos,
+	Unknown,
+}
+
+impl Platform {
+	pub fn get_current() -> Self {
+		if cfg!(target_os = "windows") {
+			return Self::Windows;
+		}
+
+		if cfg!(target_os = "macos") {
+			return Self::Macos;
+		}
+
+		if !cfg!(target_os = "linux") {
+			return Self::Unknown;
+		}
+
+		if std::env::var("WAYLAND_DISPLAY").is_ok_and(|value| !value.is_empty()) {
+			return Self::LinuxWayland;
+		}
+
+		if std::env::var("DISPLAY").is_ok_and(|value| !value.is_empty()) {
+			return Self::LinuxX11;
+		}
+
+		Self::Linux
+	}
+}
+
 /// Infer the operating system an executable targets by reading its file header.
 /// Windows executables are PE files (`MZ` magic), Linux executables are ELF files.
 pub fn get_os_from_path(exe_path: &Path) -> Option<OperatingSystem> {

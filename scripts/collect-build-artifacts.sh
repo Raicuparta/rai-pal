@@ -15,6 +15,8 @@ mkdir -p "$OUTPUT_DIR"
 
 PORTABLE_SOURCE=""
 PORTABLE_TARGET=""
+PORTABLE_UPDATER_TARGET=""
+PORTABLE_PLATFORM_KEY=""
 
 case "$PLATFORM" in
 	windows)
@@ -23,7 +25,9 @@ case "$PLATFORM" in
 		MAIN_TARGET="$OUTPUT_DIR/RaiPal.exe"
 		PORTABLE_TARGET="$OUTPUT_DIR/RaiPal.portable.exe"
 		UPDATER_TARGET="$OUTPUT_DIR/updater-windows.zip"
+		PORTABLE_UPDATER_TARGET="$OUTPUT_DIR/updater-windows-portable.zip"
 		PLATFORM_KEY="windows-x86_64"
+		PORTABLE_PLATFORM_KEY="windows-x86_64-portable"
 		;;
 	linux)
 		MAIN_SOURCE="$ROOT_DIR/target/bundles/appimage/RaiPal-$VERSION-x86_64.AppImage"
@@ -68,6 +72,9 @@ fi
 STAGING_DIR="$(mktemp -d)"
 trap 'rm -rf "$STAGING_DIR"' EXIT
 rm -f "$UPDATER_TARGET"
+if [[ -n "$PORTABLE_UPDATER_TARGET" ]]; then
+	rm -f "$PORTABLE_UPDATER_TARGET"
+fi
 
 case "$PLATFORM" in
 	windows)
@@ -77,6 +84,8 @@ case "$PLATFORM" in
 		fi
 		cp "$MAIN_SOURCE" "$STAGING_DIR/RaiPal-Setup.exe"
 		(cd "$STAGING_DIR" && zip -q -X -0 "$UPDATER_TARGET" RaiPal-Setup.exe)
+		cp "$PORTABLE_SOURCE" "$STAGING_DIR/RaiPal-Portable.exe"
+		(cd "$STAGING_DIR" && zip -q -X -0 "$PORTABLE_UPDATER_TARGET" RaiPal-Portable.exe)
 		;;
 	linux)
 		if ! command -v tar >/dev/null 2>&1; then
@@ -101,20 +110,36 @@ esac
 
 echo "Created $UPDATER_TARGET"
 
-if [[ -n "${UPDATE_PRIVATE_KEY:-}" ]]; then
-	SIGNATURE="$(cargo run --quiet --release -p rai-pal-updater-signer -- "$UPDATER_TARGET")"
-	UPDATER_NAME="$(basename "$UPDATER_TARGET")"
-	cat > "$ROOT_DIR/updater-partial-$PLATFORM.json" <<JSON
+write_updater_partial() {
+	local archive="$1"
+	local platform_key="$2"
+	local partial_name="$3"
+
+	if [[ -z "${UPDATE_PRIVATE_KEY:-}" ]]; then
+		echo "Skipping updater signature for $archive (missing UPDATE_PRIVATE_KEY)."
+		return
+	fi
+
+	local signature
+	local updater_name
+	signature="$(cargo run --quiet --release -p rai-pal-updater-signer -- "$archive")"
+	updater_name="$(basename "$archive")"
+	cat > "$ROOT_DIR/updater-partial-$partial_name.json" <<JSON
 {
   "version": "$VERSION",
-  "platformKey": "$PLATFORM_KEY",
+  "platformKey": "$platform_key",
   "platformData": {
-    "signature": "$SIGNATURE",
-    "url": "https://github.com/Raicuparta/rai-pal/releases/download/v$VERSION/$UPDATER_NAME"
+    "signature": "$signature",
+    "url": "https://github.com/Raicuparta/rai-pal/releases/download/v$VERSION/$updater_name"
   }
 }
 JSON
-	echo "Generated updater-partial-$PLATFORM.json"
-else
-	echo "Skipping updater signature (missing UPDATE_PRIVATE_KEY)."
+	echo "Generated updater-partial-$partial_name.json"
+}
+
+write_updater_partial "$UPDATER_TARGET" "$PLATFORM_KEY" "$PLATFORM"
+
+if [[ -n "$PORTABLE_UPDATER_TARGET" ]]; then
+	echo "Created $PORTABLE_UPDATER_TARGET"
+	write_updater_partial "$PORTABLE_UPDATER_TARGET" "$PORTABLE_PLATFORM_KEY" "$PLATFORM-portable"
 fi
