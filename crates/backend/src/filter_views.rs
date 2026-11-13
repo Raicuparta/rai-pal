@@ -275,65 +275,85 @@ fn mod_family_group(
 	}
 }
 
-pub fn build_filter_views(
+fn group_view(
 	filter: &GamesFilter,
+	key: FilterGroupKey,
 	mod_families: &[String],
 	collapsed_filters: &HashSet<FilterGroupKey>,
 	providers_with_games: &HashSet<GameProviderId>,
-) -> Vec<FilterGroupView> {
-	vec![
-		build_group(
-			FilterGroupKey::Installed,
+) -> FilterGroupView {
+	match key {
+		FilterGroupKey::Installed => build_group(
+			key,
 			&filter.installed,
 			known_values(&filter.installed),
 			collapsed_filters,
 		),
-		build_group(
-			FilterGroupKey::Engines,
+		FilterGroupKey::Engines => build_group(
+			key,
 			&filter.engines,
 			known_values(&filter.engines),
 			collapsed_filters,
 		),
-		mod_family_group(filter, mod_families, collapsed_filters),
-		build_group(
-			FilterGroupKey::Tags,
+		FilterGroupKey::ModFamilies => mod_family_group(filter, mod_families, collapsed_filters),
+		FilterGroupKey::Tags => build_group(
+			key,
 			&filter.tags,
 			known_values(&filter.tags),
 			collapsed_filters,
 		),
-		build_group(
-			FilterGroupKey::Providers,
+		FilterGroupKey::Providers => build_group(
+			key,
 			&filter.providers,
 			known_values_with_availability(&filter.providers, |provider| {
 				providers_with_games.contains(provider)
 			}),
 			collapsed_filters,
 		),
-		build_group(
-			FilterGroupKey::UnityBackends,
+		FilterGroupKey::UnityBackends => build_group(
+			key,
 			&filter.unity_backends,
 			known_values(&filter.unity_backends),
 			collapsed_filters,
 		),
-		build_group(
-			FilterGroupKey::ExecutableOs,
+		FilterGroupKey::ExecutableOs => build_group(
+			key,
 			&filter.executable_os,
 			known_values(&filter.executable_os),
 			collapsed_filters,
 		),
-		build_group(
-			FilterGroupKey::SupportedOs,
+		FilterGroupKey::SupportedOs => build_group(
+			key,
 			&filter.supported_os,
 			known_values(&filter.supported_os),
 			collapsed_filters,
 		),
-		build_group(
-			FilterGroupKey::Architectures,
+		FilterGroupKey::Architectures => build_group(
+			key,
 			&filter.architectures,
 			known_values(&filter.architectures),
 			collapsed_filters,
 		),
-	]
+	}
+}
+
+pub fn build_filter_views(
+	filter: &GamesFilter,
+	mod_families: &[String],
+	collapsed_filters: &HashSet<FilterGroupKey>,
+	providers_with_games: &HashSet<GameProviderId>,
+) -> Vec<FilterGroupView> {
+	FilterGroupKey::iter()
+		.map(|key| {
+			group_view(
+				filter,
+				key,
+				mod_families,
+				collapsed_filters,
+				providers_with_games,
+			)
+		})
+		.collect()
 }
 
 fn apply_string_value<T>(
