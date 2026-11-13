@@ -14,6 +14,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 - Added the missing translation for the "Data" section label in the game details sidebar.
 - Removed the write-only `AppSettings.selected-language` Slint property; the selected language index is the only state now.
+- Removed the unused dev-mode command handler from the user socket (the dev socket scripts are gone).
 - Restored camelCase field names for the saved games filter, so settings written by 1.0.0 still deserialize (the old app wrote `unityBackends`, etc.).
 - Removed the redundant selected-game checks before applying refreshed mod lists.
 - Added a shared `CommandHandler::spawn_action` and reused it (plus `runtime::block_on`) for all game/mod actions, removing the repeated thread + runtime + action-state boilerplate.
