@@ -20,9 +20,9 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	window_state::fix_gamescope_scale_factor();
 	logging::init();
 
-	let Some(_single_instance) = single_instance::acquire() else {
+	if !single_instance::acquire() {
 		return Ok(());
-	};
+	}
 
 	analytics::send(
 		rai_pal_backend::analytics::Event::StartApp,

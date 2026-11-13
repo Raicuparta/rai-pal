@@ -1,6 +1,7 @@
 use std::{
 	io::{Read, Write},
 	net::{TcpListener, TcpStream},
+	sync::Mutex,
 	thread,
 	time::Duration,
 };
@@ -11,27 +12,38 @@ use single_instance::SingleInstance;
 const INSTANCE_NAME: &str = "rai-pal-single-instance";
 const FORWARD_PORT: u16 = 48391;
 
-pub struct Guard {
-	_instance: Option<SingleInstance>,
-}
+static GUARD: Mutex<Option<SingleInstance>> = Mutex::new(None);
 
-pub fn acquire() -> Option<Guard> {
+pub fn acquire() -> bool {
 	let instance = match SingleInstance::new(INSTANCE_NAME) {
 		Ok(instance) => instance,
 		Err(err) => {
 			log::warn!("Failed to initialize single instance check: {err}");
-			return Some(Guard { _instance: None });
+			return true;
 		}
 	};
 
 	if instance.is_single() {
-		return Some(Guard {
-			_instance: Some(instance),
-		});
+		if let Some(mut guard) = GUARD
+			.lock()
+			.ok_or_log("Failed to lock single instance guard")
+		{
+			*guard = Some(instance);
+		}
+		return true;
 	}
 
 	forward_arguments();
-	None
+	false
+}
+
+pub fn release() {
+	if let Some(mut guard) = GUARD
+		.lock()
+		.ok_or_log("Failed to lock single instance guard")
+	{
+		*guard = None;
+	}
 }
 
 fn forward_arguments() {

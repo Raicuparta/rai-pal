@@ -361,6 +361,7 @@ fn spawn_relaunch(target: &Path) -> Result<(), String> {
 	let pid = std::process::id();
 	let target = shell_quote(target)?;
 	let script = format!("while kill -0 {pid} 2>/dev/null; do sleep 0.1; done; exec {target}");
+	crate::single_instance::release();
 	Command::new("sh")
 		.args(["-c", &script])
 		.spawn()
@@ -406,6 +407,7 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 		"@echo off\r\n:wait\r\ntasklist /FI \"PID eq {pid}\" /NH | find \"{pid}\" >nul\r\nif not errorlevel 1 (\r\n  timeout /t 1 /nobreak >nul\r\n  goto wait\r\n)\r\n\"{installer}\" /S /UPDATER\r\n"
 	);
 
+	crate::single_instance::release();
 	Command::new("cmd")
 		.args(["/C", &script])
 		.creation_flags(CREATE_NO_WINDOW)
@@ -467,6 +469,7 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 	fs::remove_dir_all(&backup_bundle).ok();
 
 	let bundle_path = bundle.to_string_lossy().to_string();
+	crate::single_instance::release();
 	Command::new("open")
 		.args(["-n", &bundle_path])
 		.spawn()
