@@ -1,15 +1,12 @@
 use std::{
+	cell::RefCell,
 	collections::HashMap,
 	fmt::Display,
 	hash::{Hash, Hasher},
-	sync::{
-		LazyLock, Mutex,
-		atomic::{AtomicI32, Ordering},
-	},
+	sync::atomic::{AtomicI32, Ordering},
 	time::Duration,
 };
 
-use rai_pal_backend::result::LogErrExt;
 use slint::{ComponentHandle, SharedString, Weak};
 
 use crate::{
@@ -19,9 +16,11 @@ use crate::{
 const SUCCESS_DURATION: Duration = Duration::from_secs(1);
 const ERROR_DURATION: Duration = Duration::from_secs(2);
 
-static STATES: LazyLock<Mutex<HashMap<ActionKey, ActionState>>> =
-	LazyLock::new(|| Mutex::new(HashMap::new()));
 static VERSION: AtomicI32 = AtomicI32::new(1);
+
+thread_local! {
+	static STATES: RefCell<HashMap<ActionKey, ActionState>> = RefCell::new(HashMap::new());
+}
 
 impl Eq for ActionKind {}
 
@@ -48,11 +47,13 @@ pub fn key(kind: ActionKind, target: impl Into<SharedString>) -> ActionKey {
 }
 
 pub fn lookup(key: &ActionKey) -> ActionState {
-	STATES
-		.lock()
-		.ok_or_log("Failed to lock action states")
-		.and_then(|states| states.get(key).copied())
-		.unwrap_or(ActionState::Idle)
+	STATES.with(|states| {
+		states
+			.borrow()
+			.get(key)
+			.copied()
+			.unwrap_or(ActionState::Idle)
+	})
 }
 
 pub fn start(window: &Weak<MainWindow>, key: ActionKey) {
@@ -118,17 +119,15 @@ fn schedule_reset(
 }
 
 fn set(window: &MainWindow, key: &ActionKey, state: ActionState) {
-	{
-		let Some(mut states) = STATES.lock().ok_or_log("Failed to lock action states") else {
-			return;
-		};
+	STATES.with(|states| {
+		let mut states = states.borrow_mut();
 
 		if state == ActionState::Idle {
 			states.remove(key);
 		} else {
 			states.insert(key.clone(), state);
 		}
-	}
+	});
 
 	let version = VERSION.fetch_add(1, Ordering::Relaxed);
 	window.global::<ActionStates>().set_version(version);

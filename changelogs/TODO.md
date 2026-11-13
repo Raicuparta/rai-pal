@@ -18,6 +18,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - Removed the write-only `AppSettings.selected-language` Slint property; the selected language index is the only state now.
 - Simplified the thumbnail cache path helper.
 - Removed unused `Modal` header action props and the no-op `PopupMenuItem.checkable` property.
+- Action states are kept in a thread-local like the other UI-thread-only state, instead of behind a `Mutex`.
 - Added `runtime::with_ui_window` to replace the repeated "invoke on UI event loop, upgrade the weak window, ignore if gone" boilerplate.
 - Settings reset and startup now share `apply_settings_to_ui`, so a new setting only needs to be applied in one place.
 - `apply_initial_state` now derives the initial query/filters/tab from the saved settings instead of taking 5 precomputed arguments.
