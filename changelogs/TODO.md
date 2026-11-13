@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- In app.rs, FemtoVgOpenGl is basically just being guessed as "if it's hardware then it's FemtoVgOpenGl" which isn't very smart even if technically true right now. We should confirm that it's opengl (we can display just opengl to user if that's the only opengl thing that it can be, otherwise specify femto), and if it isn't we log what it actually is (some debug string representation of the renderer enum probably exists?) and fall back to unknown renderer (in the case it is hardware renderer but not femtovgopengl).
 - I see lots of repeated code handling appimage stuff, especially finding the current appimage path, or current rai pal exe path, etc. should be in core. avoid repeating things like this! check if we're doing any of this kind of repeated work elsewhere, especially in the frontend crate repeating work already done by the backend crate.
 
 ## Do later:
@@ -20,6 +19,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Notes, questions, decisions, etc.
 
 ## Done
+
+- Determine the About menu renderer from the actual graphics API reported by the rendering notifier: `NativeOpenGL` shows as "OpenGL" (the only OpenGL renderer in the build), anything else is logged and reported as unknown, and an unsupported notifier still means the software renderer.
 
 - Branded the Windows portable exe by appending a marker at packaging time, and added a typed app variant (NSIS, Portable, AppImage, macOS bundle, Development, Unknown), platform, and renderer enums to the About menu. Portable installs now self-update by swapping the exe in place, using a separate `updater-windows-portable.zip` with its own `windows-x86_64-portable` platform key.
 

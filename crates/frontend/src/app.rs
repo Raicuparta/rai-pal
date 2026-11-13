@@ -109,11 +109,30 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		games_total_count,
 	);
 
-	let renderer = match main_window.window().set_rendering_notifier(|_, _| {}) {
-		Ok(()) => crate::Renderer::FemtoVgOpenGl,
+	let renderer = match main_window.window().set_rendering_notifier({
+		let window_weak = main_window.as_weak();
+		let mut reported = false;
+		move |state, graphics_api| {
+			if reported || !matches!(state, slint::RenderingState::RenderingSetup) {
+				return;
+			}
+			reported = true;
+			let renderer = match graphics_api {
+				slint::GraphicsAPI::NativeOpenGL { .. } => crate::Renderer::OpenGl,
+				_ => {
+					log::warn!("Unexpected graphics API: {graphics_api:?}");
+					crate::Renderer::Unknown
+				}
+			};
+			if let Some(window) = window_weak.upgrade() {
+				window.global::<crate::AppInfo>().set_renderer(renderer);
+			}
+		}
+	}) {
+		Ok(()) => crate::Renderer::Unknown,
 		Err(slint::SetRenderingNotifierError::Unsupported) => crate::Renderer::Software,
 		Err(err) => {
-			log::warn!("Failed to determine renderer name: {err}");
+			log::warn!("Failed to determine renderer: {err}");
 			crate::Renderer::Unknown
 		}
 	};

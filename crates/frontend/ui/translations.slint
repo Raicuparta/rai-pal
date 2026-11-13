@@ -54,8 +54,8 @@ export global Tr {
     }
 
     public pure function renderer(renderer: Renderer) -> string {
-        if renderer == Renderer.femto-vg-open-gl {
-            return "FemtoVG (OpenGL)";
+        if renderer == Renderer.open-gl {
+            return "OpenGL";
         }
         if renderer == Renderer.software {
             return "Software";
