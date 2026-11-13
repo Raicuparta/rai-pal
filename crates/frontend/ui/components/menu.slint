@@ -9,30 +9,42 @@ export component PopupMenu inherits PopupWindow {
     in property <bool> fit-content: false;
 
     close-policy: PopupClosePolicy.close-on-click-outside;
+    forward-focus: menu-scope;
     width: root.fit-content ? menu-layout.preferred-width + Theme.border-width * 2 : root.menu-width;
     height: menu-surface.height;
 
-    menu-surface := Rectangle {
-        width: 100%;
-        height: min(menu-layout.preferred-height + Theme.border-width * 2, 600px);
-        background: Theme.background;
-        border-width: Theme.border-width;
-        border-color: Theme.border;
-        border-radius: Theme.radius-sm;
-        clip: true;
-        drop-shadow-offset-y: 5px;
-        drop-shadow-blur: 20px;
-        drop-shadow-color: #00000066;
+    menu-scope := FocusScope {
 
-        ScrollView {
-            horizontal-scrollbar-policy: ScrollBarPolicy.always-off;
-            vertical-scrollbar-policy: ScrollBarPolicy.as-needed;
+        key-pressed(event) => {
+            if event.text == Key.Escape {
+                root.close();
+                return accept;
+            }
+            return reject;
+        }
 
-            menu-layout := VerticalLayout {
-                padding-top: Theme.space-xs;
-                padding-bottom: Theme.space-xs;
+        menu-surface := Rectangle {
+            width: 100%;
+            height: min(menu-layout.preferred-height + Theme.border-width * 2, 600px);
+            background: Theme.background;
+            border-width: Theme.border-width;
+            border-color: Theme.border;
+            border-radius: Theme.radius-sm;
+            clip: true;
+            drop-shadow-offset-y: 5px;
+            drop-shadow-blur: 20px;
+            drop-shadow-color: #00000066;
 
-                @children
+            ScrollView {
+                horizontal-scrollbar-policy: ScrollBarPolicy.always-off;
+                vertical-scrollbar-policy: ScrollBarPolicy.as-needed;
+
+                menu-layout := VerticalLayout {
+                    padding-top: Theme.space-xs;
+                    padding-bottom: Theme.space-xs;
+
+                    @children
+                }
             }
         }
     }

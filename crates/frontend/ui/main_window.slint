@@ -22,6 +22,7 @@ import { GameDetailsPopup } from "components/game_details_popup.slint";
 import { AppSettings } from "settings.slint";
 import { Viewport } from "components/modal.slint";
 import { AppActions } from "actions.slint";
+import { GamesActions } from "actions.slint";
 import { Theme } from "theme.slint";
 import { Icon } from "components/svg_icon.slint";
 
@@ -69,6 +70,7 @@ export component MainWindow inherits Window {
     min-width: 800px;
     min-height: 500px;
     background: Theme.background;
+    forward-focus: escape-handler;
 
     private property <length> content-max-width: 1140px;
     private property <AppColorScheme> color-scheme: AppSettings.selected-color-scheme;
@@ -86,6 +88,14 @@ export component MainWindow inherits Window {
         } else {
             Palette.color-scheme = ColorScheme.unknown;
         }
+    }
+
+    function handle-escape() -> bool {
+        if root.current-tab == AppTab.games && root.game-selected {
+            GamesActions.back();
+            return true;
+        }
+        return false;
     }
 
     init => {
@@ -116,7 +126,16 @@ export component MainWindow inherits Window {
         root.apply-color-scheme();
     }
 
-    VerticalLayout {
+    escape-handler := FocusScope {
+
+        key-pressed(event) => {
+            if event.text == Key.Escape && root.handle-escape() {
+                return accept;
+            }
+            return reject;
+        }
+
+        VerticalLayout {
         Rectangle {
             background: Theme.background;
             vertical-stretch: 0;
@@ -215,6 +234,7 @@ export component MainWindow inherits Window {
                 ThanksPage { }
             }
         }
+    }
     }
 
     NotificationsOverlay { }

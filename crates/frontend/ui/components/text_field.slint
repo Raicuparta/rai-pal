@@ -68,6 +68,15 @@ export component TextField inherits Rectangle {
                     root.accepted();
                 }
 
+                key-pressed(event) => {
+                    if event.text == Key.Escape && root.clearable && root.text != "" {
+                        root.text = "";
+                        root.edited("");
+                        return accept;
+                    }
+                    return reject;
+                }
+
                 cursor-position-changed(cursor-position) => {
                     if cursor-position.x + self.computed-x < 0px {
                         self.computed-x = -cursor-position.x;

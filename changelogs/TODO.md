@@ -15,9 +15,12 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Notes, questions, decisions, etc
 
 - Accessibility report: tab order does work, but the sidebar exposes every filter value plus its hover-only actions as tab stops (roughly 70+ before reaching the main content), which makes it feel like focus is stuck there. Several custom clickable elements had no keyboard focus at all, and the filter rows' "Only"/lock buttons were still tab stops at `opacity: 0`, so focus could seem to disappear. Fixed: visible focus ring on buttons/icon buttons, nav tabs, select menus, download menu, external links, game rows and mod family headers; custom controls now activate with Space/Return and have accessible labels; filter row hover-only actions now appear when the row is focused and while tabbing through them. Zero-sized focus scopes avoid intercepting pointer clicks. Remaining: roving focus for game rows (ListView virtualization makes tab auto-scroll hard), preserving focus after filter toggles (models are rebuilt), a way to skip the sidebar filter list, and real screen reader testing.
+- Escape key now closes modals that have a close button, closes popup menus like a click outside, clears a clearable text field, and goes back from the game details page. Modal/menu escape handling lives in those shared components, so new popups inherit it.
 - Minimized/unfocused window: the visible range stays the same, so visible thumbnails and game fetches still happen. The easy version would be to treat a minimized window as an empty visible range (nothing gets fetched while minimized). Unfocused windows are harder to infer reliably and probably not worth it.
 
 ## Done
+
+- Escape key handling: closes closable modals, closes popup menus, clears clearable text fields, and backs out of the game details page.
 
 - Popup notification text is now a selectable `StyledText`, so errors and other messages can be copied.
 
