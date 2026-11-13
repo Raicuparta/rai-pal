@@ -32,15 +32,15 @@ export component ConfirmModSourcePopup inherits Modal {
         wrap: word-wrap;
     }
 
-    if ConfirmModSourceState.state == ActionState.loading && ConfirmModSourceState.mods.length == 0 : Text {
+    if ConfirmModSourceState.state == ActionState.loading && ConfirmModSourceState.mods.length == 0: Text {
         text: @tr("urlModSources" => "Loading mods...");
     }
 
-    if Tr.has-message(ConfirmModSourceState.error) : ErrorMessage {
+    if Tr.has-message(ConfirmModSourceState.error): ErrorMessage {
         message: ConfirmModSourceState.error;
     }
 
-    if (ConfirmModSourceState.state != ActionState.loading || ConfirmModSourceState.mods.length > 0) && !Tr.has-message(ConfirmModSourceState.error) : VerticalLayout {
+    if (ConfirmModSourceState.state != ActionState.loading || ConfirmModSourceState.mods.length > 0) && !Tr.has-message(ConfirmModSourceState.error): VerticalLayout {
         spacing: Theme.space-2xs;
         alignment: start;
 
@@ -48,7 +48,7 @@ export component ConfirmModSourcePopup inherits Modal {
             text: @tr("urlModSources" => "{0} mods found in this source", ConfirmModSourceState.mods.length);
         }
 
-        for mod-title in ConfirmModSourceState.mods : Text {
+        for mod-title in ConfirmModSourceState.mods: Text {
             text: mod-title;
             font-size: Theme.font-sm;
             wrap: word-wrap;
@@ -62,6 +62,7 @@ export component ConfirmModSourcePopup inherits Modal {
         Button {
             text: @tr("urlModSources" => "Cancel");
             icon: Icon.close;
+            tint: Theme.surface-background;
             enabled: ConfirmModSourceState.state != ActionState.loading || ConfirmModSourceState.mods.length == 0;
 
             clicked => {
@@ -72,6 +73,7 @@ export component ConfirmModSourcePopup inherits Modal {
         Button {
             text: @tr("urlModSources" => "Add Source");
             icon: Icon.plus;
+            tint: Theme.primary;
             enabled: ConfirmModSourceState.state != ActionState.loading && !Tr.has-message(ConfirmModSourceState.error);
 
             clicked => {

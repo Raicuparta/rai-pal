@@ -10,6 +10,7 @@ export component ExternalLink inherits Rectangle {
     in property <string> url;
 
     horizontal-stretch: 0;
+    forward-focus: focus-scope;
     accessible-role: AccessibleRole.button;
     accessible-label: root.label;
     accessible-action-default => {
@@ -46,7 +47,7 @@ export component ExternalLink inherits Rectangle {
                 y: parent.height - Theme.border-width;
                 width: parent.width;
                 height: Theme.border-width;
-                background: touch.has-hover ? Theme.foreground : transparent;
+                background: touch.has-hover || focus-scope.has-focus ? Theme.foreground : transparent;
             }
         }
 
@@ -61,6 +62,16 @@ export component ExternalLink inherits Rectangle {
 
         clicked => {
             ModActions.open-url(root.url);
+        }
+    }
+
+    focus-scope := FocusScope {
+        key-pressed(event) => {
+            if event.text == Key.Space || event.text == Key.Return {
+                ModActions.open-url(root.url);
+                return accept;
+            }
+            return reject;
         }
     }
 }

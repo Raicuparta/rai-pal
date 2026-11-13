@@ -106,7 +106,7 @@ component FilterValueRow inherits BaseButton {
                 tooltip: @tr("filterMenu" => "Only show this value");
                 visible: !root.item.locked;
                 enabled: !root.item.locked && root.item.available;
-                opacity: root.hovered ? 1 : 0;
+                opacity: root.hovered || only-button.focused ? 1 : 0;
                 reserve-icon-space: false;
 
                 clicked => {
@@ -117,7 +117,7 @@ component FilterValueRow inherits BaseButton {
             lock-button := IconButton {
                 icon: root.item.locked ? Icon.locked : Icon.unlocked;
                 tooltip: root.item.locked ? @tr("filterMenu" => "Unlock") : @tr("filterMenu" => "Disable and lock");
-                visible: root.item.locked || root.hovered;
+                visible: root.item.locked || root.hovered || lock-button.focused;
                 enabled: root.item.available;
                 tint: root.item.locked ? Theme.highlight : Theme.surface-background;
 

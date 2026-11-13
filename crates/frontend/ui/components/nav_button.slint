@@ -6,6 +6,11 @@ export component NavButton inherits Rectangle {
     callback clicked;
 
     background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
+    forward-focus: focus-scope;
+    accessible-role: button;
+    accessible-action-default => {
+        root.clicked();
+    };
 
     HorizontalLayout {
         cross-axis-alignment: center;
@@ -20,11 +25,27 @@ export component NavButton inherits Rectangle {
         background: Theme.primary;
     }
 
+    if focus-scope.has-focus: Rectangle {
+        border-width: Theme.border-width * 2;
+        border-color: Theme.primary;
+        border-radius: Theme.radius-sm;
+    }
+
     touch-area := TouchArea {
         mouse-cursor: pointer;
 
         clicked => {
             root.clicked();
+        }
+    }
+
+    focus-scope := FocusScope {
+        key-pressed(event) => {
+            if event.text == Key.Space || event.text == Key.Return {
+                root.clicked();
+                return accept;
+            }
+            return reject;
         }
     }
 }

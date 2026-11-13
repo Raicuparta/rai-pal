@@ -11,6 +11,7 @@ export component BaseButton inherits Rectangle {
     in property <bool> interactive: root.enabled;
 
     out property <bool> hovered: touch-area.has-hover || root.extra-hovered;
+    out property <bool> focused: focus-scope.has-focus;
     out property <brush> ink-color: !root.enabled ? Theme.dimmed-foreground : root.tinted ? Contrast.ink(root.base-color) : Theme.strong-foreground;
 
     private property <bool> tinted: root.base-color.to-oklch().alpha > 0;
@@ -38,6 +39,12 @@ export component BaseButton inherits Rectangle {
         height: 100%;
         border-radius: root.border-radius;
         background: root.fill;
+    }
+
+    if focus-scope.has-focus: Rectangle {
+        border-width: Theme.border-width * 2;
+        border-color: Theme.primary;
+        border-radius: root.border-radius;
     }
 
     touch-area := TouchArea {

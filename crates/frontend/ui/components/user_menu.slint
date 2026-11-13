@@ -19,6 +19,8 @@ export component UserMenu inherits Rectangle {
     private property <length> avatar-size: 24px;
 
     NavButton {
+        accessible-label: root.menu-tooltip;
+
         clicked => {
             menu.show();
         }

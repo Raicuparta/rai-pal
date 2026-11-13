@@ -7,6 +7,8 @@ export component NavTab inherits NavButton {
     in property <Icon> icon: Icon.none;
     in property <brush> icon-color: Theme.foreground;
 
+    accessible-label: root.title;
+
     HorizontalLayout {
         spacing: Theme.space-md;
         padding-left: Theme.space-sm;

@@ -15,12 +15,24 @@ export component DownloadProgress inherits Rectangle {
     width: Theme.control-height + Theme.space-sm;
     height: Theme.control-height;
     visible: DownloadsState.items.length > 0;
+    forward-focus: focus-scope;
+    accessible-role: button;
+    accessible-label: root.menu-tooltip;
+    accessible-action-default => {
+        menu.show();
+    };
 
     private property <string> menu-tooltip: @tr("downloadStatusMenu" => "Downloads");
 
     Rectangle {
         border-radius: Theme.radius-sm;
         background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
+
+        if focus-scope.has-focus: Rectangle {
+            border-width: Theme.border-width * 2;
+            border-color: Theme.primary;
+            border-radius: Theme.radius-sm;
+        }
 
         SvgIcon {
             icon: Icon.download;
@@ -39,6 +51,16 @@ export component DownloadProgress inherits Rectangle {
             clicked => {
                 menu.show();
             }
+        }
+    }
+
+    focus-scope := FocusScope {
+        key-pressed(event) => {
+            if event.text == Key.Space || event.text == Key.Return {
+                menu.show();
+                return accept;
+            }
+            return reject;
         }
     }
 

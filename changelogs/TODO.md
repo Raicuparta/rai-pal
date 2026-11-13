@@ -6,7 +6,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
-- accessibility! i tihnk we're mostly ok but we need a full pass on the entire slint app. one thing that's currently broken is there is no outline at all for when pressing tabto cycle between elements. they seem to work but no visible way to tell. then, i think simply pressing tab doesn't let us escape some parts. i seem to usually be stuck in the sidebar? not sure. have a look and see what we can improve. i'd prefer not to have to mess with every single style and do something global, but maybe not possible? give me a report and tell me what we should do, but feel free to already fix the obvious stuff in commits.
+- accessibility follow-up: decide whether game rows should use arrow-key roving focus instead of one tab stop per visible row, and find a way to skip the long sidebar filter list when tabbing (tab order is not actually trapped, it is just long). Verify with a real screen reader.
 - add missing tooltips on stuff that have no text to explain. the two ones i know are games search input, and the sort order button. for the rest you probably need to confirm with me whether they actually need a tooltip, unless it's really obvious. somewhat related to accessibility since tooltip text should be used as accessible labels for stuff that has no text.
 - make the text in all popup notifications selectable.
 
@@ -16,9 +16,12 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Notes, questions, decisions, etc
 
+- Accessibility report: tab order does work, but the sidebar exposes every filter checkbox as a tab stop (roughly 70+ before reaching the main content), which makes it feel like focus is stuck there. Several custom clickable elements had no keyboard focus at all. Fixed: visible focus ring on buttons/icon buttons, nav tabs, select menus, download menu, external links, game rows and mod family headers; the custom ones now also activate with Space/Return and have accessible labels. Remaining: decide between arrow-key roving focus and one tab stop per visible game row, add a way to skip the sidebar filter list, and validate with a real screen reader.
 - Minimized/unfocused window: the visible range stays the same, so visible thumbnails and game fetches still happen. The easy version would be to treat a minimized window as an empty visible range (nothing gets fetched while minimized). Unfocused windows are harder to infer reliably and probably not worth it.
 
 ## Done
+
+- Accessibility: added visible keyboard focus rings to buttons, nav tabs, select menus, download menu, external links, game rows and mod family headers, and gave the custom controls Space/Return activation with accessible labels.
 
 - The "update available" modal uses the narrow size again.
 

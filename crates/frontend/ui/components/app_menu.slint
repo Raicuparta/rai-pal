@@ -33,6 +33,8 @@ export component AppMenu inherits Rectangle {
     }
 
     NavButton {
+        accessible-label: root.menu-tooltip;
+
         clicked => {
             menu.show();
         }

@@ -14,10 +14,21 @@ export component GameRow inherits VerticalLayout {
     callback selected(index: int);
 
     alignment: start;
+    forward-focus: focus-scope;
+    accessible-role: list-item;
+    accessible-label: root.game-row.title;
+    accessible-action-default => {
+        root.selected(root.row-index);
+    };
 
     Rectangle {
         height: Theme.game-row-height;
         background: touch-area.has-hover ? Theme.hover-background : Theme.background;
+
+        if focus-scope.has-focus: Rectangle {
+            border-width: Theme.border-width * 2;
+            border-color: Theme.primary;
+        }
 
         HorizontalLayout {
             cross-axis-alignment: center;
@@ -174,6 +185,16 @@ export component GameRow inherits VerticalLayout {
             clicked => {
                 root.selected(root.row-index);
             }
+        }
+    }
+
+    focus-scope := FocusScope {
+        key-pressed(event) => {
+            if event.text == Key.Space || event.text == Key.Return {
+                root.selected(root.row-index);
+                return accept;
+            }
+            return reject;
         }
     }
 

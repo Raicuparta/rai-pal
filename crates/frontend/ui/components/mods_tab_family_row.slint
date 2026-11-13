@@ -19,6 +19,12 @@ export component ModsTabFamilyRow inherits Rectangle {
 
             Rectangle {
                 background: header-touch.has-hover ? Theme.hover-background : transparent;
+                forward-focus: header-focus;
+                accessible-role: button;
+                accessible-label: root.item.family-title;
+                accessible-action-default => {
+                    root.expanded = !root.expanded;
+                };
 
                 HorizontalLayout {
                 padding: Theme.space-sm;
@@ -53,11 +59,27 @@ export component ModsTabFamilyRow inherits Rectangle {
                 }
             }
 
+                if header-focus.has-focus: Rectangle {
+                    border-width: Theme.border-width * 2;
+                    border-color: Theme.primary;
+                    border-radius: Theme.radius-sm;
+                }
+
                 header-touch := TouchArea {
                     mouse-cursor: pointer;
 
                     clicked => {
                         root.expanded = !root.expanded;
+                    }
+                }
+
+                header-focus := FocusScope {
+                    key-pressed(event) => {
+                        if event.text == Key.Space || event.text == Key.Return {
+                            root.expanded = !root.expanded;
+                            return accept;
+                        }
+                        return reject;
                     }
                 }
             }
