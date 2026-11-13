@@ -44,6 +44,7 @@ component SavedDirectoryRow inherits Rectangle {
         Button {
             text: @tr("manualGames" => "Remove");
             icon: Icon.delete;
+            tint: Theme.surface-background;
 
             clicked => {
                 root.removed();

@@ -48,6 +48,7 @@ component UrlModSourceRow inherits Rectangle {
             text: @tr("manualGames" => "Remove");
             icon: Icon.delete;
             enabled: !root.toggling;
+            tint: Theme.surface-background;
 
             clicked => {
                 root.removed();
