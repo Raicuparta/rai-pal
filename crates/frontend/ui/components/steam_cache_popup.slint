@@ -6,6 +6,7 @@ import { Modal } from "modal.slint";
 import { ActionState } from "../action_state.slint";
 import { DialogActions } from "../actions.slint";
 import { Tr } from "../translations.slint";
+import { ErrorMessage } from "message_state.slint";
 
 export global SteamCacheState {
     in property <ActionState> state: idle;
@@ -26,10 +27,8 @@ export component SteamCachePopup inherits Modal {
         wrap: word-wrap;
     }
 
-    if Tr.has-message(SteamCacheState.error): Text {
-        text: Tr.message(SteamCacheState.error);
-        color: red;
-        wrap: word-wrap;
+    if Tr.has-message(SteamCacheState.error): ErrorMessage {
+        message: SteamCacheState.error;
     }
 
     HorizontalLayout {

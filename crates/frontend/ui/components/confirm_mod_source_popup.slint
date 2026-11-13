@@ -6,6 +6,7 @@ import { Modal } from "modal.slint";
 import { ActionState } from "../action_state.slint";
 import { DialogActions } from "../actions.slint";
 import { Tr } from "../translations.slint";
+import { ErrorMessage } from "message_state.slint";
 
 export global ConfirmModSourceState {
     in-out property <bool> open: false;
@@ -35,11 +36,8 @@ export component ConfirmModSourcePopup inherits Modal {
         text: @tr("urlModSources" => "Loading mods...");
     }
 
-    if Tr.has-message(ConfirmModSourceState.error) : Text {
-        text: Tr.message(ConfirmModSourceState.error);
-        color: red;
-        font-size: Theme.font-sm;
-        wrap: word-wrap;
+    if Tr.has-message(ConfirmModSourceState.error) : ErrorMessage {
+        message: ConfirmModSourceState.error;
     }
 
     if (ConfirmModSourceState.state != ActionState.loading || ConfirmModSourceState.mods.length > 0) && !Tr.has-message(ConfirmModSourceState.error) : VerticalLayout {

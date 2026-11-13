@@ -1,3 +1,5 @@
+import { MessageData } from "../app_types.slint";
+import { Tr } from "../translations.slint";
 import { Theme } from "../theme.slint";
 
 export component MessageState inherits Rectangle {
@@ -15,4 +17,14 @@ export component MessageState inherits Rectangle {
             color: Theme.foreground;
         }
     }
+}
+
+export component ErrorMessage inherits Text {
+    in property <MessageData> message;
+
+    text: Tr.message(root.message);
+    color: Theme.status-error;
+    font-size: Theme.font-sm;
+    wrap: word-wrap;
+    height: self.preferred-height;
 }

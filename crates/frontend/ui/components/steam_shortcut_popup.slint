@@ -6,6 +6,7 @@ import { Modal } from "modal.slint";
 import { ActionState } from "../action_state.slint";
 import { DialogActions } from "../actions.slint";
 import { Tr } from "../translations.slint";
+import { ErrorMessage } from "message_state.slint";
 
 export global SteamShortcutState {
     in property <ActionState> state: idle;
@@ -27,10 +28,8 @@ export component SteamShortcutPopup inherits Modal {
         wrap: word-wrap;
     }
 
-    if Tr.has-message(SteamShortcutState.error) : Text {
-        text: Tr.message(SteamShortcutState.error);
-        color: red;
-        wrap: word-wrap;
+    if Tr.has-message(SteamShortcutState.error) : ErrorMessage {
+        message: SteamShortcutState.error;
     }
 
     HorizontalLayout {

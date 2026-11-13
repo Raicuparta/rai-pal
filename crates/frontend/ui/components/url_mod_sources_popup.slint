@@ -7,6 +7,7 @@ import { Modal } from "modal.slint";
 import { ActionState } from "../action_state.slint";
 import { DialogActions } from "../actions.slint";
 import { Tr } from "../translations.slint";
+import { ErrorMessage } from "message_state.slint";
 
 export global ModSourcesState {
     in property <UrlModSourceData> default-source;
@@ -109,11 +110,8 @@ export component UrlModSourcesPopup inherits Modal {
         }
     }
 
-    if Tr.has-message(ModSourcesState.error) : Text {
-        text: Tr.message(ModSourcesState.error);
-        color: red;
-        wrap: word-wrap;
-        font-size: Theme.font-sm;
+    if Tr.has-message(ModSourcesState.error) : ErrorMessage {
+        message: ModSourcesState.error;
     }
 
     Text {
