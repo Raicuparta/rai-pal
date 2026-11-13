@@ -189,6 +189,8 @@ export component GameRow inherits VerticalLayout {
     }
 
     focus-scope := FocusScope {
+        width: 0;
+        height: 0;
         key-pressed(event) => {
             if event.text == Key.Space || event.text == Key.Return {
                 root.selected(root.row-index);

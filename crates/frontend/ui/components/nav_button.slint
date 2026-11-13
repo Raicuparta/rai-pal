@@ -40,6 +40,8 @@ export component NavButton inherits Rectangle {
     }
 
     focus-scope := FocusScope {
+        width: 0;
+        height: 0;
         key-pressed(event) => {
             if event.text == Key.Space || event.text == Key.Return {
                 root.clicked();

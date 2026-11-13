@@ -6,7 +6,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
-- accessibility follow-up: decide whether game rows should use arrow-key roving focus instead of one tab stop per visible row, and find a way to skip the long sidebar filter list when tabbing (tab order is not actually trapped, it is just long). Verify with a real screen reader.
+- accessibility follow-up: decide whether game rows should use arrow-key roving focus instead of one tab stop per visible row (ListView only instantiates visible rows, so tab cannot auto-scroll to offscreen games without custom scroll logic), preserve focus after a filter toggle (model rebuild currently drops it), and find a way to skip the long sidebar filter list when tabbing. Verify with a real screen reader.
 
 ## Do later
 
@@ -14,7 +14,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Notes, questions, decisions, etc
 
-- Accessibility report: tab order does work, but the sidebar exposes every filter checkbox as a tab stop (roughly 70+ before reaching the main content), which makes it feel like focus is stuck there. Several custom clickable elements had no keyboard focus at all. Fixed: visible focus ring on buttons/icon buttons, nav tabs, select menus, download menu, external links, game rows and mod family headers; the custom ones now also activate with Space/Return and have accessible labels. Remaining: decide between arrow-key roving focus and one tab stop per visible game row, add a way to skip the sidebar filter list, and validate with a real screen reader.
+- Accessibility report: tab order does work, but the sidebar exposes every filter value plus its hover-only actions as tab stops (roughly 70+ before reaching the main content), which makes it feel like focus is stuck there. Several custom clickable elements had no keyboard focus at all, and the filter rows' "Only"/lock buttons were still tab stops at `opacity: 0`, so focus could seem to disappear. Fixed: visible focus ring on buttons/icon buttons, nav tabs, select menus, download menu, external links, game rows and mod family headers; custom controls now activate with Space/Return and have accessible labels; filter row hover-only actions now appear when the row is focused and while tabbing through them. Zero-sized focus scopes avoid intercepting pointer clicks. Remaining: roving focus for game rows (ListView virtualization makes tab auto-scroll hard), preserving focus after filter toggles (models are rebuilt), a way to skip the sidebar filter list, and real screen reader testing.
 - Minimized/unfocused window: the visible range stays the same, so visible thumbnails and game fetches still happen. The easy version would be to treat a minimized window as an empty visible range (nothing gets fetched while minimized). Unfocused windows are harder to infer reliably and probably not worth it.
 
 ## Done
