@@ -220,6 +220,7 @@ impl<T: Hash + Eq + Clone> FilterGroup<T> {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct GamesFilter {
 	pub providers: FilterGroup<GameProviderId>,
 	pub tags: FilterGroup<GameTag>,
