@@ -1,0 +1,18 @@
+import { Theme } from "../theme.slint";
+
+export component CopyableText inherits Rectangle {
+    in property <string> text;
+
+    border-radius: Theme.radius-sm;
+    background: Theme.surface-background;
+
+    HorizontalLayout {
+        padding: Theme.space-sm;
+
+        StyledText {
+            text: @markdown("\{root.text}");
+            default-font-size: Theme.font-sm;
+            selectable: true;
+        }
+    }
+}

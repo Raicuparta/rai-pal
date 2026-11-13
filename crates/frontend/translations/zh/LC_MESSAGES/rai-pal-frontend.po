@@ -782,8 +782,8 @@ msgid "Add source"
 msgstr "添加来源"
 
 msgctxt "urlModSources"
-msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep-link {0}."
-msgstr "Rai Pal 除了默认数据库外，还会在此提供的所有数据库中检查模组。你可以通过深层链接 {0} 共享模组来源。"
+msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep link:"
+msgstr "Rai Pal é¤äºé»è®¤æ°æ®åºå¤ï¼è¿ä¼å¨æ­¤æä¾çæææ°æ®åºä¸­æ£æ¥æ¨¡ç»ãä½ å¯ä»¥éè¿ä»¥ä¸æ·±å±é¾æ¥å±äº«æ¨¡ç»æ¥æºï¼"
 
 msgctxt "userMenu"
 msgid "User menu"

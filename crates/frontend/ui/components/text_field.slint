@@ -2,12 +2,18 @@ import { Theme } from "../theme.slint";
 import { ResetButton } from "reset_button.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 
-export component SearchInput inherits Rectangle {
+export component TextField inherits Rectangle {
     in-out property <string> text;
+    in property <string> placeholder-text: "";
+    in property <bool> read-only: false;
+    in property <Icon> icon: Icon.none;
+    in property <bool> clearable: false;
 
     callback edited(text: string);
+    callback accepted;
 
     height: Theme.control-height;
+    preferred-width: 0px;
     border-radius: Theme.radius-sm;
     border-width: Theme.border-width;
     border-color: input.has-focus ? Theme.primary : Theme.border;
@@ -16,12 +22,12 @@ export component SearchInput inherits Rectangle {
 
     HorizontalLayout {
         padding-left: Theme.space-sm;
-        padding-right: Theme.space-xs;
+        padding-right: root.clearable ? Theme.space-xs : Theme.space-sm;
         spacing: Theme.space-xs;
         cross-axis-alignment: center;
 
-        if root.text == "": SvgIcon {
-            icon: Icon.search;
+        if root.icon != Icon.none && root.text == "": SvgIcon {
+            icon: root.icon;
             size: Theme.font-md;
             color: Theme.dimmed-foreground;
         }
@@ -30,6 +36,15 @@ export component SearchInput inherits Rectangle {
             horizontal-stretch: 1;
             height: 100%;
             clip: true;
+
+            if root.text == "" && root.placeholder-text != "": Text {
+                x: 0;
+                text: root.placeholder-text;
+                height: 100%;
+                vertical-alignment: center;
+                font-size: Theme.font-sm;
+                color: Theme.dimmed-foreground;
+            }
 
             input := TextInput {
                 property <length> computed-x;
@@ -40,10 +55,15 @@ export component SearchInput inherits Rectangle {
                 vertical-alignment: center;
                 font-size: Theme.font-sm;
                 color: Theme.foreground;
+                read-only: root.read-only;
                 text <=> root.text;
 
                 edited => {
                     root.edited(input.text);
+                }
+
+                accepted => {
+                    root.accepted();
                 }
 
                 cursor-position-changed(cursor-position) => {
@@ -56,7 +76,7 @@ export component SearchInput inherits Rectangle {
             }
         }
 
-        if root.text != "": ResetButton {
+        if root.clearable && root.text != "": ResetButton {
             icon-size: Theme.font-sm;
             tooltip: @tr("filterMenu" => "Clear search");
 

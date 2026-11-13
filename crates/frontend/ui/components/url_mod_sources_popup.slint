@@ -1,5 +1,7 @@
-import { CheckBox, LineEdit } from "std-widgets.slint";
+import { CheckBox } from "std-widgets.slint";
 import { Button } from "button.slint";
+import { TextField } from "text_field.slint";
+import { CopyableText } from "copyable_text.slint";
 import { Icon } from "svg_icon.slint";
 import { MessageData, UrlModSourceData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
@@ -37,7 +39,7 @@ component UrlModSourceRow inherits Rectangle {
             }
         }
 
-        LineEdit {
+        TextField {
             horizontal-stretch: 1;
             text: root.source.url;
             read-only: true;
@@ -48,6 +50,7 @@ component UrlModSourceRow inherits Rectangle {
             icon: Icon.delete;
             enabled: !root.toggling;
             tint: Theme.surface-background;
+            horizontal-stretch: 0;
 
             clicked => {
                 root.removed();
@@ -58,6 +61,7 @@ component UrlModSourceRow inherits Rectangle {
 
 export component UrlModSourcesPopup inherits Modal {
     title: @tr("urlModSources" => "Mod Sources");
+    big: true;
 
     if ModSourcesState.default-source.url != "": UrlModSourceRow {
         source: ModSourcesState.default-source;
@@ -83,13 +87,13 @@ export component UrlModSourcesPopup inherits Modal {
 
     HorizontalLayout {
         spacing: Theme.space-sm;
-        alignment: start;
         cross-axis-alignment: center;
 
-        LineEdit {
+        TextField {
             horizontal-stretch: 1;
             text <=> ModSourcesState.new-url;
             placeholder-text: "https://example.com/mods.json";
+            clearable: true;
 
             accepted => {
                 DialogActions.add-url-mod-source(ModSourcesState.new-url);
@@ -100,6 +104,8 @@ export component UrlModSourcesPopup inherits Modal {
             text: @tr("urlModSources" => "Add source");
             icon: Icon.plus;
             enabled: ModSourcesState.new-url != "";
+            tint: Theme.surface-background;
+            horizontal-stretch: 0;
 
             clicked => {
                 DialogActions.add-url-mod-source(ModSourcesState.new-url);
@@ -111,10 +117,20 @@ export component UrlModSourcesPopup inherits Modal {
         message: ModSourcesState.error;
     }
 
-    Text {
-        text: @tr("urlModSources" => "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep-link {0}.", "rai-pal://add-mod-source?url=[URL]");
-        font-size: Theme.font-sm;
-        opacity: 0.7;
-        wrap: word-wrap;
+    private property <string> description: @tr("urlModSources" => "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep link:");
+
+    VerticalLayout {
+        spacing: Theme.space-sm;
+
+        Text {
+            text: root.description;
+            font-size: Theme.font-sm;
+            opacity: 0.7;
+            wrap: word-wrap;
+        }
+
+        CopyableText {
+            text: "rai-pal://add-mod-source?url=[URL]";
+        }
     }
 }

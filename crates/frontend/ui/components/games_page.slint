@@ -14,7 +14,7 @@ import { FilterGroup } from "filter_group.slint";
 import { Sidebar, SidebarScroll } from "sidebar.slint";
 import { ActionButton } from "action_button.slint";
 import { RowDivider } from "row_divider.slint";
-import { SearchInput } from "search_input.slint";
+import { TextField } from "text_field.slint";
 import { SelectOption } from "select_menu.slint";
 import { SortMenu } from "sort_menu.slint";
 import { AddGameState } from "add_game_popup.slint";
@@ -131,8 +131,10 @@ export component GamesPage inherits Rectangle {
                     spacing: Theme.space-xs;
                     cross-axis-alignment: center;
 
-                    SearchInput {
+                    TextField {
                         text <=> GamesQuery.search-text;
+                        icon: Icon.search;
+                        clearable: true;
 
                         edited(text) => {
                             GamesActions.search-changed(text);

@@ -6,13 +6,10 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
-- Mod sources modal improvements:
-  - use the "wide" size for the modal (i think we just have two sizes).
-  - the description text that shows the deep link example should be selectable text so people can copy it.
-  - the text inputs here (both the url input and the read-only ones for existing sources) look a bit shit. we should extract the games page search input into a more generic text input (as usual trying to use composition, avoiding too many props, etc) and use that one instead.
-  - set tint: theme.surface-background on the add source button.
-  - currently when i start typing on the source url input, the input becomes a bit smaller which makes the add source button move a bit left. need to fix that, add source button is on the far right with its own width (not forced width but just the implicit one as it is now), the input on the left side filling all remaining available width, so nothing should shift. maybe using our custom text input will already automatically fix that, dunno.
 - use narrow size for the "update available" modal
+- accessibility! i tihnk we're mostly ok but we need a full pass on the entire slint app. one thing that's currently broken is there is no outline at all for when pressing tabto cycle between elements. they seem to work but no visible way to tell. then, i think simply pressing tab doesn't let us escape some parts. i seem to usually be stuck in the sidebar? not sure. have a look and see what we can improve. i'd prefer not to have to mess with every single style and do something global, but maybe not possible? give me a report and tell me what we should do, but feel free to already fix the obvious stuff in commits.
+- add missing tooltips on stuff that have no text to explain. the two ones i know are games search input, and the sort order button. for the rest you probably need to confirm with me whether they actually need a tooltip, unless it's really obvious. somewhat related to accessibility since tooltip text should be used as accessible labels for stuff that has no text.
+- make the text in all popup notifications selectable.
 
 ## Do later
 
@@ -23,6 +20,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - Minimized/unfocused window: the visible range stays the same, so visible thumbnails and game fetches still happen. The easy version would be to treat a minimized window as an empty visible range (nothing gets fetched while minimized). Unfocused windows are harder to infer reliably and probably not worth it.
 
 ## Done
+
+- Mod sources modal: now uses the wide size, the deep link is shown on its own selectable line (new `CopyableText` component) instead of making the whole description selectable, and all its inputs use a new shared `TextField` extracted from the games search input (which now uses it too). The URL input fills the remaining width so the Add source button no longer shifts while typing, and the Add source button is tinted like the other secondary buttons.
 
 - Thumbnail loading: downloads and decodes are now separate stages (6 download workers, 2 decode workers), so more thumbnails are fetched in parallel without a decode/CPU spike, disk cache hits skip the download workers entirely, and a small LRU of decoded thumbnails in memory makes scrolling back to already-seen rows instant. The 100ms visible delay is unchanged.
 - The repeating `Failed to request image: builder error` spam came from itch games with an empty cover URL: itch stored `Some("")` instead of no thumbnail, and failed thumbnails were retried immediately (plus a 1s sleep) forever. itch now stores `None` for empty covers, empty URLs are skipped before fetching, a failed thumbnail is not retried until its row leaves and re-enters the visible margin, and the error log names the URL. Manual games have no thumbnail URL, so they were never the cause.
