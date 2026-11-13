@@ -6,8 +6,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now:
 
-- I see lots of repeated appimage thing handling, especially fingind the current appimage path, or current rai pal exe path, etc. should be in core. avoid repeating things like this!
-- Femto opengl guy is hardcoded, should be smarter about it.
+- In app.rs, FemtoVgOpenGl is basically just being guessed as "if it's hardware then it's FemtoVgOpenGl" which isn't very smart even if technically true right now. We should confirm that it's opengl (we can display just opengl to user if that's the only opengl thing that it can be, otherwise specify femto), and if it isn't we log what it actually is (some debug string representation of the renderer enum probably exists?) and fall back to unknown renderer (in the case it is hardware renderer but not femtovgopengl).
+- I see lots of repeated code handling appimage stuff, especially finding the current appimage path, or current rai pal exe path, etc. should be in core. avoid repeating things like this! check if we're doing any of this kind of repeated work elsewhere, especially in the frontend crate repeating work already done by the backend crate.
 
 ## Do later:
 
