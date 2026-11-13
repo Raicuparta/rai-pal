@@ -730,6 +730,10 @@ msgid "If you don't see yourself here, it's because your Patreon profile is priv
 msgstr "If wah waaah wah waaaaaah waaah waah waaaaah waah waaaaah waaaaah is waaaaaah!"
 
 msgctxt "thanksPage"
+msgid "{} pals"
+msgstr "{} waahs!"
+
+msgctxt "thanksPage"
 msgid "Patreon Leaderboard"
 msgstr "Waaaaah waaaaaaaaah!"
 

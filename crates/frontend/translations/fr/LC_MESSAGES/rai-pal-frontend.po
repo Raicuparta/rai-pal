@@ -730,6 +730,10 @@ msgid "If you don't see yourself here, it's because your Patreon profile is priv
 msgstr "Si vous ne vous voyez pas ici, c'est parce que votre profil Patreon est privé."
 
 msgctxt "thanksPage"
+msgid "{} pals"
+msgstr "{} potes"
+
+msgctxt "thanksPage"
 msgid "Patreon Leaderboard"
 msgstr "Classement Patreon"
 

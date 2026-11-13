@@ -76,6 +76,8 @@ export component ThanksPage inherits Rectangle {
 
     HorizontalLayout {
         Sidebar {
+            status-text: @tr("thanksPage" => "{} pals", ThanksState.patrons.length);
+
             SidebarScroll {
                 VerticalLayout {
                     padding-left: Theme.space-md;
