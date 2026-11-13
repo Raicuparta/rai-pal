@@ -6,10 +6,17 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
+- Mod sources modal improvements:
+  - use the "wide" size for the modal (i think we just have two sizes).
+  - the description text that shows the deep link example should be selectable text so people can copy it.
+  - the text inputs here (both the url input and the read-only ones for existing sources) look a bit shit. we should extract the games page search input into a more generic text input (as usual trying to use composition, avoiding too many props, etc) and use that one instead.
+  - set tint: theme.surface-background on the add source button.
+  - currently when i start typing on the source url input, the input becomes a bit smaller which makes the add source button move a bit left. need to fix that, add source button is on the far right with its own width (not forced width but just the implicit one as it is now), the input on the left side filling all remaining available width, so nothing should shift. maybe using our custom text input will already automatically fix that, dunno.
+- use narrow size for the "update available" modal
+
 ## Do later
 
 - "Manual" should be renamed to something but dunno what.
-- Mod sources modl a bit jank rn, look into.
 
 ## Notes, questions, decisions, etc
 
