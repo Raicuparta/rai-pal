@@ -76,7 +76,7 @@ export component ThanksPage inherits Rectangle {
 
     HorizontalLayout {
         Sidebar {
-            status-text: @tr("thanksPage" => "{} pals", ThanksState.patrons.length);
+            status-text: ThanksState.patrons.length > 0 ? @tr("thanksPage" => "{} pals", ThanksState.patrons.length) : "";
 
             SidebarScroll {
                 VerticalLayout {
@@ -90,6 +90,12 @@ export component ThanksPage inherits Rectangle {
                         tooltip: root.leaderboard-tooltip;
                         padding-left: Theme.space-sm;
                         padding-right: Theme.space-sm;
+                    }
+
+                    if ThanksState.patrons.length == 0: Text {
+                        text: @tr("thanksPage" => "Loading patrons");
+                        color: Theme.dimmed-foreground;
+                        height: self.preferred-height;
                     }
 
                     for patron in ThanksState.patrons: PatronRow {

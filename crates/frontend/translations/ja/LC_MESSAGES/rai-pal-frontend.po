@@ -734,6 +734,10 @@ msgid "{} pals"
 msgstr "{}人のダチ"
 
 msgctxt "thanksPage"
+msgid "Loading patrons"
+msgstr "パトロンを読み込み中..."
+
+msgctxt "thanksPage"
 msgid "Patreon Leaderboard"
 msgstr "Patreonリーダーボード"
 

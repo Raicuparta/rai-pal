@@ -6,8 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
--thanks page loading indicator.
-
 ## Do later
 
 ## Notes, questions, decisions, etc

@@ -734,6 +734,10 @@ msgid "{} pals"
 msgstr "{} Kumpels"
 
 msgctxt "thanksPage"
+msgid "Loading patrons"
+msgstr "Patrons werden geladen..."
+
+msgctxt "thanksPage"
 msgid "Patreon Leaderboard"
 msgstr "Patreon-Bestenliste"
 

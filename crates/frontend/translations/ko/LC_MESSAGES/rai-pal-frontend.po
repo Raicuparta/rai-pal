@@ -734,6 +734,10 @@ msgid "{} pals"
 msgstr "단짝 {}명"
 
 msgctxt "thanksPage"
+msgid "Loading patrons"
+msgstr "후원자 불러오는 중..."
+
+msgctxt "thanksPage"
 msgid "Patreon Leaderboard"
 msgstr "Patreon 리더보드"
 

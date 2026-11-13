@@ -734,6 +734,10 @@ msgid "{} pals"
 msgstr "{} waahs!"
 
 msgctxt "thanksPage"
+msgid "Loading patrons"
+msgstr "Waaaaaah, les patrons!"
+
+msgctxt "thanksPage"
 msgid "Patreon Leaderboard"
 msgstr "Waaaaah waaaaaaaaah!"
 
