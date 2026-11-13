@@ -117,12 +117,11 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				return;
 			}
 			reported = true;
-			let renderer = match graphics_api {
-				slint::GraphicsAPI::NativeOpenGL { .. } => crate::Renderer::OpenGl,
-				_ => {
-					log::warn!("Unexpected graphics API: {graphics_api:?}");
-					crate::Renderer::Unknown
-				}
+			let renderer = if let slint::GraphicsAPI::NativeOpenGL { .. } = graphics_api {
+				crate::Renderer::OpenGl
+			} else {
+				log::warn!("Unexpected graphics API: {graphics_api:?}");
+				crate::Renderer::Unknown
 			};
 			if let Some(window) = window_weak.upgrade() {
 				window.global::<crate::AppInfo>().set_renderer(renderer);

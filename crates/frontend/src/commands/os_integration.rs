@@ -256,4 +256,3 @@ fn register_windows() {
 		log::warn!("Failed to register deep link protocol: {err}");
 	}
 }
-

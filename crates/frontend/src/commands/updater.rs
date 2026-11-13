@@ -302,8 +302,8 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 
 	use rai_pal_backend::files;
 
-	let target = app_paths::exe_path()
-		.map_err(|err| format!("Could not find the AppImage path: {err}"))?;
+	let target =
+		app_paths::exe_path().map_err(|err| format!("Could not find the AppImage path: {err}"))?;
 	let target = fs::canonicalize(&target).unwrap_or_else(|err| {
 		log::warn!(
 			"Failed to canonicalize AppImage path {}: {err}",
@@ -489,10 +489,10 @@ fn install_portable_and_restart(bytes: &[u8]) -> Result<(), String> {
 
 #[cfg(target_os = "windows")]
 fn portable_update_paths() -> Result<(PathBuf, PathBuf, PathBuf), String> {
-	let target = app_paths::exe_path()
-		.map_err(|err| format!("Could not find the app path: {err}"))?;
-	let parent = app_paths::exe_folder()
-		.map_err(|err| format!("Could not find the app folder: {err}"))?;
+	let target =
+		app_paths::exe_path().map_err(|err| format!("Could not find the app path: {err}"))?;
+	let parent =
+		app_paths::exe_folder().map_err(|err| format!("Could not find the app folder: {err}"))?;
 	let file_name = target
 		.file_name()
 		.and_then(|name| name.to_str())
@@ -529,8 +529,8 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 
 	use rai_pal_backend::files;
 
-	let current_exe = app_paths::exe_path()
-		.map_err(|err| format!("Could not find the app path: {err}"))?;
+	let current_exe =
+		app_paths::exe_path().map_err(|err| format!("Could not find the app path: {err}"))?;
 	let bundle = current_exe
 		.ancestors()
 		.find(|path| path.extension().is_some_and(|extension| extension == "app"))
