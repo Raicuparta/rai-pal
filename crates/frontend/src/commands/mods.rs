@@ -318,12 +318,6 @@ fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex
 				return;
 			};
 
-			if !window.get_game_selected()
-				|| window.get_selected_game_row().game_id.as_str() != game.game_id.as_str()
-			{
-				return;
-			}
-
 			store_remote_config_ids(&game, remote_config_ids.clone());
 			apply_mods(&window, &database, &game, &remote_config_ids);
 		});
@@ -649,12 +643,6 @@ fn refresh_after_action(window: &slint::Weak<MainWindow>, database: &Arc<DbMutex
 		let Some(window) = window.upgrade() else {
 			return;
 		};
-
-		if !window.get_game_selected()
-			|| window.get_selected_game_row().game_id.as_str() != game.game_id.as_str()
-		{
-			return;
-		}
 
 		refresh_mods_ui(&window, &database, &game);
 	});
