@@ -356,6 +356,10 @@ msgstr "Die hier aufgelisteten Mods können nicht installiert werden, da sie nic
 msgctxt "gameModal"
 msgid "Folders"
 msgstr "Ordner"
+msgctxt "gameModal"
+msgid "Data"
+msgstr "Daten"
+
 
 msgctxt "gameModal"
 msgid "Game Files"

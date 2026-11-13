@@ -11,3 +11,5 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Notes, questions, decisions, etc
 
 ## Done
+
+- Added the missing translation for the "Data" section label in the game details sidebar.

@@ -356,6 +356,10 @@ msgstr "Los mods listados aquí no se pueden instalar porque no son compatibles 
 msgctxt "gameModal"
 msgid "Folders"
 msgstr "Carpetas"
+msgctxt "gameModal"
+msgid "Data"
+msgstr "Datos"
+
 
 msgctxt "gameModal"
 msgid "Game Files"

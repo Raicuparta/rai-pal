@@ -356,6 +356,10 @@ msgstr "这里列出的模组因不兼容此游戏的引擎版本，无法安装
 msgctxt "gameModal"
 msgid "Folders"
 msgstr "文件夹"
+msgctxt "gameModal"
+msgid "Data"
+msgstr "数据"
+
 
 msgctxt "gameModal"
 msgid "Game Files"

@@ -356,6 +356,10 @@ msgstr "여기 모드들은 이 게임 엔진 버전과 호환이 안 돼서 설
 msgctxt "gameModal"
 msgid "Folders"
 msgstr "폴더"
+msgctxt "gameModal"
+msgid "Data"
+msgstr "데이터"
+
 
 msgctxt "gameModal"
 msgid "Game Files"

@@ -356,6 +356,10 @@ msgstr "ここに表示されてるModは、このゲームのエンジンバー
 msgctxt "gameModal"
 msgid "Folders"
 msgstr "フォルダー"
+msgctxt "gameModal"
+msgid "Data"
+msgstr "データ"
+
 
 msgctxt "gameModal"
 msgid "Game Files"

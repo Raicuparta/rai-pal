@@ -356,6 +356,10 @@ msgstr "Wah waah waaaah waah waaah be waaaaaaah waaaaah waah waaaah waaaaaaaah w
 msgctxt "gameModal"
 msgid "Folders"
 msgstr "Waaaaah!"
+msgctxt "gameModal"
+msgid "Data"
+msgstr "Waaah waah!"
+
 
 msgctxt "gameModal"
 msgid "Game Files"
