@@ -2,7 +2,8 @@ use std::{rc::Rc, time::Duration};
 
 use rai_pal_backend::{
 	filter_views::{
-		apply_filter_action, collapse_all_filters, expand_all_filters, reset_all_filters, reset_filter_group,
+		apply_filter_action, collapse_all_filters, expand_all_filters, reset_all_filters,
+		reset_filter_group,
 	},
 	games_query::{FilterAction, FilterGroupKey},
 };
