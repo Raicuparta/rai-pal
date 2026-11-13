@@ -86,24 +86,13 @@ fn month_name(month: u32) -> &'static str {
 }
 
 pub fn make_row(game_id: &GameId) -> GameRowData {
-	GameRowData {
+	let mut row = GameRowData {
 		provider: game_id.provider_id.into(),
 		game_id: game_id.game_id.clone().into(),
-		title: "...".into(),
-		thumbnail: slint::Image::default(),
-		thumbnail_url: "".into(),
-		has_thumbnail: false,
-		installed: false,
-		tags: slint::ModelRc::default(),
-		loaded: false,
-		engine: EngineId::None,
-		engine_name: "".into(),
-		engine_version: "".into(),
-		engine_details: "".into(),
-		release_day: "".into(),
-		release_month: "".into(),
-		release_year: "".into(),
-	}
+		..GameRowData::default()
+	};
+	reset_row(&mut row);
+	row
 }
 
 pub fn make_rows(game_ids: &[GameId]) -> Vec<GameRowData> {
