@@ -5,9 +5,24 @@ ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 LIVE=0
-if [ "${1:-}" = "--live" ]; then
-  LIVE=1
+SOFTWARE=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --live)
+      LIVE=1
+      ;;
+    --software)
+      SOFTWARE=1
+      ;;
+    *)
+      break
+      ;;
+  esac
   shift
+done
+
+if [ "$SOFTWARE" -eq 1 ]; then
+  export SLINT_BACKEND=winit-software
 fi
 
 export SLINT_EMIT_DEBUG_INFO=1
