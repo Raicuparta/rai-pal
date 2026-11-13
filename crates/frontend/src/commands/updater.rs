@@ -1,9 +1,11 @@
 use fs_err as fs;
+#[cfg(target_os = "linux")]
 use rai_pal_backend::path_extensions::AsValidStr;
 use slint::ComponentHandle as _;
+#[cfg(target_os = "linux")]
+use std::path::{Path, PathBuf};
 use std::{
 	collections::HashMap,
-	path::{Path, PathBuf},
 	sync::{
 		Arc, Mutex,
 		atomic::{AtomicBool, Ordering},
@@ -292,12 +294,6 @@ fn verify_signature(data: &[u8], signature_b64: &str) -> Result<(), String> {
 		.map_err(|err| err.to_string())
 }
 
-#[cfg(target_os = "windows")]
-fn update_file_path(file_name: &str) -> Result<PathBuf, String> {
-	let directory = app_paths::temp_dir("update").map_err(|err| err.to_string())?;
-	Ok(directory.join(file_name))
-}
-
 #[cfg(target_os = "linux")]
 fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 	use std::os::unix::fs::PermissionsExt;
@@ -377,18 +373,16 @@ fn shell_quote(path: &Path) -> Result<String, String> {
 
 #[cfg(target_os = "windows")]
 fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
-	use std::{os::windows::process::CommandExt, process::Command};
+	use std::{ffi::OsStr, os::windows::ffi::OsStrExt};
 
 	use rai_pal_backend::files;
+	use windows_sys::Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOWNORMAL};
 
-	const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-
-	let archive_path = update_file_path("updater-windows.zip")?;
+	let update_dir = app_paths::temp_dir("update").map_err(|err| err.to_string())?;
+	let archive_path = update_dir.join("updater-windows.zip");
 	fs::write(&archive_path, bytes).map_err(|err| err.to_string())?;
 
-	let extract_dir = app_paths::temp_dir("update")
-		.map_err(|err| err.to_string())?
-		.join("extracted-windows");
+	let extract_dir = update_dir.join("extracted-windows");
 	if extract_dir.exists() {
 		fs::remove_dir_all(&extract_dir).map_err(|err| err.to_string())?;
 	}
@@ -401,19 +395,32 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 		.find(|path| path.extension().is_some_and(|extension| extension == "exe"))
 		.ok_or_else(|| "Could not find the updated installer".to_string())?;
 
-	let pid = std::process::id();
-	let installer = installer.display();
-	let script = format!(
-		"@echo off\r\n:wait\r\ntasklist /FI \"PID eq {pid}\" /NH | find \"{pid}\" >nul\r\nif not errorlevel 1 (\r\n  timeout /t 1 /nobreak >nul\r\n  goto wait\r\n)\r\n\"{installer}\" /S /UPDATER\r\n"
-	);
+	let wide =
+		|value: &OsStr| -> Vec<u16> { value.encode_wide().chain(std::iter::once(0)).collect() };
+
+	let operation = wide(OsStr::new("open"));
+	let installer = wide(installer.as_os_str());
+	let parameters = wide(OsStr::new("/S /UPDATER"));
+
+	let result = unsafe {
+		ShellExecuteW(
+			std::ptr::null_mut(),
+			operation.as_ptr(),
+			installer.as_ptr(),
+			parameters.as_ptr(),
+			std::ptr::null(),
+			SW_SHOWNORMAL,
+		)
+	};
+
+	if result as isize <= 32 {
+		return Err(format!(
+			"Failed to launch the update installer (ShellExecuteW returned {})",
+			result as isize
+		));
+	}
 
 	crate::single_instance::release();
-	Command::new("cmd")
-		.args(["/C", &script])
-		.creation_flags(CREATE_NO_WINDOW)
-		.spawn()
-		.map_err(|err| err.to_string())?;
-
 	std::process::exit(0);
 }
 

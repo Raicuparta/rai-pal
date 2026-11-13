@@ -1,6 +1,8 @@
 !include "MUI2.nsh"
 !include "FileFunc.nsh"
 !include "x64.nsh"
+!include "LogicLib.nsh"
+!include "Win\RestartManager.nsh"
 
 !define APP_NAME "Rai Pal"
 !define APP_EXE "Rai-Pal.exe"
@@ -64,6 +66,14 @@ FunctionEnd
 
 Section "Install"
 	SetOutPath "$INSTDIR"
+
+	!insertmacro RestartManager_StartSession $0
+	${If} $0 != ""
+		!insertmacro RestartManager_RegisterFile $0 "$INSTDIR\${APP_EXE}"
+		!insertmacro RestartManager_Shutdown $0
+		!insertmacro RestartManager_EndSession $0
+	${EndIf}
+
 	File "${SOURCE_EXE}"
 	File "${ICON_FILE}"
 	WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -89,7 +99,7 @@ Section "Install"
 	${GetOptions} $R0 "/R" $R1
 	IfErrors updaterDone
 	relaunchApp:
-	ExecShell "open" "$INSTDIR\${APP_EXE}"
+	ExecShell "open" "$WINDIR\explorer.exe" '"$INSTDIR\${APP_EXE}"'
 	updaterDone:
 SectionEnd
 
