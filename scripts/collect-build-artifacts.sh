@@ -23,7 +23,7 @@ case "$PLATFORM" in
 		MAIN_SOURCE="$ROOT_DIR/target/bundles/nsis/RaiPal-$VERSION-x86_64-setup.exe"
 		PORTABLE_SOURCE="$ROOT_DIR/target/bundles/nsis/RaiPal-$VERSION-x86_64.exe"
 		MAIN_TARGET="$OUTPUT_DIR/RaiPal.exe"
-		PORTABLE_TARGET="$OUTPUT_DIR/RaiPal.portable.exe"
+		PORTABLE_TARGET="$OUTPUT_DIR/RaiPal.portable.zip"
 		UPDATER_TARGET="$OUTPUT_DIR/updater-windows.zip"
 		PORTABLE_UPDATER_TARGET="$OUTPUT_DIR/updater-windows-portable.zip"
 		PLATFORM_KEY="windows-x86_64"
@@ -65,13 +65,14 @@ if [[ -n "$PORTABLE_SOURCE" ]]; then
 		echo "Build artifact not found: $PORTABLE_SOURCE" >&2
 		exit 1
 	fi
-	cp "$PORTABLE_SOURCE" "$PORTABLE_TARGET"
-	echo "Copied $PORTABLE_SOURCE -> $PORTABLE_TARGET"
 fi
 
 STAGING_DIR="$(mktemp -d)"
 trap 'rm -rf "$STAGING_DIR"' EXIT
 rm -f "$UPDATER_TARGET"
+if [[ -n "$PORTABLE_TARGET" ]]; then
+	rm -f "$PORTABLE_TARGET"
+fi
 if [[ -n "$PORTABLE_UPDATER_TARGET" ]]; then
 	rm -f "$PORTABLE_UPDATER_TARGET"
 fi
@@ -86,6 +87,10 @@ case "$PLATFORM" in
 		(cd "$STAGING_DIR" && zip -q -X -0 "$UPDATER_TARGET" RaiPal-Setup.exe)
 		cp "$PORTABLE_SOURCE" "$STAGING_DIR/RaiPal-Portable.exe"
 		(cd "$STAGING_DIR" && zip -q -X -0 "$PORTABLE_UPDATER_TARGET" RaiPal-Portable.exe)
+		mkdir -p "$STAGING_DIR/portable/RaiPal"
+		cp "$PORTABLE_SOURCE" "$STAGING_DIR/portable/RaiPal/RaiPal.portable.exe"
+		(cd "$STAGING_DIR/portable" && zip -q -X -0 "$PORTABLE_TARGET" RaiPal/RaiPal.portable.exe)
+		echo "Created $PORTABLE_TARGET"
 		;;
 	linux)
 		if ! command -v tar >/dev/null 2>&1; then

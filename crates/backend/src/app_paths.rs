@@ -4,7 +4,10 @@ use std::{self, env, path::PathBuf};
 use directories::{BaseDirs, ProjectDirs};
 use log;
 
-use crate::result::{Error, Result};
+use crate::{
+	app_variant::AppVariant,
+	result::{Error, Result},
+};
 
 pub fn base_dirs() -> Result<BaseDirs> {
 	directories::BaseDirs::new().ok_or_else(Error::AppDataNotFound)
@@ -23,12 +26,27 @@ pub fn try_get_program_data_path() -> PathBuf {
 }
 
 fn app_data_path() -> Result<PathBuf> {
-	let project_dirs =
-		ProjectDirs::from("com", "raicuparta", "rai-pal").ok_or_else(Error::AppDataNotFound)?;
-	let path = project_dirs.data_dir().to_path_buf();
+	let path = match AppVariant::get_current() {
+		AppVariant::WindowsPortable => portable_data_path()?,
+		_ => project_data_path()?,
+	};
 	fs::create_dir_all(&path)?;
 
 	Ok(path)
+}
+
+fn project_data_path() -> Result<PathBuf> {
+	let project_dirs =
+		ProjectDirs::from("com", "raicuparta", "rai-pal").ok_or_else(Error::AppDataNotFound)?;
+	Ok(project_dirs.data_dir().to_path_buf())
+}
+
+fn portable_data_path() -> Result<PathBuf> {
+	let exe_path = std::env::current_exe()?;
+	let app_folder = exe_path
+		.parent()
+		.ok_or_else(|| Error::PathParentNotFound(exe_path.clone()))?;
+	Ok(app_folder.join("Data"))
 }
 
 pub fn app_data_file(file_name: &str) -> Result<PathBuf> {
