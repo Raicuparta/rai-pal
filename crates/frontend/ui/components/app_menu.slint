@@ -90,7 +90,6 @@ export component AppMenu inherits Rectangle {
             if UpdateState.available: PopupMenuSeparator { }
 
             PopupMenuItem {
-                checkable: true;
                 checked: !AppSettings.hide-game-thumbnails;
                 text: @tr("appDropdownMenu" => "Show game thumbnails on list");
 

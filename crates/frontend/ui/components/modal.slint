@@ -15,11 +15,7 @@ export component Modal inherits Rectangle {
     in-out property <bool> open: false;
     in property <bool> close-on-click-outside: true;
     in property <bool> show-close-button: true;
-    in property <Icon> header-action-icon: Icon.none;
-    in property <string> header-action-tooltip: "";
-
     callback closed;
-    callback header-action-clicked;
 
     width: 0;
     height: 0;
@@ -95,15 +91,6 @@ export component Modal inherits Rectangle {
 
                     Rectangle {
                         horizontal-stretch: 1;
-                    }
-
-                    if root.header-action-icon != Icon.none: IconButton {
-                        icon: root.header-action-icon;
-                        tooltip: root.header-action-tooltip;
-
-                        clicked => {
-                            root.header-action-clicked();
-                        }
                     }
 
                     if root.show-close-button: IconButton {

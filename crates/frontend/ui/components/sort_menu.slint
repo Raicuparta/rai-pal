@@ -38,7 +38,6 @@ export component SortMenu inherits BaseButton {
 
         for option[index] in root.options: PopupMenuItem {
             text: option.label;
-            checkable: true;
             checked: index == root.sort-index;
 
             clicked => {
