@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
-- use narrow size for the "update available" modal
 - accessibility! i tihnk we're mostly ok but we need a full pass on the entire slint app. one thing that's currently broken is there is no outline at all for when pressing tabto cycle between elements. they seem to work but no visible way to tell. then, i think simply pressing tab doesn't let us escape some parts. i seem to usually be stuck in the sidebar? not sure. have a look and see what we can improve. i'd prefer not to have to mess with every single style and do something global, but maybe not possible? give me a report and tell me what we should do, but feel free to already fix the obvious stuff in commits.
 - add missing tooltips on stuff that have no text to explain. the two ones i know are games search input, and the sort order button. for the rest you probably need to confirm with me whether they actually need a tooltip, unless it's really obvious. somewhat related to accessibility since tooltip text should be used as accessible labels for stuff that has no text.
 - make the text in all popup notifications selectable.
@@ -20,6 +19,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - Minimized/unfocused window: the visible range stays the same, so visible thumbnails and game fetches still happen. The easy version would be to treat a minimized window as an empty visible range (nothing gets fetched while minimized). Unfocused windows are harder to infer reliably and probably not worth it.
 
 ## Done
+
+- The "update available" modal uses the narrow size again.
 
 - Mod sources modal: now uses the wide size, the deep link is shown on its own selectable line (new `CopyableText` component) instead of making the whole description selectable, and all its inputs use a new shared `TextField` extracted from the games search input (which now uses it too). The URL input fills the remaining width so the Add source button no longer shifts while typing, and the Add source button is tinted like the other secondary buttons.
 
