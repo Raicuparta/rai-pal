@@ -11,9 +11,11 @@ use slint::{ComponentHandle, winit_030::WinitWindowAccessor};
 
 use crate::{
 	AppTab, MainWindow, action_state, analytics,
-	commands::{CommandHandler, os_integration, query::load_game_ids, settings::sort_option_index},
+	commands::{
+		CommandHandler, os_integration, query::load_game_ids, settings::apply_settings_to_ui,
+	},
 	fetch::spawn_fetchers,
-	filters::{build_groups, load_mod_families, load_providers_with_games},
+	filters::{load_mod_families, load_providers_with_games},
 	i18n, logging,
 	model::make_rows,
 	single_instance, window_state,
@@ -199,42 +201,29 @@ fn apply_initial_state(
 	games_total_count: u32,
 ) {
 	let app_settings = app_settings.borrow();
-	let query = &app_settings.games_query;
-	let filter_groups = build_groups(
-		&query.filter,
+
+	apply_settings_to_ui(
+		window,
+		&app_settings,
+		detected_locale,
 		mod_families,
-		&app_settings.collapsed_filters,
 		providers_with_games,
 	);
-
-	i18n::apply_translation(i18n::effective_locale(&app_settings, detected_locale));
-	let settings = window.global::<crate::AppSettings>();
-	settings.set_detected_language_name(
-		detected_locale
-			.map(AppLocale::native_name)
-			.unwrap_or_default()
-			.into(),
-	);
-	crate::languages::refresh(window, &app_settings, detected_locale);
-	settings.set_selected_color_scheme(app_settings.color_scheme.into());
-	settings.set_hide_game_thumbnails(app_settings.hide_game_thumbnails);
-
+	window
+		.global::<crate::AppSettings>()
+		.set_detected_language_name(
+			detected_locale
+				.map(AppLocale::native_name)
+				.unwrap_or_default()
+				.into(),
+		);
 	window
 		.global::<crate::AppInfo>()
 		.set_version(env!("CARGO_PKG_VERSION").into());
-
-	let query_ui = window.global::<crate::GamesQuery>();
-	query_ui.set_search_text(query.search.clone().into());
-	query_ui.set_sort_index(sort_option_index(query.sort_by, query.sort_descending));
-	query_ui.set_filters_have_expanded(filter_groups.iter().any(|group| group.expanded));
-	query_ui.set_filters_have_changes(filter_groups.iter().any(|group| group.has_changes));
-	query_ui.set_filter_groups(Rc::new(slint::VecModel::from(filter_groups)).into());
-
 	window.global::<crate::GamesList>().set_total_count(
 		i32::try_from(games_total_count).unwrap_or_else(|err| {
 			log::warn!("Games count exceeds i32: {err}");
 			i32::MAX
 		}),
 	);
-	window.set_current_tab(app_settings.selected_tab.into());
 }

@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{collections::HashSet, rc::Rc, time::Duration};
 
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
@@ -10,7 +10,10 @@ use rai_pal_backend::{
 };
 use slint::{ComponentHandle, Model as _};
 
-use crate::{AppColorScheme, AppTab, i18n, languages, model::apply_game_to_row, selected};
+use crate::{
+	AppColorScheme, AppTab, MainWindow, filters::build_groups, i18n, languages,
+	model::apply_game_to_row, selected,
+};
 
 use super::query::ScrollBehavior;
 use super::{CommandHandler, on_command};
@@ -39,6 +42,40 @@ fn sort_option_from_index(index: i32) -> (GamesSortBy, bool) {
 		.unwrap_or((GamesSortBy::Title, false))
 }
 
+pub fn apply_settings_to_ui(
+	window: &MainWindow,
+	settings: &AppSettings,
+	detected_locale: Option<AppLocale>,
+	mod_families: &[String],
+	providers_with_games: &HashSet<GameProviderId>,
+) {
+	i18n::apply_translation(i18n::effective_locale(settings, detected_locale));
+
+	let app_settings = window.global::<crate::AppSettings>();
+	app_settings.set_selected_color_scheme(settings.color_scheme.into());
+	app_settings.set_hide_game_thumbnails(settings.hide_game_thumbnails);
+	languages::refresh(window, settings, detected_locale);
+
+	let groups = build_groups(
+		&settings.games_query.filter,
+		mod_families,
+		&settings.collapsed_filters,
+		providers_with_games,
+	);
+
+	let query = window.global::<crate::GamesQuery>();
+	query.set_search_text(settings.games_query.search.clone().into());
+	query.set_sort_index(sort_option_index(
+		settings.games_query.sort_by,
+		settings.games_query.sort_descending,
+	));
+	query.set_filters_have_expanded(groups.iter().any(|group| group.expanded));
+	query.set_filters_have_changes(groups.iter().any(|group| group.has_changes));
+	query.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
+
+	window.set_current_tab(settings.selected_tab.into());
+}
+
 impl CommandHandler {
 	pub fn reset_settings(&self) {
 		let Some(window) = self.ui() else {
@@ -51,25 +88,16 @@ impl CommandHandler {
 			..AppSettings::default()
 		};
 		self.persist_settings();
-
-		let locale = i18n::effective_locale(&self.settings.borrow(), self.detected_locale);
-		i18n::apply_translation(locale);
-
-		window
-			.global::<crate::AppSettings>()
-			.set_selected_color_scheme(AppColorScheme::Auto);
-		window
-			.global::<crate::AppSettings>()
-			.set_hide_game_thumbnails(false);
-		window
-			.global::<crate::GamesQuery>()
-			.set_search_text("".into());
-		window.global::<crate::GamesQuery>().set_sort_index(0);
-		window.set_current_tab(AppTab::Games);
-		languages::refresh(&window, &self.settings.borrow(), self.detected_locale);
 		self.scheduler.set_thumbnails_enabled(true);
 
-		self.refresh_filters();
+		let providers_with_games = crate::filters::load_providers_with_games(&self.database);
+		apply_settings_to_ui(
+			&window,
+			&self.settings.borrow(),
+			self.detected_locale,
+			&self.mod_families,
+			&providers_with_games,
+		);
 		self.start_query(Duration::ZERO, ScrollBehavior::Reset);
 	}
 
