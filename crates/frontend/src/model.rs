@@ -7,7 +7,7 @@ use rai_pal_backend::{
 
 use slint::Model as _;
 
-use crate::{EngineId, GameRowData};
+use crate::{EngineId, GameRowData, image_cache};
 
 #[derive(Clone, Debug, Default)]
 pub struct ReleaseDate {
@@ -130,6 +130,20 @@ pub fn sync_rows(model: &slint::VecModel<GameRowData>, game_ids: &[GameId]) {
 	while model.row_count() > rows.len() {
 		model.remove(model.row_count() - 1);
 	}
+}
+
+pub fn apply_cached_thumbnail(row: &mut GameRowData) -> bool {
+	if row.has_thumbnail {
+		return true;
+	}
+
+	let Some(image) = image_cache::load_memory(&row.thumbnail_url) else {
+		return false;
+	};
+
+	row.thumbnail = image;
+	row.has_thumbnail = true;
+	true
 }
 
 pub fn reset_row(row: &mut GameRowData) {

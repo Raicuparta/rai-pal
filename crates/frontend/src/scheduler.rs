@@ -10,7 +10,7 @@ use std::{
 use rai_pal_backend::{game_providers::game_provider::GameProviderId, result::LogErrExt};
 use slint::{Model, ModelRc};
 
-use crate::{GameRowData, image_cache, model::reset_row};
+use crate::{GameRowData, image_cache, model, model::reset_row};
 
 const VISIBLE_MARGIN: usize = 8;
 const THUMBNAIL_VISIBLE_DELAY: Duration = Duration::from_millis(100);
@@ -562,12 +562,16 @@ pub fn schedule_visible_range(
 	scheduler.set_visible_requests(requests);
 
 	for index in indices {
-		let Some(row) = rows.row_data(index) else {
+		let Some(mut row) = rows.row_data(index) else {
 			continue;
 		};
 
 		if row.loaded && !row.has_thumbnail && !row.thumbnail_url.is_empty() {
-			scheduler.enqueue_thumbnail(index, generation, row.thumbnail_url.to_string());
+			if model::apply_cached_thumbnail(&mut row) {
+				rows.set_row_data(index, row);
+			} else {
+				scheduler.enqueue_thumbnail(index, generation, row.thumbnail_url.to_string());
+			}
 		}
 	}
 }

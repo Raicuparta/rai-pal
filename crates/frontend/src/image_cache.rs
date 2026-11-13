@@ -1,4 +1,6 @@
 use std::{
+	cell::RefCell,
+	collections::HashMap,
 	io::ErrorKind,
 	path::PathBuf,
 	sync::{
@@ -18,6 +20,51 @@ pub const THUMBNAIL_HEIGHT: u32 = 120;
 const CACHE_VERSION: u32 = 1;
 const MAX_CACHE_BYTES: u64 = 200 * 1024 * 1024;
 const PRUNE_TARGET_BYTES: u64 = 180 * 1024 * 1024;
+const MEMORY_CACHE_ENTRIES: usize = 200;
+
+#[derive(Default)]
+struct MemoryCache {
+	entries: HashMap<String, (u64, slint::Image)>,
+	clock: u64,
+}
+
+impl MemoryCache {
+	fn get(&mut self, url: &str) -> Option<slint::Image> {
+		self.clock += 1;
+		let (last_used, image) = self.entries.get_mut(url)?;
+		*last_used = self.clock;
+
+		Some(image.clone())
+	}
+
+	fn insert(&mut self, url: String, image: slint::Image) {
+		self.clock += 1;
+
+		if self.entries.len() >= MEMORY_CACHE_ENTRIES
+			&& let Some(oldest) = self
+				.entries
+				.iter()
+				.min_by_key(|(_, (last_used, _))| *last_used)
+				.map(|(oldest, _)| oldest.clone())
+		{
+			self.entries.remove(&oldest);
+		}
+
+		self.entries.insert(url, (self.clock, image));
+	}
+}
+
+thread_local! {
+	static MEMORY_CACHE: RefCell<MemoryCache> = RefCell::new(MemoryCache::default());
+}
+
+pub fn load_memory(url: &str) -> Option<slint::Image> {
+	MEMORY_CACHE.with(|cache| cache.borrow_mut().get(url))
+}
+
+pub fn store_memory(url: &str, image: slint::Image) {
+	MEMORY_CACHE.with(|cache| cache.borrow_mut().insert(url.to_string(), image));
+}
 
 static CACHE_DIR: LazyLock<Option<PathBuf>> = LazyLock::new(|| {
 	app_paths::thumbnail_cache_path().ok_or_log("Failed to get thumbnail cache path")

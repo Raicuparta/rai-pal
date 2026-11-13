@@ -17,6 +17,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Done
 
+- Thumbnail loading: downloads and decodes are now separate stages (6 download workers, 2 decode workers), so more thumbnails are fetched in parallel without a decode/CPU spike, disk cache hits skip the download workers entirely, and a small LRU of decoded thumbnails in memory makes scrolling back to already-seen rows instant. The 100ms visible delay is unchanged.
 - The repeating `Failed to request image: builder error` spam came from itch games with an empty cover URL: itch stored `Some("")` instead of no thumbnail, and failed thumbnails were retried immediately (plus a 1s sleep) forever. itch now stores `None` for empty covers, empty URLs are skipped before fetching, a failed thumbnail is not retried until its row leaves and re-enters the visible margin, and the error log names the URL. Manual games have no thumbnail URL, so they were never the cause.
 
 - Added the missing translation for the "Data" section label in the game details sidebar.
