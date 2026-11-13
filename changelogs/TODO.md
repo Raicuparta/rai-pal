@@ -11,7 +11,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Notes, questions, decisions, etc
 
 - `DownloadItemData.phase` is sent to the UI but never read there. Failed downloads show their last percentage forever. Either show the phase in the downloads menu, or drop the field.
-- The Xbox provider logs a warning for every package registry key it can't read, which is most of them. Deep nesting also makes it hard to read; a helper returning `Option<Game>` would fix both.
 
 ## Done
 
@@ -20,6 +19,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - Simplified the thumbnail cache path helper.
 - Removed unused `Modal` header action props and the no-op `PopupMenuItem.checkable` property.
 - Download items now hold their `InstallStep` instead of a formatted `"mod:step"` id string, which also dropped the unused `DownloadItemData.id`.
+- Flattened the Xbox provider: one function reads a package with `?`, the caller logs and skips it. Only a missing executable config (i.e. not a game) is silent, so non-game packages no longer spam warnings.
 - `build_filter_views` now builds groups from `FilterGroupKey` iteration and an exhaustive match, so a new group can't be silently missing (and the enum order shows in the UI).
 - Documented why `run_query` bumps the fetch generation twice.
 - Search text is no longer saved in settings (it was also written on every keystroke).
