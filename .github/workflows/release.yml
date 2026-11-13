@@ -27,7 +27,6 @@ jobs:
           full: true
 
   create-release:
-    needs: check
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -154,8 +153,8 @@ jobs:
           UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
 
   finalize-release:
-    needs: [create-release, build-windows, build-linux, build-macos]
-    if: ${{ always() && needs.create-release.result == 'success' && needs.build-windows.result != 'failure' && needs.build-linux.result != 'failure' && needs.build-macos.result != 'failure' }}
+    needs: [check, create-release, build-windows, build-linux, build-macos]
+    if: ${{ always() && needs.check.result == 'success' && needs.create-release.result == 'success' && needs.build-windows.result != 'failure' && needs.build-linux.result != 'failure' && needs.build-macos.result != 'failure' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write

@@ -37,13 +37,14 @@ fi
 scripts/check-translations.sh
 
 if [[ "$FULL" == "1" ]]; then
+	# The frontend build script drops UI diagnostics from its normal output, but the
+	# live preview and the editor show them, so fail on them here instead of letting
+	# them pile up. Setting it for the whole clippy pass avoids a second compile.
+	export RAI_PAL_CHECK_UI_DIAGNOSTICS=1
+
 	if [[ "$MODE" == "check" ]]; then
 		cargo clippy --workspace --all-targets
 	else
 		cargo clippy --workspace --all-targets --fix --allow-dirty --allow-staged
 	fi
-
-	# The build script drops these from its normal output, but the live preview and
-	# the editor show them, so fail on them here instead of letting them pile up.
-	RAI_PAL_CHECK_UI_DIAGNOSTICS=1 cargo check -p rai-pal-frontend
 fi
