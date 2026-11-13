@@ -27,15 +27,16 @@ export component Sidebar inherits Rectangle {
 
     private property <bool> loading: Refresh.refreshing && Refresh.tasks.length > 0;
     private property <length> font-size: Theme.font-xs;
+    private property <bool> show-status: root.loading || root.status-text != "";
 
     VerticalLayout {
         padding-top: Theme.space-md;
 
         @children
 
-        RowDivider { }
+        if show-status: RowDivider { }
 
-        Rectangle {
+        if show-status: Rectangle {
             clip: true;
             border-top-left-radius: Theme.radius-md;
 
