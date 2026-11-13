@@ -1,7 +1,9 @@
 use std::{rc::Rc, sync::Arc, thread};
 
 use rai_pal_backend::{
-	local_database::game_database::GameDatabase, mod_providers::url_mod_provider, result::LogErrExt,
+	local_database::{app_database::DbMutex, game_database::GameDatabase},
+	mod_providers::url_mod_provider,
+	result::{Error, LogErrExt},
 };
 use slint::ComponentHandle;
 
@@ -103,178 +105,79 @@ impl CommandHandler {
 			return;
 		};
 
-		let url = window
-			.global::<crate::ConfirmModSourceState>()
-			.get_url()
-			.to_string();
+		let state = window.global::<crate::ConfirmModSourceState>();
+		let url = state.get_url().to_string();
 
-		if url.is_empty()
-			|| (window.global::<crate::ConfirmModSourceState>().get_state()
-				== crate::ActionState::Loading)
-		{
+		if url.is_empty() || state.get_state() == crate::ActionState::Loading {
 			return;
 		}
 
-		window
-			.global::<crate::ConfirmModSourceState>()
-			.set_state(crate::ActionState::Loading);
-		window
-			.global::<crate::ConfirmModSourceState>()
-			.set_error(MessageData::default());
+		state.set_state(crate::ActionState::Loading);
+		state.set_error(MessageData::default());
 
-		let window = window.as_weak();
-		let database = Arc::clone(&self.database);
-
-		thread::spawn(move || {
-			let result = url_mod_provider::add_url_mod_source(url.clone());
-
-			if result.is_ok()
-				&& let Err(err) = refresh::refresh_mods(&database)
-			{
-				log::warn!("Failed to refresh mods after changing URL mod sources: {err}");
-			}
-
-			crate::runtime::invoke_on_ui(move || {
-				let Some(window) = window.upgrade() else {
-					return;
-				};
+		run_mod_source_change(
+			window.as_weak(),
+			Arc::clone(&self.database),
+			move || url_mod_provider::add_url_mod_source(url),
+			|window, result| {
+				let confirm_state = window.global::<crate::ConfirmModSourceState>();
 
 				if let Err(err) = result {
-					window
-						.global::<crate::ConfirmModSourceState>()
-						.set_error(notifications::data(MessageContext::UpdateModSources, &err));
-					window
-						.global::<crate::ConfirmModSourceState>()
-						.set_state(crate::ActionState::Error);
+					confirm_state
+						.set_error(notifications::data(MessageContext::UpdateModSources, err));
+					confirm_state.set_state(crate::ActionState::Error);
 					return;
 				}
 
-				window
-					.global::<crate::ConfirmModSourceState>()
-					.set_state(crate::ActionState::Idle);
-				window
-					.global::<crate::ConfirmModSourceState>()
-					.set_open(false);
-
+				confirm_state.set_state(crate::ActionState::Idle);
+				confirm_state.set_open(false);
 				window
 					.global::<crate::ModSourcesState>()
 					.set_new_url("".into());
-				load_sources(&window);
-
-				if let Some(handler) = Self::current() {
-					handler.after_mod_refresh();
-				}
-			});
-		});
+			},
+		);
 	}
 
 	pub fn set_mod_source_enabled(&self, url: String, enabled: bool) {
-		let Some(main_window) = self.ui() else {
-			return;
-		};
-
-		if main_window.global::<crate::ModSourcesState>().get_state() == crate::ActionState::Loading
-		{
-			return;
-		}
-
-		main_window
-			.global::<crate::ModSourcesState>()
-			.set_state(crate::ActionState::Loading);
-		main_window
-			.global::<crate::ModSourcesState>()
-			.set_error(MessageData::default());
-
-		let window_weak = main_window.as_weak();
-		let database = Arc::clone(&self.database);
-
-		thread::spawn(move || {
-			let result = url_mod_provider::set_url_mod_source_enabled(&url, enabled);
-
-			if result.is_ok()
-				&& let Err(err) = refresh::refresh_mods(&database)
-			{
-				log::warn!("Failed to refresh mods after changing URL mod sources: {err}");
-			}
-
-			crate::runtime::invoke_on_ui(move || {
-				let Some(window) = window_weak.upgrade() else {
-					return;
-				};
-
-				if let Err(err) = result {
-					window
-						.global::<crate::ModSourcesState>()
-						.set_error(notifications::data(MessageContext::UpdateModSources, &err));
-					window
-						.global::<crate::ModSourcesState>()
-						.set_state(crate::ActionState::Error);
-				} else {
-					window
-						.global::<crate::ModSourcesState>()
-						.set_state(crate::ActionState::Idle);
-				}
-
-				load_sources(&window);
-
-				if let Some(handler) = Self::current() {
-					handler.after_mod_refresh();
-				}
-			});
+		self.change_mod_sources(move || {
+			url_mod_provider::set_url_mod_source_enabled(&url, enabled)
 		});
 	}
 
 	pub fn remove_mod_source(&self, url: String) {
-		let Some(main_window) = self.ui() else {
+		self.change_mod_sources(move || url_mod_provider::remove_url_mod_source(&url));
+	}
+
+	fn change_mod_sources(&self, action: impl FnOnce() -> Result<(), Error> + Send + 'static) {
+		let Some(window) = self.ui() else {
 			return;
 		};
 
-		if main_window.global::<crate::ModSourcesState>().get_state() == crate::ActionState::Loading
-		{
+		let state = window.global::<crate::ModSourcesState>();
+
+		if state.get_state() == crate::ActionState::Loading {
 			return;
 		}
 
-		main_window
-			.global::<crate::ModSourcesState>()
-			.set_state(crate::ActionState::Loading);
-		main_window
-			.global::<crate::ModSourcesState>()
-			.set_error(MessageData::default());
+		state.set_state(crate::ActionState::Loading);
+		state.set_error(MessageData::default());
 
-		let window_weak = main_window.as_weak();
-		let database = Arc::clone(&self.database);
-
-		thread::spawn(move || {
-			let result = url_mod_provider::remove_url_mod_source(&url);
-
-			if result.is_ok()
-				&& let Err(err) = refresh::refresh_mods(&database)
-			{
-				log::warn!("Failed to refresh mods after changing URL mod sources: {err}");
-			}
-
-			crate::runtime::invoke_on_ui(move || {
-				let Some(window) = window_weak.upgrade() else {
-					return;
-				};
-
-				window
-					.global::<crate::ModSourcesState>()
-					.set_state(crate::ActionState::Idle);
+		run_mod_source_change(
+			window.as_weak(),
+			Arc::clone(&self.database),
+			action,
+			|window, result| {
+				let sources_state = window.global::<crate::ModSourcesState>();
 
 				if let Err(err) = result {
-					window
-						.global::<crate::ModSourcesState>()
-						.set_error(notifications::data(MessageContext::UpdateModSources, &err));
+					sources_state
+						.set_error(notifications::data(MessageContext::UpdateModSources, err));
+					sources_state.set_state(crate::ActionState::Error);
+				} else {
+					sources_state.set_state(crate::ActionState::Idle);
 				}
-
-				load_sources(&window);
-
-				if let Some(handler) = Self::current() {
-					handler.after_mod_refresh();
-				}
-			});
-		});
+			},
+		);
 	}
 
 	fn after_mod_refresh(&self) {
@@ -294,6 +197,36 @@ impl CommandHandler {
 
 		self.refresh_mods(&updated_game);
 	}
+}
+
+fn run_mod_source_change(
+	window: slint::Weak<MainWindow>,
+	database: Arc<DbMutex>,
+	action: impl FnOnce() -> Result<(), Error> + Send + 'static,
+	on_finish: impl FnOnce(&MainWindow, &Result<(), Error>) + Send + 'static,
+) {
+	thread::spawn(move || {
+		let result = action();
+
+		if result.is_ok()
+			&& let Err(err) = refresh::refresh_mods(&database)
+		{
+			log::warn!("Failed to refresh mods after changing URL mod sources: {err}");
+		}
+
+		crate::runtime::invoke_on_ui(move || {
+			let Some(window) = window.upgrade() else {
+				return;
+			};
+
+			on_finish(&window, &result);
+			load_sources(&window);
+
+			if let Some(handler) = CommandHandler::current() {
+				handler.after_mod_refresh();
+			}
+		});
+	});
 }
 
 fn load_sources(window: &MainWindow) {
