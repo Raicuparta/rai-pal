@@ -57,9 +57,6 @@ impl CommandHandler {
 
 		window
 			.global::<crate::AppSettings>()
-			.set_selected_language("".into());
-		window
-			.global::<crate::AppSettings>()
 			.set_selected_color_scheme(AppColorScheme::Auto);
 		window
 			.global::<crate::AppSettings>()
@@ -93,9 +90,6 @@ impl CommandHandler {
 		i18n::apply_translation(locale);
 
 		if let Some(window) = self.ui() {
-			window
-				.global::<crate::AppSettings>()
-				.set_selected_language(value.into());
 			languages::refresh(&window, &self.settings.borrow(), self.detected_locale);
 		}
 	}

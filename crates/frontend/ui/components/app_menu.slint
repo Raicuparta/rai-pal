@@ -170,8 +170,7 @@ export component AppMenu inherits Rectangle {
 
                     selected(index) => {
                         AppSettings.selected-language-index = index;
-                        AppSettings.selected-language = index < 0 ? "" : AppSettings.language-options[index].value;
-                        AppActions.language-changed(AppSettings.selected-language);
+                        AppActions.language-changed(index < 0 ? "" : AppSettings.language-options[index].value);
                     }
                 }
             }

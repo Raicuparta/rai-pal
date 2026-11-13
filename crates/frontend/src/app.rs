@@ -215,14 +215,6 @@ fn apply_initial_state(
 ) {
 	i18n::apply_translation(initial_locale);
 	let settings = window.global::<crate::AppSettings>();
-	settings.set_selected_language(
-		app_settings
-			.borrow()
-			.override_language
-			.map(AppLocale::code)
-			.unwrap_or_default()
-			.into(),
-	);
 	settings.set_detected_language_name(
 		detected_locale
 			.map(AppLocale::native_name)

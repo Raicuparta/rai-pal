@@ -13,4 +13,5 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Done
 
 - Added the missing translation for the "Data" section label in the game details sidebar.
+- Removed the write-only `AppSettings.selected-language` Slint property; the selected language index is the only state now.
 - Replaced the hardcoded red dialog error texts with a shared `ErrorMessage` component using `Theme.status-error`.
