@@ -64,7 +64,7 @@ pub fn exe_folder() -> Result<PathBuf> {
 }
 
 fn portable_data_path() -> Result<PathBuf> {
-	Ok(exe_folder()?.join("Data"))
+	Ok(exe_folder()?.join("RaiPalData"))
 }
 
 pub fn app_data_file(file_name: &str) -> Result<PathBuf> {
