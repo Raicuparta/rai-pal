@@ -1,15 +1,10 @@
 use slint::ComponentHandle as _;
-use std::{
-	rc::Rc,
-	sync::{Arc, Mutex},
-};
+use std::rc::Rc;
 
 use rai_pal_backend::game::Game;
 use slint::ModelRc;
 
 use crate::{GameRowData, MainWindow, ProviderActionData, model::apply_game_to_row};
-
-pub type SelectedGameState = Arc<Mutex<Option<(usize, Game)>>>;
 
 pub fn show(window: &MainWindow, game: &Game, mut row: GameRowData) {
 	apply_game_to_row(&mut row, game);

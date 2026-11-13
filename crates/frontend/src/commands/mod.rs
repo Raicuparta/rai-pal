@@ -1,21 +1,15 @@
-use std::{
-	cell::RefCell,
-	fmt::Display,
-	rc::Rc,
-	sync::{Arc, Mutex},
-};
+use std::{cell::RefCell, fmt::Display, rc::Rc, sync::Arc};
 
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
 	game::Game,
 	games_query::GamesQuery,
 	local_database::app_database::DbMutex,
-	result::LogErrExt,
 };
 
 use crate::{
 	ActionKey, MainWindow, MessageContext, action_state, downloads::Tracker,
-	scheduler::FetchScheduler, selected::SelectedGameState,
+	scheduler::FetchScheduler,
 };
 
 use self::{confirmation::PendingState, updater::Updater};
@@ -87,8 +81,8 @@ pub struct CommandHandler {
 	pub downloads: Tracker,
 
 	window: slint::Weak<MainWindow>,
-	selected_game: SelectedGameState,
-	pending_confirmation: Rc<PendingState>,
+	selected_game: RefCell<Option<(usize, Game)>>,
+	pending_confirmation: PendingState,
 	mod_families: Vec<String>,
 	detected_locale: Option<AppLocale>,
 	updater: Updater,
@@ -110,8 +104,8 @@ impl CommandHandler {
 			scheduler,
 			downloads: Tracker::new(window.clone()),
 			window,
-			selected_game: Arc::new(Mutex::new(None)),
-			pending_confirmation: Rc::new(PendingState::default()),
+			selected_game: RefCell::default(),
+			pending_confirmation: PendingState::default(),
 			mod_families,
 			detected_locale,
 			updater,
@@ -135,30 +129,15 @@ impl CommandHandler {
 	}
 
 	pub fn selected_game(&self) -> Option<(usize, Game)> {
-		self.selected_game
-			.lock()
-			.ok_or_log("Failed to lock selected game")
-			.and_then(|selected| selected.clone())
+		self.selected_game.borrow().clone()
 	}
 
 	pub fn set_selected_game(&self, index: usize, game: Game) {
-		if let Some(mut selected) = self
-			.selected_game
-			.lock()
-			.ok_or_log("Failed to lock selected game")
-		{
-			*selected = Some((index, game));
-		}
+		*self.selected_game.borrow_mut() = Some((index, game));
 	}
 
 	pub fn clear_selected_game(&self) {
-		if let Some(mut selected) = self
-			.selected_game
-			.lock()
-			.ok_or_log("Failed to lock selected game")
-		{
-			*selected = None;
-		}
+		*self.selected_game.borrow_mut() = None;
 	}
 
 	pub fn query(&self) -> GamesQuery {
