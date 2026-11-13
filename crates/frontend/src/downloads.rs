@@ -27,9 +27,7 @@ enum Phase {
 
 #[derive(Clone)]
 struct Item {
-	id: String,
-	kind: DownloadItemKind,
-	mod_id: String,
+	step: InstallStep,
 	progress: f64,
 	phase: Phase,
 }
@@ -154,9 +152,8 @@ impl Tracker {
 			let rows = items
 				.into_iter()
 				.map(|item| DownloadItemData {
-					id: item.id.into(),
-					kind: item.kind,
-					mod_id: item.mod_id.into(),
+					kind: item_kind(item.step.kind),
+					mod_id: item.step.mod_id.into(),
 					progress: progress_to_f32(item.progress),
 					phase: match item.phase {
 						Phase::Pending => DownloadPhase::Pending,
@@ -232,12 +229,10 @@ const fn item_kind(kind: InstallStepKind) -> DownloadItemKind {
 }
 
 fn set_item(items: &mut Vec<Item>, step: &InstallStep, progress: Option<f64>, phase: Phase) {
-	let id = step.id();
-	let kind = item_kind(step.kind);
-
-	if let Some(item) = items.iter_mut().find(|item| item.id == id) {
-		item.kind = kind;
-		item.mod_id.clone_from(&step.mod_id);
+	if let Some(item) = items
+		.iter_mut()
+		.find(|item| item.step.mod_id == step.mod_id && item.step.kind == step.kind)
+	{
 		if let Some(progress) = progress {
 			item.progress = progress;
 		}
@@ -246,9 +241,7 @@ fn set_item(items: &mut Vec<Item>, step: &InstallStep, progress: Option<f64>, ph
 	}
 
 	items.push(Item {
-		id,
-		kind,
-		mod_id: step.mod_id.clone(),
+		step: step.clone(),
 		progress: progress.unwrap_or_default(),
 		phase,
 	});

@@ -465,25 +465,10 @@ pub enum InstallStepKind {
 	Extract,
 }
 
-impl InstallStepKind {
-	const fn suffix(self) -> &'static str {
-		match self {
-			Self::Download => "download",
-			Self::Extract => "extract",
-		}
-	}
-}
-
 #[derive(Clone, Debug)]
 pub struct InstallStep {
 	pub mod_id: String,
 	pub kind: InstallStepKind,
-}
-
-impl InstallStep {
-	pub fn id(&self) -> String {
-		format!("{}:{}", self.mod_id, self.kind.suffix())
-	}
 }
 
 pub fn install_steps(mods: &[Mod]) -> Vec<InstallStep> {
