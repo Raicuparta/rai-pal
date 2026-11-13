@@ -118,6 +118,9 @@ fn run_query(
 				}
 			};
 
+			// Bumps the generation again so fetches that were queued against the
+			// old row list (still on screen until the rows below are synced) get
+			// discarded instead of landing on the wrong index.
 			ui_scheduler.begin_query();
 
 			let list = window.global::<crate::GamesList>();
