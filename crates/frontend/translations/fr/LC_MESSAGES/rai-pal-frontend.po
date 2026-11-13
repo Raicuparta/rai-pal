@@ -120,6 +120,10 @@ msgstr "Télécharger {0}"
 msgctxt "downloads"
 msgid "Extract {0}"
 msgstr "Extraire {0}"
+msgctxt "downloads"
+msgid "{0} failed"
+msgstr "{0} a échoué"
+
 
 msgctxt "fileDialog"
 msgid "Select the game executable"

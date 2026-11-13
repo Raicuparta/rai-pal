@@ -120,6 +120,10 @@ msgstr "下载 {0}"
 msgctxt "downloads"
 msgid "Extract {0}"
 msgstr "解压 {0}"
+msgctxt "downloads"
+msgid "{0} failed"
+msgstr "{0} 失败"
+
 
 msgctxt "fileDialog"
 msgid "Select the game executable"

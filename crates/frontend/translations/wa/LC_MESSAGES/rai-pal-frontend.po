@@ -120,6 +120,10 @@ msgstr "Waaaaaah {0}"
 msgctxt "downloads"
 msgid "Extract {0}"
 msgstr "Waaaaah {0}"
+msgctxt "downloads"
+msgid "{0} failed"
+msgstr "Waaah! {0} wah!"
+
 
 msgctxt "fileDialog"
 msgid "Select the game executable"

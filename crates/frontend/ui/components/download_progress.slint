@@ -1,5 +1,5 @@
 import { ProgressIndicator } from "std-widgets.slint";
-import { DownloadItemData } from "../app_types.slint";
+import { DownloadItemData, DownloadPhase } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
@@ -59,7 +59,10 @@ export component DownloadProgress inherits Rectangle {
 
         for item in DownloadsState.items : PopupMenuItem {
             enabled: false;
-            text: "\{Tr.download-step-label(item.kind, item.mod-id)}: \{round(item.progress)}%";
+            icon: item.phase == DownloadPhase.failed ? Icon.error : item.phase == DownloadPhase.finished ? Icon.success : Icon.none;
+            text: item.phase == DownloadPhase.failed
+                ? @tr("downloads" => "{0} failed", Tr.download-step-label(item.kind, item.mod-id))
+                : "\{Tr.download-step-label(item.kind, item.mod-id)}: \{round(item.progress)}%";
         }
     }
 
