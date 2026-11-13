@@ -177,10 +177,6 @@ msgctxt "filterMenu"
 msgid "Reset all filters"
 msgstr "重置所有筛选"
 
-msgctxt "filterMenu"
-msgid "Clear search"
-msgstr "清除搜索"
-
 msgctxt "filterProperty"
 msgid "Provider"
 msgstr "平台"
@@ -808,3 +804,15 @@ msgstr "模组可以使用此功能访问你的 Discord 用户名、头像、身
 msgctxt "sidebar"
 msgid "Loading:"
 msgstr "加载中："
+
+msgctxt "gamesPage"
+msgid "Search games"
+msgstr "搜索游戏"
+
+msgctxt "gamesSort"
+msgid "Sort games"
+msgstr "排序游戏"
+
+msgctxt "textField"
+msgid "Clear"
+msgstr "清除"

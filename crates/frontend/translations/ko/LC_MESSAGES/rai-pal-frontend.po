@@ -177,10 +177,6 @@ msgctxt "filterMenu"
 msgid "Reset all filters"
 msgstr "모든 필터 초기화"
 
-msgctxt "filterMenu"
-msgid "Clear search"
-msgstr "검색 지우기"
-
 msgctxt "filterProperty"
 msgid "Provider"
 msgstr "플랫폼"
@@ -808,3 +804,15 @@ msgstr "모드가 이걸로 Discord 사용자 이름, 아바타, 역할 등에 �
 msgctxt "sidebar"
 msgid "Loading:"
 msgstr "불러오는 중:"
+
+msgctxt "gamesPage"
+msgid "Search games"
+msgstr "게임 검색"
+
+msgctxt "gamesSort"
+msgid "Sort games"
+msgstr "게임 정렬"
+
+msgctxt "textField"
+msgid "Clear"
+msgstr "지우기"

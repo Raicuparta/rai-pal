@@ -177,10 +177,6 @@ msgctxt "filterMenu"
 msgid "Reset all filters"
 msgstr "Waaah wah waaaaah!"
 
-msgctxt "filterMenu"
-msgid "Clear search"
-msgstr "Waaah waaaah!"
-
 msgctxt "filterProperty"
 msgid "Provider"
 msgstr "Waaaaaah!"
@@ -808,3 +804,15 @@ msgstr "Waah wah wah waah to waaaah waah waaaaah waaaaaaah waaaaah waaaah waah!"
 msgctxt "sidebar"
 msgid "Loading:"
 msgstr "Waahing:"
+
+msgctxt "gamesPage"
+msgid "Search games"
+msgstr "Wah wah waaah"
+
+msgctxt "gamesSort"
+msgid "Sort games"
+msgstr "Wah wah waaah wah"
+
+msgctxt "textField"
+msgid "Clear"
+msgstr "Wah"

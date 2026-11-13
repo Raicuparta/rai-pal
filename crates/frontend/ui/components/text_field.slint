@@ -8,6 +8,7 @@ export component TextField inherits Rectangle {
     in property <bool> read-only: false;
     in property <Icon> icon: Icon.none;
     in property <bool> clearable: false;
+    in property <string> tooltip: "";
 
     callback edited(text: string);
     callback accepted;
@@ -56,6 +57,7 @@ export component TextField inherits Rectangle {
                 font-size: Theme.font-sm;
                 color: Theme.foreground;
                 read-only: root.read-only;
+                accessible-label: root.tooltip;
                 text <=> root.text;
 
                 edited => {
@@ -78,12 +80,16 @@ export component TextField inherits Rectangle {
 
         if root.clearable && root.text != "": ResetButton {
             icon-size: Theme.font-sm;
-            tooltip: @tr("filterMenu" => "Clear search");
+            tooltip: @tr("textField" => "Clear");
 
             clicked => {
                 root.text = "";
                 root.edited("");
             }
         }
+    }
+
+    if root.tooltip != "": Tooltip {
+        text: @markdown("\{root.tooltip}");
     }
 }

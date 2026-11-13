@@ -135,6 +135,7 @@ export component GamesPage inherits Rectangle {
                         text <=> GamesQuery.search-text;
                         icon: Icon.search;
                         clearable: true;
+                        tooltip: @tr("gamesPage" => "Search games");
 
                         edited(text) => {
                             GamesActions.search-changed(text);
@@ -144,6 +145,7 @@ export component GamesPage inherits Rectangle {
                     SortMenu {
                         options: GamesQuery.sort-options;
                         sort-index <=> GamesQuery.sort-index;
+                        tooltip: @tr("gamesSort" => "Sort games");
 
                         sort-changed(index) => {
                             GamesActions.sort-changed(index);

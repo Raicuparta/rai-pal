@@ -177,10 +177,6 @@ msgctxt "filterMenu"
 msgid "Reset all filters"
 msgstr "すべてのフィルターをリセット"
 
-msgctxt "filterMenu"
-msgid "Clear search"
-msgstr "検索をクリア"
-
 msgctxt "filterProperty"
 msgid "Provider"
 msgstr "プロバイダー"
@@ -808,3 +804,15 @@ msgstr "Mod はこれを使ってあなたのDiscordユーザー名、アバタ�
 msgctxt "sidebar"
 msgid "Loading:"
 msgstr "読み込み中:"
+
+msgctxt "gamesPage"
+msgid "Search games"
+msgstr "ゲームを検索"
+
+msgctxt "gamesSort"
+msgid "Sort games"
+msgstr "ゲームを並べ替え"
+
+msgctxt "textField"
+msgid "Clear"
+msgstr "クリア"

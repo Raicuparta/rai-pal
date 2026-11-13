@@ -177,10 +177,6 @@ msgctxt "filterMenu"
 msgid "Reset all filters"
 msgstr "Restablecer todos los filtros"
 
-msgctxt "filterMenu"
-msgid "Clear search"
-msgstr "Borrar búsqueda"
-
 msgctxt "filterProperty"
 msgid "Provider"
 msgstr "Proveedor"
@@ -808,3 +804,15 @@ msgstr "Los mods pueden usar esto para acceder a tu nombre de usuario de Discord
 msgctxt "sidebar"
 msgid "Loading:"
 msgstr "Cargando:"
+
+msgctxt "gamesPage"
+msgid "Search games"
+msgstr "Buscar juegos"
+
+msgctxt "gamesSort"
+msgid "Sort games"
+msgstr "Ordenar juegos"
+
+msgctxt "textField"
+msgid "Clear"
+msgstr "Borrar"

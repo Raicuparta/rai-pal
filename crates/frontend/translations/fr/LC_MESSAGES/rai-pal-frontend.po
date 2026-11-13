@@ -177,10 +177,6 @@ msgctxt "filterMenu"
 msgid "Reset all filters"
 msgstr "Réinitialiser tous les filtres"
 
-msgctxt "filterMenu"
-msgid "Clear search"
-msgstr "Effacer la recherche"
-
 msgctxt "filterProperty"
 msgid "Provider"
 msgstr "Fournisseur"
@@ -808,3 +804,15 @@ msgstr "Les mods peuvent utiliser cela pour accéder à votre nom d'utilisateur 
 msgctxt "sidebar"
 msgid "Loading:"
 msgstr "Chargement :"
+
+msgctxt "gamesPage"
+msgid "Search games"
+msgstr "Rechercher des jeux"
+
+msgctxt "gamesSort"
+msgid "Sort games"
+msgstr "Trier les jeux"
+
+msgctxt "textField"
+msgid "Clear"
+msgstr "Effacer"
