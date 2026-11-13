@@ -11,7 +11,7 @@ export component SortMenu inherits BaseButton {
     callback sort-changed(index: int);
 
     width: self.height;
-    height: Theme.control-height - Theme.space-xs;
+    height: Theme.control-height;
     horizontal-stretch: 0;
     accessible-label: root.sort-index >= 0 && root.sort-index < root.options.length ? root.options[root.sort-index].label : "";
     tint: Theme.surface-background;

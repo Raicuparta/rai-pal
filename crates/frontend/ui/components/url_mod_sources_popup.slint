@@ -24,8 +24,6 @@ component UrlModSourceRow inherits Rectangle {
     callback toggled(enabled: bool);
     callback removed;
 
-    height: Theme.control-height;
-
     HorizontalLayout {
         spacing: Theme.space-sm;
         cross-axis-alignment: center;
@@ -45,7 +43,7 @@ component UrlModSourceRow inherits Rectangle {
             read-only: true;
         }
 
-        if !root.source.is-default : Button {
+        if !root.source.is-default: Button {
             text: @tr("manualGames" => "Remove");
             icon: Icon.delete;
             enabled: !root.toggling;
@@ -61,8 +59,7 @@ component UrlModSourceRow inherits Rectangle {
 export component UrlModSourcesPopup inherits Modal {
     title: @tr("urlModSources" => "Mod Sources");
 
-
-    if ModSourcesState.default-source.url != "" : UrlModSourceRow {
+    if ModSourcesState.default-source.url != "": UrlModSourceRow {
         source: ModSourcesState.default-source;
         toggling: ModSourcesState.state == ActionState.loading;
 
@@ -71,7 +68,7 @@ export component UrlModSourcesPopup inherits Modal {
         }
     }
 
-    for source in ModSourcesState.sources : UrlModSourceRow {
+    for source in ModSourcesState.sources: UrlModSourceRow {
         source: source;
         toggling: ModSourcesState.state == ActionState.loading;
 
@@ -110,7 +107,7 @@ export component UrlModSourcesPopup inherits Modal {
         }
     }
 
-    if Tr.has-message(ModSourcesState.error) : ErrorMessage {
+    if Tr.has-message(ModSourcesState.error): ErrorMessage {
         message: ModSourcesState.error;
     }
 

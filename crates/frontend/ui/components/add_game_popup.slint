@@ -76,7 +76,6 @@ export component AddGamePopup inherits Modal {
             text: @tr("manualGames" => "Select game executable");
             icon: Icon.play-exe;
             tint: Theme.primary;
-            height: Theme.control-height;
 
             clicked => {
                 DialogActions.select-game-executable(
@@ -90,7 +89,7 @@ export component AddGamePopup inherits Modal {
         Button {
             text: @tr("manualGames" => "Select game directory. Can be slow!");
             icon: Icon.folder;
-            height: Theme.control-height;
+            tint: Theme.surface-background;
 
             clicked => {
                 DialogActions.select-game-directory(@tr("fileDialog" => "Select a game directory"));
@@ -129,7 +128,6 @@ export component AddGamePopup inherits Modal {
         Button {
             text: @tr("manualGames" => "Cancel");
             icon: Icon.close;
-            height: Theme.control-height;
 
             clicked => {
                 DialogActions.cancel-game-scan();
