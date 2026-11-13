@@ -40,7 +40,7 @@ impl CommandHandler {
 				analytics::send_event(rai_pal_backend::analytics::Event::UserSignIn);
 			}
 
-			apply_result(window, result);
+			apply_result(&window, result);
 		});
 	}
 
@@ -65,7 +65,7 @@ impl CommandHandler {
 				get_user_auth_state().await
 			});
 
-			apply_result(window, result);
+			apply_result(&window, result);
 		});
 	}
 }
@@ -74,16 +74,12 @@ fn refresh_state(window: slint::Weak<MainWindow>) {
 	thread::spawn(move || {
 		let result = runtime::block_on(get_user_auth_state());
 
-		apply_result(window, result);
+		apply_result(&window, result);
 	});
 }
 
-fn apply_result(window: slint::Weak<MainWindow>, result: Result<AuthState, String>) {
-	crate::runtime::invoke_on_ui(move || {
-		let Some(window) = window.upgrade() else {
-			return;
-		};
-
+fn apply_result(window: &slint::Weak<MainWindow>, result: Result<AuthState, String>) {
+	crate::runtime::with_ui_window(window, move |window| {
 		window
 			.global::<crate::UserState>()
 			.set_state(crate::ActionState::Idle);

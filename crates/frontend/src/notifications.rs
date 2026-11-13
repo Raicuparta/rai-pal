@@ -48,11 +48,7 @@ pub fn error_async(window: &slint::Weak<MainWindow>, message: MessageData) {
 fn show_async(window: &slint::Weak<MainWindow>, message: MessageData, kind: NotificationKind) {
 	let window = window.clone();
 
-	crate::runtime::invoke_on_ui(move || {
-		let Some(window) = window.upgrade() else {
-			return;
-		};
-
+	crate::runtime::with_ui_window(&window, move |window| {
 		show(&window, message, kind);
 	});
 }

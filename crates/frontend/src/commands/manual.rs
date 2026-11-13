@@ -70,27 +70,21 @@ impl CommandHandler {
 				Ok::<(), rai_pal_backend::result::Error>(())
 			});
 
-			crate::runtime::invoke_on_ui(move || {
-				let Some(upgraded_window) = window_weak.upgrade() else {
-					return;
-				};
+			crate::runtime::with_ui_window(&window_weak, move |upgraded_window| match result {
+				Ok(()) => {
+					upgraded_window
+						.global::<crate::AddGameState>()
+						.set_open(false);
 
-				match result {
-					Ok(()) => {
-						upgraded_window
-							.global::<crate::AddGameState>()
-							.set_open(false);
-
-						if let Some(handler) = Self::current() {
-							handler.refresh_after_change();
-						}
+					if let Some(handler) = Self::current() {
+						handler.refresh_after_change();
 					}
-					Err(err) => {
-						notifications::error(
-							&upgraded_window,
-							notifications::data(MessageContext::None, &err),
-						);
-					}
+				}
+				Err(err) => {
+					notifications::error(
+						&upgraded_window,
+						notifications::data(MessageContext::None, &err),
+					);
 				}
 			});
 		});
@@ -232,11 +226,7 @@ impl CommandHandler {
 				Ok::<(), rai_pal_backend::result::Error>(())
 			});
 
-			crate::runtime::invoke_on_ui(move || {
-				let Some(window) = window_weak.upgrade() else {
-					return;
-				};
-
+			crate::runtime::with_ui_window(&window_weak, move |window| {
 				reset_scan(&window);
 
 				match result {
@@ -272,25 +262,16 @@ impl CommandHandler {
 				Ok::<(), rai_pal_backend::result::Error>(())
 			});
 
-			crate::runtime::invoke_on_ui(move || {
-				let Some(window) = window_weak.upgrade() else {
-					return;
-				};
+			crate::runtime::with_ui_window(&window_weak, move |window| match result {
+				Ok(()) => {
+					reload_directories(&window);
 
-				match result {
-					Ok(()) => {
-						reload_directories(&window);
-
-						if let Some(handler) = Self::current() {
-							handler.refresh_after_change();
-						}
+					if let Some(handler) = Self::current() {
+						handler.refresh_after_change();
 					}
-					Err(err) => {
-						notifications::error(
-							&window,
-							notifications::data(MessageContext::None, &err),
-						);
-					}
+				}
+				Err(err) => {
+					notifications::error(&window, notifications::data(MessageContext::None, &err));
 				}
 			});
 		});
@@ -314,25 +295,16 @@ impl CommandHandler {
 				Ok::<(), rai_pal_backend::result::Error>(())
 			});
 
-			crate::runtime::invoke_on_ui(move || {
-				let Some(window) = window_weak.upgrade() else {
-					return;
-				};
-
-				match result {
-					Ok(()) => {
-						if let Some(handler) = Self::current() {
-							handler.clear_selected_game();
-							selected::hide(&window);
-							handler.refresh_after_change();
-						}
+			crate::runtime::with_ui_window(&window_weak, move |window| match result {
+				Ok(()) => {
+					if let Some(handler) = Self::current() {
+						handler.clear_selected_game();
+						selected::hide(&window);
+						handler.refresh_after_change();
 					}
-					Err(err) => {
-						notifications::error(
-							&window,
-							notifications::data(MessageContext::None, &err),
-						);
-					}
+				}
+				Err(err) => {
+					notifications::error(&window, notifications::data(MessageContext::None, &err));
 				}
 			});
 		});
@@ -360,23 +332,14 @@ impl CommandHandler {
 				Ok::<(), rai_pal_backend::result::Error>(())
 			});
 
-			crate::runtime::invoke_on_ui(move || {
-				let Some(window) = window_weak.upgrade() else {
-					return;
-				};
-
-				match result {
-					Ok(()) => {
-						if let Some(handler) = Self::current() {
-							handler.refresh_after_change();
-						}
+			crate::runtime::with_ui_window(&window_weak, move |window| match result {
+				Ok(()) => {
+					if let Some(handler) = Self::current() {
+						handler.refresh_after_change();
 					}
-					Err(err) => {
-						notifications::error(
-							&window,
-							notifications::data(MessageContext::None, &err),
-						);
-					}
+				}
+				Err(err) => {
+					notifications::error(&window, notifications::data(MessageContext::None, &err));
 				}
 			});
 		});

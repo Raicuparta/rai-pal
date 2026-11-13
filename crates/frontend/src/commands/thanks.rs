@@ -32,11 +32,7 @@ fn load(window: slint::Weak<MainWindow>) {
 	thread::spawn(move || {
 		let patrons = fetch_patrons();
 
-		crate::runtime::invoke_on_ui(move || {
-			let Some(window) = window.upgrade() else {
-				return;
-			};
-
+		crate::runtime::with_ui_window(&window, move |window| {
 			let patrons = patrons
 				.into_iter()
 				.map(|patron| {

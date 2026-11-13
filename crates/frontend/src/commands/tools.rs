@@ -43,31 +43,25 @@ impl CommandHandler {
 				.and_then(|()| GameProviderId::Steam.insert_games(&database))
 				.and_then(|()| database.refresh_installed_mods());
 
-			crate::runtime::invoke_on_ui(move || {
-				let Some(window) = window.upgrade() else {
-					return;
-				};
+			crate::runtime::with_ui_window(&window, move |window| match result {
+				Ok(()) => {
+					window
+						.global::<crate::SteamCacheState>()
+						.set_state(crate::ActionState::Success);
 
-				match result {
-					Ok(()) => {
-						window
-							.global::<crate::SteamCacheState>()
-							.set_state(crate::ActionState::Success);
-
-						if let Some(handler) = Self::current() {
-							handler.refresh_filters();
-							handler.start_query(Duration::ZERO, ScrollBehavior::Reset);
-							handler.reload_selected_game();
-						}
+					if let Some(handler) = Self::current() {
+						handler.refresh_filters();
+						handler.start_query(Duration::ZERO, ScrollBehavior::Reset);
+						handler.reload_selected_game();
 					}
-					Err(err) => {
-						window
-							.global::<crate::SteamCacheState>()
-							.set_error(notifications::data(MessageContext::ResetSteamCache, err));
-						window
-							.global::<crate::SteamCacheState>()
-							.set_state(crate::ActionState::Error);
-					}
+				}
+				Err(err) => {
+					window
+						.global::<crate::SteamCacheState>()
+						.set_error(notifications::data(MessageContext::ResetSteamCache, err));
+					window
+						.global::<crate::SteamCacheState>()
+						.set_state(crate::ActionState::Error);
 				}
 			});
 		});
@@ -98,23 +92,17 @@ impl CommandHandler {
 		thread::spawn(move || {
 			let result = add_shortcut();
 
-			crate::runtime::invoke_on_ui(move || {
-				let Some(window) = window.upgrade() else {
-					return;
-				};
-
-				match result {
-					Ok(()) => window
+			crate::runtime::with_ui_window(&window, move |window| match result {
+				Ok(()) => window
+					.global::<crate::SteamShortcutState>()
+					.set_state(crate::ActionState::Success),
+				Err(err) => {
+					window
 						.global::<crate::SteamShortcutState>()
-						.set_state(crate::ActionState::Success),
-					Err(err) => {
-						window
-							.global::<crate::SteamShortcutState>()
-							.set_error(notifications::data(MessageContext::AddSteamShortcut, err));
-						window
-							.global::<crate::SteamShortcutState>()
-							.set_state(crate::ActionState::Error);
-					}
+						.set_error(notifications::data(MessageContext::AddSteamShortcut, err));
+					window
+						.global::<crate::SteamShortcutState>()
+						.set_state(crate::ActionState::Error);
 				}
 			});
 		});

@@ -134,11 +134,7 @@ impl Tracker {
 
 		let window = self.window.clone();
 
-		crate::runtime::invoke_on_ui(move || {
-			let Some(window) = window.upgrade() else {
-				return;
-			};
-
+		crate::runtime::with_ui_window(&window, move |window| {
 			let overall_progress = if items.is_empty() {
 				0.0
 			} else {

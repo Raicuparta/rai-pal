@@ -325,11 +325,7 @@ impl RefreshTasks {
 		let tasks = tasks.to_vec();
 		let active = !tasks.is_empty();
 
-		crate::runtime::invoke_on_ui(move || {
-			let Some(window) = window.upgrade() else {
-				return;
-			};
-
+		crate::runtime::with_ui_window(&window, move |window| {
 			window.global::<crate::Refresh>().set_refreshing(active);
 			window
 				.global::<crate::Refresh>()

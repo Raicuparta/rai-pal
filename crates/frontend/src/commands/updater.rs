@@ -114,11 +114,7 @@ impl Updater {
 			if let Err(err) = result {
 				log::error!("Failed to install app update: {err}");
 
-				crate::runtime::invoke_on_ui(move || {
-					let Some(window) = window.upgrade() else {
-						return;
-					};
-
+				crate::runtime::with_ui_window(&window, move |window| {
 					window
 						.global::<crate::UpdateState>()
 						.set_state(crate::ActionState::Idle);

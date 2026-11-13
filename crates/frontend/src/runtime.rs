@@ -20,3 +20,16 @@ pub fn invoke_on_ui(callback: impl FnOnce() + Send + 'static) {
 		log::warn!("Failed to invoke UI callback: {err}");
 	}
 }
+
+pub fn with_ui_window(
+	window: &slint::Weak<crate::MainWindow>,
+	callback: impl FnOnce(crate::MainWindow) + Send + 'static,
+) {
+	let window = window.clone();
+
+	invoke_on_ui(move || {
+		if let Some(window) = window.upgrade() {
+			callback(window);
+		}
+	});
+}

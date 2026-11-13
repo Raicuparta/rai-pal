@@ -58,32 +58,26 @@ impl CommandHandler {
 		thread::spawn(move || {
 			let result = get_mods(&url);
 
-			crate::runtime::invoke_on_ui(move || {
-				let Some(window) = window.upgrade() else {
-					return;
-				};
-
-				match result {
-					Ok(mods) => {
-						let titles = mods
-							.into_iter()
-							.map(|game_mod| slint::SharedString::from(game_mod.title))
-							.collect::<Vec<_>>();
-						window
-							.global::<crate::ConfirmModSourceState>()
-							.set_mods(Rc::new(slint::VecModel::from(titles)).into());
-						window
-							.global::<crate::ConfirmModSourceState>()
-							.set_state(crate::ActionState::Success);
-					}
-					Err(err) => {
-						window
-							.global::<crate::ConfirmModSourceState>()
-							.set_error(notifications::data(MessageContext::UpdateModSources, &err));
-						window
-							.global::<crate::ConfirmModSourceState>()
-							.set_state(crate::ActionState::Error);
-					}
+			crate::runtime::with_ui_window(&window, move |window| match result {
+				Ok(mods) => {
+					let titles = mods
+						.into_iter()
+						.map(|game_mod| slint::SharedString::from(game_mod.title))
+						.collect::<Vec<_>>();
+					window
+						.global::<crate::ConfirmModSourceState>()
+						.set_mods(Rc::new(slint::VecModel::from(titles)).into());
+					window
+						.global::<crate::ConfirmModSourceState>()
+						.set_state(crate::ActionState::Success);
+				}
+				Err(err) => {
+					window
+						.global::<crate::ConfirmModSourceState>()
+						.set_error(notifications::data(MessageContext::UpdateModSources, &err));
+					window
+						.global::<crate::ConfirmModSourceState>()
+						.set_state(crate::ActionState::Error);
 				}
 			});
 		});
@@ -214,11 +208,7 @@ fn run_mod_source_change(
 			log::warn!("Failed to refresh mods after changing URL mod sources: {err}");
 		}
 
-		crate::runtime::invoke_on_ui(move || {
-			let Some(window) = window.upgrade() else {
-				return;
-			};
-
+		crate::runtime::with_ui_window(&window, move |window| {
 			on_finish(&window, &result);
 			load_sources(&window);
 
