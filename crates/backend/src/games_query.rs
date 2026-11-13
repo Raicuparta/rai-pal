@@ -246,6 +246,7 @@ pub enum GamesSortBy {
 #[serde(rename_all = "camelCase")]
 pub struct GamesQuery {
 	pub filter: GamesFilter,
+	#[serde(skip)]
 	pub search: String,
 	pub sort_by: GamesSortBy,
 	pub sort_descending: bool,

@@ -164,7 +164,6 @@ impl CommandHandler {
 
 	pub fn set_search_text(&self, text: &str) {
 		self.settings.borrow_mut().games_query.search = text.to_string();
-		self.persist_settings();
 		self.start_query(Duration::from_millis(200), ScrollBehavior::Reset);
 	}
 
