@@ -11,7 +11,7 @@ export component ModsTabRow inherits VerticalLayout {
     in property <ModsTabModData> mod-data;
     in property <bool> indented: false;
 
-    private property <bool> has-mod-actions: mod-data.can-run || mod-data.can-install || mod-data.source-code != "";
+    private property <bool> has-mod-actions: mod-data.can-run || mod-data.can-install;
 
     vertical-stretch: 0;
     alignment: start;
@@ -40,17 +40,17 @@ export component ModsTabRow inherits VerticalLayout {
             }
         }
 
+        if root.has-mod-actions: PopupMenuSeparator { }
+
         if mod-data.source-code != "": PopupMenuItem {
             text: @tr("modModal" => "Website");
-            icon: Icon.website;
+            icon: Icon.external-link;
 
             clicked => {
                 ModActions.open-url(mod-data.source-code);
                 menu.close();
             }
         }
-
-        if root.has-mod-actions: PopupMenuSeparator { }
 
         PopupMenuItem {
             text: @tr("debugData" => "Debug data");

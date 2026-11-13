@@ -523,6 +523,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		incompatible: is_incompatible,
 		deprecated: manifest.deprecated == Some(true),
 		has_remote_config,
+		source_code: manifest.source_code.into(),
 		has_exe_path: game.exe_path.is_some(),
 		has_install: manifest.install.is_some(),
 		has_run: manifest.run_for_game.is_some(),

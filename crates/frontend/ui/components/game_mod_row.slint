@@ -18,6 +18,7 @@ export component GameModRow inherits VerticalLayout {
     private property <bool> can-run: root.can-show-actions && game-mod.has-run && (!game-mod.has-install || game-mod.installed);
     private property <bool> can-edit-config: root.can-show-actions && game-mod.installed && (game-mod.has-config || game-mod.has-remote-config);
     private property <bool> can-open-mod-folder: root.can-show-actions && game-mod.installed;
+    private property <bool> can-open-website: game-mod.source-code != "";
     private property <bool> can-download-config: root.can-show-actions && game-mod.installed && game-mod.has-remote-config;
     private property <bool> can-reinstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
     private property <bool> can-uninstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
@@ -44,7 +45,7 @@ export component GameModRow inherits VerticalLayout {
         }
 
         if root.can-edit-config: PopupMenuItem {
-            text: @tr("gameModRow" => "Open folder containing this mod's config files");
+            text: @tr("gameModRow" => "Open Config Folder");
             icon: Icon.folder-mods;
 
             clicked => {
@@ -99,6 +100,16 @@ export component GameModRow inherits VerticalLayout {
         }
 
         if root.has-mod-actions: PopupMenuSeparator { }
+
+        if root.can-open-website: PopupMenuItem {
+            text: @tr("modModal" => "Website");
+            icon: Icon.external-link;
+
+            clicked => {
+                ModActions.open-url(game-mod.source-code);
+                menu.close();
+            }
+        }
 
         PopupMenuItem {
             text: @tr("debugData" => "Debug data");
