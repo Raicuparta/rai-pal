@@ -7,7 +7,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Do now
 
 - accessibility follow-up: decide whether game rows should use arrow-key roving focus instead of one tab stop per visible row, and find a way to skip the long sidebar filter list when tabbing (tab order is not actually trapped, it is just long). Verify with a real screen reader.
-- make the text in all popup notifications selectable.
 
 ## Do later
 
@@ -19,6 +18,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - Minimized/unfocused window: the visible range stays the same, so visible thumbnails and game fetches still happen. The easy version would be to treat a minimized window as an empty visible range (nothing gets fetched while minimized). Unfocused windows are harder to infer reliably and probably not worth it.
 
 ## Done
+
+- Popup notification text is now a selectable `StyledText`, so errors and other messages can be copied.
 
 - Added tooltips (also used as accessible labels) to the games search input and the sort button, and made the shared text field's clear button tooltip generic. The other icon-only controls already had tooltips; any further tooltip candidates aren't obvious and need confirmation.
 
