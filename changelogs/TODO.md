@@ -11,6 +11,10 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Notes, questions, decisions, etc
 
 - `DownloadItemData.phase` is sent to the UI but never read there. Failed downloads show their last percentage forever. Either show the phase in the downloads menu, or drop the field.
+- `build_filter_views` is a plain list of groups, so a new `FilterGroupKey` variant compiles fine but silently never shows up in the UI until it's added there too. Every other spot (apply/reset/convert/Slint enum) is compiler-checked.
+- The Xbox provider logs a warning for every package registry key it can't read, which is most of them. Deep nesting also makes it hard to read; a helper returning `Option<Game>` would fix both.
+- Search text is persisted to settings on every keystroke; the query itself is debounced but the settings write isn't.
+- The second `scheduler.begin_query()` in `commands/query.rs` looks redundant but deliberately invalidates fetches queued against the old row list. Worth a comment so it doesn't get "cleaned up".
 
 ## Done
 
