@@ -158,6 +158,10 @@ msgid "Collapse all filters"
 msgstr "Waaaaaah wah waaaaah!"
 
 msgctxt "filterMenu"
+msgid "Expand all filters"
+msgstr "Waaaaah waaah waaaaah!"
+
+msgctxt "filterMenu"
 msgid "Filters"
 msgstr "Waaaaah!"
 

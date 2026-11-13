@@ -443,6 +443,10 @@ pub fn collapse_all_filters(collapsed_filters: &mut HashSet<FilterGroupKey>) {
 	collapsed_filters.extend(FilterGroupKey::iter());
 }
 
+pub fn expand_all_filters(collapsed_filters: &mut HashSet<FilterGroupKey>) {
+	collapsed_filters.clear();
+}
+
 pub fn reset_all_filters(filter: &mut GamesFilter) {
 	for key in FilterGroupKey::iter() {
 		reset_filter_group(filter, key);

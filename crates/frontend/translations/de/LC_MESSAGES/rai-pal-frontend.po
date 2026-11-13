@@ -158,6 +158,10 @@ msgid "Collapse all filters"
 msgstr "Alle Filter einklappen"
 
 msgctxt "filterMenu"
+msgid "Expand all filters"
+msgstr "Alle Filter ausklappen"
+
+msgctxt "filterMenu"
 msgid "Filters"
 msgstr "Filter"
 

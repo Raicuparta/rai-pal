@@ -158,6 +158,10 @@ msgid "Collapse all filters"
 msgstr "折叠所有筛选器"
 
 msgctxt "filterMenu"
+msgid "Expand all filters"
+msgstr "展开所有筛选器"
+
+msgctxt "filterMenu"
 msgid "Filters"
 msgstr "筛选"
 

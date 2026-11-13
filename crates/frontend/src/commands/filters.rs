@@ -2,7 +2,7 @@ use std::{rc::Rc, time::Duration};
 
 use rai_pal_backend::{
 	filter_views::{
-		apply_filter_action, collapse_all_filters, reset_all_filters, reset_filter_group,
+		apply_filter_action, collapse_all_filters, expand_all_filters, reset_all_filters, reset_filter_group,
 	},
 	games_query::{FilterAction, FilterGroupKey},
 };
@@ -85,6 +85,12 @@ impl CommandHandler {
 		self.refresh_filters();
 	}
 
+	pub fn expand_filters(&self) {
+		expand_all_filters(&mut self.settings.borrow_mut().collapsed_filters);
+		self.persist_settings();
+		self.refresh_filters();
+	}
+
 	pub fn set_filter_expanded(&self, group: FilterGroupId, expanded: bool) {
 		let group = FilterGroupKey::from(group);
 		{
@@ -119,6 +125,9 @@ pub fn register(window: &crate::MainWindow) {
 	});
 	on_command!(window, GamesActions, on_filters_collapse_all, || handler => {
 		handler.collapse_filters();
+	});
+	on_command!(window, GamesActions, on_filters_expand_all, || handler => {
+		handler.expand_filters();
 	});
 	on_command!(window, GamesActions, on_filter_expanded_changed, |group, expanded| handler => {
 		handler.set_filter_expanded(group, expanded);

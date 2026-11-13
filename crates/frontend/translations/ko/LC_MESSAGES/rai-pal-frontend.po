@@ -158,6 +158,10 @@ msgid "Collapse all filters"
 msgstr "모든 필터 접기"
 
 msgctxt "filterMenu"
+msgid "Expand all filters"
+msgstr "모든 필터 펼치기"
+
+msgctxt "filterMenu"
 msgid "Filters"
 msgstr "필터"
 

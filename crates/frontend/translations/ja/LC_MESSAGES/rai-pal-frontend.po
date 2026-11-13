@@ -158,6 +158,10 @@ msgid "Collapse all filters"
 msgstr "すべてのフィルターを折りたたむ"
 
 msgctxt "filterMenu"
+msgid "Expand all filters"
+msgstr "すべてのフィルターを展開"
+
+msgctxt "filterMenu"
 msgid "Filters"
 msgstr "フィルター"
 
