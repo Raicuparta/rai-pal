@@ -1,0 +1,80 @@
+import { ScrollView } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+import { Refresh } from "refresh_button.slint";
+import { Tr } from "../translations.slint";
+import { Contrast } from "contrast.slint";
+import { ActionStatusIcon } from "action_status_icon.slint";
+import { ActionState } from "../action_state.slint";
+import { RowDivider } from "row_divider.slint";
+
+
+export component SidebarScroll inherits ScrollView {
+    vertical-stretch: 1;
+
+    VerticalLayout {
+        alignment: start;
+        padding-bottom: Theme.space-md;
+
+        @children
+    }
+}
+
+export component Sidebar inherits Rectangle {
+    in property <string> status-text;
+
+    width: 220px;
+    background: Theme.background;
+
+    private property <bool> loading: Refresh.refreshing && Refresh.tasks.length > 0;
+    private property <length> font-size: Theme.font-xs;
+    private property <bool> show-status: root.loading || root.status-text != "";
+
+    VerticalLayout {
+        padding-top: Theme.space-md;
+
+        @children
+
+        if show-status: RowDivider { }
+
+        if show-status: Rectangle {
+            clip: true;
+            border-top-left-radius: Theme.radius-md;
+
+            VerticalLayout {
+                HorizontalLayout {
+                    alignment: start;
+                    cross-axis-alignment: center;
+                    spacing: Theme.space-xs;
+                    padding: Theme.space-xs;
+
+                    if !root.loading: Text {
+                        text: root.status-text;
+                        width: 100%;
+                        font-size: root.font-size;
+                    }
+
+                    ActionStatusIcon {
+                        state: ActionState.loading;
+                    }
+
+                    if root.loading: Text {
+                        text: @tr("sidebar" => "Loading:");
+                        font-size: root.font-size;
+                    }
+
+                    for task[index] in Refresh.tasks: Text {
+                        text: index < Refresh.tasks.length - 1 ? "\{Tr.refresh-task(task)} |" : Tr.refresh-task(task);
+                        font-size: root.font-size;
+                    }
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        x: parent.width - self.width;
+        width: Theme.border-width;
+        height: parent.height;
+        background: Theme.border;
+    }
+}

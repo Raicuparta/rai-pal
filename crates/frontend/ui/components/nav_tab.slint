@@ -1,0 +1,29 @@
+import { Theme } from "../theme.slint";
+import { NavButton } from "nav_button.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+
+export component NavTab inherits NavButton {
+    in property <string> title;
+    in property <Icon> icon: Icon.none;
+    in property <brush> icon-color: Theme.foreground;
+
+    accessible-label: root.title;
+
+    HorizontalLayout {
+        spacing: Theme.space-md;
+        padding-left: Theme.space-sm;
+        padding-right: Theme.space-sm;
+        cross-axis-alignment: center;
+
+        SvgIcon {
+            icon: root.icon;
+            size: 24px;
+            color: root.icon-color;
+        }
+
+        Text {
+            text: root.title;
+            color: Theme.foreground;
+        }
+    }
+}

@@ -1,0 +1,104 @@
+import { Theme } from "../theme.slint";
+import { ResetButton } from "reset_button.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+
+export component TextField inherits Rectangle {
+    in-out property <string> text;
+    in property <string> placeholder-text: "";
+    in property <bool> read-only: false;
+    in property <Icon> icon: Icon.none;
+    in property <bool> clearable: false;
+    in property <string> tooltip: "";
+
+    callback edited(text: string);
+    callback accepted;
+
+    height: Theme.control-height;
+    preferred-width: 0px;
+    border-radius: Theme.radius-sm;
+    border-width: Theme.border-width;
+    border-color: input.has-focus ? Theme.primary : Theme.border;
+    background: Theme.surface-background;
+    forward-focus: input;
+
+    HorizontalLayout {
+        padding-left: Theme.space-sm;
+        padding-right: root.clearable ? Theme.space-xs : Theme.space-sm;
+        spacing: Theme.space-xs;
+        cross-axis-alignment: center;
+
+        if root.icon != Icon.none && root.text == "": SvgIcon {
+            icon: root.icon;
+            size: Theme.font-md;
+            color: Theme.dimmed-foreground;
+        }
+
+        Rectangle {
+            horizontal-stretch: 1;
+            height: 100%;
+            clip: true;
+
+            if root.text == "" && root.placeholder-text != "": Text {
+                x: 0;
+                text: root.placeholder-text;
+                height: 100%;
+                vertical-alignment: center;
+                font-size: Theme.font-sm;
+                color: Theme.dimmed-foreground;
+            }
+
+            input := TextInput {
+                property <length> computed-x;
+
+                x: min(0px, max(parent.width - self.width - self.text-cursor-width, self.computed-x));
+                width: max(parent.width - self.text-cursor-width, self.preferred-width);
+                height: 100%;
+                vertical-alignment: center;
+                font-size: Theme.font-sm;
+                color: Theme.foreground;
+                read-only: root.read-only;
+                accessible-label: root.tooltip;
+                text <=> root.text;
+
+                edited => {
+                    root.edited(input.text);
+                }
+
+                accepted => {
+                    root.accepted();
+                }
+
+                key-pressed(event) => {
+                    if event.text == Key.Escape && root.clearable && root.text != "" {
+                        root.text = "";
+                        root.edited("");
+                        return accept;
+                    }
+                    return reject;
+                }
+
+                cursor-position-changed(cursor-position) => {
+                    if cursor-position.x + self.computed-x < 0px {
+                        self.computed-x = -cursor-position.x;
+                    } else if cursor-position.x + self.computed-x > parent.width - self.text-cursor-width {
+                        self.computed-x = parent.width - cursor-position.x - self.text-cursor-width;
+                    }
+                }
+            }
+        }
+
+        if root.clearable && root.text != "": ResetButton {
+            icon-size: Theme.font-sm;
+            tooltip: @tr("textField" => "Clear");
+
+            clicked => {
+                root.text = "";
+                root.edited("");
+            }
+        }
+    }
+
+    if root.tooltip != "": Tooltip {
+        text: @markdown("\{root.tooltip}");
+    }
+}

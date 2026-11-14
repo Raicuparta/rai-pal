@@ -1,0 +1,50 @@
+import { Button } from "button.slint";
+import { Icon } from "svg_icon.slint";
+import { MessageData } from "../app_types.slint";
+import { Theme } from "../theme.slint";
+import { Modal } from "modal.slint";
+import { ActionState } from "../action_state.slint";
+import { DialogActions } from "../actions.slint";
+import { Tr } from "../translations.slint";
+import { ErrorMessage } from "message_state.slint";
+
+export global SteamShortcutState {
+    in property <ActionState> state: idle;
+    in-out property <MessageData> error;
+}
+
+export component SteamShortcutPopup inherits Modal {
+    title: @tr("steamShortcut" => "Add Rai Pal to Steam Library");
+
+
+    Text {
+        text: @tr("steamShortcut" => "This is especially useful on Steam Deck, to be able to launch Rai Pal in Game Mode. You'll have to restart Steam after doing this.");
+        wrap: word-wrap;
+    }
+
+    if SteamShortcutState.state == ActionState.success : Text {
+        text: @tr("steamShortcut" => "Rai Pal has been added to your Steam library. Restart Steam to see it.");
+        color: Theme.status-success;
+        wrap: word-wrap;
+    }
+
+    if Tr.has-message(SteamShortcutState.error) : ErrorMessage {
+        message: SteamShortcutState.error;
+    }
+
+    HorizontalLayout {
+        alignment: center;
+
+        Button {
+            text: @tr("steamShortcut" => "Add Rai Pal to Steam library");
+            icon: Icon.steam;
+            enabled: SteamShortcutState.state != ActionState.loading;
+            tint: Theme.primary;
+            horizontal-stretch: 1;
+
+            clicked => {
+                DialogActions.add-steam-shortcut();
+            }
+        }
+    }
+}

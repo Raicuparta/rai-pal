@@ -1,0 +1,70 @@
+import { TextEdit } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+import { IconButton } from "icon_button.slint";
+import { Modal } from "modal.slint";
+import { Icon } from "svg_icon.slint";
+
+export global DebugState {
+    in-out property <string> details-json: "";
+}
+
+component DebugDataView inherits VerticalLayout {
+    in property <string> text;
+
+    private property <bool> copied: false;
+    private property <length> saved-scroll-y: 0;
+
+    vertical-stretch: 1;
+    spacing: Theme.space-xs;
+
+    Timer {
+        interval: 2s;
+        running: root.copied;
+
+        triggered => {
+            root.copied = false;
+        }
+    }
+
+    HorizontalLayout {
+        alignment: end;
+
+        IconButton {
+            icon: root.copied ? Icon.copied : Icon.copy;
+            tooltip: @tr("debugData" => "Copy debug data");
+
+            clicked => {
+                root.saved-scroll-y = debug-text.content-y;
+                debug-text.select-all();
+                debug-text.copy();
+                debug-text.clear-selection();
+                debug-text.content-y = root.saved-scroll-y;
+                root.copied = true;
+            }
+        }
+    }
+
+    debug-text := TextEdit {
+        text: root.text;
+        read-only: true;
+        wrap: word-wrap;
+        font-size: Theme.font-sm;
+        width: 100%;
+        vertical-stretch: 1;
+    }
+}
+
+export component GameDetailsPopup inherits Modal {
+    open: DebugState.details-json != "";
+    title: @tr("debugData" => "Debug data");
+    big: true;
+    fill-height: true;
+
+    closed => {
+        DebugState.details-json = "";
+    }
+
+    DebugDataView {
+        text: DebugState.details-json;
+    }
+}

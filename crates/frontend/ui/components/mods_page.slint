@@ -1,0 +1,105 @@
+import { ActionKind } from "../action_state.slint";
+import { ScrollView } from "std-widgets.slint";
+import { DialogActions, ModActions } from "../actions.slint";
+import { UrlModSourcesPopup } from "url_mod_sources_popup.slint";
+import { ConfirmModSourcePopup } from "confirm_mod_source_popup.slint";
+import { ModsTabItemData } from "../app_types.slint";
+import { Theme } from "../theme.slint";
+import { ModsTabRow } from "mods_tab_row.slint";
+import { ModsTabFamilyRow } from "mods_tab_family_row.slint";
+import { RefreshButton } from "refresh_button.slint";
+import { Sidebar, SidebarScroll } from "sidebar.slint";
+import { ActionButton } from "action_button.slint";
+import { Icon } from "svg_icon.slint";
+
+export global ModsState {
+    in property <[ModsTabItemData]> items;
+    in property <int> total-count: 0;
+}
+
+export component ModsPage inherits Rectangle {
+    private property <bool> url-mod-sources-open: false;
+
+    HorizontalLayout {
+        Sidebar {
+            status-text: @tr("modsPage" => "{} mods", ModsState.total-count);
+
+            VerticalLayout {
+                vertical-stretch: 0;
+                spacing: Theme.space-sm;
+                padding-bottom: Theme.space-sm;
+
+                RefreshButton {
+                    inset: Theme.space-md;
+                }
+
+                SidebarScroll {
+                    VerticalLayout {
+                        alignment: start;
+
+                        ActionButton {
+                            inset: Theme.space-md;
+                            text: @tr("urlModSources" => "Mod Sources");
+                            icon: Icon.mod-sources;
+
+                            clicked => {
+                                root.url-mod-sources-open = true;
+                                DialogActions.request-url-mod-sources();
+                            }
+                        }
+
+                        ActionButton {
+                            inset: Theme.space-md;
+                            text: @tr("modsPage" => "Open Local Mods Folder");
+                            icon: Icon.folder-mods;
+                            action-key: { kind: ActionKind.open-local-mods-folder, target: "" };
+                            tooltip: @tr("modsPage" => "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database.");
+
+                            clicked => {
+                                ModActions.open-local-mods-folder();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            horizontal-stretch: 1;
+
+            ScrollView {
+                VerticalLayout {
+                    alignment: start;
+
+                    for item in ModsState.items: VerticalLayout {
+                        alignment: start;
+                        vertical-stretch: 0;
+
+                        if item.is-family: ModsTabFamilyRow {
+                            item: item;
+                        }
+
+                        if !item.is-family: ModsTabRow {
+                            mod-data: item.single-mod;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    UrlModSourcesPopup {
+        x: -root.absolute-position.x;
+        y: -root.absolute-position.y;
+        open: root.url-mod-sources-open;
+
+        closed => {
+            root.url-mod-sources-open = false;
+        }
+    }
+
+    ConfirmModSourcePopup {
+        x: -root.absolute-position.x;
+        y: -root.absolute-position.y;
+    }
+}

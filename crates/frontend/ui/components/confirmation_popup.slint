@@ -1,0 +1,63 @@
+import { CheckBox } from "std-widgets.slint";
+import { ConfirmKind } from "../app_types.slint";
+import { Button } from "button.slint";
+import { Icon } from "svg_icon.slint";
+import { Theme } from "../theme.slint";
+import { Tr } from "../translations.slint";
+import { Modal } from "modal.slint";
+import { DialogActions } from "../actions.slint";
+
+export global ConfirmationState {
+    in-out property <bool> open: false;
+    in property <ConfirmKind> kind: none;
+    in property <bool> can-skip: false;
+    in-out property <bool> dont-ask-again: false;
+}
+
+export component ConfirmationPopup inherits Modal {
+    open: ConfirmationState.open;
+    title: Tr.confirm-label(ConfirmationState.kind);
+
+    closed => {
+        root.respond(false);
+    }
+
+    function respond(confirmed: bool) {
+        ConfirmationState.open = false;
+        DialogActions.confirmation-response(confirmed);
+    }
+
+    Text {
+        text: Tr.confirm-text(ConfirmationState.kind);
+        wrap: word-wrap;
+    }
+
+    if ConfirmationState.can-skip : CheckBox {
+        text: @tr("commandButton" => "Don't ask again");
+        checked <=> ConfirmationState.dont-ask-again;
+    }
+
+    HorizontalLayout {
+        alignment: center;
+        spacing: Theme.space-sm;
+
+        Button {
+            text: @tr("commandButton" => "Cancel");
+            icon: Icon.close;
+
+            clicked => {
+                root.respond(false);
+            }
+        }
+
+        Button {
+            text: Tr.confirm-label(ConfirmationState.kind);
+            icon: ConfirmationState.kind == ConfirmKind.install-mod ? Icon.install : ConfirmationState.kind == ConfirmKind.none ? Icon.none : Icon.delete;
+            tint: Theme.primary;
+
+            clicked => {
+                root.respond(true);
+            }
+        }
+    }
+}

@@ -1,0 +1,48 @@
+import { Button } from "button.slint";
+import { MessageData } from "../app_types.slint";
+import { Theme } from "../theme.slint";
+import { Icon } from "svg_icon.slint";
+import { Modal } from "modal.slint";
+import { ActionState } from "../action_state.slint";
+import { DialogActions } from "../actions.slint";
+import { Tr } from "../translations.slint";
+import { ErrorMessage } from "message_state.slint";
+
+export global SteamCacheState {
+    in property <ActionState> state: idle;
+    in-out property <MessageData> error;
+}
+
+export component SteamCachePopup inherits Modal {
+    title: @tr("steamCache" => "Reset Steam cache");
+
+    Text {
+        text: @tr("steamCache" => "Use this if Rai Pal is showing games you don't actually own on Steam. This will reset Steam's cache, and then you'll have to restart Steam. You'll get an error if the file has already been deleted.");
+        wrap: word-wrap;
+    }
+
+    if SteamCacheState.state == ActionState.success: Text {
+        text: @tr("steamCache" => "The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal.");
+        color: Theme.status-success;
+        wrap: word-wrap;
+    }
+
+    if Tr.has-message(SteamCacheState.error): ErrorMessage {
+        message: SteamCacheState.error;
+    }
+
+    HorizontalLayout {
+        alignment: center;
+
+        Button {
+            text: @tr("steamCache" => "Reset Steam cache");
+            enabled: SteamCacheState.state != ActionState.loading;
+            tint: Theme.primary;
+            horizontal-stretch: 1;
+            icon: Icon.delete;
+            clicked => {
+                DialogActions.reset-steam-cache();
+            }
+        }
+    }
+}

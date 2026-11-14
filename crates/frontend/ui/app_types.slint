@@ -1,0 +1,301 @@
+export enum AppTab {
+    games,
+    mods,
+    thanks,
+}
+
+export enum AppColorScheme {
+    auto,
+    dark,
+    light,
+}
+
+export enum AddGamePhase {
+    idle,
+    scanning,
+    confirming,
+}
+
+export enum ProviderId {
+    none,
+    amazon,
+    epic,
+    gog,
+    itch,
+    manual,
+    steam,
+    xbox,
+}
+
+export enum EngineId {
+    none,
+    unity,
+    unreal,
+    godot,
+    game-maker,
+}
+
+export enum SkipConfirmation {
+    none,
+    install-mod,
+}
+
+export enum ProviderAction {
+    none,
+    start-via-provider,
+    start-via-exe,
+    install,
+    show-in-library,
+    show-in-store,
+    open-in-browser,
+    delete,
+}
+
+export struct ProviderActionData {
+    action: ProviderAction,
+    action-id: string,
+}
+
+export enum DownloadPhase {
+    pending,
+    in-progress,
+    finished,
+    failed,
+}
+
+export enum NotificationKind {
+    error,
+    success,
+    info,
+}
+
+export enum DownloadItemKind {
+    download,
+    extract,
+}
+
+export struct DownloadItemData {
+    kind: DownloadItemKind,
+    mod-id: string,
+    progress: float,
+    phase: DownloadPhase,
+}
+
+export enum RefreshTaskKind {
+    provider,
+    mods,
+    remote-data,
+}
+
+export struct RefreshTaskData {
+    kind: RefreshTaskKind,
+    provider: string,
+}
+
+export enum ConfirmKind {
+    none,
+    install-mod,
+    uninstall-all-mods,
+    remove-game,
+}
+
+export enum MessageContext {
+    none,
+    run-game,
+    open-game-folder,
+    open-game-mods-folder,
+    open-game-data-folder,
+    open-wine-prefix-folder,
+    open-wine-binary-folder,
+    open-local-mods-folder,
+    open-logs-folder,
+    install-mod,
+    download-mod-config,
+    uninstall-mod,
+    uninstall-all-mods,
+    run-mod,
+    open-mod-folder,
+    configure-mod,
+    refresh-game,
+    refresh-games,
+    refresh-installed-mods,
+    refresh-mods,
+    refresh-remote-data,
+    load-mods,
+    load-app-data,
+    refresh-user-auth,
+    install-app-update,
+    debug-data,
+    provider-command-running,
+    update-mod-sources,
+    empty-url,
+    reset-steam-cache,
+    add-steam-shortcut,
+}
+
+export struct MessageData {
+    context: MessageContext,
+    subject: string,
+    detail: string,
+}
+
+export enum FilterGroupId {
+    installed,
+    engines,
+    mod-families,
+    tags,
+    providers,
+    unity-backends,
+    executable-os,
+    supported-os,
+    architectures,
+}
+
+export enum FilterValueLabel {
+    none,
+    unknown,
+    arch-64,
+    arch-32,
+    tag-demo,
+    tag-vr,
+    tag-untagged,
+    status-installed,
+    status-not-installed,
+    provider-manual,
+}
+
+export enum FilterValueNote {
+    none,
+    engine-godot-not-fully-supported,
+    engine-game-maker-not-fully-supported,
+    provider-xbox-only-installed,
+}
+
+export struct FilterValueData {
+    value: string,
+    label: FilterValueLabel,
+    display: string,
+    note: FilterValueNote,
+    enabled: bool,
+    locked: bool,
+    available: bool,
+}
+
+export struct FilterGroupData {
+    key: FilterGroupId,
+    values: [FilterValueData],
+    has-changes: bool,
+    has-locked: bool,
+    expanded: bool,
+}
+
+export struct GameModData {
+    mod-id: string,
+    title: string,
+    description: string,
+    version-text: string,
+    release-date: string,
+    author: string,
+    engine-text: string,
+    installed: bool,
+    outdated: bool,
+    incompatible: bool,
+    deprecated: bool,
+    has-remote-config: bool,
+    source-code: string,
+    has-exe-path: bool,
+    has-install: bool,
+    has-run: bool,
+    has-config: bool,
+    has-installed-dependants: bool,
+}
+
+export struct GameRowData {
+    provider: ProviderId,
+    game-id: string,
+    title: string,
+    thumbnail: image,
+    thumbnail-url: string,
+    has-thumbnail: bool,
+    installed: bool,
+    tags: [string],
+    loaded: bool,
+    engine: EngineId,
+    engine-name: string,
+    engine-version: string,
+    engine-details: string,
+    release-day: string,
+    release-month: string,
+    release-year: string,
+}
+
+export struct ModsTabModData {
+    id: string,
+    title: string,
+    description: string,
+    version-text: string,
+    release-date: string,
+    author: string,
+    engine-text: string,
+    deprecated: bool,
+    source-code: string,
+    can-run: bool,
+    can-install: bool,
+}
+
+export struct ModsTabItemData {
+    is-family: bool,
+    family-title: string,
+    family-description: string,
+    mods: [ModsTabModData],
+    single-mod: ModsTabModData,
+}
+
+export struct NotificationData {
+    id: int,
+    kind: NotificationKind,
+    message: MessageData,
+}
+
+export struct PatronData {
+    ranking: int,
+    name: string,
+    initials: string,
+    has-avatar: bool,
+    avatar: image,
+}
+
+export struct PotentialModData {
+    title: string,
+    description: string,
+}
+
+export struct UrlModSourceData {
+    url: string,
+    enabled: bool,
+    is-default: bool,
+}
+
+export enum AppVariant {
+    windows-nsis,
+    windows-portable,
+    linux-app-image,
+    macos-bundle,
+    development,
+    unknown,
+}
+
+export enum AppPlatform {
+    windows,
+    linux-wayland,
+    linux-x11,
+    linux,
+    macos,
+    unknown,
+}
+
+export enum Renderer {
+    open-gl,
+    software,
+    unknown,
+}

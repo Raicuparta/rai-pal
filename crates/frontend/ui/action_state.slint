@@ -1,0 +1,40 @@
+export enum ActionState {
+    idle,
+    loading,
+    success,
+    error,
+}
+
+export enum ActionKind {
+    none,
+    refresh-game,
+    provider-action,
+    open-game-folder,
+    open-game-mods-folder,
+    open-game-data-folder,
+    open-wine-prefix-folder,
+    open-wine-binary-folder,
+    open-local-mods-folder,
+    open-logs-folder,
+    game-mod-install,
+    game-mod-run,
+    game-mod-download-config,
+    game-mod-uninstall,
+    game-mod-uninstall-all,
+    game-mod-open-folder,
+    game-mod-configure,
+    game-mod-configure-folder,
+    standalone-run,
+    standalone-install,
+}
+
+export struct ActionKey {
+    kind: ActionKind,
+    target: string,
+}
+
+export global ActionStates {
+    in-out property <int> version: 0;
+
+    callback lookup(key: ActionKey) -> ActionState;
+}

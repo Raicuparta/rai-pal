@@ -1,0 +1,289 @@
+import { ActionKind } from "../action_state.slint";
+import { ScrollView } from "std-widgets.slint";
+import { ModActions } from "../actions.slint";
+import { Theme } from "../theme.slint";
+import { Tr } from "../translations.slint";
+import { ActionButton } from "action_button.slint";
+import { Button } from "button.slint";
+import { GameRow } from "game_row.slint";
+import { LabeledDivider } from "labeled_divider.slint";
+import { ModsSection } from "mods_section.slint";
+import { PotentialModsSection } from "potential_mods_section.slint";
+import { Sidebar, SidebarScroll } from "sidebar.slint";
+import { Icon } from "svg_icon.slint";
+import {
+    GameModData,
+    GameRowData,
+    PotentialModData,
+    ProviderAction,
+    ProviderActionData,
+} from "../app_types.slint";
+import { GamesActions } from "../actions.slint";
+
+export global GameDetailsState {
+    in property <string> provider-name: "";
+    in property <bool> show-wine-folders: false;
+    in property <[ProviderActionData]> provider-actions;
+    in property <[GameModData]> installed;
+    in property <[GameModData]> available;
+    in property <[GameModData]> hidden;
+    in property <[GameModData]> incompatible;
+    in property <[PotentialModData]> potential;
+}
+
+export component GameDetailsPage inherits HorizontalLayout {
+    in property <GameRowData> game-row;
+    in property <bool> show-thumbnail: true;
+
+    pure function provider-command-icon(action: ProviderAction) -> Icon {
+        if action == ProviderAction.start-via-provider {
+            return Icon.play;
+        }
+        if action == ProviderAction.start-via-exe {
+            return Icon.play-exe;
+        }
+        if action == ProviderAction.install {
+            return Icon.install;
+        }
+        if action == ProviderAction.open-in-browser {
+            return Icon.external-link;
+        }
+        return Icon.none;
+    }
+
+    Sidebar {
+        VerticalLayout {
+            vertical-stretch: 0;
+            spacing: Theme.space-sm;
+            padding-bottom: Theme.space-sm;
+
+            Button {
+                inset: Theme.space-md;
+                text: @tr("subPage" => "Back");
+                icon: Icon.back;
+
+                clicked => {
+                    GamesActions.back();
+                }
+            }
+        }
+
+        SidebarScroll {
+            VerticalLayout {
+                alignment: start;
+                spacing: Theme.space-sm;
+
+                if GameDetailsState.provider-actions.length > 0: VerticalLayout {
+                    alignment: start;
+
+                    LabeledDivider {
+                        label: GameDetailsState.provider-name;
+                        horizontal-stretch: 1;
+                        padding-left: Theme.space-md;
+                        padding-right: Theme.space-md;
+                        padding-bottom: Theme.space-xs;
+                    }
+
+                    for action[index] in GameDetailsState.provider-actions: ActionButton {
+                        inset: Theme.space-md;
+                        text: Tr.provider-command(action.action);
+                        icon: root.provider-command-icon(action.action);
+                        tint: index == 0 ? Theme.primary : transparent;
+                        action-key: { kind: ActionKind.provider-action, target: action.action-id };
+
+                        clicked => {
+                            if action.action == ProviderAction.delete {
+                                GamesActions.remove-game();
+                            } else {
+                                GamesActions.run-provider-action(action.action);
+                            }
+                        }
+                    }
+                }
+
+                if root.game-row.installed: VerticalLayout {
+                    alignment: start;
+
+                    LabeledDivider {
+                        label: @tr("gameModal" => "Folders");
+                        horizontal-stretch: 1;
+                        padding-left: Theme.space-md;
+                        padding-right: Theme.space-md;
+                        padding-bottom: Theme.space-xs;
+                    }
+
+                    ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("gameModal" => "Game Files");
+                        icon: Icon.folder;
+                        action-key: { kind: ActionKind.open-game-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-game-folder();
+                        }
+                    }
+
+                    ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("gameModal" => "Installed Mods");
+                        icon: Icon.folder-mods;
+                        action-key: { kind: ActionKind.open-game-mods-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-game-mods-folder();
+                        }
+                    }
+
+                    ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("gameModal" => "Game App Data");
+                        action-key: { kind: ActionKind.open-game-data-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-game-data-folder();
+                        }
+                    }
+
+                    if GameDetailsState.show-wine-folders: ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("gameModal" => "Wine Prefix");
+                        action-key: { kind: ActionKind.open-wine-prefix-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-wine-prefix-folder();
+                        }
+                    }
+
+                    if GameDetailsState.show-wine-folders: ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("gameModal" => "Wine Binary");
+                        action-key: { kind: ActionKind.open-wine-binary-folder, target: "" };
+
+                        clicked => {
+                            GamesActions.open-wine-binary-folder();
+                        }
+                    }
+                }
+
+                VerticalLayout {
+                    alignment: start;
+
+                    LabeledDivider {
+                        label: @tr("gameModal" => "Data");
+                        horizontal-stretch: 1;
+                        padding-left: Theme.space-md;
+                        padding-right: Theme.space-md;
+                        padding-bottom: Theme.space-xs;
+                    }
+
+                    if root.game-row.installed: ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("gameModal" => "Refresh game");
+                        icon: Icon.refresh;
+                        action-key: { kind: ActionKind.refresh-game, target: "" };
+
+                        clicked => {
+                            GamesActions.refresh-game();
+                        }
+                    }
+
+                    ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("debugData" => "Debug data");
+                        icon: Icon.bug;
+
+                        clicked => {
+                            GamesActions.request-debug-data();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    ScrollView {
+        VerticalLayout {
+            alignment: start;
+            spacing: Theme.space-sm;
+
+            GameRow {
+                vertical-stretch: 0;
+                game-row: root.game-row;
+                show-thumbnail: root.show-thumbnail;
+
+                selected(index) => {
+                    GamesActions.back();
+                }
+            }
+
+            if GameDetailsState.installed.length + GameDetailsState.available.length + GameDetailsState.hidden.length + GameDetailsState.incompatible.length + GameDetailsState.potential.length == 0: HorizontalLayout {
+                height: self.preferred-height;
+                padding-left: Theme.space-sm;
+                padding-right: Theme.space-sm;
+
+                Text {
+                    text: @tr("gameModal" => "Nothing! None of the available mods are of any use for this game. Try something else.");
+                    opacity: 0.75;
+                    wrap: word-wrap;
+                    horizontal-stretch: 1;
+                }
+            }
+
+            if !root.game-row.installed && GameDetailsState.potential.length > 0: PotentialModsSection {
+                label: @tr("gameModal" => "Potentially compatible mods");
+                description: @tr("gameModal" => "Install this game to see more detailed information about which mods are compatible");
+                mods: GameDetailsState.potential;
+            }
+
+            if root.game-row.installed: VerticalLayout {
+                alignment: start;
+                vertical-stretch: 0;
+                spacing: Theme.space-sm;
+
+                if GameDetailsState.installed.length > 0: VerticalLayout {
+                    alignment: start;
+                    vertical-stretch: 0;
+                    spacing: Theme.space-xs;
+
+                    ModsSection {
+                        label: @tr("gameModal" => "Installed Mods");
+                        mods: GameDetailsState.installed;
+                    }
+
+                    HorizontalLayout {
+                        padding: Theme.space-sm;
+                        alignment: start;
+
+                        ActionButton {
+                            text: @tr("gameModal" => "Uninstall all mods");
+                            icon: Icon.delete;
+                            action-key: { kind: ActionKind.game-mod-uninstall-all, target: "" };
+                            tint: Theme.danger;
+
+                            clicked => {
+                                ModActions.request-uninstall-all();
+                            }
+                        }
+                    }
+                }
+
+                if GameDetailsState.available.length > 0: ModsSection {
+                    label: @tr("gameModal" => "Available Mods");
+                    mods: GameDetailsState.available;
+                }
+
+                if GameDetailsState.hidden.length > 0: ModsSection {
+                    label: @tr("gameModal" => "Other things");
+                    description: @tr("gameModal" => "These are mostly dependencies and other stuff that you don't usually need to mess with directly.");
+                    mods: GameDetailsState.hidden;
+                }
+
+                if GameDetailsState.incompatible.length > 0: ModsSection {
+                    label: @tr("gameModal" => "Incompatible Mods");
+                    description: @tr("gameModal" => "The mods listed here can't be installed because they aren't compatible with this game's engine version.");
+                    mods: GameDetailsState.incompatible;
+                }
+            }
+        }
+    }
+}

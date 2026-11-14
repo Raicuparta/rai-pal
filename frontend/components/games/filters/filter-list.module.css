@@ -1,8 +1,0 @@
-.filterColumn {
-	flex-shrink: 0;
-}
-
-.filterTitle :global(.mantine-Accordion-label) {
-	white-space: nowrap;
-	padding: 0;
-}

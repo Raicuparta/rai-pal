@@ -1,0 +1,251 @@
+import { Palette } from "std-widgets.slint";
+import { ActionState, ActionStates } from "action_state.slint";
+import {
+    AddGamePhase,
+    AppColorScheme,
+    AppTab,
+    GameRowData,
+} from "app_types.slint";
+import { AppActions, GamesActions, ModActions } from "actions.slint";
+import { GamesPage } from "components/games_page.slint";
+import { GameDetailsPage } from "components/game_details_page.slint";
+import { NavTab } from "components/nav_tab.slint";
+import { AppMenu } from "components/app_menu.slint";
+import { UserMenu } from "components/user_menu.slint";
+import { DownloadProgress } from "components/download_progress.slint";
+import { ModsPage } from "components/mods_page.slint";
+import { ThanksPage } from "components/thanks_page.slint";
+import { AppUpdatePopup } from "components/app_update_popup.slint";
+import { ConfirmationPopup } from "components/confirmation_popup.slint";
+import { NotificationsOverlay } from "components/notifications.slint";
+import { GameDetailsPopup } from "components/game_details_popup.slint";
+import { AppSettings } from "settings.slint";
+import { Viewport } from "components/modal.slint";
+import { Theme } from "theme.slint";
+import { Icon } from "components/svg_icon.slint";
+import { EscapeScope } from "components/escape_scope.slint";
+import { FocusState } from "components/focus_ring.slint";
+
+export {
+    ActionState,
+    ActionStates,
+    AddGamePhase,
+    AppColorScheme,
+    AppTab,
+    ModActions,
+}
+export { AppInfo } from "components/about_popup.slint";
+export { Viewport } from "components/modal.slint";
+export { AppSettings } from "settings.slint";
+export { Refresh } from "components/refresh_button.slint";
+export { GamesList, GamesQuery } from "components/games_page.slint";
+export { GameDetailsState } from "components/game_details_page.slint";
+export { UserState } from "components/user_menu.slint";
+export { ModsState } from "components/mods_page.slint";
+export { DownloadsState } from "components/download_progress.slint";
+export { NotificationsState } from "components/notifications.slint";
+export { ThanksState } from "components/thanks_page.slint";
+export { DebugState } from "components/game_details_popup.slint";
+export { AddGameState } from "components/add_game_popup.slint";
+export { ModSourcesState } from "components/url_mod_sources_popup.slint";
+export {
+    ConfirmModSourceState,
+} from "components/confirm_mod_source_popup.slint";
+export { SteamCacheState } from "components/steam_cache_popup.slint";
+export { SteamShortcutState } from "components/steam_shortcut_popup.slint";
+export { UpdateState } from "components/app_update_popup.slint";
+export { ConfirmationState } from "components/confirmation_popup.slint";
+export { AppActions, GamesActions, DialogActions } from "actions.slint";
+
+export component MainWindow inherits Window {
+    callback reset-focus;
+    title: root.window-title;
+    in property <string> window-title: "Rai Pal";
+    in-out property <AppTab> current-tab: games;
+    in-out property <bool> drop-highlight: false;
+    in-out property <bool> game-selected: false;
+    in-out property <GameRowData> selected-game-row;
+    icon: @image-url("../graphics/icon.png");
+    preferred-width: 1100px;
+    preferred-height: 700px;
+    min-width: 800px;
+    min-height: 500px;
+    background: Theme.background;
+    forward-focus: escape-handler;
+
+    private property <length> content-max-width: 1140px;
+    private property <AppColorScheme> color-scheme: AppSettings.selected-color-scheme;
+
+    function select-tab(tab: AppTab) {
+        root.current-tab = tab;
+        AppActions.tab-changed(tab);
+    }
+
+    function apply-color-scheme() {
+        if root.color-scheme == AppColorScheme.dark {
+            Palette.color-scheme = ColorScheme.dark;
+        } else if root.color-scheme == AppColorScheme.light {
+            Palette.color-scheme = ColorScheme.light;
+        } else {
+            Palette.color-scheme = ColorScheme.unknown;
+        }
+    }
+
+    init => {
+        Viewport.width = root.width;
+        Viewport.height = root.height;
+        root.apply-color-scheme();
+    }
+
+    changed width => {
+        Viewport.width = root.width;
+    }
+
+    changed height => {
+        Viewport.height = root.height;
+    }
+
+    Timer {
+        interval: 100ms;
+        running: Viewport.width == 0 || Viewport.height == 0;
+
+        triggered => {
+            Viewport.width = root.width;
+            Viewport.height = root.height;
+        }
+    }
+
+    changed color-scheme => {
+        root.apply-color-scheme();
+    }
+
+    reset-focus => {
+        FocusState.keyboard-navigation = false;
+        if !FocusState.popup-open {
+            escape-handler.focus();
+        }
+    }
+
+    escape-handler := EscapeScope {
+        escape-enabled: root.current-tab == AppTab.games && root.game-selected;
+        focus-on-tab-navigation: false;
+
+        escaped => {
+            GamesActions.back();
+        }
+
+        VerticalLayout {
+        Rectangle {
+            background: Theme.background;
+            vertical-stretch: 0;
+
+            Rectangle {
+                y: parent.height - self.height;
+                height: Theme.border-width;
+                background: Theme.border;
+            }
+
+            VerticalLayout {
+                cross-axis-alignment: center;
+
+                HorizontalLayout {
+                    width: 100%;
+                    max-width: root.content-max-width;
+                    padding-left: Theme.space-sm;
+                    padding-right: Theme.space-sm;
+                    spacing: Theme.space-2xs;
+                    cross-axis-alignment: center;
+
+                    NavTab {
+                        title: @tr("tab" => "Games");
+                        icon: Icon.games;
+                        selected: root.current-tab == AppTab.games;
+
+                        clicked => {
+                            root.select-tab(AppTab.games);
+                        }
+                    }
+
+                    NavTab {
+                        title: @tr("tab" => "Mods");
+                        icon: Icon.mods;
+                        selected: root.current-tab == AppTab.mods;
+
+                        clicked => {
+                            root.select-tab(AppTab.mods);
+                        }
+                    }
+
+                    NavTab {
+                        title: @tr("tab" => "Thanks");
+                        icon: Icon.thanks;
+                        icon-color: #c92a2a;
+                        selected: root.current-tab == AppTab.thanks;
+
+                        clicked => {
+                            root.select-tab(AppTab.thanks);
+                        }
+                    }
+
+                    Rectangle {
+                        horizontal-stretch: 1;
+                    }
+
+                    DownloadProgress { }
+
+                    UserMenu { }
+
+                    AppMenu { }
+                }
+            }
+        }
+
+        Rectangle {
+            Rectangle {
+                visible: root.current-tab == AppTab.games;
+                width: min(parent.width, root.content-max-width);
+                x: (parent.width - self.width) / 2;
+
+                GameDetailsPage {
+                    visible: root.game-selected;
+                    game-row: root.selected-game-row;
+                    show-thumbnail: !AppSettings.hide-game-thumbnails;
+                }
+
+                GamesPage {
+                    visible: !root.game-selected;
+                }
+            }
+
+            Rectangle {
+                visible: root.current-tab == AppTab.mods;
+                width: min(parent.width, root.content-max-width);
+                x: (parent.width - self.width) / 2;
+
+                ModsPage { }
+            }
+
+            Rectangle {
+                visible: root.current-tab == AppTab.thanks;
+                width: min(parent.width, root.content-max-width);
+                x: (parent.width - self.width) / 2;
+
+                ThanksPage { }
+            }
+        }
+    }
+    }
+
+    NotificationsOverlay { }
+
+    if root.drop-highlight: Rectangle {
+        border-width: Theme.border-width * 2;
+        border-color: Theme.highlight;
+    }
+
+    ConfirmationPopup { }
+
+    GameDetailsPopup { }
+
+    AppUpdatePopup { }
+}

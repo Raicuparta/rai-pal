@@ -1,0 +1,16 @@
+import { Theme } from "../theme.slint";
+
+export global FocusState {
+    in-out property <bool> keyboard-navigation: false;
+    in-out property <bool> popup-open: false;
+}
+
+export component FocusRing inherits Rectangle {
+    in property <bool> active;
+    in property <length> radius: 0px;
+
+    visible: root.active && FocusState.keyboard-navigation;
+    border-width: Theme.border-width * 2;
+    border-color: Theme.primary;
+    border-radius: root.radius;
+}

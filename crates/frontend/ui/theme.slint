@@ -1,0 +1,64 @@
+import { Palette } from "std-widgets.slint";
+
+export global Theme {
+    // Palette.color-scheme is Unknown in auto mode, so fall back to the resolved palette there.
+    out property <bool> dark:
+        Palette.color-scheme == ColorScheme.dark ? true
+        : Palette.color-scheme == ColorScheme.light ? false
+        : Palette.background.to-oklch().lightness < 0.5;
+
+    out property <length> border-width: 1px;
+
+    out property <length> space-2xs: 2px;
+    out property <length> space-xs: 4px;
+    out property <length> space-sm: 8px;
+    out property <length> space-md: 12px;
+    out property <length> space-lg: 16px;
+    out property <length> space-xl: 24px;
+    out property <length> space-2xl: 32px;
+
+    out property <length> font-2xs: 8px;
+    out property <length> font-xs: 10px;
+    out property <length> font-sm: 12px;
+    out property <length> font-md: 14px;
+    out property <length> font-lg: 16px;
+    out property <length> font-xl: 20px;
+
+    out property <int> weight-light: 300;
+    out property <int> weight-normal: 400;
+    out property <int> weight-semibold: 600;
+    out property <int> weight-bold: 700;
+
+    out property <length> radius-sm: 4px;
+    out property <length> radius-md: 8px;
+
+    out property <length> control-height: 24px;
+    out property <length> icon-size: 16px;
+    out property <length> menu-width: 280px;
+
+    out property <length> game-row-height: 60px;
+
+    out property <brush> background: dark ? #1a1b1e : #ffffff;
+    out property <brush> overlay: #00000099;
+    out property <brush> surface-background: dark ? #25262b : #f2f5f8;
+    out property <brush> hover-background: dark ? #2c2e33 : #f1f3f5;
+    out property <brush> pressed-background: dark ? #25262b : #e9ecef;
+    out property <brush> border: dark ? #373a40 : #ced4da;
+    out property <brush> foreground: dark ? #c1c2c5 : #373840;
+    out property <brush> strong-foreground-light:  #000000;
+    out property <brush> strong-foreground-dark:  #ffffff;
+    out property <brush> strong-foreground: dark ? strong-foreground-dark : strong-foreground-light;
+    out property <brush> dimmed-foreground: dark ? #909296 : #868e96;
+    out property <brush> primary: Palette.accent-background;
+
+    out property <brush> highlight: dark ? #ffe485 : #ffca38;
+    out property <brush> danger: dark ? #5c2020 : #ffc7c7;
+    out property <brush> row-divider: dark ? #25262b : #dee2e6;
+    out property <brush> tag-background: dark ? #25262b : #e9ecef;
+    out property <brush> status-warning: dark ? #ffa94d : #e8590c;
+    out property <brush> status-success: dark ? #69db7c : #2b8a3e;
+    out property <brush> status-error: dark ? #ff8787 : #c92a2a;
+    out property <brush> status-info: dark ? #4dabf7 : #1971c2;
+    out property <brush> deprecated-background: dark ? #3d2b12 : #fff9db;
+    out property <brush> deprecated-foreground: dark ? #ffd43b : #e67700;
+}

@@ -1,0 +1,25 @@
+import { RefreshTaskData } from "../app_types.slint";
+import { Theme } from "../theme.slint";
+import { Tr } from "../translations.slint";
+import { Icon } from "svg_icon.slint";
+import { Button } from "button.slint";
+import { ActionState } from "../action_state.slint";
+
+export global Refresh {
+    in-out property <bool> refreshing: false;
+    in property <[RefreshTaskData]> tasks;
+
+    callback refresh-all;
+}
+
+export component RefreshButton inherits Button {
+    text: Refresh.refreshing ? @tr("refresh" => "Loading...") : @tr("refresh" => "Refresh");
+    icon: Icon.refresh;
+    state: Refresh.refreshing ? ActionState.loading : ActionState.idle;
+    tint: Theme.primary;
+    enabled: !Refresh.refreshing;
+
+    clicked => {
+        Refresh.refresh-all();
+    }
+}

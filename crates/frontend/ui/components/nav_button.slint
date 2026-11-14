@@ -1,0 +1,48 @@
+import { Theme } from "../theme.slint";
+import { ActivationScope } from "activation_scope.slint";
+import { FocusRing } from "focus_ring.slint";
+
+export component NavButton inherits Rectangle {
+    in property <bool> selected;
+
+    callback clicked;
+
+    background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
+    forward-focus: focus-scope;
+    accessible-role: button;
+    accessible-action-default => {
+        root.clicked();
+    };
+
+    HorizontalLayout {
+        cross-axis-alignment: center;
+        padding: Theme.space-sm;
+
+        @children
+    }
+
+    if root.selected: Rectangle {
+        y: parent.height - self.height;
+        height: 2px;
+        background: Theme.primary;
+    }
+
+    FocusRing {
+        active: focus-scope.has-focus;
+        radius: Theme.radius-sm;
+    }
+
+    touch-area := TouchArea {
+        mouse-cursor: pointer;
+
+        clicked => {
+            root.clicked();
+        }
+    }
+
+    focus-scope := ActivationScope {
+        activated => {
+            root.clicked();
+        }
+    }
+}

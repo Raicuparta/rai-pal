@@ -1,0 +1,26 @@
+import { EngineId } from "../app_types.slint";
+import { Branding } from "../branding.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+
+export component EngineIcon inherits SvgIcon {
+    in property <EngineId> engine: EngineId.none;
+
+    pure function icon-source(engine: EngineId) -> Icon {
+        if engine == EngineId.unity {
+            return Icon.unity;
+        }
+        if engine == EngineId.unreal {
+            return Icon.unreal;
+        }
+        if engine == EngineId.godot {
+            return Icon.godot;
+        }
+        if engine == EngineId.game-maker {
+            return Icon.gamemaker;
+        }
+        return Icon.none;
+    }
+
+    icon: root.icon-source(root.engine);
+    color: Branding.engine-foreground(root.engine);
+}

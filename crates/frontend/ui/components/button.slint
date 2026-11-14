@@ -1,0 +1,44 @@
+import { ActionState } from "../action_state.slint";
+import { Theme } from "../theme.slint";
+import { ActionStatusIcon } from "action_status_icon.slint";
+import { BaseButton } from "base_button.slint";
+import { Icon } from "svg_icon.slint";
+
+export component Button inherits BaseButton {
+    in property <string> text: "";
+    in property <Icon> icon: Icon.none;
+    in property <length> text-size: Theme.font-sm;
+    in property <ActionState> state: ActionState.idle;
+    in property <bool> reserve-icon-space: true;
+
+    base-color: root.state == ActionState.success ? Theme.status-success : root.state == ActionState.error ? Theme.status-error : root.tint;
+    interactive: root.enabled && root.state != ActionState.loading;
+    accessible-label: root.text;
+
+    HorizontalLayout {
+        padding-left: root.inset + (status-icon.shown ? Theme.space-sm : 0px);
+        padding-right: root.inset;
+        cross-axis-alignment: center;
+
+        status-icon := ActionStatusIcon {
+            state: root.state;
+            base-icon: root.icon;
+            reserve-slot: root.reserve-icon-space;
+            color: root.ink-color;
+        }
+
+        if root.text != "": HorizontalLayout {
+            padding: Theme.space-xs;
+            padding-left: Theme.space-sm;
+            padding-right: Theme.space-sm;
+
+            Text {
+                text: root.text;
+                font-size: root.text-size;
+                color: root.ink-color;
+                overflow: elide;
+                font-weight: Theme.weight-semibold;
+            }
+        }
+    }
+}

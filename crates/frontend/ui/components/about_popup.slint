@@ -1,0 +1,30 @@
+import { AppPlatform, AppVariant, Renderer } from "../app_types.slint";
+import { Tr } from "../translations.slint";
+import { Modal } from "modal.slint";
+
+export global AppInfo {
+    in property <string> version: "";
+    in property <AppVariant> variant: AppVariant.unknown;
+    in property <AppPlatform> platform: AppPlatform.unknown;
+    in property <Renderer> renderer: Renderer.unknown;
+}
+
+export component AboutPopup inherits Modal {
+    title: @tr("about" => "About Rai Pal");
+
+    Text {
+        text: @tr("about" => "Version: {0}", AppInfo.version);
+    }
+
+    Text {
+        text: @tr("about" => "Variant: {0}", Tr.app-variant(AppInfo.variant));
+    }
+
+    Text {
+        text: @tr("about" => "Platform: {0}", Tr.platform(AppInfo.platform));
+    }
+
+    Text {
+        text: @tr("about" => "Rendering backend: {0}", Tr.renderer(AppInfo.renderer));
+    }
+}

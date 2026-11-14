@@ -1,0 +1,216 @@
+import { ActionKind } from "../action_state.slint";
+import { GamesActions, ModActions } from "../actions.slint";
+import { GameModData, SkipConfirmation } from "../app_types.slint";
+import { Theme } from "../theme.slint";
+import { ActionButton } from "action_button.slint";
+import { IconButton } from "icon_button.slint";
+import { ModSummaryView } from "mod_summary.slint";
+import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
+import { RowDivider } from "row_divider.slint";
+import { Icon } from "svg_icon.slint";
+
+export component GameModRow inherits VerticalLayout {
+    in property <GameModData> game-mod;
+
+    private property <bool> can-show-actions: !game-mod.incompatible && game-mod.has-exe-path;
+    private property <bool> can-install: root.can-show-actions && !game-mod.installed && !game-mod.outdated && game-mod.has-install;
+    private property <bool> can-update: root.can-show-actions && game-mod.outdated;
+    private property <bool> can-run: root.can-show-actions && game-mod.has-run && (!game-mod.has-install || game-mod.installed);
+    private property <bool> can-edit-config: root.can-show-actions && game-mod.installed && (game-mod.has-config || game-mod.has-remote-config);
+    private property <bool> can-open-mod-folder: root.can-show-actions && game-mod.installed;
+    private property <bool> can-open-website: game-mod.source-code != "";
+    private property <bool> can-download-config: root.can-show-actions && game-mod.installed && game-mod.has-remote-config;
+    private property <bool> can-reinstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
+    private property <bool> can-uninstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
+    private property <bool> has-mod-actions: root.can-edit-config || root.can-open-mod-folder || root.can-download-config || root.can-reinstall || root.can-uninstall;
+
+    private property <length> menu-x: 0;
+    private property <length> menu-y: 0;
+
+    vertical-stretch: 0;
+    alignment: start;
+
+    menu := PopupMenu {
+        x: root.menu-x;
+        y: root.menu-y;
+
+        if root.can-edit-config: PopupMenuItem {
+            text: @tr("gameModRow" => "Edit Mod Config");
+            icon: Icon.settings;
+
+            clicked => {
+                ModActions.configure(game-mod.mod-id);
+                menu.close();
+            }
+        }
+
+        if root.can-edit-config: PopupMenuItem {
+            text: @tr("gameModRow" => "Open Config Folder");
+            icon: Icon.folder-mods;
+
+            clicked => {
+                ModActions.configure-folder(game-mod.mod-id);
+                menu.close();
+            }
+        }
+
+        if root.can-edit-config: PopupMenuSeparator { }
+
+        if root.can-open-mod-folder: PopupMenuItem {
+            text: @tr("gameModRow" => "Open Mod Folder");
+            icon: Icon.folder-mods;
+
+            clicked => {
+                ModActions.open-folder(game-mod.mod-id);
+                menu.close();
+            }
+        }
+
+        if root.can-download-config: PopupMenuItem {
+            text: @tr("gameModRow" => "Download Recommended Config");
+            icon: Icon.download;
+
+            clicked => {
+                ModActions.download-config(game-mod.mod-id);
+                menu.close();
+            }
+        }
+
+        if root.can-download-config: PopupMenuSeparator { }
+
+        if root.can-reinstall: PopupMenuItem {
+            text: @tr("gameModRow" => "Reinstall");
+            icon: Icon.reinstall;
+
+            clicked => {
+                ModActions.reinstall(game-mod.mod-id);
+                menu.close();
+            }
+        }
+
+        if root.can-uninstall: PopupMenuItem {
+            text: @tr("gameModRow" => "Uninstall");
+            icon: Icon.delete;
+            enabled: !game-mod.has-installed-dependants;
+
+            clicked => {
+                ModActions.uninstall(game-mod.mod-id);
+                menu.close();
+            }
+        }
+
+        if root.has-mod-actions: PopupMenuSeparator { }
+
+        if root.can-open-website: PopupMenuItem {
+            text: @tr("modModal" => "Website");
+            icon: Icon.external-link;
+
+            clicked => {
+                ModActions.open-url(game-mod.source-code);
+                menu.close();
+            }
+        }
+
+        PopupMenuItem {
+            text: @tr("debugData" => "Debug data");
+            icon: Icon.bug;
+
+            clicked => {
+                GamesActions.request-mod-debug-data(game-mod.mod-id);
+                menu.close();
+            }
+        }
+    }
+
+    Rectangle {
+        height: row-layout.preferred-height;
+
+        row-touch := TouchArea {
+            pointer-event(event) => {
+                if event.kind == PointerEventKind.down && event.button == PointerEventButton.right {
+                    root.menu-x = max(0px, min(row-touch.pressed-x, root.width - Theme.menu-width));
+                    root.menu-y = row-touch.pressed-y;
+                    menu.show();
+                }
+            }
+        }
+
+        row-layout := HorizontalLayout {
+            padding: Theme.space-sm;
+            spacing: Theme.space-sm;
+            cross-axis-alignment: center;
+
+            ModSummaryView {
+                horizontal-stretch: 1;
+                title: game-mod.title;
+                description: game-mod.description;
+                version-text: game-mod.version-text;
+                release-date: game-mod.release-date;
+                author: game-mod.author;
+                engine-text: game-mod.engine-text;
+                deprecated: game-mod.deprecated;
+                has-remote-config: game-mod.has-remote-config;
+                show-status: root.can-show-actions;
+                installed: game-mod.installed;
+                outdated: game-mod.outdated;
+            }
+
+            HorizontalLayout {
+                horizontal-stretch: 0;
+                alignment: end;
+                spacing: Theme.space-xs;
+                min-width: self.preferred-width;
+
+                if root.can-install: ActionButton {
+                    text: @tr("gameModRow" => "Install");
+                    icon: Icon.install;
+                    action-key: { kind: ActionKind.game-mod-install, target: game-mod.mod-id };
+                    tint: Theme.surface-background;
+
+                    clicked => {
+                        ModActions.request-install(
+                        game-mod.mod-id,
+                        SkipConfirmation.install-mod,
+                    );
+                    }
+                }
+
+                if root.can-update: ActionButton {
+                    text: @tr("gameModRow" => "Update");
+                    icon: Icon.update;
+                    tint: Theme.primary;
+                    action-key: { kind: ActionKind.game-mod-install, target: game-mod.mod-id };
+
+                    clicked => {
+                        ModActions.update(game-mod.mod-id);
+                    }
+                }
+
+                if root.can-run: ActionButton {
+                    text: @tr("gameModRow" => "Run");
+                    icon: Icon.play;
+                    action-key: { kind: ActionKind.game-mod-run, target: game-mod.mod-id };
+                    tint: Theme.surface-background;
+
+                    clicked => {
+                        ModActions.run(game-mod.mod-id);
+                    }
+                }
+
+                actions-button := IconButton {
+                    icon: Icon.more;
+                    icon-size: 22px;
+                    tooltip: @tr("gameModRow" => "Mod actions");
+
+                    clicked => {
+                        root.menu-x = actions-button.absolute-position.x - root.absolute-position.x + actions-button.width - Theme.menu-width;
+                        root.menu-y = actions-button.absolute-position.y - root.absolute-position.y + actions-button.height;
+                        menu.show();
+                    }
+                }
+            }
+        }
+    }
+
+    RowDivider { }
+}

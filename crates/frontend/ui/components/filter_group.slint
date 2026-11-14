@@ -1,0 +1,198 @@
+import {
+    FilterGroupData,
+    FilterValueData,
+    FilterValueLabel,
+    FilterValueNote,
+} from "../app_types.slint";
+import { Tr } from "../translations.slint";
+import { Theme } from "../theme.slint";
+import { Button } from "button.slint";
+import { IconButton } from "icon_button.slint";
+import { BaseButton } from "base_button.slint";
+import { ResetButton } from "reset_button.slint";
+import { Chevron, ChevronDirection } from "chevron.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+import { CheckBoxMark } from "check_box.slint";
+import { GamesActions } from "../actions.slint";
+
+component FilterValueRow inherits BaseButton {
+    in property <FilterValueData> item;
+
+    private property <bool> checked: root.item.enabled && root.item.available;
+    private property <bool> show-actions: root.hovered || root.focused || only-button.focused || lock-button.focused;
+
+    callback toggled(checked: bool);
+    callback lock-toggled;
+    callback only;
+
+    extra-hovered: only-button.hovered || lock-button.hovered;
+    inset: Theme.space-sm;
+    enabled: root.item.available;
+    accessible-label: root.item.label == FilterValueLabel.none ? root.item.display : Tr.filter-value(root.item.label);
+
+    clicked => {
+        if !root.item.locked && root.item.available {
+            root.toggled(!root.item.enabled);
+        }
+    }
+
+    filter-content := Rectangle {
+        horizontal-stretch: 1;
+        height: label-row.preferred-height;
+
+        label-row := HorizontalLayout {
+            horizontal-stretch: 1;
+            padding-left: root.inset + Theme.space-lg;
+            padding-right: root.inset + Theme.space-sm;
+            padding-top: Theme.space-xs;
+            padding-bottom: Theme.space-xs;
+            spacing: Theme.space-sm;
+            cross-axis-alignment: center;
+            alignment: start;
+            opacity: root.item.available ? 1 : 0.5;
+
+            CheckBoxMark {
+                checked: root.checked;
+            }
+
+            Text {
+                text: root.item.label == FilterValueLabel.none ? root.item.display : Tr.filter-value(root.item.label);
+                color: root.item.available ? Theme.foreground : Theme.dimmed-foreground;
+                horizontal-stretch: 0;
+                overflow: elide;
+            }
+
+            if root.item.note != FilterValueNote.none: Rectangle {
+                width: 12px;
+                height: 12px;
+                horizontal-stretch: 0;
+
+                SvgIcon {
+                    icon: Icon.help;
+                    size: 12px;
+                    color: Theme.dimmed-foreground;
+                }
+
+                Tooltip {
+                    text: @markdown("\{Tr.filter-value-note(root.item.note)}");
+                }
+            }
+        }
+
+        HorizontalLayout {
+            x: parent.width - self.width - root.inset - Theme.space-sm;
+            y: (parent.height - self.height) / 2;
+            width: self.preferred-width;
+            height: self.preferred-height;
+            spacing: Theme.space-xs;
+            cross-axis-alignment: center;
+
+            only-button := Button {
+                tint: Theme.surface-background;
+                text: @tr("filterMenu" => "Only");
+                text-size: Theme.font-xs;
+                tooltip: @tr("filterMenu" => "Only show this value");
+                visible: !root.item.locked;
+                enabled: !root.item.locked && root.item.available;
+                opacity: root.show-actions ? 1 : 0;
+                reserve-icon-space: false;
+
+                clicked => {
+                    root.only();
+                }
+            }
+
+            lock-button := IconButton {
+                icon: root.item.locked ? Icon.locked : Icon.unlocked;
+                tooltip: root.item.locked ? @tr("filterMenu" => "Unlock") : @tr("filterMenu" => "Disable and lock");
+                opacity: root.item.locked || root.show-actions ? 1 : 0;
+                enabled: root.item.available;
+                tint: root.item.locked ? Theme.highlight : Theme.surface-background;
+
+                clicked => {
+                    root.lock-toggled();
+                }
+            }
+        }
+    }
+}
+
+export component FilterGroup inherits Rectangle {
+    in property <FilterGroupData> group;
+
+    VerticalLayout {
+        alignment: start;
+        spacing: Theme.border-width;
+
+        filter-row := BaseButton {
+            extra-hovered: reset-button.hovered;
+            inset: Theme.space-sm;
+            accessible-label: Tr.filter-property(root.group.key);
+
+            clicked => {
+                GamesActions.filter-expanded-changed(root.group.key, !root.group.expanded);
+            }
+
+            HorizontalLayout {
+                padding-left: filter-row.inset + Theme.space-sm;
+                padding-right: filter-row.inset + Theme.space-sm;
+                padding-top: Theme.space-xs;
+                padding-bottom: Theme.space-xs;
+                spacing: Theme.space-sm;
+                cross-axis-alignment: center;
+
+                Chevron {
+                    direction: root.group.expanded ? ChevronDirection.down : ChevronDirection.right;
+                    color: Theme.dimmed-foreground;
+                }
+
+                HorizontalLayout {
+                    alignment: start;
+                    cross-axis-alignment: center;
+                    spacing: Theme.space-xs;
+
+                    Text {
+                        text: Tr.filter-property(root.group.key);
+                        font-weight: Theme.weight-bold;
+                        overflow: elide;
+                        color: Theme.strong-foreground;
+                    }
+
+                    if root.group.has-locked: Rectangle {
+                        width: 6px;
+                        height: 6px;
+                        border-radius: 6px / 2;
+                        background: Theme.highlight;
+                    }
+                }
+
+                reset-button := ResetButton {
+                    tooltip: @tr("filterMenu" => "Reset");
+                    visible: root.group.has-changes;
+
+                    clicked => {
+                        GamesActions.filter-reset(root.group.key);
+                    }
+                }
+            }
+        }
+
+        if root.group.expanded: VerticalLayout {
+            for value in root.group.values: FilterValueRow {
+                item: value;
+
+                toggled(checked) => {
+                    GamesActions.filter-toggled(root.group.key, value.value, checked);
+                }
+
+                lock-toggled => {
+                    GamesActions.filter-lock-toggled(root.group.key, value.value);
+                }
+
+                only => {
+                    GamesActions.filter-only(root.group.key, value.value);
+                }
+            }
+        }
+    }
+}

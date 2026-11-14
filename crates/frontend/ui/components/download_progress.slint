@@ -1,0 +1,91 @@
+import { ProgressIndicator } from "std-widgets.slint";
+import { DownloadItemData, DownloadPhase } from "../app_types.slint";
+import { Theme } from "../theme.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
+import { AppActions } from "../actions.slint";
+import { Tr } from "../translations.slint";
+import { ActivationScope } from "activation_scope.slint";
+import { FocusRing } from "focus_ring.slint";
+
+export global DownloadsState {
+    in property <[DownloadItemData]> items;
+    in property <float> overall-progress: 0;
+}
+
+export component DownloadProgress inherits Rectangle {
+    width: Theme.control-height + Theme.space-sm;
+    height: Theme.control-height;
+    visible: DownloadsState.items.length > 0;
+    forward-focus: focus-scope;
+    accessible-role: button;
+    accessible-label: root.menu-tooltip;
+    accessible-action-default => {
+        menu.show();
+    };
+
+    private property <string> menu-tooltip: @tr("downloadStatusMenu" => "Downloads");
+
+    Rectangle {
+        border-radius: Theme.radius-sm;
+        background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
+
+        FocusRing {
+            active: focus-scope.has-focus;
+            radius: Theme.radius-sm;
+        }
+
+        SvgIcon {
+            icon: Icon.download;
+            size: 18px;
+            color: Theme.foreground;
+        }
+
+        ProgressIndicator {
+            x: Theme.space-sm;
+            width: parent.width - Theme.space-md;
+            y: parent.height - Theme.space-sm;
+            progress: DownloadsState.overall-progress;
+        }
+
+        touch-area := TouchArea {
+            clicked => {
+                menu.show();
+            }
+        }
+    }
+
+    focus-scope := ActivationScope {
+        activated => {
+            menu.show();
+        }
+    }
+
+    menu := PopupMenu {
+        x: root.width - Theme.menu-width;
+        y: root.height;
+
+        PopupMenuItem {
+            text: @tr("downloadStatusMenu" => "Clear completed");
+
+            clicked => {
+                AppActions.clear-downloads();
+                menu.close();
+            }
+        }
+
+        if DownloadsState.items.length > 0 : PopupMenuSeparator { }
+
+        for item in DownloadsState.items : PopupMenuItem {
+            enabled: false;
+            icon: item.phase == DownloadPhase.failed ? Icon.error : item.phase == DownloadPhase.finished ? Icon.success : Icon.none;
+            text: item.phase == DownloadPhase.failed
+                ? @tr("downloads" => "{0} failed", Tr.download-step-label(item.kind, item.mod-id))
+                : "\{Tr.download-step-label(item.kind, item.mod-id)}: \{round(item.progress)}%";
+        }
+    }
+
+    Tooltip {
+        text: @markdown("\{root.menu-tooltip}");
+    }
+}

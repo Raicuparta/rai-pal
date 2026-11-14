@@ -1,0 +1,274 @@
+use std::path::{Path, PathBuf};
+
+use crate::{
+	app_paths,
+	architecture::Architecture,
+	game_engines::{
+		game_engine::EngineBrand,
+		gamemaker, godot,
+		unity::{self, UnityBackend},
+		unreal,
+	},
+	game_providers::{
+		game_provider::GameProviderId,
+		provider_command::{ProviderCommand, ProviderCommandAction, ProviderCommandKind},
+	},
+	game_tag::GameTag,
+	game_title::is_probably_demo,
+	operating_system::{self, OperatingSystem},
+	path_extensions::PathExt,
+	remote_config::{self, RemoteConfigs},
+	result::{ContextResult, Error, Result},
+};
+
+#[derive(serde::Serialize, Clone, Debug)]
+pub struct Game {
+	pub provider_id: GameProviderId,
+	pub game_id: String,
+	pub external_id: String,
+	pub display_title: String,
+	pub title_discriminator: Option<String>,
+	pub thumbnail_url: Option<String>,
+	pub release_date_rfc3339: Option<String>,
+	pub exe_path: Option<PathBuf>,
+	pub engine_brand: Option<EngineBrand>,
+	pub engine_version_major: Option<u32>,
+	pub engine_version_minor: Option<u32>,
+	pub engine_version_patch: Option<u32>,
+	pub engine_version_display: Option<String>,
+	pub unity_backend: Option<UnityBackend>,
+	pub architecture: Option<Architecture>,
+	pub executable_os: Option<OperatingSystem>,
+	pub supported_os: Vec<OperatingSystem>,
+	pub tags: Vec<GameTag>,
+	pub provider_commands: Vec<ProviderCommand>,
+}
+
+impl Game {
+	pub fn new(provider_id: GameProviderId, game_id: String, title: String) -> Self {
+		let mut game = Self {
+			provider_id,
+			external_id: game_id.clone(),
+			game_id,
+			display_title: title,
+			title_discriminator: None,
+			thumbnail_url: None,
+			release_date_rfc3339: None,
+			exe_path: None,
+			engine_brand: None,
+			engine_version_major: None,
+			engine_version_minor: None,
+			engine_version_patch: None,
+			engine_version_display: None,
+			unity_backend: None,
+			architecture: None,
+			executable_os: None,
+			supported_os: Vec::default(),
+			tags: Vec::default(),
+			provider_commands: Vec::default(),
+		};
+
+		if is_probably_demo(&game.display_title) {
+			game.add_tag(GameTag::Demo);
+		}
+
+		game
+	}
+
+	pub fn open_game_folder(&self) -> Result {
+		self.try_get_exe_path()?.open_folder_or_parent()
+	}
+
+	pub fn open_mods_folder(&self) -> Result {
+		self.get_installed_mods_folder()?.open_folder_or_parent()
+	}
+
+	pub async fn delete_mods_folder(&self) -> Result {
+		let folder = self.get_installed_mods_folder()?;
+		fs_err::tokio::remove_dir_all(folder).await?;
+		Ok(())
+	}
+
+	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
+		let installed_mods_folder =
+			app_paths::installed_mods_path()?.join(self.try_get_exe_path()?.hash_string());
+		fs_err::create_dir_all(&installed_mods_folder)?;
+
+		Ok(installed_mods_folder)
+	}
+
+	pub fn try_get_exe_path(&self) -> Result<&Path> {
+		Ok(self
+			.exe_path
+			.as_ref()
+			.ok_or_else(|| Error::GameNotInstalled(self.display_title.clone()))?)
+	}
+
+	pub fn try_get_exe_name(&self) -> Result<String> {
+		let path = self.try_get_exe_path()?;
+		path.file_name()
+			.and_then(|file_name| file_name.to_str())
+			.map(std::string::ToString::to_string)
+			.ok_or_else(|| Error::InvalidOsStr(path.display().to_string()))
+	}
+
+	pub fn add_provider_command(
+		&mut self,
+		action: ProviderCommandAction,
+		kind: ProviderCommandKind,
+	) -> &mut Self {
+		let command = ProviderCommand { action, kind };
+
+		if let Some(existing_command) = self
+			.provider_commands
+			.iter_mut()
+			.find(|existing| existing.action == action)
+		{
+			*existing_command = command;
+		} else {
+			self.provider_commands.push(command);
+			self.provider_commands.sort_by_key(|sorted| sorted.action);
+		}
+
+		self
+	}
+
+	pub fn get_provider_command(&self, action: ProviderCommandAction) -> Option<&ProviderCommand> {
+		self.provider_commands
+			.iter()
+			.find(|command| command.action == action)
+	}
+
+	pub fn full_title(&self) -> String {
+		self.title_discriminator.as_ref().map_or_else(
+			|| self.display_title.clone(),
+			|discriminator| format!("{} ({})", self.display_title, discriminator),
+		)
+	}
+
+	pub fn add_supported_os(&mut self, os: OperatingSystem) -> &mut Self {
+		if !self.supported_os.contains(&os) {
+			self.supported_os.push(os);
+		}
+
+		self
+	}
+
+	pub fn add_tag(&mut self, tag: GameTag) -> &mut Self {
+		if self.tags.contains(&tag) {
+			return self;
+		}
+
+		self.tags.push(tag);
+		self
+	}
+
+	pub fn set_executable(&mut self, exe_path: &Path) -> &mut Self {
+		const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
+
+		if !exe_path.is_file() {
+			return self;
+		}
+
+		self.add_provider_command(
+			ProviderCommandAction::StartViaExe,
+			ProviderCommandKind::Path(exe_path.to_path_buf(), Vec::default()),
+		);
+
+		// We ignore games that don't have an extension.
+		if let Some(extension) = exe_path.extension().and_then(|ext| ext.to_str()) {
+			if !VALID_EXTENSIONS.contains(&extension.to_lowercase().as_str()) {
+				return self;
+			}
+
+			self.exe_path = Some(exe_path.normalize());
+
+			self.executable_os = operating_system::get_os_from_path(exe_path);
+
+			// Order matters here. We're checking all sequentially, so we should leave the most expensive ones last.
+			let _ = unity::process_game(self)
+				|| unreal::process_game(self)
+				|| godot::process_game(self)
+				|| gamemaker::process_game(self);
+		}
+
+		self
+	}
+
+	pub fn refresh_executable(&mut self) -> Result<&mut Self> {
+		if let Some(exe_path) = self.exe_path.clone() {
+			self.set_executable(&exe_path);
+		} else {
+			return Err(Error::GameNotInstalled(self.display_title.clone()));
+		}
+		Ok(self)
+	}
+
+	pub async fn get_remote_configs(&self) -> Result<Option<RemoteConfigs>> {
+		match self.exe_path.as_ref() {
+			Some(exe_path) => remote_config::get_remote_configs(exe_path).await,
+			None => Ok(None),
+		}
+	}
+
+	pub fn open_data_folder(&self) -> Result {
+		if let Some(engine) = self.engine_brand {
+			return match engine {
+				EngineBrand::Unity => unity::open_data_folder(self),
+				EngineBrand::Unreal => unreal::open_data_folder(self),
+				EngineBrand::Godot => godot::open_data_folder(self),
+				EngineBrand::GameMaker => Err(Error::UnsupportedEngineOperation(
+					engine,
+					"open_data_folder".to_string(),
+				)),
+			};
+		}
+
+		Err(Error::OperationRequiresEngine(
+			"open_data_folder".to_string(),
+		))
+	}
+
+	/// Marked slow because potentially runs slow wine command to get inner path,
+	/// don't call while processing games or any other performance-sensitive places.
+	pub fn get_roaming_app_data_slow(&self) -> Result<PathBuf> {
+		#[cfg(target_os = "linux")]
+		{
+			use std::path::PathBuf;
+
+			use crate::{game_providers::game_provider, path_extensions::AsValidStr};
+
+			let provider = game_provider::get_provider(self.provider_id)?;
+			let prefix_path = provider.get_wine_prefix_path(self)?;
+			let mut launch = provider.get_run_with_wine_command(self)?;
+			launch.arg("cmd").arg("/C").arg("echo %APPDATA%");
+
+			let output = launch
+				.to_command()
+				.output()
+				.context("failed to run `cmd /C echo %APPDATA%` in the Wine prefix")?;
+
+			let win_path = str::from_utf8(&output.stdout)?.trim();
+
+			// 2. Convert Windows path to Linux path manually
+			// The format is always C:\users\username\AppData\Roaming
+			// We replace 'C:\' with the actual path to drive_c
+			let drive_c_path = PathBuf::from(format!("{}/drive_c", prefix_path.try_to_str()?));
+
+			// Remove the 'C:\' prefix and replace backslashes with slashes
+			let relative_path = win_path.replace("C:\\", "").replace('\\', "/");
+
+			Ok(drive_c_path.join(relative_path))
+		}
+
+		#[cfg(target_os = "windows")]
+		{
+			Ok(app_paths::base_dirs()?.config_dir().to_owned())
+		}
+
+		#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+		{
+			Ok(app_paths::base_dirs()?.config_dir().to_owned())
+		}
+	}
+}

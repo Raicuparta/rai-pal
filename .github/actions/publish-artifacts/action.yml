@@ -1,0 +1,33 @@
+name: Publish Artifacts
+description: Collect a platform's build artifacts, attach them to the draft release, and upload its updater partial.
+
+inputs:
+  platform:
+    description: Platform name (windows, linux, or macos).
+    required: true
+  version:
+    description: Release version.
+    required: true
+  tag_name:
+    description: Release tag to attach artifacts to.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Collect Build Artifacts
+      shell: bash
+      run: bash scripts/collect-build-artifacts.sh ${{ inputs.platform }} ${{ inputs.version }}
+
+    - name: Upload Release Assets
+      uses: softprops/action-gh-release@v3
+      with:
+        tag_name: ${{ inputs.tag_name }}
+        files: release-assets/*
+        draft: true
+
+    - name: Upload Updater Partial
+      uses: actions/upload-artifact@v7
+      with:
+        name: updater-partial-${{ inputs.platform }}
+        path: updater-partial-*.json

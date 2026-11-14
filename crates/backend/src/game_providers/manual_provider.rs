@@ -1,0 +1,528 @@
+use std::{
+	collections::{HashMap, HashSet},
+	path::{Path, PathBuf},
+	time::Instant,
+};
+
+use log::error;
+
+use super::game_provider::{GameProviderId, ProviderActions};
+use super::provider_command::{ProviderCommandAction, ProviderCommandKind};
+use crate::{
+	app_paths,
+	game::Game,
+	game_providers::game_provider::WineProviderActions,
+	path_extensions::PathExt,
+	result::{Error, Result},
+};
+
+const VALID_EXTENSIONS: [&str; 1] = ["exe"];
+// TODO configurable or what?
+const MAX_SCAN_DEPTH: u32 = 8;
+const IGNORED_EXE_NAMES: [&str; 8] = [
+	"setup",
+	"install",
+	"uninstall",
+	"dxsetup",
+	"vc_redist",
+	"unitycrashhandler",
+	"unitycrashhandler64",
+	"unitycrashhandler32",
+];
+
+pub struct Manual {}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct GamesConfig {
+	pub paths: Vec<PathBuf>,
+	pub directories: Vec<PathBuf>,
+	pub ignored_paths: Vec<PathBuf>,
+}
+
+pub struct ScanProgress {
+	pub scanned_dirs: u32,
+	pub executables_found: u32,
+	pub current_path: String,
+}
+
+pub struct DirectoryScanResult {
+	pub games: Vec<Game>,
+	pub duration_secs: f64,
+}
+
+impl ProviderActions for Manual {
+	fn get_games(&self) -> Result<Vec<Game>> {
+		let config = read_games_config(&games_config_path()?);
+
+		// Games that are still configured in this refresh. Anything not in here is
+		// left out of the database on purpose so the provider's stale-game cleanup
+		// can remove it. This must not be built from a database query, otherwise
+		// games that were just removed from the config would get re-inserted (and
+		// get a fresh `created_at`) and would never be cleaned up.
+		let mut games: Vec<Game> = Vec::new();
+
+		for path in &config.paths {
+			match get_game_from_path(path) {
+				Ok(game) => {
+					games.push(game);
+				}
+				Err(error) => {
+					error!(
+						"Failed to get game from path '{}'. Will remove this path from the config. Error: {}",
+						path.display(),
+						error
+					);
+					remove_path(path)?;
+				}
+			}
+		}
+
+		for dir in &config.directories {
+			if !dir.is_dir() {
+				error!(
+					"Directory '{}' not found. Will remove it from the config.",
+					dir.display()
+				);
+				remove_directory_path(dir)?;
+				continue;
+			}
+
+			match find_executables_in_directory(dir) {
+				Ok(executables) => {
+					for exe_path in executables {
+						if config.ignored_paths.contains(&exe_path) {
+							continue;
+						}
+
+						match get_game_from_path(&exe_path) {
+							Ok(game) => {
+								games.push(game);
+							}
+							Err(error) => {
+								error!(
+									"Failed to get game from path '{}': {}",
+									exe_path.display(),
+									error
+								);
+							}
+						}
+					}
+				}
+				Err(error) => {
+					error!("Failed to walk directory '{}': {}", dir.display(), error);
+				}
+			}
+		}
+
+		// The same executable can be reached both as a configured path and by
+		// scanning a configured directory, so avoid duplicates here.
+		let mut seen_game_ids = HashSet::new();
+		games.retain(|game| seen_game_ids.insert(game.game_id.clone()));
+
+		compute_title_discriminators(&mut games);
+
+		clean_up_stale_ignored_paths(&config)?;
+
+		Ok(games)
+	}
+
+	fn delete_game(&self, game: &Game) -> Result {
+		let path = game
+			.exe_path
+			.as_ref()
+			.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
+			.normalize();
+
+		let config_path = games_config_path()?;
+		let mut games_config = read_games_config(&config_path);
+
+		let configured_path = games_config.paths.contains(&path);
+		let inside_directory = games_config
+			.directories
+			.iter()
+			.any(|directory| path.starts_with(directory));
+
+		games_config.paths.retain(|configured| configured != &path);
+
+		if (!configured_path || inside_directory) && !games_config.ignored_paths.contains(&path) {
+			games_config.ignored_paths.push(path);
+		}
+
+		fs_err::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+
+		Ok(())
+	}
+}
+
+#[cfg(target_os = "windows")]
+impl WineProviderActions for Manual {}
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+impl WineProviderActions for Manual {}
+
+#[cfg(target_os = "linux")]
+impl WineProviderActions for Manual {
+	fn get_wine_prefix_path(&self, _game: &Game) -> Result<PathBuf> {
+		Ok(crate::wine::get_default_wine_prefix())
+	}
+
+	fn get_wine_binary_path(&self, _game: &Game) -> Result<PathBuf> {
+		Ok(crate::wine::find_system_wine())
+	}
+
+	fn set_wine_dll_overrides(&self, game: &Game, dll_overrides: &[String]) -> Result {
+		let prefix_path = self.get_wine_prefix_path(game)?;
+		crate::wine::set_wine_dll_overrides_in_reg(&prefix_path, dll_overrides)?;
+		Ok(())
+	}
+}
+
+fn games_config_path() -> Result<PathBuf> {
+	app_paths::app_data_file("games.json")
+}
+
+fn read_games_config(games_config_path: &Path) -> GamesConfig {
+	match fs_err::read_to_string(games_config_path)
+		.and_then(|games_config_file| Ok(serde_json::from_str::<GamesConfig>(&games_config_file)?))
+	{
+		Ok(mut games_config) => {
+			normalize_config_paths(&mut games_config);
+			games_config
+		}
+		Err(error) => {
+			error!("Error reading config: {error}");
+			GamesConfig {
+				paths: Vec::default(),
+				directories: Vec::default(),
+				ignored_paths: Vec::default(),
+			}
+		}
+	}
+}
+
+fn get_game_from_path(exe_path: &Path) -> Result<Game> {
+	let name = exe_path.file_name_without_extension()?.to_string();
+	let parent_folder = exe_path
+		.parent()
+		.and_then(|p| p.file_name())
+		.map(|f| f.to_string_lossy().to_string());
+
+	let mut game = Game::new(
+		GameProviderId::Manual,
+		exe_path.hash_string(),
+		match parent_folder {
+			Some(ref folder) => format!("{folder} / {name}"),
+			None => name,
+		},
+	);
+	game.set_executable(exe_path);
+	game.add_provider_command(ProviderCommandAction::Delete, ProviderCommandKind::Delete);
+	Ok(game)
+}
+
+fn compute_title_discriminators(games: &mut [Game]) {
+	let mut groups: HashMap<String, Vec<usize>> = HashMap::new();
+	for (idx, game) in games.iter().enumerate() {
+		if game.exe_path.is_some() {
+			groups
+				.entry(game.display_title.clone())
+				.or_default()
+				.push(idx);
+		}
+	}
+
+	for indices in groups.values() {
+		if indices.len() <= 1 {
+			continue;
+		}
+
+		let path_components: Vec<Vec<String>> = indices
+			.iter()
+			.map(|&idx| {
+				let Some(exe_path) = games[idx].exe_path.as_ref() else {
+					return vec![];
+				};
+				let Some(parent) = exe_path.parent() else {
+					return vec![];
+				};
+				parent
+					.components()
+					.rev()
+					.map(|c| c.as_os_str().to_string_lossy().to_string())
+					.collect()
+			})
+			.collect();
+
+		for level in 1.. {
+			let mut seen: HashMap<&str, Vec<usize>> = HashMap::new();
+			for (i, components) in path_components.iter().enumerate() {
+				if let Some(comp) = components.get(level) {
+					seen.entry(comp.as_str()).or_default().push(i);
+				}
+			}
+
+			if seen.len() > 1 {
+				for (comp, member_indices) in &seen {
+					for &member_idx in member_indices {
+						games[indices[member_idx]].title_discriminator = Some(comp.to_string());
+					}
+				}
+				break;
+			}
+
+			if seen.is_empty() {
+				break;
+			}
+		}
+	}
+}
+
+pub async fn add_game(path: &Path) -> Result<Game> {
+	let game = get_game_from_path(path)?;
+
+	if game.exe_path.is_none() {
+		return Err(Error::NoExecutableFound(path.to_owned()));
+	}
+
+	let config_path = games_config_path()?;
+
+	let mut games_config = read_games_config(&config_path);
+	games_config.paths.push(path.normalize());
+
+	fs_err::tokio::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
+
+	Ok(game)
+}
+
+pub async fn add_directory(path: &Path) -> Result<Vec<Game>> {
+	if !path.is_dir() {
+		return Err(Error::NoExecutableFound(path.to_owned()));
+	}
+
+	let executables = find_executables_in_directory(path)?;
+
+	let games: Result<Vec<Game>> = executables
+		.iter()
+		.map(|exe_path| get_game_from_path(exe_path))
+		.collect();
+	let games = games?;
+
+	let config_path = games_config_path()?;
+	let mut games_config = read_games_config(&config_path);
+
+	let path = path.normalize();
+
+	if games_config
+		.directories
+		.iter()
+		.any(|configured| configured.as_path() == path)
+	{
+		return Ok(games);
+	}
+
+	games_config.directories.push(path);
+
+	fs_err::tokio::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
+
+	Ok(games)
+}
+
+fn is_ignored_exe_name(path: &Path) -> bool {
+	path.file_stem()
+		.and_then(|s| s.to_str())
+		.is_some_and(|name| {
+			IGNORED_EXE_NAMES
+				.iter()
+				.any(|ignored| name.eq_ignore_ascii_case(ignored))
+		})
+}
+
+fn find_executables_in_directory(dir: &Path) -> Result<Vec<PathBuf>> {
+	let mut executables = Vec::new();
+	let mut scanned_dirs = 0u32;
+
+	walk_directory(
+		dir,
+		&mut executables,
+		&VALID_EXTENSIONS,
+		None,
+		&mut scanned_dirs,
+		0,
+	)?;
+
+	executables.retain(|p| !is_ignored_exe_name(p));
+
+	Ok(executables)
+}
+
+fn walk_directory(
+	dir: &Path,
+	executables: &mut Vec<PathBuf>,
+	valid_extensions: &[&str],
+	on_progress: Option<&dyn Fn(ScanProgress)>,
+	scanned_dirs: &mut u32,
+	depth: u32,
+) -> Result {
+	if depth >= MAX_SCAN_DEPTH {
+		return Ok(());
+	}
+
+	for entry in fs_err::read_dir(dir)? {
+		let entry = entry?;
+		let path = entry.path();
+
+		if path.is_symlink() {
+			continue;
+		}
+
+		if path.is_dir() {
+			*scanned_dirs += 1;
+			if let Some(cb) = on_progress {
+				cb(ScanProgress {
+					scanned_dirs: *scanned_dirs,
+					#[expect(clippy::cast_possible_truncation)]
+					executables_found: executables.len() as u32,
+					current_path: path.display().to_string(),
+				});
+			}
+			walk_directory(
+				&path,
+				executables,
+				valid_extensions,
+				on_progress,
+				scanned_dirs,
+				depth + 1,
+			)?;
+		} else if path.is_file()
+			&& let Some(ext) = path.extension().and_then(|e| e.to_str())
+			&& valid_extensions.contains(&ext.to_lowercase().as_str())
+		{
+			if let Some(cb) = on_progress {
+				cb(ScanProgress {
+					scanned_dirs: *scanned_dirs,
+					#[expect(clippy::cast_possible_truncation)]
+					executables_found: executables.len() as u32 + 1,
+					current_path: path.display().to_string(),
+				});
+			}
+			executables.push(path);
+		}
+	}
+
+	Ok(())
+}
+
+pub fn scan_directory(
+	path: &Path,
+	on_progress: impl Fn(ScanProgress) + Send + Sync + 'static,
+) -> Result<DirectoryScanResult> {
+	if !path.is_dir() {
+		return Err(Error::NoExecutableFound(path.to_owned()));
+	}
+
+	let start = Instant::now();
+	let mut executables = Vec::new();
+	let mut scanned_dirs = 0u32;
+
+	walk_directory(
+		path,
+		&mut executables,
+		&VALID_EXTENSIONS,
+		Some(&on_progress),
+		&mut scanned_dirs,
+		0,
+	)?;
+
+	let duration_secs = start.elapsed().as_secs_f64();
+
+	let games: Result<Vec<Game>> = executables
+		.iter()
+		.map(|exe_path| get_game_from_path(exe_path))
+		.collect();
+	let games = games?;
+
+	Ok(DirectoryScanResult {
+		games,
+		duration_secs,
+	})
+}
+
+fn remove_directory_path(path: &Path) -> Result {
+	let config_path = games_config_path()?;
+	let mut games_config = read_games_config(&config_path);
+	games_config.directories.retain(|p| p != path);
+	games_config.ignored_paths.retain(|p| !p.starts_with(path));
+
+	fs_err::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+
+	Ok(())
+}
+
+pub async fn remove_directory(path: &Path) -> Result {
+	let path = path.normalize();
+	let config_path = games_config_path()?;
+	let mut games_config = read_games_config(&config_path);
+	games_config
+		.directories
+		.retain(|configured| configured != &path);
+	games_config.ignored_paths.retain(|p| !p.starts_with(&path));
+
+	fs_err::tokio::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
+
+	Ok(())
+}
+
+pub fn get_directories() -> Result<Vec<PathBuf>> {
+	let config_path = games_config_path()?;
+	let config = read_games_config(&config_path);
+	Ok(config.directories)
+}
+
+fn remove_path(path: &Path) -> Result {
+	let config_path = games_config_path()?;
+	let mut games_config = read_games_config(&config_path);
+	games_config.paths.retain(|p| p != path);
+
+	fs_err::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+
+	Ok(())
+}
+
+fn clean_up_stale_ignored_paths(config: &GamesConfig) -> Result {
+	if config.ignored_paths.is_empty() {
+		return Ok(());
+	}
+
+	let mut changed = false;
+	for ignored_path in &config.ignored_paths {
+		if !ignored_path.exists() {
+			changed = true;
+			break;
+		}
+	}
+
+	if !changed {
+		return Ok(());
+	}
+
+	let config_path = games_config_path()?;
+	let mut games_config = read_games_config(&config_path);
+	games_config.ignored_paths.retain(|p| p.exists());
+
+	fs_err::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+
+	Ok(())
+}
+
+fn normalize_config_paths(config: &mut GamesConfig) {
+	for path in &mut config.paths {
+		*path = path.normalize();
+	}
+
+	for directory in &mut config.directories {
+		*directory = directory.normalize();
+	}
+
+	for ignored_path in &mut config.ignored_paths {
+		*ignored_path = ignored_path.normalize();
+	}
+}

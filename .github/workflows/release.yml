@@ -3,17 +3,29 @@ name: Create Releases
 on:
   workflow_dispatch:
     inputs:
-      build_target:
-        description: "Choose which platform to build"
-        required: true
-        type: choice
-        default: "all"
-        options:
-          - all
-          - ubuntu
-          - windows
+      build_windows:
+        description: "Build Windows"
+        type: boolean
+        default: true
+      build_linux:
+        description: "Build Linux"
+        type: boolean
+        default: true
+      build_macos:
+        description: "Build macOS"
+        type: boolean
+        default: true
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/check
+        with:
+          full: true
+
   create-release:
     runs-on: ubuntu-latest
     permissions:
@@ -24,15 +36,27 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Validate updater signing secrets
+        if: inputs.build_windows || inputs.build_linux || inputs.build_macos
+        shell: bash
+        env:
+          UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
+          UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
+        run: |
+          if [[ -z "$UPDATE_PRIVATE_KEY" || -z "$UPDATE_KEY_PASSWORD" ]]; then
+            echo "Missing UPDATE_PRIVATE_KEY or UPDATE_KEY_PASSWORD repository secret." >&2
+            exit 1
+          fi
+
       - name: Get Version
         id: version
-        run: node scripts/get-version.js
+        run: bash scripts/get-version.sh
 
       - name: Generate Release Body
         id: body
-        run: node scripts/generate-release-body.js ${{ steps.version.outputs.version }}
+        run: bash scripts/generate-release-body.sh ${{ steps.version.outputs.version }}
 
-      - name: Create Draft Release
+      - name: Create Or Update Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.tag_name }}
@@ -40,90 +64,125 @@ jobs:
           body_path: ${{ steps.body.outputs.body_path }}
           draft: true
 
-  release-matrix:
+  build-windows:
     needs: create-release
-    strategy:
-      fail-fast: false
-      matrix:
-        include: >-
-          ${{ fromJSON(
-            inputs.build_target == 'windows' && '[{"os-name":"windows"}]' ||
-            inputs.build_target == 'ubuntu' && '[{"os-name":"linux"}]' ||
-            '[{"os-name":"windows"},{"os-name":"linux"}]'
-          ) }}
-
+    if: inputs.build_windows
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: read
-
     container:
-      image: ghcr.io/raicuparta/rai-pal-builder:${{ matrix.os-name }}-latest
+      image: ghcr.io/raicuparta/rai-pal-builder:windows-latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install frontend dependencies
-        run: npm ci
-
-      - name: Build (Linux)
-        if: matrix.os-name == 'linux'
-        run: npm run build
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+      - name: Ensure NSIS
+        run: |
+          if ! command -v makensis >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y --no-install-recommends nsis
+          fi
 
       - name: Build (Windows)
-        if: matrix.os-name == 'windows'
-        run: npm run build-windows
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        run: bash scripts/build-windows.sh
 
-      - name: Collect Build Artifacts
-        id: collect
-        run: node scripts/collect-build-artifacts.js ${{ matrix.os-name }} ${{ github.repository_owner }} ${{ github.event.repository.name }} ${{ needs.create-release.outputs.version }}
-
-      - name: Upload Release Assets
-        uses: softprops/action-gh-release@v3
+      - name: Publish Artifacts
+        uses: ./.github/actions/publish-artifacts
         with:
+          platform: windows
+          version: ${{ needs.create-release.outputs.version }}
           tag_name: ${{ needs.create-release.outputs.tag_name }}
-          files: release-assets/*
-          draft: true
+        env:
+          UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
+          UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
 
-      - name: Upload Updater Partial
-        uses: actions/upload-artifact@v7
+  build-linux:
+    needs: create-release
+    if: inputs.build_linux
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: read
+    container:
+      image: ghcr.io/raicuparta/rai-pal-builder:linux-latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build (Linux)
+        run: bash scripts/build-appimage.sh
+
+      - name: Publish Artifacts
+        uses: ./.github/actions/publish-artifacts
         with:
-          name: updater-partial-${{ matrix.os-name }}
-          path: updater-partial-*.json
+          platform: linux
+          version: ${{ needs.create-release.outputs.version }}
+          tag_name: ${{ needs.create-release.outputs.tag_name }}
+        env:
+          UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
+          UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
+
+  build-macos:
+    needs: create-release
+    if: inputs.build_macos
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build macOS app
+        run: bash scripts/build-macos.sh
+
+      - name: Publish Artifacts
+        uses: ./.github/actions/publish-artifacts
+        with:
+          platform: macos
+          version: ${{ needs.create-release.outputs.version }}
+          tag_name: ${{ needs.create-release.outputs.tag_name }}
+        env:
+          UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
+          UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
 
   finalize-release:
-    needs: [create-release, release-matrix]
+    needs: [check, create-release, build-windows, build-linux, build-macos]
+    if: ${{ always() && needs.check.result == 'success' && needs.create-release.result == 'success' && needs.build-windows.result != 'failure' && needs.build-linux.result != 'failure' && needs.build-macos.result != 'failure' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 25
-
       - name: Download Updater Partials
+        if: inputs.build_windows || inputs.build_linux || inputs.build_macos
         uses: actions/download-artifact@v4
         with:
           path: updater-partials
           pattern: updater-partial-*
 
+      - name: Download Existing Updater JSON
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p existing-updater
+          gh release download "${{ needs.create-release.outputs.tag_name }}" \
+            --pattern latest.json --dir existing-updater --clobber ||
+            echo "No existing latest.json on the release."
+
       - name: Merge Updater JSON
         id: merge
-        run: node scripts/merge-updater-json.js updater-partials
+        run: bash scripts/merge-updater-json.sh updater-partials existing-updater/latest.json
 
       - name: Upload Updater JSON
+        if: steps.merge.outputs.has_latest == 'true'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.create-release.outputs.tag_name }}

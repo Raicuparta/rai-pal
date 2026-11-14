@@ -5,54 +5,20 @@ description: "Use when asked to update translations, localize strings, add new l
 
 # Update Translations
 
-## Step 1: Validate source of truth
+Translations are gettext catalogs at `crates/frontend/translations/<language>/LC_MESSAGES/rai-pal-frontend.po`. Languages use their short codes (`de`, `es`, `fr`, `ja`, `ko`, `pt`, `wa`, `zh`). There is no English catalog: English comes from the `@tr` msgids in the `.slint` files.
 
-Run TypeScript check on `frontend/localizations/en-us.ts`:
+## Adding or changing a string
+
+User-visible text always originates in `.slint` files. Rust never holds a translated sentence: it sends typed values (`MessageData`, `ConfirmKind`, `RefreshTaskData`, `DownloadItemKind`, ids, paths, version strings) and the mapping functions in `crates/frontend/ui/translations.slint` turn them into `@tr(...)` calls. When adding a message, add the enum variant in `crates/frontend/ui/app_types.slint` first, then the branch in `ui/translations.slint`, then the catalog entries.
+
+1. Add or update the `@tr` call. Its context is the `@tr("context" => "...")` first argument and becomes the `msgctxt`.
+2. Keep numbered placeholders (`{0}`, `{1}`, ...) exactly as they are. Never reorder or rename them.
+3. Add the entry to every catalog in the same change. Catalogs are always complete, with no extra, obsolete, or English-copied entries.
+
+## Validation
 
 ```bash
-npx tsc --noEmit --ignoreConfig frontend/localizations/en-us.ts
+scripts/check-translations.sh
 ```
 
-If there are **any** TypeScript errors, cancel the entire process and report the error to the user. Do not proceed.
-
-`en-us.ts` is the source of truth with contextual comments. No other language files have or should have comments.
-
-## Step 2: Check and fix other language files
-
-For every other `.ts` file in `frontend/localizations/` (excluding `en-us.ts` and `localizations.ts`):
-
-1. Run `npx tsc --noEmit --ignoreConfig frontend/localizations/<file>.ts` — if it passes, skip it entirely.
-2. If it has errors, the TypeScript errors will tell you exactly which keys are missing or have wrong parameter signatures (because they all use the `Localization` type derived from `en-us`).
-3. Translate the missing entries **one by one**, respecting the context comments in `en-us.ts`. Leave all existing translations untouched.
-4. After fixing each file, re-run the type check to confirm it passes.
-
-## Rules
-
-- Never add comments to non-en-us files.
-- Never modify `localizations.ts`.
-- When syncing other language files (Steps 1–2 above), never modify `en-us.ts`. Only modify `en-us.ts` when adding new keys for a feature (see below).
-- Keep existing translations as-is — only add missing entries or fix parameter mismatches.
-- Match the same parameters/variables from `en-us.ts` (e.g. `{items}`, `{authorName}`, `{provider}`).
-- **NEVER put placeholder values in any language file.** No English text, no `TODO`, no copied en-us strings, no machine-guessed filler — a key either gets a real translation or it is not added to that file at all.
-- **Never add translations to non-English files unless the user explicitly asks you to translate.** New keys go only in `en-us.ts`. Type errors from missing keys in other language files are the intended signal that translations are pending.
-
-## Missing translations are signaled by type errors — on purpose
-
-Type errors from missing translation keys are **by design**. They are the mechanism that tells us which translations are missing. Never "fix" them by inserting placeholder values.
-
-### When the user says "don't translate yet" / "use placeholders"
-
-Do NOT put placeholder values in any language file. Instead:
-
-1. Use the translations hook as normal in the component code.
-2. Purposely reference a new translation key that doesn't exist yet.
-3. Leave **all** language files untouched, including `en-us.ts`.
-4. The resulting type errors are intentional — leave them, and tell the user they mark the pending translations.
-
-### When implementing features that need translated text (user gave no instructions about translations)
-
-Default behavior:
-
-1. Add the new keys **only** to `en-us.ts`, with contextual comments as usual.
-2. Leave every other language file untouched.
-3. Ignore the type errors this causes in the other language files — they are the intended signal that translations are missing.
+Extracts the `@tr` strings from `crates/frontend/ui` with `slint-tr-extractor` and checks every catalog for missing, unused, empty, fuzzy, obsolete, or duplicate entries and for placeholder mismatches. Also runs as part of `scripts/check.sh`.

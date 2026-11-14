@@ -1,0 +1,259 @@
+import { AppColorScheme, MessageContext } from "../app_types.slint";
+import { Theme } from "../theme.slint";
+import { NavButton } from "nav_button.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
+import { SelectMenu, SelectOption } from "select_menu.slint";
+import { AppSettings } from "../settings.slint";
+import { AppActions } from "../actions.slint";
+import { SteamCachePopup, SteamCacheState } from "steam_cache_popup.slint";
+import {
+    SteamShortcutPopup,
+    SteamShortcutState,
+} from "steam_shortcut_popup.slint";
+import { AboutPopup } from "about_popup.slint";
+import { ActionState } from "../action_state.slint";
+import { UpdateState } from "app_update_popup.slint";
+
+export component AppMenu inherits Rectangle {
+    private property <bool> about-open: false;
+    private property <bool> steam-cache-open: false;
+    private property <bool> steam-shortcut-open: false;
+    private property <string> menu-tooltip: @tr("appDropdownMenu" => "App menu");
+    private property <[SelectOption]> color-scheme-options: [
+        { label: @tr("appDropdownMenu" => "Auto"), value: "auto" },
+        { label: @tr("appDropdownMenu" => "Dark"), value: "dark" },
+        { label: @tr("appDropdownMenu" => "Light"), value: "light" },
+    ];
+
+    pure function color-scheme-index() -> int {
+        if AppSettings.selected-color-scheme == AppColorScheme.dark { return 1; }
+        if AppSettings.selected-color-scheme == AppColorScheme.light { return 2; }
+        return 0;
+    }
+
+    NavButton {
+        accessible-label: root.menu-tooltip;
+
+        clicked => {
+            menu.show();
+        }
+
+        HorizontalLayout {
+            cross-axis-alignment: center;
+
+            SvgIcon {
+                icon: Icon.menu;
+                size: 24px;
+                color: Theme.foreground;
+            }
+        }
+    }
+
+    if UpdateState.available: Rectangle {
+        background: Theme.background;
+        height: Theme.space-lg;
+        width: Theme.space-lg;
+        border-radius: Theme.space-lg / 2;
+        x: 0;
+
+        HorizontalLayout {
+            alignment: center;
+            cross-axis-alignment: center;
+
+            SvgIcon {
+                icon: Icon.update;
+                height: 100%;
+                width: 100%;
+                color: Theme.status-warning;
+            }
+        }
+    }
+
+    menu := PopupMenu {
+        x: root.width - Theme.menu-width;
+        y: root.height;
+
+        VerticalLayout {
+            padding-top: Theme.space-xs;
+            padding-bottom: Theme.space-xs;
+
+            if UpdateState.available: PopupMenuItem {
+                text: @tr("appUpdate" => "Update now");
+                icon: Icon.update;
+                tint: Theme.primary;
+
+                clicked => {
+                    AppActions.install-update();
+                    menu.close();
+                }
+            }
+
+            if UpdateState.available: PopupMenuSeparator { }
+
+            PopupMenuItem {
+                checked: !AppSettings.hide-game-thumbnails;
+                text: @tr("appDropdownMenu" => "Show game thumbnails on list");
+
+                clicked => {
+                    AppSettings.hide-game-thumbnails = !AppSettings.hide-game-thumbnails;
+                    AppActions.hide-game-thumbnails-changed(AppSettings.hide-game-thumbnails);
+                    menu.close();
+                }
+            }
+
+            PopupMenuSeparator { }
+
+            PopupMenuItem {
+                text: @tr("steamShortcut" => "Add Rai Pal to Steam library");
+                icon: Icon.steam;
+
+                clicked => {
+                    SteamShortcutState.state = ActionState.idle;
+                    SteamShortcutState.error = { context: MessageContext.none, subject: "", detail: "" };
+                    root.steam-shortcut-open = true;
+                    menu.close();
+                }
+            }
+
+            PopupMenuItem {
+                text: @tr("steamCache" => "Reset Steam cache");
+
+                clicked => {
+                    SteamCacheState.state = ActionState.idle;
+                    SteamCacheState.error = { context: MessageContext.none, subject: "", detail: "" };
+                    root.steam-cache-open = true;
+                    menu.close();
+                }
+            }
+
+            PopupMenuSeparator { }
+
+            PopupMenuItem {
+                text: @tr("appDropdownMenu" => "Reset Rai Pal settings");
+
+                clicked => {
+                    AppActions.reset-settings();
+                    menu.close();
+                }
+            }
+
+            PopupMenuItem {
+                text: @tr("appDropdownMenu" => "Open Logs Folder");
+                icon: Icon.folder;
+
+                clicked => {
+                    AppActions.open-logs-folder();
+                    menu.close();
+                }
+            }
+
+            PopupMenuSeparator { }
+
+            VerticalLayout {
+                padding-left: Theme.space-sm;
+                padding-right: Theme.space-sm;
+                padding-top: Theme.space-xs;
+                padding-bottom: Theme.space-xs;
+                spacing: Theme.space-2xs;
+
+                Text {
+                    text: @tr("appDropdownMenu" => "Language");
+                    color: Theme.dimmed-foreground;
+                    font-size: Theme.font-sm;
+                }
+
+                SelectMenu {
+                    options: AppSettings.language-options;
+                    selected-index: AppSettings.selected-language-index;
+                    leading-label: AppSettings.detected-language-name == "" ? "" : @tr("appDropdownMenu" => "Auto-detected - {0}", AppSettings.detected-language-name);
+                    icon: Icon.language;
+
+                    selected(index) => {
+                        AppSettings.selected-language-index = index;
+                        AppActions.language-changed(index < 0 ? "" : AppSettings.language-options[index].value);
+                    }
+                }
+            }
+
+            PopupMenuSeparator { }
+
+            VerticalLayout {
+                padding-left: Theme.space-sm;
+                padding-right: Theme.space-sm;
+                padding-top: Theme.space-xs;
+                padding-bottom: Theme.space-xs;
+                spacing: Theme.space-2xs;
+
+                Text {
+                    text: @tr("appDropdownMenu" => "Color scheme");
+                    color: Theme.dimmed-foreground;
+                    font-size: Theme.font-sm;
+                }
+
+                SelectMenu {
+                    options: root.color-scheme-options;
+                    selected-index: root.color-scheme-index();
+                    icon: Theme.dark ? Icon.dark-mode : Icon.light-mode;
+
+                    selected(index) => {
+                        if root.color-scheme-options[index].value == "light" {
+                            AppSettings.selected-color-scheme = AppColorScheme.light;
+                        } else if root.color-scheme-options[index].value == "dark" {
+                            AppSettings.selected-color-scheme = AppColorScheme.dark;
+                        } else {
+                            AppSettings.selected-color-scheme = AppColorScheme.auto;
+                        }
+                        AppActions.color-scheme-changed(AppSettings.selected-color-scheme);
+                    }
+                }
+            }
+
+            PopupMenuSeparator { }
+
+            PopupMenuItem {
+                text: @tr("appDropdownMenu" => "About...");
+                icon: Icon.info;
+
+                clicked => {
+                    root.about-open = true;
+                    menu.close();
+                }
+            }
+        }
+    }
+
+    Tooltip {
+        text: @markdown("\{root.menu-tooltip}");
+    }
+
+    AboutPopup {
+        x: -root.absolute-position.x;
+        y: -root.absolute-position.y;
+        open: root.about-open;
+
+        closed => {
+            root.about-open = false;
+        }
+    }
+
+    SteamCachePopup {
+        x: -root.absolute-position.x;
+        y: -root.absolute-position.y;
+        open: root.steam-cache-open;
+
+        closed => {
+            root.steam-cache-open = false;
+        }
+    }
+
+    SteamShortcutPopup {
+        x: -root.absolute-position.x;
+        y: -root.absolute-position.y;
+        open: root.steam-shortcut-open;
+
+        closed => {
+            root.steam-shortcut-open = false;
+        }
+    }
+}

@@ -1,0 +1,65 @@
+import { NotificationData, NotificationKind } from "../app_types.slint";
+import { Theme } from "../theme.slint";
+import { Tr } from "../translations.slint";
+import { IconButton } from "icon_button.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+import { AppActions } from "../actions.slint";
+
+export global NotificationsState {
+    in property <[NotificationData]> notifications;
+}
+
+component NotificationToast inherits Rectangle {
+    in property <NotificationData> notification;
+
+    background: Theme.background;
+    border-width: Theme.border-width * 2;
+    border-radius: Theme.radius-md;
+    border-color: root.notification.kind == NotificationKind.error ? Theme.status-error : root.notification.kind == NotificationKind.success ? Theme.status-success : Theme.status-info;
+
+    TouchArea { }
+
+    HorizontalLayout {
+        padding: Theme.space-md;
+        spacing: Theme.space-sm;
+        cross-axis-alignment: center;
+
+        SvgIcon {
+            icon: root.notification.kind == NotificationKind.error ? Icon.error : root.notification.kind == NotificationKind.success ? Icon.success : Icon.info;
+            size: 15px;
+            color: root.notification.kind == NotificationKind.error ? Theme.status-error : root.notification.kind == NotificationKind.success ? Theme.status-success : Theme.status-info;
+        }
+
+        StyledText {
+            horizontal-stretch: 1;
+            text: @markdown("\{Tr.message(root.notification.message)}");
+            selectable: true;
+        }
+
+        IconButton {
+            icon: Icon.close;
+            tooltip: @tr("debugData" => "Close");
+
+            clicked => {
+                AppActions.dismiss-notification(root.notification.id);
+            }
+        }
+    }
+}
+
+export component NotificationsOverlay inherits HorizontalLayout {
+    width: 100%;
+    alignment: end;
+
+    VerticalLayout {
+        width: 400px;
+        height: 100%;
+        padding: Theme.space-lg;
+        spacing: Theme.space-sm;
+        alignment: end;
+
+        for notification in NotificationsState.notifications: NotificationToast {
+            notification: notification;
+        }
+    }
+}

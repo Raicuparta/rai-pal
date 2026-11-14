@@ -1,0 +1,77 @@
+import { Theme } from "../theme.slint";
+import { Contrast } from "contrast.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+import { ActivationScope } from "activation_scope.slint";
+import { FocusRing } from "focus_ring.slint";
+
+export component CheckBoxMark inherits Rectangle {
+    in property <bool> checked;
+
+    width: Theme.icon-size;
+    height: Theme.icon-size;
+    border-width: root.checked ? 0 : Theme.border-width;
+    border-radius: Theme.radius-sm;
+    border-color: Theme.border;
+    background: root.checked ? Theme.primary : transparent;
+
+    if root.checked: SvgIcon {
+        icon: Icon.check;
+        size: Theme.icon-size;
+        color: Contrast.ink(Theme.primary);
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+    }
+}
+
+export component CheckBox inherits Rectangle {
+    in property <bool> checked;
+    in property <bool> enabled: true;
+
+    callback toggled(checked: bool);
+
+    width: Theme.control-height;
+    height: Theme.control-height;
+    forward-focus: focus-scope;
+    accessible-role: checkbox;
+    accessible-checkable: true;
+    accessible-checked: root.checked;
+    accessible-enabled: root.enabled;
+    accessible-action-default => {
+        if root.enabled {
+            root.toggled(!root.checked);
+        }
+    }
+
+    CheckBoxMark {
+        checked: root.checked;
+        opacity: root.enabled ? 1 : 0.5;
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+    }
+
+    FocusRing {
+        active: focus-scope.has-focus;
+        radius: Theme.radius-sm;
+        width: Theme.icon-size;
+        height: Theme.icon-size;
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+    }
+
+    touch-area := TouchArea {
+        enabled: root.enabled;
+        mouse-cursor: pointer;
+
+        clicked => {
+            root.toggled(!root.checked);
+        }
+    }
+
+    focus-scope := ActivationScope {
+        enabled: root.enabled;
+
+        activated => {
+            root.toggled(!root.checked);
+        }
+    }
+}

@@ -1,0 +1,137 @@
+import { Button } from "button.slint";
+import { CheckBox } from "check_box.slint";
+import { TextField } from "text_field.slint";
+import { CopyableText } from "copyable_text.slint";
+import { Icon } from "svg_icon.slint";
+import { MessageData, UrlModSourceData } from "../app_types.slint";
+import { Theme } from "../theme.slint";
+import { Modal } from "modal.slint";
+import { ActionState } from "../action_state.slint";
+import { DialogActions } from "../actions.slint";
+import { Tr } from "../translations.slint";
+import { ErrorMessage } from "message_state.slint";
+
+export global ModSourcesState {
+    in property <UrlModSourceData> default-source;
+    in property <[UrlModSourceData]> sources;
+    in property <ActionState> state: idle;
+    in-out property <MessageData> error;
+    in-out property <string> new-url: "";
+}
+
+component UrlModSourceRow inherits Rectangle {
+    in property <UrlModSourceData> source;
+    in property <bool> toggling;
+
+    callback toggled(enabled: bool);
+    callback removed;
+
+    HorizontalLayout {
+        spacing: Theme.space-sm;
+        cross-axis-alignment: center;
+
+        CheckBox {
+            checked: root.source.enabled;
+            enabled: !root.toggling;
+            accessible-label: root.source.url;
+
+            toggled(checked) => {
+                root.toggled(checked);
+            }
+        }
+
+        TextField {
+            horizontal-stretch: 1;
+            text: root.source.url;
+            read-only: true;
+        }
+
+        if !root.source.is-default: Button {
+            text: @tr("manualGames" => "Remove");
+            icon: Icon.delete;
+            enabled: !root.toggling;
+            tint: Theme.surface-background;
+            horizontal-stretch: 0;
+
+            clicked => {
+                root.removed();
+            }
+        }
+    }
+}
+
+export component UrlModSourcesPopup inherits Modal {
+    title: @tr("urlModSources" => "Mod Sources");
+    big: true;
+
+    if ModSourcesState.default-source.url != "": UrlModSourceRow {
+        source: ModSourcesState.default-source;
+        toggling: ModSourcesState.state == ActionState.loading;
+
+        toggled(enabled) => {
+            DialogActions.set-url-mod-source-enabled(ModSourcesState.default-source.url, enabled);
+        }
+    }
+
+    for source in ModSourcesState.sources: UrlModSourceRow {
+        source: source;
+        toggling: ModSourcesState.state == ActionState.loading;
+
+        toggled(enabled) => {
+            DialogActions.set-url-mod-source-enabled(source.url, enabled);
+        }
+
+        removed => {
+            DialogActions.remove-url-mod-source(source.url);
+        }
+    }
+
+    HorizontalLayout {
+        spacing: Theme.space-sm;
+        cross-axis-alignment: center;
+
+        TextField {
+            horizontal-stretch: 1;
+            text <=> ModSourcesState.new-url;
+            placeholder-text: "https://example.com/mods.json";
+            clearable: true;
+
+            accepted => {
+                DialogActions.add-url-mod-source(ModSourcesState.new-url);
+            }
+        }
+
+        Button {
+            text: @tr("urlModSources" => "Add source");
+            icon: Icon.plus;
+            enabled: ModSourcesState.new-url != "";
+            tint: Theme.surface-background;
+            horizontal-stretch: 0;
+
+            clicked => {
+                DialogActions.add-url-mod-source(ModSourcesState.new-url);
+            }
+        }
+    }
+
+    if Tr.has-message(ModSourcesState.error): ErrorMessage {
+        message: ModSourcesState.error;
+    }
+
+    private property <string> description: @tr("urlModSources" => "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep link:");
+
+    VerticalLayout {
+        spacing: Theme.space-sm;
+
+        Text {
+            text: root.description;
+            font-size: Theme.font-sm;
+            opacity: 0.7;
+            wrap: word-wrap;
+        }
+
+        CopyableText {
+            text: "rai-pal://add-mod-source?url=[URL]";
+        }
+    }
+}

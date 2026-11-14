@@ -1,0 +1,77 @@
+import { Contrast } from "contrast.slint";
+import { Theme } from "../theme.slint";
+import { ActivationScope } from "activation_scope.slint";
+import { FocusRing } from "focus_ring.slint";
+
+export component BaseButton inherits Rectangle {
+    in property <brush> tint: transparent;
+    in property <brush> base-color: root.tint;
+    in property <length> inset: 0px;
+    in property <bool> extra-hovered: false;
+    in property <string> tooltip: "";
+    in property <bool> enabled: true;
+    in property <bool> interactive: root.enabled;
+
+    out property <bool> hovered: touch-area.has-hover || root.extra-hovered;
+    out property <bool> focused: focus-scope.has-focus;
+    out property <brush> ink-color: !root.enabled ? Theme.dimmed-foreground : root.tinted ? Contrast.ink(root.base-color) : Theme.strong-foreground;
+
+    private property <bool> tinted: root.base-color.to-oklch().alpha > 0;
+    private property <brush> hover-fill: root.tinted ? Contrast.hover-fill(root.base-color) : Theme.hover-background;
+    private property <brush> pressed-fill: root.tinted ? Contrast.pressed-fill(root.base-color) : Theme.pressed-background;
+    private property <brush> fill: !root.enabled ? transparent : touch-area.pressed ? root.pressed-fill : root.hovered ? root.hover-fill : root.base-color;
+
+    callback clicked;
+
+    vertical-stretch: 0;
+    border-radius: Theme.radius-md;
+    forward-focus: focus-scope;
+
+    accessible-role: button;
+    accessible-enabled: root.interactive;
+    accessible-action-default => {
+        if root.interactive {
+            root.clicked();
+        }
+    }
+
+    Rectangle {
+        x: root.inset;
+        width: parent.width - root.inset * 2;
+        height: 100%;
+        border-radius: root.border-radius;
+        background: root.fill;
+    }
+
+    FocusRing {
+        active: focus-scope.has-focus;
+        radius: root.border-radius;
+    }
+
+    touch-area := TouchArea {
+        enabled: root.interactive;
+        mouse-cursor: pointer;
+
+        clicked => {
+            root.clicked();
+        }
+    }
+
+    HorizontalLayout {
+        @children
+    }
+
+    focus-scope := ActivationScope {
+        enabled: root.interactive;
+
+        activated => {
+            if root.interactive {
+                root.clicked();
+            }
+        }
+    }
+
+    if root.tooltip != "": Tooltip {
+        text: @markdown("\{root.tooltip}");
+    }
+}

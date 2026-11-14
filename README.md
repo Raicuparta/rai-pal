@@ -8,7 +8,7 @@
 
 ### Windows
 
-Download the installer:
+Download Rai Pal:
 
 [![Download for Windows](https://shields.io/badge/-🪟_Download_Rai_Pal_for_Windows-3c7dcf?style=for-the-badge)](https://github.com/Raicuparta/rai-pal/releases/latest/download/RaiPal.exe)
 

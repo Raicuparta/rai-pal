@@ -1,0 +1,30 @@
+#![allow(async_fn_in_trait)]
+
+pub mod analytics;
+pub mod app_paths;
+pub mod app_settings;
+pub mod app_variant;
+pub mod architecture;
+pub mod debug;
+pub mod files;
+pub mod filter_views;
+pub mod game;
+pub mod game_engines;
+pub mod game_launch;
+pub mod game_providers;
+pub mod game_tag;
+pub mod game_title;
+pub mod games_query;
+pub mod http;
+pub mod local_database;
+pub mod mod_providers;
+pub mod mods;
+pub mod open_better;
+pub mod operating_system;
+pub mod path_extensions;
+pub mod progress_status;
+pub mod remote_config;
+pub mod remote_game;
+pub mod result;
+pub mod user;
+pub mod wine;

@@ -1,0 +1,103 @@
+import { ModActions, GamesActions } from "../actions.slint";
+import { ModsTabModData } from "../app_types.slint";
+import { Theme } from "../theme.slint";
+import { IconButton } from "icon_button.slint";
+import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
+import { ModSummaryView } from "mod_summary.slint";
+import { RowDivider } from "row_divider.slint";
+import { Icon } from "svg_icon.slint";
+
+export component ModsTabRow inherits VerticalLayout {
+    in property <ModsTabModData> mod-data;
+    in property <bool> indented: false;
+
+    private property <bool> has-mod-actions: mod-data.can-run || mod-data.can-install;
+
+    vertical-stretch: 0;
+    alignment: start;
+
+    menu := PopupMenu {
+        x: root.width - Theme.menu-width;
+        y: root.height;
+
+        if mod-data.can-run: PopupMenuItem {
+            text: @tr("modModal" => "Run");
+            icon: Icon.play;
+
+            clicked => {
+                ModActions.run-standalone(mod-data.id);
+                menu.close();
+            }
+        }
+
+        if mod-data.can-install: PopupMenuItem {
+            text: @tr("modModal" => "Download");
+            icon: Icon.download;
+
+            clicked => {
+                ModActions.install-standalone(mod-data.id);
+                menu.close();
+            }
+        }
+
+        if root.has-mod-actions: PopupMenuSeparator { }
+
+        if mod-data.source-code != "": PopupMenuItem {
+            text: @tr("modModal" => "Website");
+            icon: Icon.external-link;
+
+            clicked => {
+                ModActions.open-url(mod-data.source-code);
+                menu.close();
+            }
+        }
+
+        PopupMenuItem {
+            text: @tr("debugData" => "Debug data");
+            icon: Icon.bug;
+
+            clicked => {
+                GamesActions.request-mod-debug-data(mod-data.id);
+                menu.close();
+            }
+        }
+    }
+
+    Rectangle {
+        height: row-layout.preferred-height;
+
+        row-layout := HorizontalLayout {
+            padding: Theme.space-sm;
+            spacing: Theme.space-sm;
+            cross-axis-alignment: center;
+
+            if root.indented: Rectangle {
+                width: Theme.space-xl;
+            }
+
+            ModSummaryView {
+                horizontal-stretch: 1;
+                title: mod-data.title;
+                description: mod-data.description;
+                version-text: mod-data.version-text;
+                release-date: mod-data.release-date;
+                author: mod-data.author;
+                engine-text: mod-data.engine-text;
+                deprecated: mod-data.deprecated;
+            }
+
+            IconButton {
+                horizontal-stretch: 0;
+                icon: Icon.more;
+                icon-size: 22px;
+                tooltip: @tr("gameModRow" => "Mod actions");
+
+                clicked => {
+                    menu.show();
+                }
+            }
+        }
+    }
+
+    RowDivider { }
+}

@@ -1,0 +1,236 @@
+use std::{
+	cell::RefCell,
+	collections::HashMap,
+	io::ErrorKind,
+	path::PathBuf,
+	sync::{
+		LazyLock,
+		atomic::{AtomicU64, Ordering},
+	},
+	time::UNIX_EPOCH,
+};
+
+use fs_err as fs;
+use rai_pal_backend::{app_paths, result::LogErrExt};
+use sha2::{Digest, Sha256};
+
+pub const THUMBNAIL_WIDTH: u32 = 200;
+pub const THUMBNAIL_HEIGHT: u32 = 120;
+
+const CACHE_VERSION: u32 = 1;
+const MAX_CACHE_BYTES: u64 = 200 * 1024 * 1024;
+const PRUNE_TARGET_BYTES: u64 = 180 * 1024 * 1024;
+const MEMORY_CACHE_ENTRIES: usize = 200;
+
+#[derive(Default)]
+struct MemoryCache {
+	entries: HashMap<String, (u64, slint::Image)>,
+	clock: u64,
+}
+
+impl MemoryCache {
+	fn get(&mut self, url: &str) -> Option<slint::Image> {
+		self.clock += 1;
+		let (last_used, image) = self.entries.get_mut(url)?;
+		*last_used = self.clock;
+
+		Some(image.clone())
+	}
+
+	fn insert(&mut self, url: String, image: slint::Image) {
+		self.clock += 1;
+
+		if self.entries.len() >= MEMORY_CACHE_ENTRIES
+			&& let Some(oldest) = self
+				.entries
+				.iter()
+				.min_by_key(|(_, (last_used, _))| *last_used)
+				.map(|(oldest, _)| oldest.clone())
+		{
+			self.entries.remove(&oldest);
+		}
+
+		self.entries.insert(url, (self.clock, image));
+	}
+}
+
+thread_local! {
+	static MEMORY_CACHE: RefCell<MemoryCache> = RefCell::new(MemoryCache::default());
+}
+
+pub fn load_memory(url: &str) -> Option<slint::Image> {
+	MEMORY_CACHE.with(|cache| cache.borrow_mut().get(url))
+}
+
+pub fn store_memory(url: &str, image: slint::Image) {
+	MEMORY_CACHE.with(|cache| cache.borrow_mut().insert(url.to_string(), image));
+}
+
+static CACHE_DIR: LazyLock<Option<PathBuf>> = LazyLock::new(|| {
+	app_paths::thumbnail_cache_path().ok_or_log("Failed to get thumbnail cache path")
+});
+static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
+
+fn cache_path(url: &str, width: u32, height: u32) -> Option<PathBuf> {
+	let mut hasher = Sha256::new();
+	hasher.update(CACHE_VERSION.to_le_bytes());
+	hasher.update(width.to_le_bytes());
+	hasher.update(height.to_le_bytes());
+	hasher.update(url.as_bytes());
+
+	CACHE_DIR
+		.as_ref()
+		.map(|dir| dir.join(format!("{:x}.img", hasher.finalize())))
+}
+
+pub fn contains(url: &str, width: u32, height: u32) -> bool {
+	cache_path(url, width, height).is_some_and(|path| path.is_file())
+}
+
+pub fn load(url: &str, width: u32, height: u32) -> Option<Vec<u8>> {
+	let path = cache_path(url, width, height)?;
+
+	match fs::read(&path) {
+		Ok(bytes) => Some(bytes),
+		Err(err) if err.kind() == ErrorKind::NotFound => None,
+		Err(err) => {
+			log::warn!(
+				"Failed to read thumbnail cache file {}: {err}",
+				path.display()
+			);
+			None
+		}
+	}
+}
+
+pub fn store(url: &str, width: u32, height: u32, bytes: &[u8]) {
+	let Some(path) = cache_path(url, width, height) else {
+		return;
+	};
+
+	let temp_path = path.with_extension(format!(
+		"tmp-{}-{}",
+		std::process::id(),
+		TEMP_COUNTER.fetch_add(1, Ordering::Relaxed)
+	));
+
+	if let Err(err) = fs::write(&temp_path, bytes) {
+		log::warn!(
+			"Failed to write thumbnail cache file {}: {err}",
+			temp_path.display()
+		);
+		if let Err(remove_err) = fs::remove_file(&temp_path) {
+			log::warn!(
+				"Failed to remove temporary thumbnail cache file {}: {remove_err}",
+				temp_path.display()
+			);
+		}
+		return;
+	}
+
+	if let Err(err) = fs::rename(&temp_path, &path) {
+		log::warn!(
+			"Failed to move thumbnail cache file {} to {}: {err}",
+			temp_path.display(),
+			path.display()
+		);
+		if let Err(remove_err) = fs::remove_file(&temp_path) {
+			log::warn!(
+				"Failed to remove temporary thumbnail cache file {}: {remove_err}",
+				temp_path.display()
+			);
+		}
+	}
+}
+
+pub fn remove(url: &str, width: u32, height: u32) {
+	let Some(path) = cache_path(url, width, height) else {
+		return;
+	};
+
+	if let Err(err) = fs::remove_file(&path) {
+		if err.kind() == ErrorKind::NotFound {
+			return;
+		}
+
+		log::warn!(
+			"Failed to remove thumbnail cache file {}: {err}",
+			path.display()
+		);
+	}
+}
+
+pub fn prune() {
+	let Some(dir) = CACHE_DIR.as_ref() else {
+		return;
+	};
+	let entries = match fs::read_dir(dir) {
+		Ok(entries) => entries,
+		Err(err) => {
+			log::warn!(
+				"Failed to read thumbnail cache directory {}: {err}",
+				dir.display()
+			);
+			return;
+		}
+	};
+
+	let mut files = Vec::new();
+	let mut total = 0u64;
+
+	for entry_result in entries {
+		let entry = match entry_result {
+			Ok(entry) => entry,
+			Err(err) => {
+				log::warn!("Failed to read thumbnail cache directory entry: {err}");
+				continue;
+			}
+		};
+		let metadata = match entry.metadata() {
+			Ok(metadata) => metadata,
+			Err(err) => {
+				log::warn!(
+					"Failed to read thumbnail cache metadata for {}: {err}",
+					entry.path().display()
+				);
+				continue;
+			}
+		};
+
+		if !metadata.is_file() {
+			continue;
+		}
+
+		let size = metadata.len();
+		let modified = metadata.modified().unwrap_or_else(|err| {
+			log::warn!(
+				"Failed to read thumbnail cache modification time for {}: {err}",
+				entry.path().display()
+			);
+			UNIX_EPOCH
+		});
+
+		total = total.saturating_add(size);
+		files.push((modified, entry.path(), size));
+	}
+
+	if total <= MAX_CACHE_BYTES {
+		return;
+	}
+
+	files.sort_by_key(|(modified, _, _)| *modified);
+
+	for (_, path, size) in files {
+		if total <= PRUNE_TARGET_BYTES {
+			break;
+		}
+
+		match fs::remove_file(&path) {
+			Ok(()) => total = total.saturating_sub(size),
+			Err(err) => log::warn!(
+				"Failed to remove pruned thumbnail cache file {}: {err}",
+				path.display()
+			),
+		}
+	}
+}

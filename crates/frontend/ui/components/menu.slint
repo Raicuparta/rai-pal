@@ -1,0 +1,104 @@
+import { ScrollView } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+import { LabeledDivider } from "labeled_divider.slint";
+import { BaseButton } from "base_button.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+import { EscapeScope } from "escape_scope.slint";
+import { FocusState } from "focus_ring.slint";
+
+export component PopupMenu inherits PopupWindow {
+    in property <length> menu-width: Theme.menu-width;
+    in property <bool> fit-content: false;
+
+    close-policy: PopupClosePolicy.close-on-click-outside;
+    forward-focus: menu-scope;
+
+    private property <bool> popup-open: root.is-open;
+
+    changed popup-open => {
+        FocusState.popup-open = root.popup-open;
+    }
+    width: root.fit-content ? menu-layout.preferred-width + Theme.border-width * 2 : root.menu-width;
+    height: menu-surface.height;
+
+    menu-scope := EscapeScope {
+        escaped => {
+            root.close();
+        }
+
+        menu-surface := Rectangle {
+            width: 100%;
+            height: min(menu-layout.preferred-height + Theme.border-width * 2, 600px);
+            background: Theme.background;
+            border-width: Theme.border-width;
+            border-color: Theme.border;
+            border-radius: Theme.radius-sm;
+            clip: true;
+            drop-shadow-offset-y: 5px;
+            drop-shadow-blur: 20px;
+            drop-shadow-color: #00000066;
+
+            ScrollView {
+                horizontal-scrollbar-policy: ScrollBarPolicy.always-off;
+                vertical-scrollbar-policy: ScrollBarPolicy.as-needed;
+
+                menu-layout := VerticalLayout {
+                    padding-top: Theme.space-xs;
+                    padding-bottom: Theme.space-xs;
+
+                    @children
+                }
+            }
+        }
+    }
+}
+
+export component PopupMenuItem inherits BaseButton {
+    in property <string> text;
+    in property <Icon> icon: Icon.none;
+    in property <bool> checked: false;
+
+    inset: Theme.space-xs;
+    accessible-label: root.text;
+
+    HorizontalLayout {
+        padding-left: root.inset + Theme.space-sm;
+        padding-right: root.inset + Theme.space-sm;
+        padding-top: Theme.space-xs;
+        padding-bottom: Theme.space-xs;
+        spacing: Theme.space-sm;
+        cross-axis-alignment: center;
+
+        SvgIcon {
+            icon: root.checked ? Icon.check : root.icon;
+            color: root.ink-color;
+        }
+
+        Text {
+            text: root.text;
+            color: root.ink-color;
+            wrap: word-wrap;
+            horizontal-stretch: 1;
+        }
+    }
+}
+
+export component PopupMenuSeparator inherits Rectangle {
+    vertical-stretch: 0;
+    height: Theme.space-sm;
+
+    Rectangle {
+        x: Theme.space-sm;
+        width: parent.width - Theme.space-lg;
+        y: (parent.height - self.height) / 2;
+        height: Theme.border-width;
+        background: Theme.border;
+    }
+}
+
+export component PopupMenuSectionTitle inherits LabeledDivider {
+    padding-left: Theme.space-xs;
+    padding-right: Theme.space-xs;
+    padding-top: Theme.space-xs;
+    padding-bottom: Theme.space-xs;
+}

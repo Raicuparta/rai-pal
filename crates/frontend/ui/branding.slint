@@ -1,0 +1,77 @@
+import { EngineId, ProviderId } from "app_types.slint";
+import { Theme } from "theme.slint";
+
+export enum Brand {
+    github,
+    patreon,
+    paypal,
+}
+
+export global Branding {
+    pure function provider-color(provider: ProviderId) -> brush {
+        if provider == ProviderId.amazon {
+            return #ebab34;
+        }
+        if provider == ProviderId.steam {
+            return #1f9fee;
+        }
+        if provider == ProviderId.epic {
+            return #fc4d32;
+        }
+        if provider == ProviderId.gog {
+            return #9c36b5;
+        }
+        if provider == ProviderId.itch {
+            return #e64980;
+        }
+        if provider == ProviderId.xbox {
+            return #2f9e44;
+        }
+        return Theme.foreground;
+    }
+
+    public pure function provider-foreground(provider: ProviderId) -> brush {
+        return Theme.dark ? provider-color(provider).mix(white, 0.5) : provider-color(provider).darker(0.5);
+    }
+
+    public pure function provider-background(provider: ProviderId) -> brush {
+        return provider-color(provider).darker(2).transparentize(0.2);
+    }
+
+    public pure function brand-color(brand: Brand) -> brush {
+        if brand == Brand.github {
+            return Theme.dark ? #74c0fc : #1971c2;
+        }
+        if brand == Brand.patreon {
+            return Theme.dark ? #f783ac : #d6336c;
+        }
+        if brand == Brand.paypal {
+            return Theme.dark ? #91a7ff : #4263eb;
+        }
+        return Theme.foreground;
+    }
+
+    pure function engine-color(engine: EngineId) -> brush {
+        if engine == EngineId.unity {
+            return #74c0fc;
+        }
+        if engine == EngineId.unreal {
+            return #ff8787;
+        }
+        if engine == EngineId.godot {
+            return #b197fc;
+        }
+        if engine == EngineId.game-maker {
+            return #63e6be;
+        }
+        return Theme.foreground;
+    }
+
+    public pure function engine-background(engine: EngineId) -> brush {
+        return engine-color(engine).transparentize(0.85);
+    }
+
+    public pure function engine-foreground(engine: EngineId) -> brush {
+        return Theme.dark ? engine-color(engine) : engine-color(engine).darker(0.5);
+    }
+}

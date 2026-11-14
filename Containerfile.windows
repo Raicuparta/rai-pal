@@ -4,32 +4,24 @@ ENV DEBIAN_FRONTEND=noninteractive \
     RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    npm_config_cache=/tmp/npm-cache \
     XWIN_ACCEPT_LICENSE=1
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-    curl ca-certificates gnupg \
- && curl -fsSL https://deb.nodesource.com/setup_25.x | bash - \
- && apt-get update \
- && apt-get install -y --no-install-recommends \
     build-essential \
-    pkg-config \
-    wget \
-    git \
-    zip \
-    unzip \
-    file \
-    patchelf \
-    libssl-dev \
-    libwebkit2gtk-4.1-dev \
-    libappindicator3-dev \
-    librsvg2-dev \
-    nodejs \
-    nsis \
-    llvm \
-    lld \
+    ca-certificates \
     clang \
+    curl \
+    file \
+    git \
+    lld \
+    llvm \
+    nsis \
+    patchelf \
+    pkg-config \
+    unzip \
+    wget \
+    zip \
  && rm -rf /var/lib/apt/lists/*
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \

@@ -1,0 +1,20 @@
+import { FocusState } from "focus_ring.slint";
+
+export component ActivationScope inherits FocusScope {
+    callback activated;
+
+    width: 0;
+    height: 0;
+
+    focus-gained(reason) => {
+        FocusState.keyboard-navigation = reason == FocusReason.tab-navigation;
+    }
+
+    key-pressed(event) => {
+        if event.text == Key.Space || event.text == Key.Return {
+            root.activated();
+            return accept;
+        }
+        return reject;
+    }
+}

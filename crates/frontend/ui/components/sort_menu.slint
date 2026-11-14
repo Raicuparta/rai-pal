@@ -1,0 +1,50 @@
+import { Theme } from "../theme.slint";
+import { BaseButton } from "base_button.slint";
+import { Icon, SvgIcon } from "svg_icon.slint";
+import { PopupMenu, PopupMenuItem } from "menu.slint";
+import { SelectOption } from "select_menu.slint";
+
+export component SortMenu inherits BaseButton {
+    in property <[SelectOption]> options;
+    in-out property <int> sort-index: 0;
+
+    callback sort-changed(index: int);
+
+    width: self.height;
+    height: Theme.control-height;
+    horizontal-stretch: 0;
+    accessible-label: root.sort-index >= 0 && root.sort-index < root.options.length ? root.options[root.sort-index].label : "";
+    tint: Theme.surface-background;
+
+    HorizontalLayout {
+        horizontal-stretch: 1;
+        alignment: center;
+        cross-axis-alignment: center;
+
+        SvgIcon {
+            icon: Icon.sort;
+            color: root.ink-color;
+        }
+    }
+
+    clicked => {
+        menu.show();
+    }
+
+    menu := PopupMenu {
+        x: 0;
+        y: root.height;
+        fit-content: true;
+
+        for option[index] in root.options: PopupMenuItem {
+            text: option.label;
+            checked: index == root.sort-index;
+
+            clicked => {
+                root.sort-index = index;
+                root.sort-changed(index);
+                menu.close();
+            }
+        }
+    }
+}

@@ -1,0 +1,20 @@
+import { Theme } from "../theme.slint";
+
+
+export global Contrast {
+    public pure function needs-dark-ink(tint: brush) -> bool {
+        return tint.to-oklch().lightness > 0.62;
+    }
+
+    public pure function ink(tint: brush) -> brush {
+        return needs-dark-ink(tint) ? Theme.strong-foreground-light : Theme.strong-foreground-dark;
+    }
+
+    public pure function hover-fill(tint: brush) -> brush {
+        return needs-dark-ink(tint) ? tint.darker(0.15) : tint.brighter(0.4);
+    }
+
+    public pure function pressed-fill(tint: brush) -> brush {
+        return needs-dark-ink(tint) ? tint.darker(0.3) : tint.brighter(0.7);
+    }
+}
