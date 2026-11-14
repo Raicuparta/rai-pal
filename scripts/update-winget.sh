@@ -29,6 +29,13 @@ FORK_API="repos/$FORK_OWNER/$FORK_REPO_NAME"
 
 RELEASE_DATE="$(gh api "repos/$RELEASE_REPO/releases/tags/$TAG" --jq '.published_at // .created_at' | cut -c1-10)"
 
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+CHANGELOG_PATH="$ROOT_DIR/changelogs/v$VERSION.md"
+RELEASE_NOTES=""
+if [[ -f "$CHANGELOG_PATH" ]]; then
+	RELEASE_NOTES="$(cat "$CHANGELOG_PATH")"
+fi
+
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
@@ -51,6 +58,7 @@ cat >"$TMP_DIR/$INSTALLER_FILE" <<EOF
 
 PackageIdentifier: $IDENTIFIER
 PackageVersion: $VERSION
+InstallerLocale: en-US
 InstallerType: nullsoft
 Scope: machine
 InstallerSwitches:
@@ -59,8 +67,10 @@ InstallerSwitches:
 ProductCode: Rai Pal
 ReleaseDate: $RELEASE_DATE
 AppsAndFeaturesEntries:
-- Publisher: raicuparta
+- Publisher: Raicuparta
   ProductCode: Rai Pal
+InstallationMetadata:
+  DefaultInstallLocation: '%ProgramFiles%\Rai Pal'
 Installers:
 - Architecture: x64
   InstallerUrl: $INSTALLER_URL
@@ -77,11 +87,29 @@ PackageIdentifier: $IDENTIFIER
 PackageVersion: $VERSION
 PackageLocale: en-US
 Publisher: Raicuparta
+PublisherUrl: https://raicuparta.com/
+PublisherSupportUrl: https://github.com/$RELEASE_REPO/issues
+Author: Raicuparta
 PackageName: Rai Pal
+PackageUrl: https://raicuparta.com/rai-pal
 License: GPL-3.0
 LicenseUrl: https://github.com/$RELEASE_REPO/blob/HEAD/LICENSE
 ShortDescription: Mod manager for universal game mods
 Moniker: raipal
+Tags:
+- modding
+- rust
+- slint
+- unity
+- unreal
+EOF
+
+	if [[ -n "$RELEASE_NOTES" ]]; then
+		echo "ReleaseNotes: |-"
+		sed 's/^/  /' <<<"$RELEASE_NOTES"
+	fi
+
+	cat <<EOF
 ReleaseNotesUrl: https://github.com/$RELEASE_REPO/releases/tag/$TAG
 ManifestType: defaultLocale
 ManifestVersion: $MANIFEST_VERSION
