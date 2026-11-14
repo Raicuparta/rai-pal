@@ -9,7 +9,7 @@ use super::mod_provider::ModProvider;
 use crate::{
 	app_paths, http,
 	local_database::{
-		app_database::DbMutex,
+		app_database::Db,
 		mod_database::{ModDatabase, compute_scope, scope_id},
 	},
 	mod_providers::mod_provider::ModProviderId,
@@ -181,7 +181,7 @@ impl ModProvider for UrlModProvider {
 		Ok(Self)
 	}
 
-	async fn refresh(&self, db: &DbMutex) -> Result {
+	async fn refresh(&self, db: &Db) -> Result {
 		let sources = read_url_mod_sources();
 
 		let mut enabled_sources = Vec::new();
@@ -232,7 +232,7 @@ async fn fetch_and_insert(
 	url: &str,
 	source_hash: &str,
 	scope: &str,
-	db: &DbMutex,
+	db: &Db,
 ) -> Result<(Vec<String>, Vec<String>)> {
 	// The timeout bounds how long a refresh can hold the mod refresh lock,
 	// so a single unresponsive mod source can't block all future refreshes.

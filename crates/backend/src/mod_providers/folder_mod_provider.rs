@@ -4,7 +4,7 @@ use super::mod_provider::ModProvider;
 use crate::{
 	app_paths,
 	local_database::{
-		app_database::DbMutex,
+		app_database::Db,
 		mod_database::{ModDatabase, compute_scope, scope_id},
 	},
 	mod_providers::mod_provider::ModProviderId,
@@ -28,7 +28,7 @@ impl ModProvider for FolderModProvider {
 		})
 	}
 
-	async fn refresh(&self, db: &DbMutex) -> Result {
+	async fn refresh(&self, db: &Db) -> Result {
 		let source_hash = self.folder_path.hash_string();
 		let scope = compute_scope(Self::get_id(), &source_hash);
 

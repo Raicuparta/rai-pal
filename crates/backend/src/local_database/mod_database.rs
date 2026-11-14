@@ -11,7 +11,7 @@ use crate::{
 	game::Game,
 	game_providers::game_provider::GameProviderId,
 	local_database::{
-		app_database::{AppDatabase, DbMutex},
+		app_database::{AppDatabase, Db},
 		game_database::GameDatabase,
 		rusqlite_extensions::RowExt,
 	},
@@ -156,7 +156,7 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 	Ok(())
 }
 
-impl ModDatabase for DbMutex {
+impl ModDatabase for Db {
 	fn insert_mod(&self, game_mod: &Mod, provider_id: ModProviderId, source_hash: &str) {
 		if let Err(err) = try_insert_mod(self, game_mod, provider_id, source_hash) {
 			log::error!(
@@ -168,7 +168,7 @@ impl ModDatabase for DbMutex {
 	}
 
 	fn get_mod(&self, mod_id: &str) -> Result<Mod> {
-		self.lock_db()?
+		self.read_db()?
 			.prepare_cached(
 				r"
 			SELECT
@@ -240,7 +240,7 @@ impl ModDatabase for DbMutex {
 		game_id_option: Option<String>,
 	) -> Result<Option<InstalledMod>> {
 		let is_installed = self
-			.lock_db()?
+			.read_db()?
 			.prepare_cached(
 				"SELECT EXISTS(
 					SELECT 1
@@ -300,7 +300,7 @@ impl ModDatabase for DbMutex {
 		let exe_path_hash = game.try_get_exe_path()?.hash_string();
 
 		let mod_ids = self
-			.lock_db()?
+			.read_db()?
 			.prepare_cached("SELECT mod_id FROM main.installed_mods WHERE exe_path_hash = $1")?
 			.query_map([exe_path_hash], |row| row.get::<_, String>(0))?
 			.collect::<rusqlite::Result<Vec<String>>>()?;
@@ -323,7 +323,7 @@ impl ModDatabase for DbMutex {
 		let exe_path_hash = game.try_get_exe_path()?.hash_string();
 
 		let mod_ids = self
-			.lock_db()?
+			.read_db()?
 			.prepare_cached("SELECT mod_id FROM main.installed_mods WHERE exe_path_hash = $1")?
 			.query_map([exe_path_hash], |row| row.get::<_, String>(0))?
 			.collect::<rusqlite::Result<Vec<String>>>()?;
@@ -353,7 +353,7 @@ impl ModDatabase for DbMutex {
 
 	fn get_mod_map(&self) -> Result<BTreeMap<String, Mod>> {
 		Ok(self
-			.lock_db()?
+			.read_db()?
 			.prepare_cached(
 				r"
 			SELECT
@@ -424,7 +424,7 @@ impl ModDatabase for DbMutex {
 
 	fn refresh_installed_mods(&self) -> Result {
 		let installed_game_ids = self
-			.lock_db()?
+			.read_db()?
 			.prepare_cached(
 				"SELECT DISTINCT provider_id, game_id FROM main.installed_games WHERE exe_path IS NOT NULL",
 			)?
@@ -490,7 +490,7 @@ impl ModDatabase for DbMutex {
 			.cast_signed();
 
 		{
-			let mut connection = self.lock_db()?;
+			let mut connection = self.write_db()?;
 			let transaction = connection.transaction()?;
 
 			transaction.execute("DELETE FROM main.installed_mods;", [])?;
@@ -530,7 +530,7 @@ impl ModDatabase for DbMutex {
 
 	fn get_game_mods(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Vec<ModInfo>> {
 		let mut mod_infos = self
-			.lock_db()?
+			.read_db()?
 			.prepare_cached(
 				r"
 			WITH candidate_mods AS (
@@ -705,7 +705,7 @@ impl ModDatabase for DbMutex {
 
 	fn get_mod_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>> {
 		let ids = self
-			.lock_db()?
+			.read_db()?
 			.prepare_cached("SELECT id FROM main.mods WHERE provider_id = $1 AND scope = $2;")?
 			.query_map(rusqlite::params![provider_id, scope], |row| {
 				row.get::<_, String>(0)
@@ -718,7 +718,7 @@ impl ModDatabase for DbMutex {
 	fn remove_mods_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result {
 		let keep_json = serde_json::to_string(keep_ids)?;
 
-		self.lock_db()?
+		self.write_db()?
 			.prepare_cached(
 				"DELETE FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?));",
 			)?
@@ -740,7 +740,7 @@ impl ModDatabase for DbMutex {
 
 	fn get_mod_families(&self) -> Result<BTreeMap<String, ModFamily>> {
 		let rows = self
-			.lock_db()?
+			.read_db()?
 			.prepare_cached("SELECT family_id, data FROM main.mod_families ORDER BY id;")?
 			.query_map([], |row| {
 				Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
@@ -771,7 +771,7 @@ impl ModDatabase for DbMutex {
 		scope: &str,
 	) -> Result<Vec<String>> {
 		let ids = self
-			.lock_db()?
+			.read_db()?
 			.prepare_cached(
 				"SELECT id FROM main.mod_families WHERE provider_id = $1 AND scope = $2;",
 			)?
@@ -790,7 +790,7 @@ impl ModDatabase for DbMutex {
 	) -> Result {
 		let keep_json = serde_json::to_string(keep_ids)?;
 
-		self.lock_db()?
+		self.write_db()?
 			.prepare_cached(
 				"DELETE FROM main.mod_families WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?));",
 			)?
@@ -872,7 +872,7 @@ fn dependency_matches(dep: &ModDependency, info: &ModInfo) -> bool {
 }
 
 fn try_insert_mod(
-	connection_mutex: &DbMutex,
+	connection_mutex: &Db,
 	game_mod: &Mod,
 	provider_id: ModProviderId,
 	source_hash: &str,
@@ -891,7 +891,7 @@ fn try_insert_mod(
 	let stored_config = canonicalize_config(game_mod.config.as_ref(), &game_mod.id);
 
 	connection_mutex
-		.lock_db()?
+		.write_db()?
 		.prepare_cached(
 			"INSERT OR REPLACE INTO mods (
 				id,
@@ -958,14 +958,14 @@ fn try_insert_mod(
 }
 
 fn try_insert_mod_families(
-	connection_mutex: &DbMutex,
+	connection_mutex: &Db,
 	families: &BTreeMap<String, ModFamily>,
 	provider_id: ModProviderId,
 	source_hash: &str,
 ) -> Result {
 	let scope = compute_scope(provider_id, source_hash);
 
-	let mut connection = connection_mutex.lock_db()?;
+	let mut connection = connection_mutex.write_db()?;
 	let transaction = connection.transaction()?;
 
 	{

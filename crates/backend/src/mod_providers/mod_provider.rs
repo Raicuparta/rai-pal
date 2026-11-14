@@ -2,7 +2,7 @@ use rai_pal_proc_macros::{serde_enum, sql_enum};
 use tokio::sync::Mutex as AsyncMutex;
 
 use crate::{
-	local_database::{app_database::DbMutex, mod_database::ModDatabase},
+	local_database::{app_database::Db, mod_database::ModDatabase},
 	mod_providers::{folder_mod_provider::FolderModProvider, url_mod_provider::UrlModProvider},
 	result::Result,
 };
@@ -20,7 +20,7 @@ pub trait ModProvider {
 	/// timestamp-based approach, removal is deterministic and based on source
 	/// identity, so it doesn't race with other refreshes or depend on wall-clock
 	/// timing.
-	async fn refresh(&self, db: &DbMutex) -> Result;
+	async fn refresh(&self, db: &Db) -> Result;
 }
 
 #[serde_enum]
@@ -43,7 +43,7 @@ static REFRESH_LOCK: AsyncMutex<()> = AsyncMutex::const_new(());
 /// attempted even if an earlier one fails, so a broken local mod manifest can't
 /// stop the remote (including third party) mod databases from being refreshed.
 /// The first error is still returned at the end.
-pub async fn refresh_all_mods(db: &DbMutex) -> Result {
+pub async fn refresh_all_mods(db: &Db) -> Result {
 	let _guard = match REFRESH_LOCK.try_lock() {
 		Ok(guard) => guard,
 		Err(err) => {

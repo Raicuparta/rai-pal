@@ -16,7 +16,7 @@ use crate::{
 	game_title::get_normalized_titles,
 	games_query::{FilterGroup, GamesQuery, GamesSortBy, InstallState},
 	local_database::{
-		app_database::{AppDatabase, DbMutex},
+		app_database::{AppDatabase, Db},
 		mod_database::{self, ModDatabase},
 		rusqlite_extensions::{JsonData, RowExt},
 	},
@@ -138,7 +138,7 @@ fn build_supported_os_inclusion_filter(
 	Some(format!("({})", branches.join(" OR ")))
 }
 
-impl GameDatabase for DbMutex {
+impl GameDatabase for Db {
 	fn insert_game(&self, game: &Game) {
 		if let Err(err) = try_insert_games(self, std::slice::from_ref(game)) {
 			log::error!(
@@ -151,7 +151,7 @@ impl GameDatabase for DbMutex {
 	}
 
 	fn refresh_games(&self, provider_id: &GameProviderId, games: &[Game], max_time: u64) -> Result {
-		let mut connection = self.lock_db()?;
+		let mut connection = self.write_db()?;
 		let transaction = connection.transaction()?;
 
 		insert_games_in_transaction(&transaction, games)?;
@@ -164,7 +164,7 @@ impl GameDatabase for DbMutex {
 	}
 
 	fn get_game(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Game> {
-		self.lock_db()?
+		self.read_db()?
 			.prepare_cached(
 				r"
 		SELECT
@@ -476,7 +476,7 @@ impl GameDatabase for DbMutex {
 
 		let param_refs: Vec<&dyn rusqlite::types::ToSql> = params.iter().map(|p| &**p).collect();
 		let game_ids = self
-			.lock_db()?
+			.read_db()?
 			.prepare(&sql_query)?
 			.query_map(param_refs.as_slice(), |row| {
 				Ok(GameId {
@@ -494,7 +494,7 @@ impl GameDatabase for DbMutex {
 			.collect();
 
 		let total_count = self
-			.lock_db()?
+			.read_db()?
 			.prepare_cached(
 				r"
 			SELECT COUNT(*)
@@ -512,7 +512,7 @@ impl GameDatabase for DbMutex {
 	fn get_providers_with_games(&self) -> Result<HashSet<GameProviderId>> {
 		let mut providers = HashSet::new();
 		{
-			let db = self.lock_db()?;
+			let db = self.read_db()?;
 			let mut statement =
 				db.prepare_cached("SELECT DISTINCT provider_id FROM main.games;")?;
 			let rows = statement.query_map([], |row| row.get::<_, GameProviderId>(0))?;
@@ -556,8 +556,8 @@ fn remove_stale_games(
 	Ok(())
 }
 
-fn try_insert_games(connection_mutex: &DbMutex, games: &[Game]) -> Result {
-	let mut connection = connection_mutex.lock_db()?;
+fn try_insert_games(connection_mutex: &Db, games: &[Game]) -> Result {
+	let mut connection = connection_mutex.write_db()?;
 	let transaction = connection.transaction()?;
 
 	insert_games_in_transaction(&transaction, games)?;
@@ -669,7 +669,7 @@ fn insert_game_in_transaction(
 	Ok(())
 }
 
-pub fn try_create() -> Result<DbMutex> {
+pub fn try_create() -> Result<Db> {
 	match create() {
 		Ok(db) => Ok(db),
 		Err(initial_error) => {
@@ -691,7 +691,7 @@ pub fn try_create() -> Result<DbMutex> {
 	}
 }
 
-pub fn recreate_if_missing(database: &DbMutex) -> Result {
+pub fn recreate_if_missing(database: &Db) -> Result {
 	let path = db_file_path()?;
 	if path.is_file() {
 		return Ok(());
@@ -702,21 +702,13 @@ pub fn recreate_if_missing(database: &DbMutex) -> Result {
 		path.display()
 	);
 
-	let mut connection = database.lock_db()?;
-
-	drop(std::mem::replace(
-		&mut *connection,
-		rusqlite::Connection::open_in_memory()?,
-	));
-
-	*connection = create_connection()?;
-	drop(connection);
+	database.replace_connection(create_connection(&path)?)?;
 
 	Ok(())
 }
 
-pub fn attach_remote(database: &DbMutex, path: &Path) -> Result {
-	let mut connection = database.lock_db()?;
+pub fn attach_remote(database: &Db, path: &Path) -> Result {
+	let mut connection = database.write_db()?;
 	attach_remote_to_connection(&mut connection, path)
 }
 
@@ -857,19 +849,20 @@ fn cleanup_database_file(path_result: Result<PathBuf>, database_name: &str) {
 	}
 }
 
-fn create() -> Result<DbMutex> {
+fn create() -> Result<Db> {
 	let mut instant = Instant::now();
 	instant.log_next("Creating local database...");
 
-	let mutex = DbMutex::new(create_connection()?);
+	let path = db_file_path()?;
+	let database = Db::new(path.clone(), create_connection(&path)?);
 
 	instant.log_next("Created local database!");
 
-	Ok(mutex)
+	Ok(database)
 }
 
-fn create_connection() -> Result<rusqlite::Connection> {
-	let mut connection = open_database_connection()?;
+fn create_connection(path: &Path) -> Result<rusqlite::Connection> {
+	let mut connection = open_database_connection(path)?;
 	create_tables(&connection)?;
 	mod_database::create_tables(&connection)?;
 	attach_remote_to_connection(&mut connection, &remote_game::get_database_file_path()?)?;
@@ -942,14 +935,13 @@ fn create_tables(connection: &rusqlite::Connection) -> Result {
 	Ok(())
 }
 
-fn open_database_connection() -> Result<rusqlite::Connection> {
-	let path = db_file_path()?;
+fn open_database_connection(path: &Path) -> Result<rusqlite::Connection> {
 	if let Some(parent) = path.parent() {
 		fs_err::create_dir_all(parent)?;
 	}
 
 	let connection = rusqlite::Connection::open_with_flags(
-		&path,
+		path,
 		OpenFlags::SQLITE_OPEN_CREATE
 			| OpenFlags::SQLITE_OPEN_READ_WRITE
 			| OpenFlags::SQLITE_OPEN_PRIVATE_CACHE,
@@ -960,6 +952,24 @@ fn open_database_connection() -> Result<rusqlite::Connection> {
 		r"
 		PRAGMA journal_mode = WAL;
 		PRAGMA synchronous = OFF;
+		PRAGMA busy_timeout = 5000;
+	",
+	)?;
+
+	Ok(connection)
+}
+
+pub(crate) fn open_reader_connection(path: &Path) -> Result<rusqlite::Connection> {
+	let connection = rusqlite::Connection::open_with_flags(
+		path,
+		OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_PRIVATE_CACHE,
+	)
+	.with_context(|| format!("failed to open local database `{}`", path.display()))?;
+
+	connection.execute_batch(
+		r"
+		PRAGMA query_only = ON;
+		PRAGMA busy_timeout = 5000;
 	",
 	)?;
 

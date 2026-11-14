@@ -4,7 +4,7 @@ use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
 	game::Game,
 	games_query::GamesQuery,
-	local_database::app_database::DbMutex,
+	local_database::app_database::Db,
 };
 
 use crate::{
@@ -75,7 +75,7 @@ thread_local! {
 }
 
 pub struct CommandHandler {
-	pub database: Arc<DbMutex>,
+	pub database: Arc<Db>,
 	pub settings: Rc<RefCell<AppSettings>>,
 	pub scheduler: Arc<FetchScheduler>,
 	pub downloads: Tracker,
@@ -91,7 +91,7 @@ pub struct CommandHandler {
 impl CommandHandler {
 	pub fn create(
 		window: slint::Weak<MainWindow>,
-		database: Arc<DbMutex>,
+		database: Arc<Db>,
 		settings: Rc<RefCell<AppSettings>>,
 		scheduler: Arc<FetchScheduler>,
 		mod_families: Vec<String>,

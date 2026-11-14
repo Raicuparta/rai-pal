@@ -11,7 +11,7 @@ use rai_pal_backend::{
 	game_engines::game_engine::{EngineVersionNumbers, EngineVersionRange},
 	game_providers::game_provider::GameProviderId,
 	local_database::{
-		app_database::DbMutex,
+		app_database::Db,
 		mod_database::{ModDatabase, ModInfo},
 	},
 	mods::{
@@ -271,13 +271,13 @@ impl CommandHandler {
 	}
 }
 
-fn refresh_mods_ui(window: &MainWindow, database: &Arc<DbMutex>, game: &Game) {
+fn refresh_mods_ui(window: &MainWindow, database: &Arc<Db>, game: &Game) {
 	let remote_config_ids = cached_remote_config_ids(game);
 	apply_mods(window, database, game, &remote_config_ids);
 	refresh_remote_configs(window.as_weak(), Arc::clone(database), game.clone());
 }
 
-fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex>, game: Game) {
+fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<Db>, game: Game) {
 	if game.exe_path.is_none() {
 		return;
 	}
@@ -317,7 +317,7 @@ fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex
 
 fn apply_mods(
 	window: &MainWindow,
-	database: &DbMutex,
+	database: &Db,
 	game: &Game,
 	remote_config_ids: &HashSet<String>,
 ) {
@@ -347,7 +347,7 @@ fn apply_mods(
 }
 
 fn load_mods(
-	database: &DbMutex,
+	database: &Db,
 	game: &Game,
 	remote_config_ids: &HashSet<String>,
 ) -> Result<LoadedMods> {
@@ -520,7 +520,7 @@ fn version_numbers(version: &EngineVersionNumbers) -> String {
 	parts.join(".")
 }
 
-fn collect_install_mods(database: &DbMutex, game: &Game, mod_id: &str) -> Result<(Mod, Vec<Mod>)> {
+fn collect_install_mods(database: &Db, game: &Game, mod_id: &str) -> Result<(Mod, Vec<Mod>)> {
 	let game_mod = database.get_mod(mod_id)?;
 	let relevant_mods = database.get_game_mods(&game.provider_id, &game.game_id)?;
 	let mut deps_to_install = Vec::new();
@@ -537,7 +537,7 @@ fn collect_install_mods(database: &DbMutex, game: &Game, mod_id: &str) -> Result
 }
 
 async fn install_mod(
-	database: &DbMutex,
+	database: &Db,
 	game: &Game,
 	game_mod: Mod,
 	deps_to_install: Vec<Mod>,
@@ -570,7 +570,7 @@ async fn install_mod(
 
 fn collect_deps_to_install(
 	mod_id: &str,
-	database: &DbMutex,
+	database: &Db,
 	relevant_mods: &[ModInfo],
 	visited: &mut HashSet<String>,
 	result: &mut Vec<Mod>,
@@ -624,7 +624,7 @@ fn collect_deps_to_install(
 	}
 }
 
-fn refresh_after_action(window: &slint::Weak<MainWindow>, database: &Arc<DbMutex>, game: &Game) {
+fn refresh_after_action(window: &slint::Weak<MainWindow>, database: &Arc<Db>, game: &Game) {
 	let window = window.clone();
 	let database = Arc::clone(database);
 	let game = game.clone();

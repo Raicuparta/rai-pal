@@ -4,9 +4,7 @@ use rai_pal_backend::{
 	filter_views::{FilterGroupView, FilterValueView, build_filter_views},
 	game_providers::game_provider::GameProviderId,
 	games_query::{FilterGroupKey, GamesFilter},
-	local_database::{
-		app_database::DbMutex, game_database::GameDatabase, mod_database::ModDatabase,
-	},
+	local_database::{app_database::Db, game_database::GameDatabase, mod_database::ModDatabase},
 	result::LogErrExt,
 };
 
@@ -54,14 +52,14 @@ pub fn build_groups(
 	.collect()
 }
 
-pub fn load_providers_with_games(database: &DbMutex) -> HashSet<GameProviderId> {
+pub fn load_providers_with_games(database: &Db) -> HashSet<GameProviderId> {
 	database.get_providers_with_games().unwrap_or_else(|err| {
 		log::warn!("Failed to load providers with games: {err}");
 		HashSet::new()
 	})
 }
 
-pub fn load_mod_families(database: &DbMutex) -> Vec<String> {
+pub fn load_mod_families(database: &Db) -> Vec<String> {
 	let Some(mods) = database.get_mod_map().ok_or_log("Failed to load mod map") else {
 		return Vec::new();
 	};

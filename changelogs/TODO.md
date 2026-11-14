@@ -11,5 +11,3 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Notes, questions, decisions, etc
 
 ## Done
-
-- Keyboard focus outlines only appear after actually pressing Tab now. They no longer show up on startup (the window used to focus the disabled escape handler, which fell through to the Games tab), after closing popups, or on window reactivation. Any mouse click clears the outline and puts focus back on the window root.
