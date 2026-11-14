@@ -11,11 +11,12 @@ on:
 
 jobs:
   winget:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     steps:
-      - uses: vedantmgoyal9/winget-releaser@7bd472be23763def6e16bd06cc8b1cdfab0e2fd5
-        with:
-          identifier: Raicuparta.RaiPal
-          installers-regex: 'RaiPal\.exe$'
-          token: ${{ secrets.WINGET_GH_TOKEN }}
-          release-tag: ${{ github.event.release.tag_name || github.event.inputs.release-tag }}
+      - uses: actions/checkout@v6
+
+      - name: Submit To WinGet
+        env:
+          GH_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || github.event.inputs.release-tag }}
+        run: bash scripts/update-winget.sh "$RELEASE_TAG"
