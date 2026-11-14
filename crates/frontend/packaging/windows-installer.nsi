@@ -64,15 +64,46 @@ Function .onInit
 	passiveDone:
 FunctionEnd
 
-Section "Install"
-	SetOutPath "$INSTDIR"
-
+Function CloseRunningApp
 	!insertmacro RestartManager_StartSession $0
 	${If} $0 != ""
 		!insertmacro RestartManager_RegisterFile $0 "$INSTDIR\${APP_EXE}"
 		!insertmacro RestartManager_Shutdown $0
 		!insertmacro RestartManager_EndSession $0
 	${EndIf}
+
+	${IfNot} ${FileExists} "$INSTDIR\${APP_EXE}"
+		Return
+	${EndIf}
+
+	StrCpy $1 0
+	checkLocked:
+	ClearErrors
+	FileOpen $2 "$INSTDIR\${APP_EXE}" a
+	${If} $2 != ""
+		FileClose $2
+		Return
+	${EndIf}
+	${If} $1 >= 6
+		Return
+	${EndIf}
+	${If} $1 = 0
+		nsExec::Exec '"$SYSDIR\taskkill.exe" /IM "${APP_EXE}"'
+		Pop $2
+	${EndIf}
+	${If} $1 >= 4
+		nsExec::Exec '"$SYSDIR\taskkill.exe" /F /IM "${APP_EXE}"'
+		Pop $2
+	${EndIf}
+	Sleep 500
+	IntOp $1 $1 + 1
+	Goto checkLocked
+FunctionEnd
+
+Section "Install"
+	SetOutPath "$INSTDIR"
+
+	Call CloseRunningApp
 
 	File "${SOURCE_EXE}"
 	File "${ICON_FILE}"
