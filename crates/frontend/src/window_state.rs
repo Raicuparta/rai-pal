@@ -71,6 +71,8 @@ pub fn apply(window: &MainWindow, state: Option<WindowState>) {
 }
 
 pub fn register_events(window: &MainWindow) {
+	let main_window_weak = window.as_weak();
+
 	#[cfg(target_os = "windows")]
 	let mut window_icon_applied = false;
 
@@ -89,6 +91,14 @@ pub fn register_events(window: &MainWindow) {
 		}
 
 		match event {
+			winit::event::WindowEvent::MouseInput {
+				state: winit::event::ElementState::Pressed,
+				..
+			} => {
+				if let Some(app_window) = main_window_weak.upgrade() {
+					app_window.invoke_reset_focus();
+				}
+			}
 			winit::event::WindowEvent::Resized(_) | winit::event::WindowEvent::Moved(_) => {
 				if let Some(handler) = CommandHandler::current() {
 					update_state(window, &mut handler.settings.borrow_mut());

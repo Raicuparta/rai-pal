@@ -1,5 +1,6 @@
 import { Theme } from "../theme.slint";
 import { ActivationScope } from "activation_scope.slint";
+import { FocusState } from "focus_ring.slint";
 import { Chevron } from "chevron.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 import { PopupMenu, PopupMenuItem } from "menu.slint";
@@ -20,7 +21,7 @@ export component SelectMenu inherits Rectangle {
     horizontal-stretch: 1;
     height: Theme.control-height;
     border-width: Theme.border-width;
-    border-color: focus-scope.has-focus ? Theme.primary : Theme.border;
+    border-color: focus-scope.has-focus && FocusState.keyboard-navigation ? Theme.primary : Theme.border;
     border-radius: Theme.radius-sm;
     background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : Theme.surface-background;
     forward-focus: focus-scope;

@@ -2,6 +2,7 @@ import { ModActions } from "../actions.slint";
 import { Theme } from "../theme.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 import { ActivationScope } from "activation_scope.slint";
+import { FocusState } from "focus_ring.slint";
 
 export component ExternalLink inherits Rectangle {
     in property <string> label;
@@ -48,7 +49,7 @@ export component ExternalLink inherits Rectangle {
                 y: parent.height - Theme.border-width;
                 width: parent.width;
                 height: Theme.border-width;
-                background: touch.has-hover || focus-scope.has-focus ? Theme.foreground : transparent;
+                background: touch.has-hover || (focus-scope.has-focus && FocusState.keyboard-navigation) ? Theme.foreground : transparent;
             }
         }
 

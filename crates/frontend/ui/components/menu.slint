@@ -4,6 +4,7 @@ import { LabeledDivider } from "labeled_divider.slint";
 import { BaseButton } from "base_button.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 import { EscapeScope } from "escape_scope.slint";
+import { FocusState } from "focus_ring.slint";
 
 export component PopupMenu inherits PopupWindow {
     in property <length> menu-width: Theme.menu-width;
@@ -11,6 +12,12 @@ export component PopupMenu inherits PopupWindow {
 
     close-policy: PopupClosePolicy.close-on-click-outside;
     forward-focus: menu-scope;
+
+    private property <bool> popup-open: root.is-open;
+
+    changed popup-open => {
+        FocusState.popup-open = root.popup-open;
+    }
     width: root.fit-content ? menu-layout.preferred-width + Theme.border-width * 2 : root.menu-width;
     height: menu-surface.height;
 

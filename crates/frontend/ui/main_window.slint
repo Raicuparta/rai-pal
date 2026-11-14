@@ -24,6 +24,7 @@ import { Viewport } from "components/modal.slint";
 import { Theme } from "theme.slint";
 import { Icon } from "components/svg_icon.slint";
 import { EscapeScope } from "components/escape_scope.slint";
+import { FocusState } from "components/focus_ring.slint";
 
 export {
     ActionState,
@@ -57,6 +58,7 @@ export { ConfirmationState } from "components/confirmation_popup.slint";
 export { AppActions, GamesActions, DialogActions } from "actions.slint";
 
 export component MainWindow inherits Window {
+    callback reset-focus;
     title: root.window-title;
     in property <string> window-title: "Rai Pal";
     in-out property <AppTab> current-tab: games;
@@ -117,8 +119,16 @@ export component MainWindow inherits Window {
         root.apply-color-scheme();
     }
 
+    reset-focus => {
+        FocusState.keyboard-navigation = false;
+        if !FocusState.popup-open {
+            escape-handler.focus();
+        }
+    }
+
     escape-handler := EscapeScope {
-        enabled: root.current-tab == AppTab.games && root.game-selected;
+        escape-enabled: root.current-tab == AppTab.games && root.game-selected;
+        focus-on-tab-navigation: false;
 
         escaped => {
             GamesActions.back();

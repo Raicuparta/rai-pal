@@ -3,6 +3,7 @@ import { Theme } from "../theme.slint";
 import { IconButton } from "icon_button.slint";
 import { Icon } from "svg_icon.slint";
 import { EscapeScope } from "escape_scope.slint";
+import { FocusState } from "focus_ring.slint";
 
 export global Viewport {
     in-out property <length> width: 0;
@@ -43,6 +44,12 @@ export component Modal inherits Rectangle {
         }
     }
 
+    private property <bool> popup-open: popup.is-open;
+
+    changed popup-open => {
+        FocusState.popup-open = root.popup-open;
+    }
+
     popup := PopupWindow {
         x: 0;
         y: 0;
@@ -77,7 +84,7 @@ export component Modal inherits Rectangle {
             TouchArea { }
 
             modal-scope := EscapeScope {
-                enabled: root.show-close-button;
+                escape-enabled: root.show-close-button;
 
                 escaped => {
                     root.dismiss();
