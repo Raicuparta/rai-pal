@@ -23,7 +23,7 @@ use crate::{
 	game_engines::pe_utils,
 	game_launch::{GameLaunch, spawn_game},
 	game_providers::{itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam},
-	local_database::{app_database::DbMutex, game_database::GameDatabase},
+	local_database::{app_database::Db, game_database::GameDatabase},
 	result::{Error, Result},
 };
 
@@ -182,7 +182,7 @@ pub fn get_provider(provider_id: GameProviderId) -> Result<Box<dyn GameProvider>
 }
 
 impl GameProviderId {
-	pub fn insert_games(&self, db: &DbMutex) -> Result {
+	pub fn insert_games(&self, db: &Db) -> Result {
 		let start_time = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
 		let games = get_provider(*self)?.get_games()?;
 

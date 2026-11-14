@@ -3,7 +3,7 @@ use std::{sync::Arc, thread, time::Duration};
 use rai_pal_backend::{
 	games_query::GamesQuery,
 	local_database::{
-		app_database::DbMutex,
+		app_database::Db,
 		game_database::{GameDatabase, GameIdsResponse},
 	},
 };
@@ -25,7 +25,7 @@ pub enum ScrollBehavior {
 	Keep,
 }
 
-pub fn load_game_ids(database: &DbMutex, query: GamesQuery) -> Result<GameIdsResponse, String> {
+pub fn load_game_ids(database: &Db, query: GamesQuery) -> Result<GameIdsResponse, String> {
 	database
 		.get_game_ids(Some(query))
 		.map_err(|err| err.to_string())
@@ -77,7 +77,7 @@ impl CommandHandler {
 
 fn run_query(
 	window: slint::Weak<MainWindow>,
-	database: Arc<DbMutex>,
+	database: Arc<Db>,
 	scheduler: Arc<FetchScheduler>,
 	query: GamesQuery,
 	delay: Duration,

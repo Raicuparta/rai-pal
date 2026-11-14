@@ -7,7 +7,7 @@ use std::{
 use rai_pal_backend::{
 	game_providers::game_provider::GameProviderId,
 	local_database::{
-		app_database::DbMutex,
+		app_database::Db,
 		game_database::{GameDatabase, attach_remote, recreate_if_missing},
 		mod_database::ModDatabase,
 	},
@@ -250,11 +250,11 @@ impl CommandHandler {
 	}
 }
 
-pub fn refresh_mods(database: &DbMutex) -> Result<(), String> {
+pub fn refresh_mods(database: &Db) -> Result<(), String> {
 	runtime::block_on(mod_provider::refresh_all_mods(database))
 }
 
-fn refresh_remote_database(database: &DbMutex) -> Result<(), String> {
+fn refresh_remote_database(database: &Db) -> Result<(), String> {
 	runtime::block_on(async {
 		let path = remote_game::download_database().await?;
 		attach_remote(database, &path)

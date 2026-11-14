@@ -2,7 +2,7 @@ use slint::ComponentHandle as _;
 use std::rc::Rc;
 
 use rai_pal_backend::{
-	local_database::app_database::DbMutex,
+	local_database::app_database::Db,
 	mods::{manifest::Mod, mod_groups},
 };
 
@@ -23,7 +23,7 @@ impl CommandHandler {
 	}
 }
 
-fn load(window: &MainWindow, database: &DbMutex) {
+fn load(window: &MainWindow, database: &Db) {
 	let groups = match mod_groups::get_mod_groups(database) {
 		Ok(groups) => groups,
 		Err(err) => {

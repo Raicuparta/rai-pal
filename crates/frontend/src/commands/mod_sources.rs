@@ -1,7 +1,7 @@
 use std::{rc::Rc, sync::Arc, thread};
 
 use rai_pal_backend::{
-	local_database::{app_database::DbMutex, game_database::GameDatabase},
+	local_database::{app_database::Db, game_database::GameDatabase},
 	mod_providers::url_mod_provider,
 	result::{Error, LogErrExt},
 };
@@ -195,7 +195,7 @@ impl CommandHandler {
 
 fn run_mod_source_change(
 	window: slint::Weak<MainWindow>,
-	database: Arc<DbMutex>,
+	database: Arc<Db>,
 	action: impl FnOnce() -> Result<(), Error> + Send + 'static,
 	on_finish: impl FnOnce(&MainWindow, &Result<(), Error>) + Send + 'static,
 ) {

@@ -8,7 +8,7 @@ use std::{
 use rai_pal_backend::{
 	game::Game,
 	http,
-	local_database::{app_database::DbMutex, game_database::GameDatabase},
+	local_database::{app_database::Db, game_database::GameDatabase},
 	result::{ContextResult, LogErrExt, Result as BackendResult},
 };
 
@@ -130,7 +130,7 @@ fn decode_image(bytes: &[u8], max_width: u32, max_height: u32) -> Option<Fetched
 	})
 }
 
-fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
+fn fetch_game(database: &Db, request: &FetchRequest) -> FetchResult {
 	match database.get_game(&request.provider_id, &request.game_id) {
 		Ok(game) => FetchResult {
 			index: request.index,
@@ -154,7 +154,7 @@ fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
 
 fn spawn_worker(
 	scheduler: Arc<FetchScheduler>,
-	database: Arc<DbMutex>,
+	database: Arc<Db>,
 	window: slint::Weak<MainWindow>,
 ) {
 	thread::spawn(move || {
@@ -348,10 +348,7 @@ fn spawn_decode_worker(
 	});
 }
 
-pub fn spawn_fetchers(
-	database: &Arc<DbMutex>,
-	window: &slint::Weak<MainWindow>,
-) -> Arc<FetchScheduler> {
+pub fn spawn_fetchers(database: &Arc<Db>, window: &slint::Weak<MainWindow>) -> Arc<FetchScheduler> {
 	let scheduler = Arc::new(FetchScheduler::default());
 
 	thread::spawn(image_cache::prune);
