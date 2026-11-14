@@ -6,6 +6,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
+- Sometimes things get highlighted (tab cycle) by themselves. starting up seems to cause games tab to highlight always?
+
 ## Do later
 
 ## Notes, questions, decisions, etc
