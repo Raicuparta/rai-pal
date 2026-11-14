@@ -23,7 +23,9 @@ VERSION_FILE="$IDENTIFIER.yaml"
 INSTALLER_FILE="$IDENTIFIER.installer.yaml"
 LOCALE_FILE="$IDENTIFIER.locale.en-US.yaml"
 
+FORK_REPO_NAME="${UPSTREAM_REPO#*/}"
 FORK_OWNER="$(gh api user --jq .login)"
+FORK_API="repos/$FORK_OWNER/$FORK_REPO_NAME"
 
 RELEASE_DATE="$(gh api "repos/$RELEASE_REPO/releases/tags/$TAG" --jq '.published_at // .created_at' | cut -c1-10)"
 
@@ -97,16 +99,15 @@ if [[ -n "$OLD_PR" ]]; then
 	exit 0
 fi
 
-if ! gh api "repos/$FORK_OWNER/$UPSTREAM_REPO" >/dev/null 2>&1; then
-	echo "Creating fork $FORK_OWNER/$UPSTREAM_REPO"
+if ! gh api "$FORK_API" >/dev/null 2>&1; then
+	echo "Creating fork $FORK_OWNER/$FORK_REPO_NAME"
 	gh api --method POST "repos/$UPSTREAM_REPO/forks" -f default_branch_only=true >/dev/null
 	for _ in $(seq 1 60); do
-		gh api "repos/$FORK_OWNER/$UPSTREAM_REPO" >/dev/null 2>&1 && break
+		gh api "$FORK_API" >/dev/null 2>&1 && break
 		sleep 5
 	done
+	gh api "$FORK_API" >/dev/null
 fi
-
-FORK_API="repos/$FORK_OWNER/$UPSTREAM_REPO"
 
 BASE_SHA="$(gh api "repos/$UPSTREAM_REPO/git/ref/heads/master" --jq .object.sha)"
 
