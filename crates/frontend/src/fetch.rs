@@ -1,15 +1,15 @@
 use slint::ComponentHandle as _;
 use std::{
-	io::Read,
-	sync::{Arc, LazyLock, Mutex, mpsc},
+	sync::{Arc, Mutex, mpsc},
 	thread,
 	time::Duration,
 };
 
 use rai_pal_backend::{
 	game::Game,
+	http,
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
-	result::LogErrExt,
+	result::{ContextResult, LogErrExt, Result as BackendResult},
 };
 
 use slint::Model;
@@ -17,27 +17,14 @@ use slint::Model;
 use crate::{
 	MainWindow, image_cache,
 	model::{apply_cached_thumbnail, apply_game_to_row},
+	runtime,
 	scheduler::{FetchRequest, FetchScheduler, ThumbnailJob, ThumbnailOutcome},
 };
 
 const WORKER_COUNT: usize = 4;
 const IMAGE_DOWNLOAD_WORKERS: usize = 6;
 const IMAGE_DECODE_WORKERS: usize = 2;
-
-static HTTP_CLIENT: LazyLock<reqwest::blocking::Client> = LazyLock::new(|| {
-	reqwest::blocking::Client::builder()
-		.connect_timeout(Duration::from_secs(10))
-		.timeout(Duration::from_secs(30))
-		.build()
-		.unwrap_or_else(|err| {
-			log::warn!("Failed to build HTTP client, using defaults: {err}");
-			reqwest::blocking::Client::default()
-		})
-});
-
-pub fn http_client() -> &'static reqwest::blocking::Client {
-	&HTTP_CLIENT
-}
+const IMAGE_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 pub struct FetchedImage {
 	pub width: u32,
@@ -75,56 +62,61 @@ enum ImageBytesOutcome {
 	Failed,
 }
 
-pub fn fetch_image(url: &str, max_width: u32, max_height: u32) -> Option<FetchedImage> {
-	match fetch_image_bytes_cancellable(url, || true) {
-		ImageBytesOutcome::Fetched(bytes) => decode_image(&bytes, max_width, max_height),
-		ImageBytesOutcome::Cancelled | ImageBytesOutcome::Failed => None,
+pub async fn fetch_image(url: &str, max_width: u32, max_height: u32) -> Option<FetchedImage> {
+	match download_image_bytes(url, || true).await {
+		Ok(Some(bytes)) => decode_image(&bytes, max_width, max_height),
+		Ok(None) => None,
+		Err(err) => {
+			log::warn!("{err}");
+			None
+		}
 	}
 }
 
-fn fetch_image_bytes_cancellable<F>(url: &str, mut should_continue: F) -> ImageBytesOutcome
+fn fetch_image_bytes_cancellable<F>(url: &str, should_continue: F) -> ImageBytesOutcome
 where
 	F: FnMut() -> bool,
 {
-	let Some(response) = HTTP_CLIENT
-		.get(url)
-		.send()
-		.ok_or_log(&format!("Failed to request image `{url}`"))
-	else {
-		return ImageBytesOutcome::Failed;
-	};
-	let Some(mut response) = response
-		.error_for_status()
-		.ok_or_log("Image request failed")
-	else {
-		return ImageBytesOutcome::Failed;
-	};
-
-	let mut bytes = Vec::new();
-	let mut chunk = [0u8; 16 * 1024];
-
-	loop {
-		if !should_continue() {
-			return ImageBytesOutcome::Cancelled;
+	match runtime::block_on(download_image_bytes(url, should_continue)) {
+		Ok(Some(bytes)) => ImageBytesOutcome::Fetched(bytes),
+		Ok(None) => ImageBytesOutcome::Cancelled,
+		Err(err) => {
+			log::warn!("{err}");
+			ImageBytesOutcome::Failed
 		}
-
-		let Some(length) = response
-			.read(&mut chunk)
-			.ok_or_log("Failed to read image response")
-		else {
-			return ImageBytesOutcome::Failed;
-		};
-		if length == 0 {
-			break;
-		}
-		bytes.extend_from_slice(&chunk[..length]);
 	}
+}
+
+async fn download_image_bytes<F>(
+	url: &str,
+	mut should_continue: F,
+) -> BackendResult<Option<Vec<u8>>>
+where
+	F: FnMut() -> bool,
+{
+	if !should_continue() {
+		return Ok(None);
+	}
+
+	let response = http::CLIENT
+		.get(url)
+		.timeout(IMAGE_REQUEST_TIMEOUT)
+		.send()
+		.await
+		.with_context(|| format!("failed to request image `{url}`"))?
+		.error_for_status()
+		.with_context(|| format!("image request for `{url}` failed"))?;
+
+	let bytes = response
+		.bytes()
+		.await
+		.with_context(|| format!("failed to download image `{url}`"))?;
 
 	if !should_continue() {
-		return ImageBytesOutcome::Cancelled;
+		return Ok(None);
 	}
 
-	ImageBytesOutcome::Fetched(bytes)
+	Ok(Some(bytes.to_vec()))
 }
 
 fn decode_image(bytes: &[u8], max_width: u32, max_height: u32) -> Option<FetchedImage> {

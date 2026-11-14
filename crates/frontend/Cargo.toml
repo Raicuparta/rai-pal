@@ -12,7 +12,6 @@ path = "src/main.rs"
 log.workspace = true
 fs-err.workspace = true
 rai-pal-backend.workspace = true
-reqwest = { version = "0.13.3", features = ["blocking"] }
 rfd = "0.17.2"
 serde.workspace = true
 serde_json.workspace = true

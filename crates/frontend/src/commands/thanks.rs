@@ -1,13 +1,13 @@
 use slint::ComponentHandle as _;
 use std::{rc::Rc, thread};
 
-use rai_pal_backend::result::LogErrExt;
+use rai_pal_backend::{http, result::LogErrExt};
 use serde_json::Value;
 
 use crate::{
 	MainWindow, PatronData,
 	fetch::{self, FetchedImage},
-	text,
+	runtime, text,
 };
 
 use super::CommandHandler;
@@ -30,7 +30,7 @@ impl CommandHandler {
 
 fn load(window: slint::Weak<MainWindow>) {
 	thread::spawn(move || {
-		let patrons = fetch_patrons();
+		let patrons = runtime::run(fetch_patrons());
 
 		crate::runtime::with_ui_window(&window, move |window| {
 			let patrons = patrons
@@ -55,31 +55,39 @@ fn load(window: slint::Weak<MainWindow>) {
 	});
 }
 
-fn fetch_patrons() -> Vec<FetchedPatron> {
-	let Some(active_patrons) = fetch_active_patrons() else {
+async fn fetch_patrons() -> Vec<FetchedPatron> {
+	let Some(active_patrons) = fetch_active_patrons().await else {
 		return Vec::new();
 	};
 
-	active_patrons.iter().filter_map(patron_from_json).collect()
+	let mut patrons = Vec::new();
+
+	for value in &active_patrons {
+		if let Some(patron) = patron_from_json(value).await {
+			patrons.push(patron);
+		}
+	}
+
+	patrons
 }
 
-fn fetch_active_patrons() -> Option<Vec<Value>> {
-	let response = fetch::http_client()
+async fn fetch_active_patrons() -> Option<Vec<Value>> {
+	let database = http::CLIENT
 		.get(PATRONS_URL)
 		.send()
+		.await
 		.ok_or_log("Failed to request patrons")?
 		.error_for_status()
-		.ok_or_log("Patrons request failed")?;
-
-	let database: Value = response
-		.json()
+		.ok_or_log("Patrons request failed")?
+		.json::<Value>()
+		.await
 		.ok_or_log("Failed to parse patrons response")?;
 	let patrons = database.get("activePatrons")?.as_array()?;
 
 	Some(patrons.clone())
 }
 
-fn patron_from_json(value: &Value) -> Option<FetchedPatron> {
+async fn patron_from_json(value: &Value) -> Option<FetchedPatron> {
 	let name = value.get("name")?.as_str()?.to_string();
 
 	if name.is_empty() {
@@ -88,10 +96,10 @@ fn patron_from_json(value: &Value) -> Option<FetchedPatron> {
 
 	let ranking = i32::try_from(value.get("ranking")?.as_i64()?)
 		.ok_or_log("Patron ranking does not fit in i32")?;
-	let avatar = value
-		.get("imageUrl")
-		.and_then(Value::as_str)
-		.and_then(|url| fetch::fetch_image(url, AVATAR_SIZE, AVATAR_SIZE));
+	let avatar = match value.get("imageUrl").and_then(Value::as_str) {
+		Some(url) => fetch::fetch_image(url, AVATAR_SIZE, AVATAR_SIZE).await,
+		None => None,
+	};
 
 	Some(FetchedPatron {
 		ranking,

@@ -14,11 +14,15 @@ static RUNTIME: LazyLock<tokio::runtime::Runtime> = LazyLock::new(|| {
 pub fn block_on<T>(
 	future: impl Future<Output = rai_pal_backend::result::Result<T>>,
 ) -> Result<T, String> {
-	RUNTIME.block_on(future).map_err(|err| err.to_string())
+	run(future).map_err(|err| err.to_string())
+}
+
+pub fn run<T>(future: impl Future<Output = T>) -> T {
+	RUNTIME.block_on(future)
 }
 
 pub fn spawn(future: impl Future<Output = ()> + Send + 'static) {
-	let _ = RUNTIME.spawn(future);
+	drop(RUNTIME.spawn(future));
 }
 
 pub fn invoke_on_ui(callback: impl FnOnce() + Send + 'static) {

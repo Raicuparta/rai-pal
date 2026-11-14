@@ -20,12 +20,12 @@ use base64::{Engine as _, engine::general_purpose::STANDARD};
 use minisign_verify::{PublicKey, Signature};
 #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
 use rai_pal_backend::app_paths;
-use rai_pal_backend::{app_variant::AppVariant, result::LogErrExt};
+use rai_pal_backend::{app_variant::AppVariant, http, result::LogErrExt};
 use semver::Version;
 use serde::Deserialize;
 use slint::{Timer, TimerMode};
 
-use crate::{MainWindow, MessageContext, fetch, notifications};
+use crate::{MainWindow, MessageContext, notifications, runtime};
 
 use super::on_command;
 
@@ -210,14 +210,18 @@ fn latest_json_url() -> String {
 }
 
 fn fetch_update() -> Result<Option<Release>, String> {
-	let release = fetch::http_client()
-		.get(latest_json_url())
-		.send()
-		.map_err(|err| err.to_string())?
-		.error_for_status()
-		.map_err(|err| err.to_string())?
-		.json::<LatestRelease>()
-		.map_err(|err| err.to_string())?;
+	let release = runtime::run(async {
+		http::CLIENT
+			.get(latest_json_url())
+			.send()
+			.await
+			.map_err(|err| err.to_string())?
+			.error_for_status()
+			.map_err(|err| err.to_string())?
+			.json::<LatestRelease>()
+			.await
+			.map_err(|err| err.to_string())
+	})?;
 
 	let current = Version::parse(env!("CARGO_PKG_VERSION")).map_err(|err| err.to_string())?;
 	let remote =
@@ -256,18 +260,20 @@ fn platform_key() -> Option<&'static str> {
 }
 
 fn download_and_verify(release: &Release) -> Result<Vec<u8>, String> {
-	let bytes = reqwest::blocking::Client::builder()
-		.timeout(Duration::from_mins(10))
-		.build()
-		.map_err(|err| err.to_string())?
-		.get(&release.url)
-		.send()
-		.map_err(|err| err.to_string())?
-		.error_for_status()
-		.map_err(|err| err.to_string())?
-		.bytes()
-		.map_err(|err| err.to_string())?
-		.to_vec();
+	let bytes = runtime::run(async {
+		http::CLIENT
+			.get(&release.url)
+			.timeout(Duration::from_mins(10))
+			.send()
+			.await
+			.map_err(|err| err.to_string())?
+			.error_for_status()
+			.map_err(|err| err.to_string())?
+			.bytes()
+			.await
+			.map(|bytes| bytes.to_vec())
+			.map_err(|err| err.to_string())
+	})?;
 
 	verify_signature(&bytes, &release.signature)?;
 	Ok(bytes)
