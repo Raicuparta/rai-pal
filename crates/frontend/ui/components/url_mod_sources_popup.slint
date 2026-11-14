@@ -1,5 +1,5 @@
-import { CheckBox } from "std-widgets.slint";
 import { Button } from "button.slint";
+import { CheckBox } from "check_box.slint";
 import { TextField } from "text_field.slint";
 import { CopyableText } from "copyable_text.slint";
 import { Icon } from "svg_icon.slint";
@@ -30,12 +30,13 @@ component UrlModSourceRow inherits Rectangle {
         spacing: Theme.space-sm;
         cross-axis-alignment: center;
 
-        source-checkbox := CheckBox {
+        CheckBox {
             checked: root.source.enabled;
             enabled: !root.toggling;
+            accessible-label: root.source.url;
 
-            toggled => {
-                root.toggled(source-checkbox.checked);
+            toggled(checked) => {
+                root.toggled(checked);
             }
         }
 

@@ -7,12 +7,12 @@ import {
 import { Tr } from "../translations.slint";
 import { Theme } from "../theme.slint";
 import { Button } from "button.slint";
-import { Contrast } from "contrast.slint";
 import { IconButton } from "icon_button.slint";
 import { BaseButton } from "base_button.slint";
 import { ResetButton } from "reset_button.slint";
 import { Chevron, ChevronDirection } from "chevron.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
+import { CheckBoxMark } from "check_box.slint";
 import { GamesActions } from "../actions.slint";
 
 component FilterValueRow inherits BaseButton {
@@ -51,21 +51,8 @@ component FilterValueRow inherits BaseButton {
             alignment: start;
             opacity: root.item.available ? 1 : 0.5;
 
-            Rectangle {
-                width: Theme.icon-size;
-                height: Theme.icon-size;
-                border-width: root.checked ? 0 : Theme.border-width;
-                border-radius: Theme.radius-sm;
-                border-color: Theme.border;
-                background: root.checked ? Theme.primary : transparent;
-
-                if root.checked: SvgIcon {
-                    icon: Icon.check;
-                    size: Theme.icon-size;
-                    color: Contrast.ink(Theme.primary);
-                    x: (parent.width - self.width) / 2;
-                    y: (parent.height - self.height) / 2;
-                }
+            CheckBoxMark {
+                checked: root.checked;
             }
 
             Text {
