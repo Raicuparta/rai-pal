@@ -1,8 +1,6 @@
-use std::{collections::HashMap, thread};
+use std::collections::HashMap;
 
 use rai_pal_backend::{analytics as core, game::Game};
-
-use rai_pal_backend::result::LogErrExt;
 
 use crate::runtime;
 
@@ -12,13 +10,8 @@ pub fn send(event: core::Event, data: impl IntoIterator<Item = (&'static str, St
 		.map(|(key, value)| (key.to_string(), value))
 		.collect::<HashMap<_, _>>();
 
-	thread::spawn(move || {
-		let Some(runtime) = runtime::current_thread().ok_or_log("Failed to create async runtime")
-		else {
-			return;
-		};
-
-		runtime.block_on(core::send_event(event, Some(data)));
+	runtime::spawn(async move {
+		core::send_event(event, Some(data)).await;
 	});
 }
 

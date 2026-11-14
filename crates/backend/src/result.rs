@@ -11,7 +11,7 @@ pub enum Error {
 	#[error(transparent)]
 	Io(#[from] std::io::Error),
 
-	#[error(transparent)]
+	#[error("{}", format_error_sources(.0))]
 	Reqwest(#[from] reqwest::Error),
 
 	#[error(transparent)]
@@ -168,6 +168,18 @@ pub enum Error {
 		#[source]
 		source: Box<Self>,
 	},
+}
+
+fn format_error_sources(error: &(impl std::error::Error + ?Sized)) -> String {
+	let mut message = error.to_string();
+
+	let mut source = std::error::Error::source(error);
+	while let Some(err) = source {
+		message.push_str(&format!(": {err}"));
+		source = std::error::Error::source(err);
+	}
+
+	message
 }
 
 pub trait ContextResult<T> {

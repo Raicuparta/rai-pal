@@ -54,7 +54,7 @@ pub fn get_database_file_path() -> Result<PathBuf> {
 pub async fn download_database() -> Result<PathBuf> {
 	let url = format!("{URL_BASE}/{DATABASE_VERSION}/games.db");
 
-	let response = http::CLIENT.get(&url).send().await?;
+	let response = http::CLIENT.get(&url).send().await?.error_for_status()?;
 
 	let file_path = get_database_file_path()?;
 

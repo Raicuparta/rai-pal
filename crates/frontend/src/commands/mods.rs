@@ -283,12 +283,7 @@ fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex
 	}
 
 	thread::spawn(move || {
-		let Some(runtime) = runtime::current_thread().ok_or_log("Failed to create async runtime")
-		else {
-			return;
-		};
-
-		let configs = match runtime.block_on(game.get_remote_configs()) {
+		let configs = match runtime::block_on(game.get_remote_configs()) {
 			Ok(configs) => configs,
 			Err(err) => {
 				log::error!("Failed to load remote configs: {err}");
