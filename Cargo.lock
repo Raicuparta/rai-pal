@@ -4677,7 +4677,7 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 
 [[package]]
 name = "rai-pal-backend"
-version = "1.0.1"
+version = "1.1.1"
 dependencies = [
  "base64 0.23.1",
  "chrono",
@@ -4713,7 +4713,7 @@ dependencies = [
 
 [[package]]
 name = "rai-pal-frontend"
-version = "1.0.1"
+version = "1.1.1"
 dependencies = [
  "base64 0.23.1",
  "chrono",
@@ -4741,7 +4741,7 @@ dependencies = [
 
 [[package]]
 name = "rai-pal-i18n-check"
-version = "1.0.1"
+version = "1.1.1"
 dependencies = [
  "fs-err",
  "rspolib",
@@ -4749,7 +4749,7 @@ dependencies = [
 
 [[package]]
 name = "rai-pal-proc-macros"
-version = "1.0.1"
+version = "1.1.1"
 dependencies = [
  "quote",
  "syn 3.0.9",
@@ -4757,7 +4757,7 @@ dependencies = [
 
 [[package]]
 name = "rai-pal-updater-signer"
-version = "1.0.1"
+version = "1.1.1"
 dependencies = [
  "base64 0.23.1",
  "fs-err",
