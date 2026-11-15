@@ -12,13 +12,13 @@ path = "src/main.rs"
 log.workspace = true
 fs-err.workspace = true
 rai-pal-backend.workspace = true
-rfd = "0.17.2"
+rfd = "0.18.0"
 serde.workspace = true
 serde_json.workspace = true
 semver = "1.0.28"
 base64 = "0.23.1"
 minisign-verify = "0.3.0"
-sha2 = "0.10"
+sha2 = "0.11.1"
 tokio = { version = "1.52.3", features = ["rt-multi-thread"] }
 url = "2.5.7"
 chrono = { version = "0.4.44", default-features = false, features = [
