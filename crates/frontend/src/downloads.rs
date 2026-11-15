@@ -119,8 +119,7 @@ impl Tracker {
 			.items
 			.lock()
 			.ok_or_log("Failed to lock download items")
-			.map(|items| items.clone())
-			.unwrap_or_default();
+			.map_or_default(|items| items.clone());
 
 		if let Some(mut last_publish) = self
 			.last_publish

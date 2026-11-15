@@ -460,8 +460,7 @@ pub fn download_version(game_mod: &Mod) -> String {
 	game_mod
 		.download
 		.as_ref()
-		.map(|download| download.id.clone())
-		.unwrap_or_default()
+		.map_or_default(|download| download.id.clone())
 }
 
 pub fn engine_text(game_mod: &Mod) -> String {

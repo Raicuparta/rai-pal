@@ -50,7 +50,7 @@ impl ProviderParser for LegacyEpic {
 						let path = PathBuf::from(manifest.install_location)
 							.join(manifest.launch_executable);
 
-						exe_paths.insert(manifest.catalog_item_id.clone(), path);
+						exe_paths.insert(manifest.catalog_item_id, path);
 					}
 					Err(err) => {
 						error!("Failed to parse epic manifest: {err}");

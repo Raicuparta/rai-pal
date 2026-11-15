@@ -97,8 +97,7 @@ async fn parse_auth_callback(
 
 		let query = path_and_query
 			.split_once('?')
-			.map(|(_, query)| query)
-			.unwrap_or_default();
+			.map_or_default(|(_, query)| query);
 
 		let callback_query = serde_urlencoded::from_str::<AuthCallbackQuery>(query)
 			.map_err(|error| Error::Auth(format!("Invalid callback query: {error}")))?;

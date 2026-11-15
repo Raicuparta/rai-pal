@@ -65,8 +65,7 @@ impl EpicCatalogItem {
 	fn artifact_id(&self) -> &str {
 		self.release_info
 			.first()
-			.map(|release_info| release_info.app_id.as_str())
-			.unwrap_or_default()
+			.map_or_default(|release_info| release_info.app_id.as_str())
 	}
 
 	fn get_release_date(&self) -> Option<String> {

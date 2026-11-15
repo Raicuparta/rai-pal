@@ -227,7 +227,7 @@ impl GameDatabase for Db {
 	}
 
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
-		let search = query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
+		let search = query.as_ref().map_or_default(|q| q.search.clone());
 
 		// Build sorting logic
 		let sort_columns = match query.as_ref().map(|q| q.sort_by) {
@@ -662,7 +662,7 @@ fn insert_game_in_transaction(
 			.execute(rusqlite::params![
 				game.provider_id,
 				game.game_id.clone(),
-				normalized_title.clone(),
+				normalized_title,
 			])?;
 	}
 

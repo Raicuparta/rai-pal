@@ -28,6 +28,7 @@ impl ModProvider for FolderModProvider {
 		})
 	}
 
+	#[allow(clippy::unused_async_trait_impl)]
 	async fn refresh(&self, db: &Db) -> Result {
 		let source_hash = self.folder_path.hash_string();
 		let scope = compute_scope(Self::get_id(), &source_hash);

@@ -185,8 +185,7 @@ pub fn apply_game_to_row(row: &mut GameRowData, game: &Game) {
 	row.engine = game.engine_brand.into();
 	row.engine_name = game
 		.engine_brand
-		.map(|brand| brand.to_string())
-		.unwrap_or_default()
+		.map_or_default(|brand| brand.to_string())
 		.into();
 	row.engine_version = game
 		.engine_version_display

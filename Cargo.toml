@@ -4,9 +4,6 @@ resolver = "2"
 
 [workspace.package]
 version = "1.0.1"
-authors = ["Raicuparta"]
-license = "GPL-3.0-or-later"
-repository = "https://github.com/Raicuparta/rai-pal"
 edition = "2024"
 
 [workspace.dependencies]
