@@ -28,17 +28,14 @@ fi
 export SLINT_EMIT_DEBUG_INFO=1
 export SLINT_MCP_PORT="${SLINT_MCP_PORT:-9315}"
 
-FEATURES="slint/mcp"
-
 if [ "$LIVE" -eq 1 ]; then
   export SLINT_LIVE_PREVIEW=1
-  FEATURES="slint/live-preview,$FEATURES"
 fi
 
 BIN="${CARGO_TARGET_DIR:-$ROOT_DIR/target}/debug/Rai-Pal"
 
 build() {
-  cargo build -p rai-pal-frontend --features "$FEATURES"
+  cargo build -p rai-pal-frontend --features dev
 }
 
 if [ "$LIVE" -eq 0 ]; then

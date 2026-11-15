@@ -77,10 +77,15 @@ fn cache_path(url: &str, width: u32, height: u32) -> Option<PathBuf> {
 	hasher.update(width.to_le_bytes());
 	hasher.update(height.to_le_bytes());
 	hasher.update(url.as_bytes());
+	let hash: String = hasher
+		.finalize()
+		.iter()
+		.map(|byte| format!("{byte:02x}"))
+		.collect();
 
 	CACHE_DIR
 		.as_ref()
-		.map(|dir| dir.join(format!("{:x}.img", hasher.finalize())))
+		.map(|dir| dir.join(format!("{hash}.img")))
 }
 
 pub fn contains(url: &str, width: u32, height: u32) -> bool {

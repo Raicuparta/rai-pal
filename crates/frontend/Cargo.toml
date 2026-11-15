@@ -8,6 +8,9 @@ default-run = "Rai-Pal"
 name = "Rai-Pal"
 path = "src/main.rs"
 
+[features]
+dev = ["slint/mcp", "slint/live-preview"]
+
 [dependencies]
 log.workspace = true
 fs-err.workspace = true
