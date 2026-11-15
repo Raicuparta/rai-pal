@@ -5,8 +5,10 @@ use std::path::{Path, PathBuf};
 use crate::{
 	game::Game,
 	game_providers::{
-		game_provider::ProviderParser, itch_provider::Itch,
-		provider_command::ProviderCommandAction, steam::steam_provider::Steam,
+		game_provider::ProviderParser,
+		itch_provider::Itch,
+		provider_command::{ProviderCommand, ProviderCommandAction, ProviderCommandKind},
+		steam::steam_provider::Steam,
 	},
 };
 

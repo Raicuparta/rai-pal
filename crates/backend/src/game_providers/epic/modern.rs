@@ -99,7 +99,12 @@ impl ProviderParser for ModernEpic {
 
 			if let Some(installation) = installations.get(&library_item.app_id.item_id) {
 				game.set_executable(&installation.dir.join(&installation.launch_executable));
-				add_start_via_provider_command(&mut game);
+				add_start_via_provider_command(
+					&mut game,
+					&library_item.app_id.namespace_id,
+					&library_item.app_id.item_id,
+					&library_item.app_id.app_name,
+				);
 			}
 
 			games.push(game);

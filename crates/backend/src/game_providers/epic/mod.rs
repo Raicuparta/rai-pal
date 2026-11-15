@@ -93,13 +93,18 @@ impl EpicCatalogItem {
 	}
 }
 
+fn app_uri(namespace: &str, item_id: &str, artifact_id: &str) -> String {
+	format!("com.epicgames.launcher://apps/{namespace}%3A{item_id}%3A{artifact_id}")
+}
+
 pub fn new_game(namespace: &str, item_id: &str, artifact_id: &str, title: &str) -> Option<Game> {
 	let mut game = Game::new(GameProviderId::Epic, item_id.to_string(), title.to_string());
 
 	game.add_provider_command(
 		ProviderCommandAction::Install,
 		ProviderCommandKind::String(format!(
-			"com.epicgames.launcher://apps/{namespace}%3A{item_id}%3A{artifact_id}?action=install",
+			"{}?action=install",
+			app_uri(namespace, item_id, artifact_id)
 		)),
 	)
 	.add_provider_command(
@@ -114,12 +119,17 @@ pub fn new_game(namespace: &str, item_id: &str, artifact_id: &str, title: &str) 
 	Some(game)
 }
 
-pub fn add_start_via_provider_command(game: &mut Game) {
+pub fn add_start_via_provider_command(
+	game: &mut Game,
+	namespace: &str,
+	item_id: &str,
+	artifact_id: &str,
+) {
 	game.add_provider_command(
 		ProviderCommandAction::StartViaProvider,
 		ProviderCommandKind::String(format!(
-			"com.epicgames.launcher://apps/{}?action=launch&silent=true",
-			game.external_id
+			"{}?action=launch&silent=true",
+			app_uri(namespace, item_id, artifact_id)
 		)),
 	);
 }

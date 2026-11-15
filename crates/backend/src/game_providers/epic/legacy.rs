@@ -96,7 +96,12 @@ impl ProviderParser for LegacyEpic {
 
 				if let Some(exe_path) = exe_paths.remove(&game.external_id) {
 					game.set_executable(&exe_path);
-					add_start_via_provider_command(&mut game);
+					add_start_via_provider_command(
+						&mut game,
+						&catalog_item.namespace,
+						&catalog_item.id,
+						catalog_item.artifact_id(),
+					);
 				}
 
 				games.push(game);
