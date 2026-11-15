@@ -33,6 +33,10 @@ debug = 0
 opt-level = 1
 strip = "debuginfo"
 
+[workspace.lints.cargo]
+unused_dependencies = "deny"
+unused_workspace_dependencies = "deny"
+
 [workspace.lints.clippy]
 # Categories that have mostly useful lints.
 # Priority is -1 so that they get overridden by priority 0 lints.

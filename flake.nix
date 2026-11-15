@@ -1,11 +1,17 @@
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/174eb786fb68e3a13e4e535a3deea479a0c07a6a";
+  inputs.rust-overlay.url = "github:oxalica/rust-overlay";
+  inputs.rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
 
   outputs =
-    { self, nixpkgs }:
+    { self, nixpkgs, rust-overlay }:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [ rust-overlay.overlays.default ];
+      };
+      rust = pkgs.rust-bin.stable."1.100.0".default;
 
       slintPackage = pkgs.lib.findFirst (package: package.name == "slint") null (
         builtins.fromTOML (builtins.readFile ./Cargo.lock)
@@ -17,7 +23,7 @@
         src = pkgs.fetchgit {
           url = "https://github.com/slint-ui/slint";
           rev = pkgs.lib.last (pkgs.lib.splitString "#" slintPackage.source);
-          hash = "sha256-j2kTViqiGNL4jDFKhYd1fkwqGLe3WzDEr/f9DC/8ntk=";
+          hash = "sha256-IWW4mvZ5oa5/EmWHAbgb62I968nVxdmuywqlSfosdAw=";
         };
         cargoHash = "sha256-5SAXsaKRxITsGHjE3iZkF10cdAonr6h36BOJDVInW38=";
         buildAndTestSubdir = "tools/tr-extractor";
@@ -57,8 +63,6 @@
 
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [
-          cargo
-          clippy
           pkg-config
           binutils
           file
@@ -69,8 +73,7 @@
           linuxdeployAppImage
           mesa
           patchelf
-          rustc
-          rustfmt
+          rust
           slintTrExtractor
           squashfs-tools
           wayland

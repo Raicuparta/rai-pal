@@ -156,7 +156,8 @@ impl CommandHandler {
 			&& window
 				.global::<crate::ThanksState>()
 				.get_patrons()
-				.row_count() == 0
+				.row_count()
+				== 0
 		{
 			self.load_patrons();
 		}

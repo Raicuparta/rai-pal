@@ -157,8 +157,9 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 				.join("**")
 				.join("*.dll")
 				.glob()
-				.first() && let Some(Some(architecture)) =
-			get_architecture(plugin_dll).ok_or_log("Failed to get Unity plugin architecture")
+				.first()
+			&& let Some(Some(architecture)) =
+				get_architecture(plugin_dll).ok_or_log("Failed to get Unity plugin architecture")
 		{
 			return Some(architecture);
 		}
