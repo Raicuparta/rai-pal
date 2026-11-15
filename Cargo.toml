@@ -1,21 +1,26 @@
 [workspace]
 members = ["crates/*"]
-resolver = "2"
+resolver = "3"
 
 [workspace.package]
 version = "1.0.1"
 edition = "2024"
+publish = false
 
 [workspace.dependencies]
+base64 = "0.23.1"
+chrono = { version = "0.4.44", default-features = false, features = ["std"] }
+fs-err = { version = "3.3.2", features = ["tokio"] }
 log = "0.4.34"
 rai-pal-backend = { path = "./crates/backend" }
 rai-pal-proc-macros = { path = "./crates/proc-macros" }
+rusqlite = { version = "0.41.1", features = ["bundled"] }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.154"
-fs-err = { version = "3.3.2", features = ["tokio"] }
-thiserror = "2.0.21"
-rusqlite = { version = "0.41.1", features = ["bundled", "hooks"] }
 strum = { version = "0.28.0", features = ["derive"] }
+thiserror = "2.0.21"
+tokio = { version = "1.53.3", features = ["fs"] }
+winreg = "0.56.0"
 
 [profile.release]
 codegen-units = 1
@@ -28,7 +33,6 @@ strip = true
 [profile.dev]
 debug = 0
 opt-level = 1
-strip = "debuginfo"
 
 [workspace.lints.cargo]
 unused_dependencies = "deny"

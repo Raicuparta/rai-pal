@@ -2,8 +2,7 @@
 name = "rai-pal-backend"
 version.workspace = true
 edition.workspace = true
-
-[lib]
+publish.workspace = true
 
 [dependencies]
 log.workspace = true
@@ -14,13 +13,13 @@ fs-err.workspace = true
 thiserror.workspace = true
 rusqlite.workspace = true
 strum.workspace = true
+base64.workspace = true
+chrono.workspace = true
+tokio.workspace = true
 
 open = { version = "5.4.4", features = ["shellexecute-on-windows"] }
 dunce = "1.0"
-base64 = "0.23.1"
-chrono = { version = "0.4.44", default-features = false, features = ["std"] }
 directories = "6.0.0"
-tokio = { version = "1.53.3", features = ["process", "fs"] }
 globwalk = "0.9.1"
 lazy-regex = "3.6.2"
 memmap2 = "0.9.5"
@@ -42,7 +41,7 @@ memchr = "2.8.3"
 libc = "0.2"
 
 [target.'cfg(target_os = "windows")'.dependencies]
-winreg = "0.56.0"
+winreg.workspace = true
 
 [lints]
 workspace = true

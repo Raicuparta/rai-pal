@@ -29,6 +29,7 @@ fn emit_translation_reruns(directory: &Path) {
 	}
 }
 
+#[cfg(target_os = "windows")]
 fn embed_windows_icon() {
 	let icon = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("graphics/icon.ico");
 	println!("cargo:rerun-if-changed={}", icon.display());
@@ -91,5 +92,6 @@ fn main() {
 
 	slint_build::compile_with_config(env!("CARGO_MANIFEST_DIR"), config).unwrap();
 
+	#[cfg(target_os = "windows")]
 	embed_windows_icon();
 }

@@ -2,10 +2,10 @@
 name = "rai-pal-updater-signer"
 version.workspace = true
 edition.workspace = true
-publish = false
+publish.workspace = true
 
 [dependencies]
-base64 = "0.23.1"
+base64.workspace = true
 fs-err.workspace = true
 minisign = "0.10.0"
 
