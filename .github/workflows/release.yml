@@ -137,9 +137,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: 1.100.0
+        run: rustup show
 
       - name: Build macOS app
         run: bash scripts/build-macos.sh

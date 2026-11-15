@@ -11,7 +11,7 @@
         inherit system;
         overlays = [ rust-overlay.overlays.default ];
       };
-      rust = pkgs.rust-bin.stable."1.100.0".default;
+      rust = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 
       slintPackage = pkgs.lib.findFirst (package: package.name == "slint") null (
         builtins.fromTOML (builtins.readFile ./Cargo.lock)
