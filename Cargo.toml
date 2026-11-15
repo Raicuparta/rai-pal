@@ -70,5 +70,6 @@ verbose_file_reads = "warn"
 
 [patch.crates-io]
 
-# Needed for wayland drag and drop, comes from here: https://github.com/storytold/cadcraft/pull/2031
+# Needed for wayland drag and drop.
+# We can remove this once a published winit release includes commit 7a962fd.
 winit = { git = "https://github.com/rust-windowing/winit", rev = "7a962fd46470a137d9a7a1945bf5b5d0b95a002c" }
