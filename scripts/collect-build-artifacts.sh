@@ -6,7 +6,7 @@ PLATFORM="${1:-}"
 VERSION="${2:-}"
 
 if [[ -z "$PLATFORM" || -z "$VERSION" ]]; then
-	echo "Usage: $0 <windows|linux|macos> <version>" >&2
+	echo "Usage: $0 <windows|linux|macos|flatpak> <version>" >&2
 	exit 1
 fi
 
@@ -46,8 +46,12 @@ case "$PLATFORM" in
 		UPDATER_TARGET="$OUTPUT_DIR/updater-macos.tar.gz"
 		PLATFORM_KEY="darwin-$ARCH"
 		;;
+	flatpak)
+		MAIN_SOURCE="$ROOT_DIR/target/bundles/flatpak/RaiPal-$VERSION-x86_64.flatpak"
+		MAIN_TARGET="$OUTPUT_DIR/RaiPal.flatpak"
+		;;
 	*)
-		echo "Unsupported platform: $PLATFORM. Expected: windows|linux|macos" >&2
+		echo "Unsupported platform: $PLATFORM. Expected: windows|linux|macos|flatpak" >&2
 		exit 1
 		;;
 esac
@@ -59,6 +63,10 @@ fi
 
 cp "$MAIN_SOURCE" "$MAIN_TARGET"
 echo "Copied $MAIN_SOURCE -> $MAIN_TARGET"
+
+if [[ "$PLATFORM" == "flatpak" ]]; then
+	exit 0
+fi
 
 if [[ -n "$PORTABLE_SOURCE" ]]; then
 	if [[ ! -f "$PORTABLE_SOURCE" ]]; then

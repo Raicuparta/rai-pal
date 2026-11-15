@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<component type="desktop-application">
+  <id>com.raicuparta.pal</id>
+  <name>Rai Pal</name>
+  <summary>Universal game mod manager</summary>
+
+  <developer id="com.raicuparta">
+    <name>Raicuparta</name>
+  </developer>
+
+  <categories>
+    <category>Game</category>
+    <category>Utility</category>
+  </categories>
+
+  <keywords>
+    <keyword>mod</keyword>
+    <keyword>mods</keyword>
+    <keyword>games</keyword>
+    <keyword>modding</keyword>
+  </keywords>
+
+  <icon type="stock">com.raicuparta.pal</icon>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <description>
+    <p>
+      Rai Pal helps you use and make universal game mods, which work across multiple games of the same engine instead of being made for a single game. It finds your installed and owned games, detects their engine and version, and installs and runs the right mods for them.
+    </p>
+  </description>
+
+  <url type="homepage">https://github.com/Raicuparta/rai-pal</url>
+
+  <launchable type="desktop-id">com.raicuparta.pal.desktop</launchable>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="@VERSION@" date="@DATE@"/>
+  </releases>
+</component>

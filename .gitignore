@@ -3,6 +3,8 @@
 /temp_release_body.md
 /latest.json
 /updater-partial-*.json
+/.flatpak-builder/
+/crates/frontend/packaging/flatpak/cargo-sources.json
 
 .direnv
 .DS_Store

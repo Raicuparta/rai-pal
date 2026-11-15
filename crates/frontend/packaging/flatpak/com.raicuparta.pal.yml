@@ -1,0 +1,55 @@
+id: com.raicuparta.pal
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+command: Rai-Pal
+
+finish-args:
+  - --device=dri
+  - --filesystem=home
+  - --filesystem=/media
+  - --filesystem=/mnt
+  - --filesystem=/run/media
+  - --filesystem=/var/lib/flatpak:ro
+  - --share=ipc
+  - --share=network
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --talk-name=org.freedesktop.Flatpak
+
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+
+modules:
+  - name: rai-pal
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin
+      env:
+        CARGO_HOME: /run/build/rai-pal/cargo
+        CARGO_NET_OFFLINE: "true"
+    build-commands:
+      - cargo --offline fetch --manifest-path Cargo.toml --verbose
+      - cargo build --release --offline -p rai-pal-frontend
+      - install -Dm0755 target/release/Rai-Pal "${FLATPAK_DEST}/bin/Rai-Pal"
+      - |
+        mkdir -p "${FLATPAK_DEST}/share/applications"
+        sed -e "s/^Icon=.*/Icon=${FLATPAK_ID}/" "crates/frontend/packaging/Rai Pal.desktop" > "${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop"
+        chmod 0644 "${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop"
+      - install -Dm0644 crates/frontend/graphics/icon.png "${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/${FLATPAK_ID}.png"
+      - |
+        version="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n 1)"
+        sed -e "s/@VERSION@/${version}/g" -e "s/@DATE@/$(date -u +%F)/g" "crates/frontend/packaging/flatpak/${FLATPAK_ID}.metainfo.xml" > "/tmp/${FLATPAK_ID}.metainfo.xml"
+        install -Dm0644 "/tmp/${FLATPAK_ID}.metainfo.xml" "${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml"
+    sources:
+      - type: dir
+        path: ../../../../
+        skip:
+          - .flatpak-builder
+          - .git
+          - .direnv
+          - .opencode
+          - cargo-sources.json
+          - release-assets
+          - target
+      - cargo-sources.json

@@ -3,7 +3,7 @@ description: Collect a platform's build artifacts, attach them to the draft rele
 
 inputs:
   platform:
-    description: Platform name (windows, linux, or macos).
+    description: Platform name (windows, linux, macos, or flatpak).
     required: true
   version:
     description: Release version.
@@ -27,6 +27,7 @@ runs:
         draft: true
 
     - name: Upload Updater Partial
+      if: inputs.platform != 'flatpak'
       uses: actions/upload-artifact@v7
       with:
         name: updater-partial-${{ inputs.platform }}

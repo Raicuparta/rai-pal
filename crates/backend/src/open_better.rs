@@ -19,6 +19,16 @@ pub fn spawn_detached(cmd: &mut Command) -> Result {
 		.display()
 		.to_string();
 
+	#[cfg(target_os = "linux")]
+	let mut host_command;
+	#[cfg(target_os = "linux")]
+	let cmd = if crate::app_variant::is_flatpak() {
+		host_command = flatpak_host_command(cmd);
+		&mut host_command
+	} else {
+		cmd
+	};
+
 	#[cfg(unix)]
 	{
 		use std::os::unix::process::CommandExt;
@@ -86,6 +96,31 @@ pub fn spawn_detached(cmd: &mut Command) -> Result {
 	Ok(())
 }
 
+#[cfg(target_os = "linux")]
+fn flatpak_host_command(command: &Command) -> Command {
+	let mut host = Command::new("flatpak-spawn");
+	host.arg("--host");
+
+	if let Some(directory) = command.get_current_dir() {
+		host.arg(format!("--directory={}", directory.display()));
+	}
+
+	for (key, value) in command.get_envs() {
+		let key = key.to_string_lossy();
+		if let Some(value) = value {
+			host.arg(format!("--env={key}={}", value.to_string_lossy()));
+		} else {
+			host.arg(format!("--unset-env={key}"));
+		}
+	}
+
+	host.arg("--")
+		.arg(command.get_program())
+		.args(command.get_args());
+
+	host
+}
+
 // Weird workaround for AppImage builds.
 pub fn open_detached_better(path: impl AsRef<OsStr>) -> Result {
 	#[cfg(target_os = "windows")]
@@ -98,6 +133,13 @@ pub fn open_detached_better(path: impl AsRef<OsStr>) -> Result {
 
 	#[cfg(not(target_os = "windows"))]
 	{
+		#[cfg(target_os = "linux")]
+		if crate::app_variant::is_flatpak() {
+			let mut cmd = Command::new("xdg-open");
+			cmd.arg(path.as_ref());
+			return spawn_detached(&mut cmd);
+		}
+
 		let mut last_error = Error::NoCommandForOpen(path.as_ref().try_to_str()?.to_string());
 
 		for mut cmd in open::commands(path) {

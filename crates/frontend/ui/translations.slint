@@ -25,6 +25,9 @@ export global Tr {
         if variant == AppVariant.linux-app-image {
             return "AppImage";
         }
+        if variant == AppVariant.linux-flatpak {
+            return "Flatpak";
+        }
         if variant == AppVariant.macos-bundle {
             return "macOS bundle";
         }

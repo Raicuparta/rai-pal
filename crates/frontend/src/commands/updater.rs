@@ -255,7 +255,7 @@ fn platform_key() -> Option<&'static str> {
 		AppVariant::LinuxAppImage => Some("linux-x86_64"),
 		AppVariant::MacosBundle if cfg!(target_arch = "aarch64") => Some("darwin-aarch64"),
 		AppVariant::MacosBundle => Some("darwin-x86_64"),
-		AppVariant::Development | AppVariant::Unknown => None,
+		AppVariant::Development | AppVariant::Unknown | AppVariant::LinuxFlatpak => None,
 	}
 }
 

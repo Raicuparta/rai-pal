@@ -108,6 +108,7 @@ slint_enum_conversions!(AppVariant => crate::AppVariant {
 	WindowsNsis,
 	WindowsPortable,
 	LinuxAppImage,
+	LinuxFlatpak,
 	MacosBundle,
 	Development,
 	Unknown,

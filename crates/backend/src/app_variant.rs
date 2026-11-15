@@ -15,9 +15,14 @@ pub enum AppVariant {
 	WindowsNsis,
 	WindowsPortable,
 	LinuxAppImage,
+	LinuxFlatpak,
 	MacosBundle,
 	Development,
 	Unknown,
+}
+
+pub fn is_flatpak() -> bool {
+	std::env::var_os("FLATPAK_ID").is_some()
 }
 
 impl AppVariant {
@@ -35,7 +40,9 @@ impl AppVariant {
 		}
 
 		if cfg!(target_os = "linux") {
-			return if app_paths::appimage_path().is_some() {
+			return if is_flatpak() {
+				Self::LinuxFlatpak
+			} else if app_paths::appimage_path().is_some() {
 				Self::LinuxAppImage
 			} else {
 				Self::Unknown

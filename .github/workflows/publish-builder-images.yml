@@ -5,6 +5,7 @@ on:
   push:
     branches: [main]
     paths:
+      - Containerfile.flatpak
       - Containerfile.linux
       - Containerfile.windows
       - .github/workflows/publish-builder-images.yml
@@ -19,6 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - os-name: flatpak
+            containerfile: Containerfile.flatpak
           - os-name: linux
             containerfile: Containerfile.linux
           - os-name: windows

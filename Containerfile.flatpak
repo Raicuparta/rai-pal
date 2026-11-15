@@ -1,0 +1,24 @@
+FROM docker.io/library/ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    FLATPAK_CARGO_GENERATOR=/opt/flatpak-cargo-generator.py
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    desktop-file-utils \
+    flatpak \
+    flatpak-builder \
+    git \
+    gnupg \
+    python3 \
+    python3-aiohttp \
+    python3-tomlkit \
+    python3-yaml \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/cargo/flatpak-cargo-generator.py \
+    -o "$FLATPAK_CARGO_GENERATOR"
+
+CMD ["/bin/bash"]

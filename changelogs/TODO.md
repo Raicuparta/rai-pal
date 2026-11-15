@@ -8,6 +8,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do later
 
+- Known rough edge: “add Rai Pal to Steam” would write /app/bin/Rai-Pal as the shortcut target under Flatpak; that feature would need a Flatpak-specific launch command.
+
 ## Notes, questions, decisions, etc
 
 ## Done

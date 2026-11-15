@@ -182,6 +182,10 @@ unsafe extern "C" fn handle_macos_url_event(
 
 #[cfg(target_os = "linux")]
 fn register_linux() {
+	if rai_pal_backend::app_variant::is_flatpak() {
+		return;
+	}
+
 	use std::process::Command;
 
 	use fs_err as fs;

@@ -2,7 +2,7 @@
 Type=Application
 Name=Rai Pal
 Comment=Universal game mod manager
-Exec=Rai-Pal
+Exec=Rai-Pal %u
 Icon=Rai-Pal
 Terminal=false
 Categories=Game;
