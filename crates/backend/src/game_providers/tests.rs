@@ -5,7 +5,10 @@ use std::path::{Path, PathBuf};
 use crate::{
 	game::Game,
 	game_providers::{
-		game_provider::ProviderParser, itch_provider::Itch, steam::steam_provider::Steam,
+		game_provider::ProviderParser,
+		itch_provider::Itch,
+		provider_command::{ProviderCommand, ProviderCommandAction, ProviderCommandKind},
+		steam::steam_provider::Steam,
 	},
 };
 
@@ -16,7 +19,7 @@ use crate::game_providers::{
 };
 
 use crate::game_providers::{
-	epic_provider::Epic,
+	epic::{Epic, legacy::LegacyEpic, modern::ModernEpic},
 	gog_provider::{Gog, GogParseSource},
 };
 
@@ -129,10 +132,100 @@ fn heroic_amazon_library_basic() {
 	assert_expected_games(&root, &games);
 }
 
+fn find_game_titled<'a>(root: &Path, games: &'a [Game], title: &str) -> &'a Game {
+	games
+		.iter()
+		.find(|game| game.display_title == title)
+		.unwrap_or_else(|| {
+			panic!(
+				"expected game `{title}` not found in `{}`. Parsed games: {:#?}",
+				root.display(),
+				games
+					.iter()
+					.map(|game| &game.display_title)
+					.collect::<Vec<_>>()
+			)
+		})
+}
+
+fn assert_no_game_titled(root: &Path, games: &[Game], title: &str) {
+	assert!(
+		games.iter().all(|game| game.display_title != title),
+		"game `{title}` should not have been parsed from `{}`",
+		root.display()
+	);
+}
+
 #[test]
-fn epic_catalog_basic() {
-	let (root, games) = parse_path_fixture(&Epic {}, "epic/catalog-basic");
+fn epic_legacy_catalog_basic() {
+	let (root, games) = parse_path_fixture(&LegacyEpic {}, "epic/legacy-catalog-basic");
 	assert_expected_games(&root, &games);
+}
+
+#[test]
+fn epic_modern_library_basic() {
+	let (root, games) = parse_path_fixture(&ModernEpic {}, "epic/modern-library-basic");
+	assert_expected_games(&root, &games);
+
+	assert_no_game_titled(&root, &games, "The Long Dark: Wintermute");
+	assert_no_game_titled(&root, &games, "Discord");
+
+	let installed = find_game_titled(&root, &games, "A Short Hike");
+	assert!(
+		installed
+			.get_provider_command(ProviderCommandAction::StartViaProvider)
+			.is_some(),
+		"installed game should have a start-via-provider command"
+	);
+
+	let not_installed = find_game_titled(&root, &games, "Mutazione");
+	assert!(
+		not_installed
+			.get_provider_command(ProviderCommandAction::StartViaProvider)
+			.is_none(),
+		"game that isn't installed should not have a start-via-provider command"
+	);
+}
+
+#[test]
+fn epic_modern_takes_precedence_over_legacy() {
+	let modern_root = fixture("epic/modern-library-basic");
+	let legacy_root = fixture("epic/legacy-catalog-basic");
+
+	let games = Epic::parse_games_from_sources(Some(modern_root.clone()), Some(legacy_root))
+		.unwrap_or_else(|error| panic!("provider parse failed: {error}"));
+
+	assert_expected_games(&modern_root, &games);
+	assert_no_game_titled(&modern_root, &games, "World War Z");
+}
+
+#[test]
+fn epic_legacy_used_when_modern_has_no_games() {
+	let legacy_root = fixture("epic/legacy-catalog-basic");
+
+	let games =
+		Epic::parse_games_from_sources(Some(legacy_root.clone()), Some(legacy_root.clone()))
+			.unwrap_or_else(|error| panic!("provider parse failed: {error}"));
+
+	assert_expected_games(&legacy_root, &games);
+}
+
+#[test]
+fn epic_modern_without_legacy() {
+	let modern_root = fixture("epic/modern-library-basic");
+
+	let games = Epic::parse_games_from_sources(Some(modern_root.clone()), None)
+		.unwrap_or_else(|error| panic!("provider parse failed: {error}"));
+
+	assert_expected_games(&modern_root, &games);
+}
+
+#[test]
+fn epic_without_any_launcher_data() {
+	let games = Epic::parse_games_from_sources(None, None)
+		.unwrap_or_else(|error| panic!("provider parse failed: {error}"));
+
+	assert!(games.is_empty());
 }
 
 #[test]

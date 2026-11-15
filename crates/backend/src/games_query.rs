@@ -154,6 +154,12 @@ impl<T: Hash + Eq + Clone> FilterGroup<T> {
 		}
 	}
 
+	pub fn ensure_has_unlocked_enabled(&mut self, possible_values: &[T], has_unknown: bool) {
+		if !self.has_any_unlocked_enabled(possible_values, has_unknown) {
+			self.keep_only_locked();
+		}
+	}
+
 	pub fn apply_action(
 		&mut self,
 		target: Option<T>,
@@ -167,9 +173,7 @@ impl<T: Hash + Eq + Clone> FilterGroup<T> {
 				item.enabled = enabled;
 				self.set_item(target, item);
 
-				if !self.has_any_unlocked_enabled(possible_values, has_unknown) {
-					self.keep_only_locked();
-				}
+				self.ensure_has_unlocked_enabled(possible_values, has_unknown);
 			}
 			FilterAction::Lock => {
 				let mut item = self.item(target.as_ref());
@@ -180,8 +184,8 @@ impl<T: Hash + Eq + Clone> FilterGroup<T> {
 				let locked = item.locked;
 				self.set_item(target, item);
 
-				if locked && !self.has_any_unlocked_enabled(possible_values, has_unknown) {
-					self.keep_only_locked();
+				if locked {
+					self.ensure_has_unlocked_enabled(possible_values, has_unknown);
 				}
 			}
 			FilterAction::Only => {

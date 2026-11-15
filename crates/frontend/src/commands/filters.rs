@@ -2,8 +2,8 @@ use std::{rc::Rc, time::Duration};
 
 use rai_pal_backend::{
 	filter_views::{
-		apply_filter_action, collapse_all_filters, expand_all_filters, reset_all_filters,
-		reset_filter_group,
+		apply_filter_action, collapse_all_filters, disable_unavailable_providers,
+		expand_all_filters, reset_all_filters, reset_filter_group,
 	},
 	games_query::{FilterAction, FilterGroupKey},
 };
@@ -20,6 +20,15 @@ use super::{CommandHandler, on_command};
 impl CommandHandler {
 	pub fn refresh_filters(&self) {
 		let providers_with_games = load_providers_with_games(&self.database);
+		let changed = {
+			let mut settings = self.settings.borrow_mut();
+			disable_unavailable_providers(&mut settings.games_query.filter, &providers_with_games)
+		};
+
+		if changed {
+			self.persist_settings();
+		}
+
 		let groups = {
 			let settings = self.settings.borrow();
 			build_groups(

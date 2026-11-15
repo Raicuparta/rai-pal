@@ -12,7 +12,7 @@ use crate::game_providers::dummy_provider::Dummy;
 use crate::game_providers::heroic_gog_provider::HeroicGog;
 #[cfg(target_os = "windows")]
 use crate::game_providers::{
-	dummy_provider::Dummy, epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox,
+	dummy_provider::Dummy, epic::Epic, gog_provider::Gog, xbox_provider::Xbox,
 };
 #[cfg(target_os = "linux")]
 use crate::game_providers::{

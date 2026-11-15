@@ -3,6 +3,7 @@ use std::{cell::RefCell, collections::HashSet, rc::Rc, sync::Arc};
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
 	app_variant::AppVariant,
+	filter_views::disable_unavailable_providers,
 	game_providers::game_provider::GameProviderId,
 	local_database::game_database::try_create,
 	operating_system::Platform,
@@ -58,6 +59,14 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let detected_locale = i18n::detect_locale();
 	let mod_families = load_mod_families(&app_database);
 	let providers_with_games = load_providers_with_games(&app_database);
+	{
+		let mut settings = app_settings.borrow_mut();
+		if disable_unavailable_providers(&mut settings.games_query.filter, &providers_with_games) {
+			if let Err(err) = settings.try_write() {
+				log::error!("Failed to save app settings: {err}");
+			}
+		}
+	}
 
 	let initial_query = app_settings.borrow().games_query.clone();
 	let initial_tab: AppTab = app_settings.borrow().selected_tab.into();

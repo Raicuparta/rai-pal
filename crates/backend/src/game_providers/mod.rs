@@ -1,5 +1,5 @@
 pub mod dummy_provider;
-pub mod epic_provider;
+pub mod epic;
 pub mod game_provider;
 pub mod gog_provider;
 pub mod heroic_amazon_provider;

@@ -7,7 +7,9 @@ use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_providers::game_provider::GameProviderId,
 	game_tag::GameTag,
-	games_query::{FilterAction, FilterGroup, FilterGroupKey, GamesFilter, InstallState},
+	games_query::{
+		FilterAction, FilterGroup, FilterGroupKey, FilterItem, GamesFilter, InstallState,
+	},
 	operating_system::OperatingSystem,
 	result::LogErrExt,
 };
@@ -443,6 +445,38 @@ pub fn apply_filter_action(
 			action,
 		),
 	}
+}
+
+pub fn disable_unavailable_providers(
+	filter: &mut GamesFilter,
+	providers_with_games: &HashSet<GameProviderId>,
+) -> bool {
+	let mut changed = false;
+
+	for provider in GameProviderId::ALL {
+		if providers_with_games.contains(&provider)
+			|| !filter.providers.item(Some(&provider)).enabled
+		{
+			continue;
+		}
+
+		filter.providers.set_item(
+			Some(provider),
+			FilterItem {
+				enabled: false,
+				locked: false,
+			},
+		);
+		changed = true;
+	}
+
+	if changed {
+		filter
+			.providers
+			.ensure_has_unlocked_enabled(&GameProviderId::ALL, false);
+	}
+
+	changed
 }
 
 pub fn reset_filter_group(filter: &mut GamesFilter, group_key: FilterGroupKey) {
