@@ -24,7 +24,7 @@ chrono = { workspace = true, features = ["clock"] }
 tokio = { workspace = true, features = ["rt-multi-thread"] }
 minisign-verify = "0.3.0"
 url = "2.5.7"
-slint = { git = "https://github.com/slint-ui/slint", branch = "pre-release/1.19", features = [
+slint = { version = "1.19.0", features = [
   "unstable-winit-030",
 ] }
 sys-locale = "0.3.2"
@@ -45,13 +45,13 @@ windows-sys = { version = "0.61", features = [
 ] }
 
 [build-dependencies]
-i-slint-compiler = { git = "https://github.com/slint-ui/slint", branch = "pre-release/1.19", features = [
+i-slint-compiler = { version = "1.19.0", features = [
   "default",
   "rust",
   "display-diagnostics",
   "bundle-translations",
 ] }
-slint-build = { git = "https://github.com/slint-ui/slint", branch = "pre-release/1.19" }
+slint-build = "1.19.0"
 spin_on = "0.1"
 
 [target.'cfg(target_os = "windows")'.build-dependencies]
