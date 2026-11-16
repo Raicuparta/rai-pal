@@ -1,5 +1,7 @@
 use std::{env, fmt, num, path::PathBuf, result, time::SystemTimeError};
 
+use std::fmt::Write as _;
+
 use lazy_regex::regex;
 
 use crate::{
@@ -175,7 +177,7 @@ fn format_error_sources(error: &(impl std::error::Error + ?Sized)) -> String {
 
 	let mut source = std::error::Error::source(error);
 	while let Some(err) = source {
-		message.push_str(&format!(": {err}"));
+		let _ = write!(message, ": {err}");
 		source = std::error::Error::source(err);
 	}
 

@@ -32,7 +32,7 @@ Ignore warnings, clippy, and formatting until the implementation is confirmed co
 
 - `scripts/dev.sh` — app with the MCP server enabled.
 - `scripts/dev.sh --live` — live preview (no bundled translations).
-- `cargo check -p rai-pal-frontend` — compile-check the app.
+- `scripts/check.sh --full` — compile-check the app.
 - Backend logs go to stdout/stderr.
 
 Packaging scripts live in `scripts/`; see `scripts/README.md`.

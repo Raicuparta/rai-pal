@@ -61,10 +61,10 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let providers_with_games = load_providers_with_games(&app_database);
 	{
 		let mut settings = app_settings.borrow_mut();
-		if disable_unavailable_providers(&mut settings.games_query.filter, &providers_with_games) {
-			if let Err(err) = settings.try_write() {
-				log::error!("Failed to save app settings: {err}");
-			}
+		if disable_unavailable_providers(&mut settings.games_query.filter, &providers_with_games)
+			&& let Err(err) = settings.try_write()
+		{
+			log::error!("Failed to save app settings: {err}");
 		}
 	}
 
@@ -222,8 +222,7 @@ fn apply_initial_state(
 		.global::<crate::AppSettings>()
 		.set_detected_language_name(
 			detected_locale
-				.map(AppLocale::native_name)
-				.unwrap_or_default()
+				.map_or_default(AppLocale::native_name)
 				.into(),
 		);
 	window

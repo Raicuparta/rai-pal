@@ -359,14 +359,12 @@ fn replace_env_tokens(
 	game_option: Option<&Game>,
 	game_mod: &Mod,
 ) -> BTreeMap<String, String> {
-	environment
-		.map(|environment| {
-			environment
-				.iter()
-				.map(|(key, value)| (key.clone(), replace_tokens(value, game_option, game_mod)))
-				.collect()
-		})
-		.unwrap_or_default()
+	environment.map_or_default(|environment| {
+		environment
+			.iter()
+			.map(|(key, value)| (key.clone(), replace_tokens(value, game_option, game_mod)))
+			.collect()
+	})
 }
 
 #[cfg(target_os = "linux")]

@@ -1,6 +1,7 @@
 use std::{
 	cell::RefCell,
 	collections::HashMap,
+	hash::{DefaultHasher, Hash, Hasher},
 	io::ErrorKind,
 	path::PathBuf,
 	sync::{
@@ -12,7 +13,6 @@ use std::{
 
 use fs_err as fs;
 use rai_pal_backend::{app_paths, result::LogErrExt};
-use sha2::{Digest, Sha256};
 
 pub const THUMBNAIL_WIDTH: u32 = 200;
 pub const THUMBNAIL_HEIGHT: u32 = 120;
@@ -72,15 +72,16 @@ static CACHE_DIR: LazyLock<Option<PathBuf>> = LazyLock::new(|| {
 static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 fn cache_path(url: &str, width: u32, height: u32) -> Option<PathBuf> {
-	let mut hasher = Sha256::new();
-	hasher.update(CACHE_VERSION.to_le_bytes());
-	hasher.update(width.to_le_bytes());
-	hasher.update(height.to_le_bytes());
-	hasher.update(url.as_bytes());
+	let mut hasher = DefaultHasher::new();
+	CACHE_VERSION.hash(&mut hasher);
+	width.hash(&mut hasher);
+	height.hash(&mut hasher);
+	url.hash(&mut hasher);
+	let hash = hasher.finish();
 
 	CACHE_DIR
 		.as_ref()
-		.map(|dir| dir.join(format!("{:x}.img", hasher.finalize())))
+		.map(|dir| dir.join(format!("{hash:016x}.img")))
 }
 
 pub fn contains(url: &str, width: u32, height: u32) -> bool {

@@ -2,30 +2,29 @@
 name = "rai-pal-frontend"
 version.workspace = true
 edition.workspace = true
-default-run = "Rai-Pal"
+publish.workspace = true
 
 [[bin]]
 name = "Rai-Pal"
 path = "src/main.rs"
 
+[features]
+dev = ["slint/mcp", "slint/live-preview"]
+
 [dependencies]
 log.workspace = true
 fs-err.workspace = true
 rai-pal-backend.workspace = true
-rfd = "0.17.2"
+rfd = "0.18.0"
 serde.workspace = true
 serde_json.workspace = true
+base64.workspace = true
 semver = "1.0.28"
-base64 = "0.23.1"
+chrono = { workspace = true, features = ["clock"] }
+tokio = { workspace = true, features = ["rt-multi-thread"] }
 minisign-verify = "0.3.0"
-sha2 = "0.10"
-tokio = { version = "1.52.3", features = ["rt-multi-thread"] }
 url = "2.5.7"
-chrono = { version = "0.4.44", default-features = false, features = [
-  "std",
-  "clock",
-] }
-slint = { git = "https://github.com/slint-ui/slint", branch = "pre-release/1.19", features = [
+slint = { version = "1.19.0", features = [
   "unstable-winit-030",
 ] }
 sys-locale = "0.3.2"
@@ -38,7 +37,7 @@ image = { version = "0.25", default-features = false, features = [
 single-instance = "0.3.3"
 
 [target.'cfg(target_os = "windows")'.dependencies]
-winreg = "0.56.0"
+winreg.workspace = true
 windows-sys = { version = "0.61", features = [
   "Win32_Foundation",
   "Win32_UI_Shell",
@@ -46,15 +45,17 @@ windows-sys = { version = "0.61", features = [
 ] }
 
 [build-dependencies]
-embed-resource = "3.0"
-i-slint-compiler = { git = "https://github.com/slint-ui/slint", branch = "pre-release/1.19", features = [
+i-slint-compiler = { version = "1.19.0", features = [
   "default",
   "rust",
   "display-diagnostics",
   "bundle-translations",
 ] }
-slint-build = { git = "https://github.com/slint-ui/slint", branch = "pre-release/1.19" }
+slint-build = "1.19.0"
 spin_on = "0.1"
+
+[target.'cfg(target_os = "windows")'.build-dependencies]
+embed-resource = "3.0"
 
 [lints]
 workspace = true

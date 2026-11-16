@@ -2,7 +2,7 @@
 name = "rai-pal-i18n-check"
 version.workspace = true
 edition.workspace = true
-publish = false
+publish.workspace = true
 
 [dependencies]
 fs-err.workspace = true

@@ -28,22 +28,14 @@ fi
 export SLINT_EMIT_DEBUG_INFO=1
 export SLINT_MCP_PORT="${SLINT_MCP_PORT:-9315}"
 
-FEATURES="slint/mcp"
-
-# Use a build directory specific to this feature set so its incremental artifacts
-# are not invalidated by the other mode, release builds, or rust-analyzer.
 if [ "$LIVE" -eq 1 ]; then
   export SLINT_LIVE_PREVIEW=1
-  export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$ROOT_DIR/target/dev-live}"
-  FEATURES="slint/live-preview,$FEATURES"
-else
-  export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$ROOT_DIR/target/dev}"
 fi
 
-BIN="$CARGO_TARGET_DIR/debug/Rai-Pal"
+BIN="${CARGO_TARGET_DIR:-$ROOT_DIR/target}/debug/Rai-Pal"
 
 build() {
-  cargo build -p rai-pal-frontend --features "$FEATURES"
+  cargo build -p rai-pal-frontend --features dev
 }
 
 if [ "$LIVE" -eq 0 ]; then

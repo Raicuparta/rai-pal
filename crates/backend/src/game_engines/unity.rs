@@ -2,7 +2,7 @@ use fs_err as fs;
 use fs_err::File;
 use std::{
 	ffi::OsStr,
-	io::Read,
+	io::{self, Read},
 	path::{Path, PathBuf},
 };
 
@@ -77,20 +77,44 @@ fn get_version_from_asset(asset_path: &Path) -> Result<EngineVersion> {
 fn get_version(data_path: &Path) -> Option<EngineVersion> {
 	const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
 
+	let mut errors = Vec::new();
+
 	for asset_name in &ASSETS_WITH_VERSION {
 		let asset_path = data_path.join(asset_name);
 
-		if let Some(metadata) =
-			fs::metadata(&asset_path).ok_or_log("Failed to read Unity asset metadata")
-			&& metadata.is_file()
-		{
-			match get_version_from_asset(&asset_path) {
-				Ok(version) => {
-					return Some(version);
-				}
-				Err(err) => error!("Failed to get Unity version: {err}"),
+		let metadata = match fs::metadata(&asset_path) {
+			Ok(metadata) => metadata,
+			Err(err) if err.kind() == io::ErrorKind::NotFound => continue,
+			Err(err) => {
+				error!(
+					"Failed to read Unity asset metadata `{}`: {err}",
+					asset_path.display()
+				);
+				continue;
 			}
+		};
+
+		if !metadata.is_file() {
+			continue;
 		}
+
+		match get_version_from_asset(&asset_path) {
+			Ok(version) => return Some(version),
+			Err(err) => errors.push(format!("`{}`: {err}", asset_path.display())),
+		}
+	}
+
+	if errors.is_empty() {
+		error!(
+			"Failed to find any Unity version asset in `{}`",
+			data_path.display()
+		);
+	} else {
+		error!(
+			"Failed to get Unity version from any asset in `{}`: {}",
+			data_path.display(),
+			errors.join("; ")
+		);
 	}
 
 	None
@@ -157,8 +181,9 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 				.join("**")
 				.join("*.dll")
 				.glob()
-				.first() && let Some(Some(architecture)) =
-			get_architecture(plugin_dll).ok_or_log("Failed to get Unity plugin architecture")
+				.first()
+			&& let Some(Some(architecture)) =
+				get_architecture(plugin_dll).ok_or_log("Failed to get Unity plugin architecture")
 		{
 			return Some(architecture);
 		}

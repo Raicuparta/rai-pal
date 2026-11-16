@@ -322,10 +322,10 @@ impl ProviderParser for Steam {
 							game.add_tag(GameTag::Demo);
 						}
 
-						let installed_games = app_paths
-							.get(&app_info.app_id)
-							.map(|app_path| Self::get_installed_games(&game, &app_info, app_path))
-							.unwrap_or_default();
+						let installed_games =
+							app_paths.get(&app_info.app_id).map_or_default(|app_path| {
+								Self::get_installed_games(&game, &app_info, app_path)
+							});
 
 						if installed_games.is_empty() {
 							games.push(game);

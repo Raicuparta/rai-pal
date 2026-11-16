@@ -28,7 +28,11 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
-    | sh -s -- -y --profile minimal --default-toolchain stable
+    | sh -s -- -y --profile minimal
+
+WORKDIR /app
+COPY rust-toolchain.toml .
+RUN rustup show
 
 # Clearing the AppImage magic bytes avoids binfmt_misc failures in the container.
 RUN mkdir -p /opt/linuxdeploy \
@@ -37,7 +41,5 @@ RUN mkdir -p /opt/linuxdeploy \
  && wget https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage -O /opt/linuxdeploy/linuxdeploy-plugin-appimage.AppImage \
  && dd if=/dev/zero of=/opt/linuxdeploy/linuxdeploy-plugin-appimage.AppImage bs=1 count=4 seek=8 conv=notrunc status=none \
  && chmod +x /opt/linuxdeploy/linuxdeploy-plugin-appimage.AppImage
-
-WORKDIR /app
 
 CMD ["/bin/bash"]

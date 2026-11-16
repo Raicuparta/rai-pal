@@ -13,42 +13,26 @@ fi
 OUTPUT_DIR="$ROOT_DIR/release-assets"
 mkdir -p "$OUTPUT_DIR"
 
+source "$ROOT_DIR/scripts/get-release-asset-names.sh"
+
+if ! release_asset_targets "$PLATFORM" "$OUTPUT_DIR"; then
+	echo "Unsupported platform: $PLATFORM. Expected: windows|linux|macos" >&2
+	exit 1
+fi
+
 PORTABLE_SOURCE=""
-PORTABLE_TARGET=""
-PORTABLE_UPDATER_TARGET=""
-PORTABLE_PLATFORM_KEY=""
 
 case "$PLATFORM" in
 	windows)
 		MAIN_SOURCE="$ROOT_DIR/target/bundles/nsis/RaiPal-$VERSION-x86_64-setup.exe"
 		PORTABLE_SOURCE="$ROOT_DIR/target/bundles/nsis/RaiPal-$VERSION-x86_64.exe"
-		MAIN_TARGET="$OUTPUT_DIR/RaiPal.exe"
-		PORTABLE_TARGET="$OUTPUT_DIR/RaiPal.portable.zip"
-		UPDATER_TARGET="$OUTPUT_DIR/updater-windows.zip"
-		PORTABLE_UPDATER_TARGET="$OUTPUT_DIR/updater-windows-portable.zip"
-		PLATFORM_KEY="windows-x86_64"
-		PORTABLE_PLATFORM_KEY="windows-x86_64-portable"
 		;;
 	linux)
 		MAIN_SOURCE="$ROOT_DIR/target/bundles/appimage/RaiPal-$VERSION-x86_64.AppImage"
-		MAIN_TARGET="$OUTPUT_DIR/RaiPal.AppImage"
-		UPDATER_TARGET="$OUTPUT_DIR/updater-linux.tar.gz"
-		PLATFORM_KEY="linux-x86_64"
 		;;
 	macos)
-		ARCH="$(uname -m)"
-		if [[ "$ARCH" == "arm64" ]]; then
-			ARCH="aarch64"
-		fi
 		MAIN_SOURCE="$ROOT_DIR/target/bundles/macos/RaiPal.macos.zip"
 		APP_SOURCE="$ROOT_DIR/target/bundles/macos/Rai Pal.app"
-		MAIN_TARGET="$OUTPUT_DIR/RaiPal.macos.zip"
-		UPDATER_TARGET="$OUTPUT_DIR/updater-macos.tar.gz"
-		PLATFORM_KEY="darwin-$ARCH"
-		;;
-	*)
-		echo "Unsupported platform: $PLATFORM. Expected: windows|linux|macos" >&2
-		exit 1
 		;;
 esac
 

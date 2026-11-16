@@ -1,24 +1,26 @@
 [workspace]
 members = ["crates/*"]
-resolver = "2"
+resolver = "3"
 
 [workspace.package]
-version = "1.0.1"
-authors = ["Raicuparta"]
-license = "GPL-3.0-or-later"
-repository = "https://github.com/Raicuparta/rai-pal"
+version = "1.1.0"
 edition = "2024"
+publish = false
 
 [workspace.dependencies]
+base64 = "0.23.1"
+chrono = { version = "0.4.44", default-features = false, features = ["std"] }
+fs-err = { version = "3.3.2", features = ["tokio"] }
 log = "0.4.34"
 rai-pal-backend = { path = "./crates/backend" }
 rai-pal-proc-macros = { path = "./crates/proc-macros" }
+rusqlite = { version = "0.41.1", features = ["bundled"] }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.154"
-fs-err = { version = "3.3.2", features = ["tokio"] }
-thiserror = "2.0.21"
-rusqlite = { version = "0.40.2", features = ["bundled", "hooks"] }
 strum = { version = "0.28.0", features = ["derive"] }
+thiserror = "2.0.21"
+tokio = { version = "1.53.3", features = ["fs"] }
+winreg = "0.56.0"
 
 [profile.release]
 codegen-units = 1
@@ -31,7 +33,10 @@ strip = true
 [profile.dev]
 debug = 0
 opt-level = 1
-strip = "debuginfo"
+
+[workspace.lints.cargo]
+unused_dependencies = "deny"
+unused_workspace_dependencies = "deny"
 
 [workspace.lints.clippy]
 # Categories that have mostly useful lints.
@@ -70,5 +75,6 @@ verbose_file_reads = "warn"
 
 [patch.crates-io]
 
-# Needed for wayland drag and drop, comes from here: https://github.com/storytold/cadcraft/pull/2031
+# Needed for wayland drag and drop.
+# We can remove this once a published winit release includes commit 7a962fd.
 winit = { git = "https://github.com/rust-windowing/winit", rev = "7a962fd46470a137d9a7a1945bf5b5d0b95a002c" }
