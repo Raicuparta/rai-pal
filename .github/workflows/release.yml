@@ -79,6 +79,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Cache Cargo Registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/cargo/registry
+            /usr/local/cargo/git
+          key: cargo-windows-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml') }}
+          restore-keys: |
+            cargo-windows-
+
       - name: Ensure NSIS
         run: |
           if ! command -v makensis >/dev/null 2>&1; then
@@ -113,6 +123,16 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v6
+
+      - name: Cache Cargo Registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/cargo/registry
+            /usr/local/cargo/git
+          key: cargo-linux-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml') }}
+          restore-keys: |
+            cargo-linux-
 
       - name: Build (Linux)
         run: bash scripts/build-appimage.sh
