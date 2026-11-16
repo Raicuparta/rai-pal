@@ -15,6 +15,10 @@ on:
         description: "Build macOS"
         type: boolean
         default: true
+      overwrite_published_assets:
+        description: "Overwrite existing assets on published releases"
+        type: boolean
+        default: false
 
 jobs:
   check:
@@ -33,6 +37,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       tag_name: ${{ steps.version.outputs.tag_name }}
+      published_assets: ${{ steps.published_assets.outputs.published_assets }}
     steps:
       - uses: actions/checkout@v6
 
@@ -64,6 +69,24 @@ jobs:
           body_path: ${{ steps.body.outputs.body_path }}
           draft: true
 
+      - name: Get Published Release Assets
+        id: published_assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.version.outputs.tag_name }}"
+          assets=""
+          if [[ "$(gh release view "$tag" --json isDraft --jq '.isDraft')" != "true" ]]; then
+            assets="$(gh release view "$tag" --json assets --jq '.assets[].name')"
+          fi
+          {
+            echo "published_assets<<ASSETS_EOF"
+            if [[ -n "$assets" ]]; then
+              echo "$assets"
+            fi
+            echo "ASSETS_EOF"
+          } >> "$GITHUB_OUTPUT"
+
   build-windows:
     needs: create-release
     if: inputs.build_windows
@@ -78,6 +101,12 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v6
+
+      - name: Check Published Release Assets
+        if: ${{ !inputs.overwrite_published_assets }}
+        env:
+          PUBLISHED_ASSETS: ${{ needs.create-release.outputs.published_assets }}
+        run: bash scripts/check-release-assets.sh windows
 
       - name: Cache Cargo Registry
         uses: actions/cache@v4
@@ -124,6 +153,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Check Published Release Assets
+        if: ${{ !inputs.overwrite_published_assets }}
+        env:
+          PUBLISHED_ASSETS: ${{ needs.create-release.outputs.published_assets }}
+        run: bash scripts/check-release-assets.sh linux
+
       - name: Cache Cargo Registry
         uses: actions/cache@v4
         with:
@@ -155,6 +190,12 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v6
+
+      - name: Check Published Release Assets
+        if: ${{ !inputs.overwrite_published_assets }}
+        env:
+          PUBLISHED_ASSETS: ${{ needs.create-release.outputs.published_assets }}
+        run: bash scripts/check-release-assets.sh macos
 
       - name: Install Rust
         run: rustup show
