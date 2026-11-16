@@ -8,6 +8,7 @@ on:
       - Containerfile.linux
       - Containerfile.windows
       - .github/workflows/publish-builder-images.yml
+      - rust-toolchain.toml
 
 jobs:
   build-and-push:
@@ -54,3 +55,5 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/raicuparta/rai-pal-builder:buildcache-${{ matrix.os-name }}
+          cache-to: type=registry,ref=ghcr.io/raicuparta/rai-pal-builder:buildcache-${{ matrix.os-name }},mode=max
