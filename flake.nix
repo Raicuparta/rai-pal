@@ -22,8 +22,8 @@
         version = slintPackage.version;
         src = pkgs.fetchgit {
           url = "https://github.com/slint-ui/slint";
-          rev = pkgs.lib.last (pkgs.lib.splitString "#" slintPackage.source);
-          hash = "sha256-IWW4mvZ5oa5/EmWHAbgb62I968nVxdmuywqlSfosdAw=";
+          tag = "v${slintPackage.version}";
+          hash = "sha256-IVBiKEQsPgdnEVVgvEOC/6cOFOtdvIm0lUS/RhSEKSY=";
         };
         cargoHash = "sha256-5SAXsaKRxITsGHjE3iZkF10cdAonr6h36BOJDVInW38=";
         buildAndTestSubdir = "tools/tr-extractor";
