@@ -8,6 +8,7 @@ use crate::{
 };
 
 use rai_pal_backend::{
+	analytics::Event,
 	app_paths,
 	game::Game,
 	game_providers::{game_provider, provider_command::ProviderCommandAction},
@@ -31,13 +32,10 @@ impl CommandHandler {
 			return;
 		};
 
-		analytics::send(
-			rai_pal_backend::analytics::Event::ProviderCommand,
-			[
-				("action", action.to_string()),
-				("game", game.display_title.clone()),
-			],
-		);
+		analytics::record(Event::ProviderCommand {
+			action: action.to_string(),
+			game: game.display_title.clone(),
+		});
 
 		if let Some(window) = self.ui() {
 			notifications::info(
@@ -133,7 +131,10 @@ impl CommandHandler {
 	}
 
 	pub fn run_standalone_mod(&self, mod_id: String) {
-		analytics::send_mod(rai_pal_backend::analytics::Event::RunMod, &mod_id, None);
+		analytics::record(Event::RunMod {
+			mod_id: mod_id.clone(),
+			game: None,
+		});
 
 		let database = Arc::clone(&self.database);
 		let action_id = action_state::key(ActionKind::StandaloneRun, mod_id.clone());
@@ -146,7 +147,10 @@ impl CommandHandler {
 	}
 
 	pub fn install_standalone_mod(&self, mod_id: String) {
-		analytics::send_mod(rai_pal_backend::analytics::Event::InstallMod, &mod_id, None);
+		analytics::record(Event::InstallMod {
+			mod_id: mod_id.clone(),
+			game: None,
+		});
 
 		let database = Arc::clone(&self.database);
 		let downloads = self.downloads.clone();

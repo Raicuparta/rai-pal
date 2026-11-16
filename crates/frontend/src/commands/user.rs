@@ -2,6 +2,7 @@ use slint::ComponentHandle as _;
 use std::{path::Path, thread};
 
 use rai_pal_backend::{
+	analytics::Event,
 	result::LogErrExt,
 	user::auth::{AuthState, get_user_auth_state, logout_auth, start_auth},
 };
@@ -37,7 +38,7 @@ impl CommandHandler {
 			});
 
 			if result.is_ok() {
-				analytics::send_event(rai_pal_backend::analytics::Event::UserSignIn);
+				analytics::record(Event::UserSignIn);
 			}
 
 			apply_result(&window, result);

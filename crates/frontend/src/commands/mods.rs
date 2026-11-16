@@ -7,6 +7,7 @@ use std::{
 };
 
 use rai_pal_backend::{
+	analytics::Event,
 	game::Game,
 	game_engines::game_engine::{EngineVersionNumbers, EngineVersionRange},
 	game_providers::game_provider::GameProviderId,
@@ -77,20 +78,18 @@ impl CommandHandler {
 	}
 
 	pub fn install_mod(&self, game: Game, mod_id: String) {
-		analytics::send_mod(
-			rai_pal_backend::analytics::Event::InstallMod,
-			&mod_id,
-			Some(&game),
-		);
+		analytics::record(Event::InstallMod {
+			mod_id: mod_id.clone(),
+			game: Some(game.display_title.clone()),
+		});
 		self.install_mod_inner(game, mod_id);
 	}
 
 	pub fn update_mod(&self, game: Game, mod_id: String) {
-		analytics::send_mod(
-			rai_pal_backend::analytics::Event::UpdateMod,
-			&mod_id,
-			Some(&game),
-		);
+		analytics::record(Event::UpdateMod {
+			mod_id: mod_id.clone(),
+			game: Some(game.display_title.clone()),
+		});
 		self.install_mod_inner(game, mod_id);
 	}
 
@@ -161,11 +160,10 @@ impl CommandHandler {
 	}
 
 	pub fn uninstall_mod(&self, game: Game, mod_id: String) {
-		analytics::send_mod(
-			rai_pal_backend::analytics::Event::UninstallMod,
-			&mod_id,
-			Some(&game),
-		);
+		analytics::record(Event::UninstallMod {
+			mod_id: mod_id.clone(),
+			game: Some(game.display_title.clone()),
+		});
 
 		let database = Arc::clone(&self.database);
 		let window = self.window();
@@ -200,7 +198,16 @@ impl CommandHandler {
 			MessageContext::UninstallAllMods,
 			move || {
 				let result = runtime::block_on(async {
-					for installed_mod in database.get_installed_mods_for_game(&game)? {
+					let installed_mods = database.get_installed_mods_for_game(&game)?;
+
+					analytics::record_all(installed_mods.iter().map(|installed_mod| {
+						Event::UninstallMod {
+							mod_id: installed_mod.game_mod.id.clone(),
+							game: Some(game.display_title.clone()),
+						}
+					}));
+
+					for installed_mod in installed_mods {
 						installed_mod.uninstall().await?;
 					}
 
@@ -218,11 +225,10 @@ impl CommandHandler {
 	}
 
 	pub fn run_mod(&self, game: Game, mod_id: String) {
-		analytics::send_mod(
-			rai_pal_backend::analytics::Event::RunMod,
-			&mod_id,
-			Some(&game),
-		);
+		analytics::record(Event::RunMod {
+			mod_id: mod_id.clone(),
+			game: Some(game.display_title.clone()),
+		});
 
 		let database = Arc::clone(&self.database);
 

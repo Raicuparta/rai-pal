@@ -1,6 +1,7 @@
 use std::{cell::RefCell, collections::HashSet, rc::Rc, sync::Arc};
 
 use rai_pal_backend::{
+	analytics::Event,
 	app_settings::{AppLocale, AppSettings},
 	app_variant::AppVariant,
 	filter_views::disable_unavailable_providers,
@@ -30,22 +31,9 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		return Ok(());
 	}
 
-	analytics::send(
-		rai_pal_backend::analytics::Event::StartApp,
-		[
-			("app_version", env!("CARGO_PKG_VERSION").to_string()),
-			("platform", std::env::consts::OS.to_string()),
-			(
-				"mode",
-				if cfg!(debug_assertions) {
-					"dev"
-				} else {
-					"release"
-				}
-				.to_string(),
-			),
-		],
-	);
+	analytics::record(Event::StartApp {
+		app_version: env!("CARGO_PKG_VERSION").to_string(),
+	});
 
 	let app_database = match try_create() {
 		Ok(database) => database,

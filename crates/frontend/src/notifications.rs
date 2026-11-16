@@ -5,6 +5,7 @@ use std::{
 	time::Duration,
 };
 
+use rai_pal_backend::analytics::Event;
 use slint::{ComponentHandle, Model, SharedString};
 
 use crate::{
@@ -91,10 +92,9 @@ fn show(window: &MainWindow, message: MessageData, kind: NotificationKind) {
 		.collect::<Vec<_>>();
 
 	if kind == NotificationKind::Error {
-		analytics::send(
-			rai_pal_backend::analytics::Event::ErrorNotification,
-			[("error_message", message.detail.to_string())],
-		);
+		analytics::record(Event::ErrorNotification {
+			message: message.detail.to_string(),
+		});
 	}
 
 	let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
