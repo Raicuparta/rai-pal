@@ -1,5 +1,3 @@
-use std::sync::LazyLock;
-
 use serde::Serialize;
 use serde_json::{Map, Value, json};
 use uuid::Uuid;
@@ -8,11 +6,9 @@ use crate::{http, result::Result};
 
 const COLLECT_URL: &str = "https://events.raicuparta.com/rai-pal/collect";
 
-static SESSION_ID: LazyLock<String> = LazyLock::new(|| Uuid::new_v4().hyphenated().to_string());
-
 pub const MAX_EVENTS_PER_REQUEST: usize = 250;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Event {
 	InstallMod {
 		mod_id: String,
@@ -55,14 +51,7 @@ impl Event {
 			Self::ProviderCommand { action, game } => {
 				WireEvent::new("ProviderCommand", json!({ "action": action, "game": game }))
 			}
-			Self::StartApp { app_version } => WireEvent::new(
-				"StartApp",
-				json!({
-					"app_version": app_version,
-					"platform": std::env::consts::OS,
-					"mode": if cfg!(debug_assertions) { "dev" } else { "release" },
-				}),
-			),
+			Self::StartApp { app_version } => WireEvent::start_app(&app_version),
 			Self::UserSignIn => WireEvent {
 				id: "UserSignIn",
 				data: None,
@@ -82,7 +71,7 @@ struct Payload {
 	events: Vec<WireEvent>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 struct WireEvent {
 	id: &'static str,
 	data: Option<Value>,
@@ -94,6 +83,17 @@ impl WireEvent {
 			id,
 			data: Some(data),
 		}
+	}
+
+	fn start_app(app_version: &str) -> Self {
+		Self::new(
+			"StartApp",
+			json!({
+				"app_version": app_version,
+				"platform": std::env::consts::OS,
+				"mode": if cfg!(debug_assertions) { "dev" } else { "release" },
+			}),
+		)
 	}
 
 	fn mod_event(id: &'static str, mod_id: String, game: Option<String>) -> Self {
@@ -108,25 +108,47 @@ impl WireEvent {
 	}
 }
 
-pub async fn send_batch(events: Vec<Event>) -> Result<()> {
-	let payload = Payload {
-		client_id: None,
-		session_id: Some(SESSION_ID.clone()),
-		events: events
-			.into_iter()
-			.take(MAX_EVENTS_PER_REQUEST)
-			.map(Event::into_wire)
-			.collect(),
-	};
+pub struct Session {
+	id: String,
+}
 
-	log::debug!("Sending analytics payload {payload:?}");
+impl Default for Session {
+	fn default() -> Self {
+		Self::new()
+	}
+}
 
-	http::CLIENT
-		.post(COLLECT_URL)
-		.json(&payload)
-		.send()
-		.await?
-		.error_for_status()?;
+impl Session {
+	pub fn new() -> Self {
+		Self {
+			id: Uuid::new_v4().hyphenated().to_string(),
+		}
+	}
 
-	Ok(())
+	pub async fn send(&self, events: Vec<Event>) -> Result<()> {
+		if events.is_empty() {
+			return Ok(());
+		}
+
+		let payload = Payload {
+			client_id: None,
+			session_id: Some(self.id.clone()),
+			events: events
+				.into_iter()
+				.take(MAX_EVENTS_PER_REQUEST)
+				.map(Event::into_wire)
+				.collect(),
+		};
+
+		log::debug!("Sending analytics payload {payload:?}");
+
+		http::CLIENT
+			.post(COLLECT_URL)
+			.json(&payload)
+			.send()
+			.await?
+			.error_for_status()?;
+
+		Ok(())
+	}
 }

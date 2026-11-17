@@ -1,5 +1,6 @@
 use std::{
-	sync::{LazyLock, mpsc},
+	collections::VecDeque,
+	sync::{LazyLock, Once, mpsc},
 	thread,
 };
 
@@ -7,11 +8,21 @@ use rai_pal_backend::analytics::{self as core, Event};
 
 use crate::runtime;
 
+static STARTED: Once = Once::new();
+
 static SINK: LazyLock<mpsc::Sender<Event>> = LazyLock::new(|| {
 	let (sender, receiver) = mpsc::channel();
 	thread::spawn(move || collect_events(receiver));
 	sender
 });
+
+pub fn start_app() {
+	STARTED.call_once(|| {
+		record(Event::StartApp {
+			app_version: env!("CARGO_PKG_VERSION").to_string(),
+		});
+	});
+}
 
 pub fn record(event: Event) {
 	record_all([event]);
@@ -27,32 +38,34 @@ pub fn record_all(events: impl IntoIterator<Item = Event>) {
 }
 
 fn collect_events(receiver: mpsc::Receiver<Event>) {
-	let mut batch = Vec::new();
+	let session = core::Session::new();
+	let mut queue = VecDeque::new();
 
 	loop {
 		let Ok(event) = receiver.recv() else {
 			return;
 		};
 
-		batch.push(event);
+		queue.push_back(event);
 
-		while batch.len() < core::MAX_EVENTS_PER_REQUEST {
-			match receiver.try_recv() {
-				Ok(event) => batch.push(event),
-				Err(_) => break,
-			}
+		while let Ok(queued) = receiver.try_recv() {
+			queue.push_back(queued);
 		}
 
-		flush(&mut batch);
+		flush(&session, &mut queue);
 	}
 }
 
-fn flush(batch: &mut Vec<Event>) {
-	if batch.is_empty() {
-		return;
-	}
+fn flush(session: &core::Session, queue: &mut VecDeque<Event>) {
+	while !queue.is_empty() {
+		let count = queue.len().min(core::MAX_EVENTS_PER_REQUEST);
+		let batch = queue.iter().take(count).cloned().collect();
 
-	if let Err(err) = runtime::block_on(core::send_batch(std::mem::take(batch))) {
-		log::warn!("Failed to send analytics events: {err}");
+		if let Err(err) = runtime::block_on(session.send(batch)) {
+			log::warn!("Failed to send analytics events: {err}");
+			return;
+		}
+
+		queue.drain(..count);
 	}
 }
