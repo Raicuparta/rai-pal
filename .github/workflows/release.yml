@@ -216,7 +216,7 @@ jobs:
 
   finalize-release:
     needs: [check, create-release, build-windows, build-linux, build-macos]
-    if: ${{ always() && needs.check.result == 'success' && needs.create-release.result == 'success' }}
+    if: ${{ always() && needs.check.result != 'failure' && needs.check.result != 'cancelled' && needs.create-release.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
