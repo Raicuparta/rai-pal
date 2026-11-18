@@ -141,13 +141,19 @@ impl CommandHandler {
 	}
 
 	pub fn refresh_game(&self) {
+		self.refresh_game_with_state(true);
+	}
+
+	fn refresh_game_with_state(&self, show_state: bool) {
 		let Some((_, game)) = self.selected_game() else {
 			return;
 		};
 
-		let action_id = action_state::key(ActionKind::RefreshGame, "");
+		let action_id = show_state.then(|| action_state::key(ActionKind::RefreshGame, ""));
 		let window = self.window();
-		action_state::start(&window, action_id.clone());
+		if let Some(action_id) = &action_id {
+			action_state::start(&window, action_id.clone());
+		}
 
 		let database = Arc::clone(&self.database);
 
@@ -165,12 +171,14 @@ impl CommandHandler {
 				Ok(updated_game) => updated_game,
 				Err(err) => {
 					log::error!("Failed to refresh game: {err}");
-					action_state::finish(
-						&window,
-						action_id.clone(),
-						Err(err),
-						MessageContext::RefreshGame,
-					);
+					if let Some(action_id) = action_id {
+						action_state::finish(
+							&window,
+							action_id,
+							Err(err),
+							MessageContext::RefreshGame,
+						);
+					}
 					return;
 				}
 			};
@@ -198,12 +206,14 @@ impl CommandHandler {
 				handler.refresh_mods(&updated_game);
 			});
 
-			action_state::finish(
-				&finish_window,
-				action_id,
-				Ok::<(), rai_pal_backend::result::Error>(()),
-				MessageContext::RefreshGame,
-			);
+			if let Some(action_id) = action_id {
+				action_state::finish(
+					&finish_window,
+					action_id,
+					Ok::<(), rai_pal_backend::result::Error>(()),
+					MessageContext::RefreshGame,
+				);
+			}
 		});
 	}
 
@@ -223,7 +233,7 @@ impl CommandHandler {
 			return;
 		}
 
-		self.refresh_game();
+		self.refresh_game_with_state(false);
 	}
 
 	pub fn reload_selected_game(&self) {
