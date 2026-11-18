@@ -78,7 +78,7 @@ struct WireEvent {
 }
 
 impl WireEvent {
-	fn new(id: &'static str, data: Value) -> Self {
+	const fn new(id: &'static str, data: Value) -> Self {
 		Self {
 			id,
 			data: Some(data),

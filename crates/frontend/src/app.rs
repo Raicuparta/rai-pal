@@ -31,6 +31,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	}
 
 	analytics::start_app();
+	crate::runtime::spawn(rai_pal_backend::user::user_socket::start_user_socket_manager());
 
 	let app_database = match try_create() {
 		Ok(database) => database,

@@ -21,6 +21,10 @@ pub fn run<T>(future: impl Future<Output = T>) -> T {
 	RUNTIME.block_on(future)
 }
 
+pub fn spawn(future: impl Future<Output = ()> + Send + 'static) {
+	RUNTIME.spawn(future);
+}
+
 pub fn invoke_on_ui(callback: impl FnOnce() + Send + 'static) {
 	if let Err(err) = slint::invoke_from_event_loop(callback) {
 		log::warn!("Failed to invoke UI callback: {err}");
