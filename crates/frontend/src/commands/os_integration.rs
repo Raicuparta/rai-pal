@@ -181,19 +181,24 @@ unsafe extern "C" fn handle_macos_url_event(
 }
 
 #[cfg(target_os = "linux")]
+const LINUX_APP_ID: &str = "Rai-Pal";
+
+#[cfg(target_os = "linux")]
+const LINUX_DESKTOP_FILE: &str = include_str!("../../packaging/Rai-Pal.desktop");
+
+#[cfg(target_os = "linux")]
 fn register_linux() {
-	use std::process::Command;
+	use std::path::PathBuf;
 
 	use fs_err as fs;
 
-	let Some(dirs) =
-		app_paths::base_dirs().ok_or_log("Failed to get base dirs for deep link registration")
+	let Some(dirs) = app_paths::base_dirs().ok_or_log("Failed to get base dirs for OS integration")
 	else {
 		return;
 	};
 	let applications_dir = dirs.data_dir().join("applications");
 	if let Err(err) = fs::create_dir_all(&applications_dir) {
-		log::warn!("Failed to create applications directory for deep links: {err}");
+		log::warn!("Failed to create applications directory for OS integration: {err}");
 		return;
 	}
 
@@ -201,30 +206,186 @@ fn register_linux() {
 	else {
 		return;
 	};
-	// Deep links only need a hidden handler, the visible app entry with its icon ships
-	// inside the AppImage's own `.desktop` file.
-	let desktop_file = applications_dir.join("Rai-Pal-handler.desktop");
-	let contents = format!(
-		"[Desktop Entry]\nType=Application\nName=Rai Pal\nNoDisplay=true\nExec=\"{}\" %u\nTerminal=false\nMimeType=x-scheme-handler/rai-pal;\n",
-		executable.display()
-	);
+	let executable = absolute_path(executable);
+
+	let desktop_file_name = format!("{LINUX_APP_ID}.desktop");
+	let desktop_file = applications_dir.join(&desktop_file_name);
+	remove_stale_linux_desktop_files(&applications_dir, &desktop_file);
+
+	if let Some(appdir) = std::env::var_os("APPDIR") {
+		install_linux_icons(&PathBuf::from(appdir), &dirs.data_dir().join("icons"));
+	}
+
+	let exec_line = format!("Exec={} %U", desktop_exec_arg(&executable));
+	let contents = LINUX_DESKTOP_FILE
+		.lines()
+		.map(|line| {
+			if line.starts_with("Exec=") {
+				exec_line.as_str()
+			} else {
+				line
+			}
+		})
+		.collect::<Vec<_>>()
+		.join("\n")
+		+ "\n";
 
 	if let Err(err) = fs::write(&desktop_file, contents) {
-		log::warn!("Failed to write deep link desktop file: {err}");
+		log::warn!("Failed to write desktop file: {err}");
 		return;
 	}
 
+	set_linux_default_url_handler(&desktop_file_name);
+	update_linux_desktop_database(&applications_dir);
+}
+
+#[cfg(target_os = "linux")]
+fn absolute_path(path: std::path::PathBuf) -> std::path::PathBuf {
+	std::fs::canonicalize(&path)
+		.or_else(|_| std::path::absolute(&path))
+		.unwrap_or(path)
+}
+
+#[cfg(target_os = "linux")]
+fn desktop_exec_arg(path: &std::path::Path) -> String {
+	let path = path
+		.to_string_lossy()
+		.replace('\\', "\\\\")
+		.replace('"', "\\\"");
+	let path = path
+		.replace('`', "\\`")
+		.replace('$', "\\$")
+		.replace('%', "%%");
+	format!("\"{path}\"")
+}
+
+#[cfg(target_os = "linux")]
+fn set_linux_default_url_handler(desktop_file_name: &str) {
+	use std::process::Command;
+
 	match Command::new("xdg-mime")
-		.args([
-			"default",
-			"Rai-Pal-handler.desktop",
-			"x-scheme-handler/rai-pal",
-		])
+		.args(["default", desktop_file_name, "x-scheme-handler/rai-pal"])
 		.status()
 	{
 		Ok(status) if status.success() => {}
 		Ok(status) => log::warn!("xdg-mime exited with {status} while registering deep links"),
 		Err(err) => log::warn!("Failed to run xdg-mime for deep link registration: {err}"),
+	}
+}
+
+#[cfg(target_os = "linux")]
+fn update_linux_desktop_database(applications_dir: &std::path::Path) {
+	use std::process::Command;
+
+	match Command::new("update-desktop-database")
+		.arg(applications_dir)
+		.status()
+	{
+		Ok(status) if status.success() => {}
+		Ok(status) => log::warn!("update-desktop-database exited with {status}"),
+		Err(err) => log::debug!("Failed to run update-desktop-database: {err}"),
+	}
+}
+
+#[cfg(target_os = "linux")]
+fn remove_stale_linux_desktop_files(applications_dir: &std::path::Path, current: &std::path::Path) {
+	let Ok(entries) = std::fs::read_dir(applications_dir) else {
+		return;
+	};
+
+	for entry in entries.flatten() {
+		let path = entry.path();
+		if path == current || path.extension().and_then(|value| value.to_str()) != Some("desktop") {
+			continue;
+		}
+
+		let Ok(contents) = std::fs::read_to_string(&path) else {
+			continue;
+		};
+		if !is_rai_pal_desktop_entry(&contents) {
+			continue;
+		}
+
+		match std::fs::remove_file(&path) {
+			Ok(()) => log::info!("Removed stale Rai Pal desktop entry `{}`", path.display()),
+			Err(err) => log::warn!(
+				"Failed to remove stale Rai Pal desktop entry `{}`: {err}",
+				path.display()
+			),
+		}
+	}
+}
+
+#[cfg(target_os = "linux")]
+fn is_rai_pal_desktop_entry(contents: &str) -> bool {
+	let mut in_desktop_entry = false;
+
+	for line in contents.lines() {
+		let line = line.trim();
+		if line.starts_with('[') {
+			in_desktop_entry = line == "[Desktop Entry]";
+		} else if in_desktop_entry && line == "Name=Rai Pal" {
+			return true;
+		}
+	}
+
+	false
+}
+
+#[cfg(target_os = "linux")]
+fn install_linux_icons(appdir: &std::path::Path, icons_dir: &std::path::Path) {
+	let hicolor_dir = appdir.join("usr/share/icons/hicolor");
+	let mut installed = false;
+
+	if let Ok(sizes) = std::fs::read_dir(&hicolor_dir) {
+		for size in sizes.flatten() {
+			let Some(size_name) = size.file_name().to_str().map(str::to_owned) else {
+				continue;
+			};
+			let source = size.path().join("apps").join(format!("{LINUX_APP_ID}.png"));
+			if !source.is_file() {
+				continue;
+			}
+
+			let target_dir = icons_dir.join("hicolor").join(size_name).join("apps");
+			if let Err(err) = std::fs::create_dir_all(&target_dir) {
+				log::warn!(
+					"Failed to create icon directory `{}`: {err}",
+					target_dir.display()
+				);
+				continue;
+			}
+
+			match std::fs::copy(&source, target_dir.join(format!("{LINUX_APP_ID}.png"))) {
+				Ok(_) => installed = true,
+				Err(err) => log::warn!("Failed to install icon from `{}`: {err}", source.display()),
+			}
+		}
+	}
+
+	if installed {
+		return;
+	}
+
+	let fallback_source = appdir.join(".DirIcon");
+	if !fallback_source.is_file() {
+		return;
+	}
+
+	let target_dir = icons_dir.join("hicolor/512x512/apps");
+	if let Err(err) = std::fs::create_dir_all(&target_dir) {
+		log::warn!(
+			"Failed to create icon directory `{}`: {err}",
+			target_dir.display()
+		);
+		return;
+	}
+
+	if let Err(err) = std::fs::copy(
+		&fallback_source,
+		target_dir.join(format!("{LINUX_APP_ID}.png")),
+	) {
+		log::warn!("Failed to install fallback icon: {err}");
 	}
 }
 
