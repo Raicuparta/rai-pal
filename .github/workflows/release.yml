@@ -22,6 +22,7 @@ on:
 
 jobs:
   check:
+    if: inputs.build_windows || inputs.build_linux || inputs.build_macos
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
