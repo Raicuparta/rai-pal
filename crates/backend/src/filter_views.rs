@@ -7,9 +7,7 @@ use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_providers::game_provider::GameProviderId,
 	game_tag::GameTag,
-	games_query::{
-		FilterAction, FilterGroup, FilterGroupKey, FilterItem, GamesFilter, InstallState,
-	},
+	games_query::{FilterAction, FilterGroup, FilterGroupKey, GamesFilter, InstallState},
 	operating_system::OperatingSystem,
 	result::LogErrExt,
 };
@@ -447,36 +445,29 @@ pub fn apply_filter_action(
 	}
 }
 
-pub fn disable_unavailable_providers(
+fn value_key(values: impl Iterator<Item = String>) -> String {
+	let mut values: Vec<String> = values.collect();
+	values.sort_unstable();
+	values.join("\u{1f}")
+}
+
+pub fn sync_filter_availability(
 	filter: &mut GamesFilter,
+	mod_families: &[String],
 	providers_with_games: &HashSet<GameProviderId>,
 ) -> bool {
-	let mut changed = false;
+	let providers_key = value_key(
+		GameProviderId::ALL
+			.iter()
+			.filter(|provider| providers_with_games.contains(provider))
+			.map(ToString::to_string),
+	);
+	let mod_families_key = value_key(mod_families.iter().cloned());
 
-	for provider in GameProviderId::ALL {
-		if providers_with_games.contains(&provider)
-			|| !filter.providers.item(Some(&provider)).enabled
-		{
-			continue;
-		}
+	let providers_changed = filter.providers.sync_availability_key(providers_key);
+	let mod_families_changed = filter.mod_families.sync_availability_key(mod_families_key);
 
-		filter.providers.set_item(
-			Some(provider),
-			FilterItem {
-				enabled: false,
-				locked: false,
-			},
-		);
-		changed = true;
-	}
-
-	if changed {
-		filter
-			.providers
-			.ensure_has_unlocked_enabled(&GameProviderId::ALL, false);
-	}
-
-	changed
+	providers_changed || mod_families_changed
 }
 
 pub fn reset_filter_group(filter: &mut GamesFilter, group_key: FilterGroupKey) {

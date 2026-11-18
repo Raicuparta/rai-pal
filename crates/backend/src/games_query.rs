@@ -73,6 +73,8 @@ impl<'de> serde::Deserialize<'de> for FilterGroupKey {
 pub struct FilterGroup<T: Hash + Eq> {
 	pub known: HashMap<T, FilterItem>,
 	pub unknown: Option<FilterItem>,
+	#[serde(default, skip_serializing_if = "String::is_empty")]
+	pub availability_key: String,
 }
 
 impl<T: Hash + Eq> Default for FilterGroup<T> {
@@ -80,6 +82,7 @@ impl<T: Hash + Eq> Default for FilterGroup<T> {
 		Self {
 			known: HashMap::new(),
 			unknown: None,
+			availability_key: String::new(),
 		}
 	}
 }
@@ -152,6 +155,17 @@ impl<T: Hash + Eq + Clone> FilterGroup<T> {
 		if self.unknown.as_ref().is_some_and(|item| !item.locked) {
 			self.unknown = None;
 		}
+	}
+
+	pub fn sync_availability_key(&mut self, key: String) -> bool {
+		if self.availability_key == key {
+			return false;
+		}
+
+		self.availability_key = key;
+		self.known.clear();
+		self.unknown = None;
+		true
 	}
 
 	pub fn ensure_has_unlocked_enabled(&mut self, possible_values: &[T], has_unknown: bool) {

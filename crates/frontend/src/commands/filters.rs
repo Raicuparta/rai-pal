@@ -2,8 +2,8 @@ use std::{rc::Rc, time::Duration};
 
 use rai_pal_backend::{
 	filter_views::{
-		apply_filter_action, collapse_all_filters, disable_unavailable_providers,
-		expand_all_filters, reset_all_filters, reset_filter_group,
+		apply_filter_action, collapse_all_filters, expand_all_filters, reset_all_filters,
+		reset_filter_group, sync_filter_availability,
 	},
 	games_query::{FilterAction, FilterGroupKey},
 };
@@ -11,7 +11,7 @@ use slint::ComponentHandle as _;
 
 use crate::{
 	FilterGroupId,
-	filters::{build_groups, load_providers_with_games},
+	filters::{build_groups, load_mod_families, load_providers_with_games},
 };
 
 use super::query::ScrollBehavior;
@@ -20,9 +20,14 @@ use super::{CommandHandler, on_command};
 impl CommandHandler {
 	pub fn refresh_filters(&self) {
 		let providers_with_games = load_providers_with_games(&self.database);
+		let mod_families = load_mod_families(&self.database);
 		let changed = {
 			let mut settings = self.settings.borrow_mut();
-			disable_unavailable_providers(&mut settings.games_query.filter, &providers_with_games)
+			sync_filter_availability(
+				&mut settings.games_query.filter,
+				&mod_families,
+				&providers_with_games,
+			)
 		};
 
 		if changed {
@@ -33,7 +38,7 @@ impl CommandHandler {
 			let settings = self.settings.borrow();
 			build_groups(
 				&settings.games_query.filter,
-				&self.mod_families,
+				&mod_families,
 				&settings.collapsed_filters,
 				&providers_with_games,
 			)
@@ -50,11 +55,12 @@ impl CommandHandler {
 	}
 
 	pub fn apply_filter(&self, group: FilterGroupId, value: &str, action: FilterAction) {
+		let mod_families = load_mod_families(&self.database);
 		let changed = {
 			let mut settings = self.settings.borrow_mut();
 			apply_filter_action(
 				&mut settings.games_query.filter,
-				&self.mod_families,
+				&mod_families,
 				group.into(),
 				value,
 				action,

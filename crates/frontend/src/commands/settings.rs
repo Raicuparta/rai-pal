@@ -91,11 +91,12 @@ impl CommandHandler {
 		self.scheduler.set_thumbnails_enabled(true);
 
 		let providers_with_games = crate::filters::load_providers_with_games(&self.database);
+		let mod_families = crate::filters::load_mod_families(&self.database);
 		apply_settings_to_ui(
 			&window,
 			&self.settings.borrow(),
 			self.detected_locale,
-			&self.mod_families,
+			&mod_families,
 			&providers_with_games,
 		);
 		self.start_query(Duration::ZERO, ScrollBehavior::Reset);

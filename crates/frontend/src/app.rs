@@ -3,7 +3,7 @@ use std::{cell::RefCell, collections::HashSet, rc::Rc, sync::Arc};
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
 	app_variant::AppVariant,
-	filter_views::disable_unavailable_providers,
+	filter_views::sync_filter_availability,
 	game_providers::game_provider::GameProviderId,
 	local_database::game_database::try_create,
 	operating_system::Platform,
@@ -47,8 +47,11 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let providers_with_games = load_providers_with_games(&app_database);
 	{
 		let mut settings = app_settings.borrow_mut();
-		if disable_unavailable_providers(&mut settings.games_query.filter, &providers_with_games)
-			&& let Err(err) = settings.try_write()
+		if sync_filter_availability(
+			&mut settings.games_query.filter,
+			&mod_families,
+			&providers_with_games,
+		) && let Err(err) = settings.try_write()
 		{
 			log::error!("Failed to save app settings: {err}");
 		}
@@ -146,7 +149,6 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		Arc::clone(&app_database),
 		Rc::clone(&app_settings),
 		Arc::clone(&scheduler),
-		mod_families,
 		detected_locale,
 	);
 	ctx.load_mods_tab();

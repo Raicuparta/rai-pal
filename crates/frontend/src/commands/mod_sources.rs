@@ -176,6 +176,11 @@ impl CommandHandler {
 
 	fn after_mod_refresh(&self) {
 		self.load_mods_tab();
+		self.refresh_filters();
+		self.start_query(
+			std::time::Duration::ZERO,
+			super::query::ScrollBehavior::Reset,
+		);
 
 		let Some((_, game)) = self.selected_game() else {
 			return;

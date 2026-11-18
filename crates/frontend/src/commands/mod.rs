@@ -83,7 +83,6 @@ pub struct CommandHandler {
 	window: slint::Weak<MainWindow>,
 	selected_game: RefCell<Option<(usize, Game)>>,
 	pending_confirmation: PendingState,
-	mod_families: Vec<String>,
 	detected_locale: Option<AppLocale>,
 	updater: Updater,
 }
@@ -94,7 +93,6 @@ impl CommandHandler {
 		database: Arc<Db>,
 		settings: Rc<RefCell<AppSettings>>,
 		scheduler: Arc<FetchScheduler>,
-		mod_families: Vec<String>,
 		detected_locale: Option<AppLocale>,
 	) -> Rc<Self> {
 		let updater = Updater::start(window.clone());
@@ -106,7 +104,6 @@ impl CommandHandler {
 			window,
 			selected_game: RefCell::default(),
 			pending_confirmation: PendingState::default(),
-			mod_families,
 			detected_locale,
 			updater,
 		});
