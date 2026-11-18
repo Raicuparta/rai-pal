@@ -16,18 +16,12 @@ if ! EXPECTED_ASSET_NAMES="$(release_asset_names "$PLATFORM")"; then
 	exit 1
 fi
 
-mapfile -t EXPECTED_ASSETS <<<"$EXPECTED_ASSET_NAMES"
-mapfile -t PUBLISHED_ASSETS <<<"${PUBLISHED_ASSETS:-}"
-
 COLLISIONS=()
-for expected in "${EXPECTED_ASSETS[@]}"; do
-	for published in "${PUBLISHED_ASSETS[@]}"; do
-		if [[ "$expected" == "$published" ]]; then
-			COLLISIONS+=("$expected")
-			break
-		fi
-	done
-done
+while IFS= read -r expected; do
+	if [[ -n "$expected" ]] && grep -Fxq -- "$expected" <<<"${PUBLISHED_ASSETS:-}"; then
+		COLLISIONS+=("$expected")
+	fi
+done <<<"$EXPECTED_ASSET_NAMES"
 
 if [[ ${#COLLISIONS[@]} -gt 0 ]]; then
 	echo "Published release already has $PLATFORM assets:" >&2

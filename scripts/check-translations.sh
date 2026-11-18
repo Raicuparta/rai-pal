@@ -21,7 +21,10 @@ fi
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "$WORK_DIR"' EXIT
 
-mapfile -t UI_FILES < <(find crates/frontend/ui -name '*.slint' | sort)
+UI_FILES=()
+while IFS= read -r file; do
+	UI_FILES+=("$file")
+done < <(find crates/frontend/ui -name '*.slint' | sort)
 
 slint-tr-extractor -o "$WORK_DIR/messages.pot" "${UI_FILES[@]}"
 
