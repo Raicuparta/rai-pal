@@ -6,14 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
-- The update notification modal is using the narrow width, and its action buttons (update or ignore) don't fit. So let's do two things:
-  - Narrow width is the minimum width.
-  - The buttons are shown vertically on top of each other: update first, ignore after.
-  - The button text must never be clipped or elided or whatever its called.
-  - If the button text makes the button wider than the modal width, the modal should grow with it, never clip anything.
-  - The update changelog text should never make the modal wider, it wraps as expected.
-  - Add a "--test-update-notification" param to dev.sh that makes the app show the update notification (dev mode only).
-
 ## Do later
 
 ## Notes, questions, decisions, etc
@@ -22,3 +14,4 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 - Game refresh triggered by window focus no longer changes the refresh button state, so buttons clicked while the window was unfocused now work. Closes #336.
 - Added a per-group availability key to the persisted filter state. Provider and mod family filters now reload their available values (mod families are read fresh from the database on every filter refresh, and mod source changes also refresh filters), and reset if the available set changes. Removed the old auto-disabling of unavailable providers, which also fixes the stuck reset button for unavailable options. Closes #335, closes #334.
+- Update notification now uses the narrow width as a minimum and grows to fit its buttons, which are stacked vertically with update first. The changelog no longer widens the modal. Added `--test-update-notification` to dev.sh.

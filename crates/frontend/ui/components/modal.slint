@@ -14,6 +14,7 @@ export component Modal inherits Rectangle {
     in property <string> title;
     in property <bool> big: false;
     in property <bool> fill-height: false;
+    in property <bool> grow-width: false;
     in-out property <bool> open: false;
     in property <bool> close-on-click-outside: true;
     in property <bool> show-close-button: true;
@@ -22,7 +23,6 @@ export component Modal inherits Rectangle {
     width: 0;
     height: 0;
 
-    private property <length> modal-max-width: root.big ? 700px : 360px;
     private property <length> modal-margin: Theme.space-2xl;
     private property <length> modal-padding: Theme.space-xl;
 
@@ -71,9 +71,12 @@ export component Modal inherits Rectangle {
         }
 
         Rectangle {
+            private property <length> natural-width: max(header.preferred-width, body-layout.preferred-width) + root.modal-padding * 2;
+            private property <length> modal-width: root.grow-width ? max(360px, self.natural-width) : root.big ? 700px : min(self.natural-width, 360px);
+
             x: (parent.width - self.width) / 2;
             y: (parent.height - self.height) / 2;
-            width: min(root.big ? root.modal-max-width : max(header.preferred-width, body-layout.preferred-width) + root.modal-padding * 2, root.modal-max-width, parent.width - root.modal-margin * 2);
+            width: min(self.modal-width, parent.width - root.modal-margin * 2);
             height: root.fill-height ? parent.height - root.modal-margin * 2 : min(header.preferred-height + body-layout.preferred-height + root.modal-padding * 2 + Theme.space-md, parent.height - root.modal-margin * 2);
             background: Theme.background;
             border-width: Theme.border-width;

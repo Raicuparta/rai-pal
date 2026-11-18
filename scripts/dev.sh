@@ -14,6 +14,9 @@ while [ $# -gt 0 ]; do
     --software)
       SOFTWARE=1
       ;;
+    --test-update-notification)
+      export RAI_PAL_TEST_UPDATE_NOTIFICATION=1
+      ;;
     *)
       break
       ;;

@@ -72,6 +72,21 @@ impl Updater {
 		let ignored = Arc::new(AtomicBool::new(false));
 		let checking = Arc::new(AtomicBool::new(false));
 
+		#[cfg(debug_assertions)]
+		if std::env::var_os("RAI_PAL_TEST_UPDATE_NOTIFICATION").is_some()
+			&& let Some(window) = window.upgrade()
+		{
+			let update_state = window.global::<crate::UpdateState>();
+			update_state.set_version("9.9.9".into());
+			update_state.set_notes(
+				"- Added a very long changelog entry to test how the update notification wraps its text when the content is wider than the modal.\n- Fixed the buttons so their text is never clipped.\n- Added vertical action buttons."
+					.into(),
+			);
+			update_state.set_state(crate::ActionState::Idle);
+			update_state.set_available(true);
+			update_state.set_open(true);
+		}
+
 		let check = {
 			let pending = Arc::clone(&pending);
 			let ignored = Arc::clone(&ignored);
