@@ -11,7 +11,3 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Notes, questions, decisions, etc
 
 ## Done
-
-- Game refresh triggered by window focus no longer changes the refresh button state, so buttons clicked while the window was unfocused now work. Closes #336.
-- Added a per-group availability key to the persisted filter state. Provider and mod family filters now reload their available values (mod families are read fresh from the database on every filter refresh, and mod source changes also refresh filters), and reset if the available set changes. Removed the old auto-disabling of unavailable providers, which also fixes the stuck reset button for unavailable options. Closes #335, closes #334.
-- Update notification now uses the narrow width as a minimum and grows to fit its buttons, which are stacked vertically with update first. The changelog no longer widens the modal. Added `--test-update-notification` to dev.sh.
