@@ -4,7 +4,8 @@ use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
 	game::Game,
 	games_query::GamesQuery,
-	local_database::app_database::Db,
+	local_database::{app_database::Db, mod_database::ModDatabase},
+	result::LogErrExt,
 };
 
 use crate::{
@@ -165,5 +166,12 @@ impl CommandHandler {
 		if let Err(err) = self.settings.borrow().try_write() {
 			log::error!("Failed to save app settings: {err}");
 		}
+	}
+
+	fn mod_family(&self, mod_id: &str) -> Option<String> {
+		self.database
+			.get_mod(mod_id)
+			.ok_or_log("Failed to load mod for analytics")
+			.and_then(|game_mod| game_mod.family)
 	}
 }
