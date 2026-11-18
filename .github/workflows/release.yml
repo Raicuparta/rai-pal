@@ -216,7 +216,7 @@ jobs:
 
   finalize-release:
     needs: [check, create-release, build-windows, build-linux, build-macos]
-    if: ${{ always() && needs.check.result == 'success' && needs.create-release.result == 'success' && needs.build-windows.result != 'failure' && needs.build-linux.result != 'failure' && needs.build-macos.result != 'failure' }}
+    if: ${{ always() && needs.check.result == 'success' && needs.create-release.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -225,6 +225,7 @@ jobs:
 
       - name: Download Updater Partials
         if: inputs.build_windows || inputs.build_linux || inputs.build_macos
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           path: updater-partials
