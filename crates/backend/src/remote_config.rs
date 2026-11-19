@@ -11,7 +11,7 @@ use crate::{
 	result::{ContextResult, Result},
 };
 
-const CONFIG_DB_BASE_URL: &str = "https://raicuparta.github.io/rai-pal-db/config-db";
+const CONFIG_DB_BASE_URL: &str = "https://dev.rai-pal.pages.dev/config-db";
 const CONFIG_DB_VERSION: u32 = 0;
 
 #[derive(serde::Deserialize, Clone)]
