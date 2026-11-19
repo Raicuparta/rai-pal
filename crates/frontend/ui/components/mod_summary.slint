@@ -40,6 +40,7 @@ export component ModSummaryView inherits HorizontalLayout {
     in property <bool> show-status: false;
     in property <bool> installed: false;
     in property <bool> outdated: false;
+    in property <bool> link-only: false;
 
     property <bool> has-details: version-text != "" || release-date != "" || author != "" || engine-text != "" || has-remote-config;
 
@@ -49,9 +50,9 @@ export component ModSummaryView inherits HorizontalLayout {
     cross-axis-alignment: center;
 
     if show-status: SvgIcon {
-        icon: outdated ? Icon.outdated : installed ? Icon.success : Icon.mod-not-installed;
+        icon: link-only ? Icon.external-link : outdated ? Icon.outdated : installed ? Icon.success : Icon.mod-not-installed;
         size: 22px;
-        color: outdated ? Theme.status-warning : installed ? Theme.status-success : Theme.dimmed-foreground;
+        color: link-only ? Theme.highlight : outdated ? Theme.status-warning : installed ? Theme.status-success : Theme.dimmed-foreground;
     }
 
     VerticalLayout {

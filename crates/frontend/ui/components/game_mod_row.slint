@@ -12,6 +12,7 @@ import { Icon } from "svg_icon.slint";
 export component GameModRow inherits VerticalLayout {
     in property <GameModData> game-mod;
 
+    private property <bool> is-link-only: !game-mod.installed && !game-mod.has-install && !game-mod.has-run;
     private property <bool> can-show-actions: !game-mod.incompatible && game-mod.has-exe-path;
     private property <bool> can-install: root.can-show-actions && !game-mod.installed && !game-mod.outdated && game-mod.has-install;
     private property <bool> can-update: root.can-show-actions && game-mod.outdated;
@@ -19,7 +20,7 @@ export component GameModRow inherits VerticalLayout {
     private property <bool> can-edit-config: root.can-show-actions && game-mod.installed && (game-mod.has-config || game-mod.has-remote-config);
     private property <bool> can-open-mod-folder: root.can-show-actions && game-mod.installed;
     private property <bool> can-open-website: game-mod.website != "";
-    private property <bool> can-open-website-primary: root.can-open-website && !game-mod.installed && !game-mod.has-install && !game-mod.has-run;
+    private property <bool> can-open-website-primary: root.can-open-website && root.is-link-only;
     private property <bool> can-download-config: root.can-show-actions && game-mod.installed && game-mod.has-remote-config;
     private property <bool> can-reinstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
     private property <bool> can-uninstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
@@ -154,6 +155,7 @@ export component GameModRow inherits VerticalLayout {
                 show-status: root.can-show-actions;
                 installed: game-mod.installed;
                 outdated: game-mod.outdated;
+                link-only: root.is-link-only;
             }
 
             HorizontalLayout {
