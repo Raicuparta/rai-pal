@@ -338,6 +338,10 @@ msgid "Install this game to see more detailed information about which mods are c
 msgstr "Instala este jogo para ver informações mais detalhadas sobre que mods são compatíveis"
 
 msgctxt "gameModal"
+msgid "Game-Specific Mods"
+msgstr "Mods específicos do jogo"
+
+msgctxt "gameModal"
 msgid "Installed Mods"
 msgstr "Mods instalados"
 

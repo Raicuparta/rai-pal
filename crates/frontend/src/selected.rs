@@ -48,6 +48,9 @@ pub fn hide(window: &MainWindow) {
 		.set_installed(ModelRc::default());
 	window
 		.global::<crate::GameDetailsState>()
+		.set_game_specific(ModelRc::default());
+	window
+		.global::<crate::GameDetailsState>()
 		.set_available(ModelRc::default());
 	window
 		.global::<crate::GameDetailsState>()

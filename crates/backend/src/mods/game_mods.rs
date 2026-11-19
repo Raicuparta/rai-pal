@@ -1,10 +1,10 @@
-use std::collections::{BTreeMap, HashSet};
+use std::collections::HashSet;
 
 use crate::{
 	game::Game,
 	local_database::mod_database::{ModDatabase, ModInfo},
-	mods::{manifest::Mod, mod_family::ModFamily},
-	result::{LogErrExt, Result},
+	mods::manifest::Mod,
+	result::Result,
 };
 
 #[derive(Clone, Debug)]
@@ -18,21 +18,20 @@ impl GameMod {
 	pub const fn installed(&self) -> bool {
 		self.info.installed_hash.is_some()
 	}
-}
 
-#[derive(Clone, Debug)]
-pub enum PotentialMod {
-	Family(ModFamily),
-	Manifest(Box<Mod>),
+	pub const fn game_specific(&self) -> bool {
+		self.manifest.game_ids.is_some()
+	}
 }
 
 #[derive(Clone, Debug, Default)]
 pub struct GameModGroups {
 	pub installed: Vec<GameMod>,
+	pub game_specific: Vec<GameMod>,
 	pub available: Vec<GameMod>,
 	pub hidden: Vec<GameMod>,
 	pub incompatible: Vec<GameMod>,
-	pub potential: Vec<PotentialMod>,
+	pub potential: Vec<GameMod>,
 }
 
 impl GameModGroups {
@@ -43,10 +42,6 @@ impl GameModGroups {
 	) -> Result<Self> {
 		let mod_infos = database.get_game_mods(&game.provider_id, &game.game_id)?;
 		let mods = database.get_mod_map()?;
-		let families = database
-			.get_mod_families()
-			.ok_or_log("Failed to load mod families")
-			.unwrap_or_default();
 
 		let mut compatible_parts = Vec::new();
 		let mut hidden_parts = Vec::new();
@@ -92,11 +87,15 @@ impl GameModGroups {
 		sort_entries(&mut hidden_parts);
 		sort_entries(&mut incompatible_parts);
 
-		let potential = build_potential_mods(&compatible_parts, &families);
-		let (installed, available) = compatible_parts.into_iter().partition(GameMod::installed);
+		let (installed, available): (Vec<GameMod>, Vec<GameMod>) =
+			compatible_parts.into_iter().partition(GameMod::installed);
+		let (game_specific, available): (Vec<GameMod>, Vec<GameMod>) =
+			available.into_iter().partition(GameMod::game_specific);
+		let potential = available.clone();
 
 		Ok(Self {
 			installed,
+			game_specific,
 			available,
 			hidden: hidden_parts,
 			incompatible: incompatible_parts,
@@ -117,39 +116,4 @@ fn sort_entries(entries: &mut [GameMod]) {
 				.cmp(&b.manifest.title.to_lowercase())
 		})
 	});
-}
-
-fn build_potential_mods(
-	compatible_entries: &[GameMod],
-	families: &BTreeMap<String, ModFamily>,
-) -> Vec<PotentialMod> {
-	let mut family_counts = BTreeMap::<&str, usize>::new();
-
-	for entry in compatible_entries {
-		if let Some(family) = &entry.manifest.family {
-			*family_counts.entry(family.as_str()).or_default() += 1;
-		}
-	}
-
-	let mut seen_families = HashSet::new();
-	let mut result = Vec::new();
-
-	for entry in compatible_entries {
-		let family_id = entry
-			.manifest
-			.family
-			.as_ref()
-			.filter(|family| family_counts.get(family.as_str()).copied().unwrap_or(0) > 1);
-		let family = family_id.and_then(|family| families.get(family));
-
-		if let (Some(family_id), Some(family)) = (family_id, family) {
-			if seen_families.insert(family_id.clone()) {
-				result.push(PotentialMod::Family(family.clone()));
-			}
-		} else {
-			result.push(PotentialMod::Manifest(Box::new(entry.manifest.clone())));
-		}
-	}
-
-	result
 }

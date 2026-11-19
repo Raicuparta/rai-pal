@@ -338,6 +338,10 @@ msgid "Install this game to see more detailed information about which mods are c
 msgstr "Waaaaah waah waah to wah waah waaaaaah waaaaaaaaah waaah waaah waah wah waaaaaaaah!"
 
 msgctxt "gameModal"
+msgid "Game-Specific Mods"
+msgstr "Waaaah mods!"
+
+msgctxt "gameModal"
 msgid "Installed Mods"
 msgstr "Waaaaaaah waah!"
 

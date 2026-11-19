@@ -338,6 +338,10 @@ msgid "Install this game to see more detailed information about which mods are c
 msgstr "게임을 설치하면 어떤 모드가 호환되는지 자세히 볼 수 있어요"
 
 msgctxt "gameModal"
+msgid "Game-Specific Mods"
+msgstr "게임 전용 모드"
+
+msgctxt "gameModal"
 msgid "Installed Mods"
 msgstr "설치된 모드"
 

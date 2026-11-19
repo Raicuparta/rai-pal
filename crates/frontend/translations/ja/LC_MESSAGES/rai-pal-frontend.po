@@ -338,6 +338,10 @@ msgid "Install this game to see more detailed information about which mods are c
 msgstr "このゲームをインストールすると、どのModに互換性があるか詳しくわかるよ"
 
 msgctxt "gameModal"
+msgid "Game-Specific Mods"
+msgstr "ゲーム固有のMod"
+
+msgctxt "gameModal"
 msgid "Installed Mods"
 msgstr "導入済みMod"
 

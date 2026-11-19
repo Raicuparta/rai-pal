@@ -338,6 +338,10 @@ msgid "Install this game to see more detailed information about which mods are c
 msgstr "安装此游戏即可查看哪些模组兼容的更多详细信息"
 
 msgctxt "gameModal"
+msgid "Game-Specific Mods"
+msgstr "游戏专用模组"
+
+msgctxt "gameModal"
 msgid "Installed Mods"
 msgstr "已安装模组"
 

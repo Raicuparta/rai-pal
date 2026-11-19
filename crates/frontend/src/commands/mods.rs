@@ -16,7 +16,7 @@ use rai_pal_backend::{
 		mod_database::{ModDatabase, ModInfo},
 	},
 	mods::{
-		game_mods::{GameMod, GameModGroups, PotentialMod},
+		game_mods::{GameMod, GameModGroups},
 		manifest::{Mod, ModDependency, install_steps},
 	},
 	result::{LogErrExt, Result},
@@ -24,7 +24,7 @@ use rai_pal_backend::{
 use slint::ComponentHandle;
 
 use crate::{
-	ActionKind, GameModData, MainWindow, MessageContext, PotentialModData, action_state, analytics,
+	ActionKind, GameModData, MainWindow, MessageContext, action_state, analytics,
 	downloads::Tracker, notifications, runtime,
 };
 
@@ -62,10 +62,11 @@ fn store_remote_config_ids(game: &Game, ids: HashSet<String>) {
 #[derive(Default)]
 struct LoadedMods {
 	installed: Vec<GameModData>,
+	game_specific: Vec<GameModData>,
 	available: Vec<GameModData>,
 	hidden: Vec<GameModData>,
 	incompatible: Vec<GameModData>,
-	potential: Vec<PotentialModData>,
+	potential: Vec<GameModData>,
 }
 
 impl CommandHandler {
@@ -345,6 +346,9 @@ fn apply_mods(
 		.set_installed(Rc::new(slint::VecModel::from(loaded.installed)).into());
 	window
 		.global::<crate::GameDetailsState>()
+		.set_game_specific(Rc::new(slint::VecModel::from(loaded.game_specific)).into());
+	window
+		.global::<crate::GameDetailsState>()
 		.set_available(Rc::new(slint::VecModel::from(loaded.available)).into());
 	window
 		.global::<crate::GameDetailsState>()
@@ -369,6 +373,11 @@ fn load_mods(
 		.into_iter()
 		.map(|entry| row_data(entry, game))
 		.collect::<Vec<_>>();
+	let game_specific = list
+		.game_specific
+		.into_iter()
+		.map(|entry| row_data(entry, game))
+		.collect::<Vec<_>>();
 	let available = list
 		.available
 		.into_iter()
@@ -386,10 +395,15 @@ fn load_mods(
 		.collect::<Vec<_>>();
 	Ok(LoadedMods {
 		installed,
+		game_specific,
 		available,
 		hidden,
 		incompatible,
-		potential: list.potential.into_iter().map(potential_row_data).collect(),
+		potential: list
+			.potential
+			.into_iter()
+			.map(|entry| row_data(entry, game))
+			.collect(),
 	})
 }
 
@@ -424,21 +438,6 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		has_run: manifest.run_for_game.is_some(),
 		has_config: manifest.config.is_some(),
 		has_installed_dependants: info.has_installed_dependants,
-	}
-}
-
-fn potential_row_data(item: PotentialMod) -> PotentialModData {
-	let (title, description) = match item {
-		PotentialMod::Family(family) => (family.title, family.description),
-		PotentialMod::Manifest(manifest) => {
-			let manifest = *manifest;
-			(manifest.title, manifest.description)
-		}
-	};
-
-	PotentialModData {
-		title: title.into(),
-		description: description.into(),
 	}
 }
 
