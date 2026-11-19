@@ -19,6 +19,7 @@ export component GameModRow inherits VerticalLayout {
     private property <bool> can-edit-config: root.can-show-actions && game-mod.installed && (game-mod.has-config || game-mod.has-remote-config);
     private property <bool> can-open-mod-folder: root.can-show-actions && game-mod.installed;
     private property <bool> can-open-website: game-mod.website != "";
+    private property <bool> can-open-website-primary: root.can-open-website && !game-mod.installed && !game-mod.has-install && !game-mod.has-run;
     private property <bool> can-download-config: root.can-show-actions && game-mod.installed && game-mod.has-remote-config;
     private property <bool> can-reinstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
     private property <bool> can-uninstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
@@ -194,6 +195,16 @@ export component GameModRow inherits VerticalLayout {
 
                     clicked => {
                         ModActions.run(game-mod.mod-id);
+                    }
+                }
+
+                if root.can-open-website-primary: ActionButton {
+                    text: @tr("modModal" => "Website");
+                    icon: Icon.external-link;
+                    tint: Theme.surface-background;
+
+                    clicked => {
+                        ModActions.open-url(game-mod.website);
                     }
                 }
 

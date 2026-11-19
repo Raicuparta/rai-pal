@@ -485,6 +485,10 @@ impl ModDatabase for Db {
 			let exe_path_hash = exe_path.hash_string();
 
 			for game_mod in game_mods.values() {
+				if game_mod.install.is_none() {
+					continue;
+				}
+
 				let Some(manifest_path) = game_mod
 					.get_manifest_target_path(Some(&game))
 					.ok_or_log("Failed to get installed mod manifest path")
