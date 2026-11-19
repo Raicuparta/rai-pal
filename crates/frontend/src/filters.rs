@@ -73,11 +73,12 @@ pub fn load_mod_families(database: &Db) -> BTreeMap<String, String> {
 
 	mods.values()
 		.filter_map(|game_mod| game_mod.family.as_ref())
-		.map(|family_id| {
-			let title = family_definitions
-				.get(family_id)
-				.map_or_else(|| family_id.clone(), |family| family.title.clone());
-			(family_id.clone(), title)
+		.filter_map(|family_id| {
+			let family = family_definitions.get(family_id)?;
+			if family.filterable != Some(true) {
+				return None;
+			}
+			Some((family_id.clone(), family.title.clone()))
 		})
 		.collect()
 }

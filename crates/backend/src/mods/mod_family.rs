@@ -2,4 +2,5 @@
 pub struct ModFamily {
 	pub title: String,
 	pub description: String,
+	pub filterable: Option<bool>,
 }
