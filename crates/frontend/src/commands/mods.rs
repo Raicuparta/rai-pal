@@ -66,7 +66,6 @@ struct LoadedMods {
 	available: Vec<GameModData>,
 	hidden: Vec<GameModData>,
 	incompatible: Vec<GameModData>,
-	potential: Vec<GameModData>,
 }
 
 impl CommandHandler {
@@ -356,9 +355,6 @@ fn apply_mods(
 	window
 		.global::<crate::GameDetailsState>()
 		.set_incompatible(Rc::new(slint::VecModel::from(loaded.incompatible)).into());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_potential(Rc::new(slint::VecModel::from(loaded.potential)).into());
 }
 
 fn load_mods(
@@ -399,11 +395,6 @@ fn load_mods(
 		available,
 		hidden,
 		incompatible,
-		potential: list
-			.potential
-			.into_iter()
-			.map(|entry| row_data(entry, game))
-			.collect(),
 	})
 }
 

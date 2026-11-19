@@ -27,7 +27,6 @@ export global GameDetailsState {
     in property <[GameModData]> available;
     in property <[GameModData]> hidden;
     in property <[GameModData]> incompatible;
-    in property <[GameModData]> potential;
 }
 
 export component GameDetailsPage inherits HorizontalLayout {
@@ -215,7 +214,7 @@ export component GameDetailsPage inherits HorizontalLayout {
                 }
             }
 
-            if GameDetailsState.installed.length + GameDetailsState.game-specific.length + GameDetailsState.available.length + GameDetailsState.hidden.length + GameDetailsState.incompatible.length + GameDetailsState.potential.length == 0: HorizontalLayout {
+            if GameDetailsState.installed.length + GameDetailsState.game-specific.length + GameDetailsState.available.length + GameDetailsState.hidden.length + GameDetailsState.incompatible.length == 0: HorizontalLayout {
                 height: self.preferred-height;
                 padding-left: Theme.space-sm;
                 padding-right: Theme.space-sm;
@@ -233,10 +232,10 @@ export component GameDetailsPage inherits HorizontalLayout {
                 mods: GameDetailsState.game-specific;
             }
 
-            if !root.game-row.installed && GameDetailsState.potential.length > 0: ModsSection {
+            if !root.game-row.installed && GameDetailsState.available.length > 0: ModsSection {
                 label: @tr("gameModal" => "Potentially compatible mods");
                 description: @tr("gameModal" => "Install this game to see more detailed information about which mods are compatible");
-                mods: GameDetailsState.potential;
+                mods: GameDetailsState.available;
             }
 
             if root.game-row.installed: VerticalLayout {

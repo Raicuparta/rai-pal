@@ -31,7 +31,6 @@ pub struct GameModGroups {
 	pub available: Vec<GameMod>,
 	pub hidden: Vec<GameMod>,
 	pub incompatible: Vec<GameMod>,
-	pub potential: Vec<GameMod>,
 }
 
 impl GameModGroups {
@@ -91,7 +90,6 @@ impl GameModGroups {
 			compatible_parts.into_iter().partition(GameMod::installed);
 		let (game_specific, available): (Vec<GameMod>, Vec<GameMod>) =
 			available.into_iter().partition(GameMod::game_specific);
-		let potential = available.clone();
 
 		Ok(Self {
 			installed,
@@ -99,7 +97,6 @@ impl GameModGroups {
 			available,
 			hidden: hidden_parts,
 			incompatible: incompatible_parts,
-			potential,
 		})
 	}
 }

@@ -58,7 +58,4 @@ pub fn hide(window: &MainWindow) {
 	window
 		.global::<crate::GameDetailsState>()
 		.set_incompatible(ModelRc::default());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_potential(ModelRc::default());
 }
