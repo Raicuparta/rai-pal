@@ -1,4 +1,9 @@
-use std::{collections::HashSet, fmt::Display, hash::Hash, str::FromStr};
+use std::{
+	collections::{BTreeMap, HashSet},
+	fmt::Display,
+	hash::Hash,
+	str::FromStr,
+};
 
 use strum::IntoEnumIterator;
 
@@ -205,13 +210,13 @@ fn unknown_view<T: FilterValue>(group: &FilterGroup<T>) -> FilterValueView {
 	}
 }
 
-fn text_view(group: &FilterGroup<String>, value: &str) -> FilterValueView {
+fn text_view(group: &FilterGroup<String>, value: &str, display: &str) -> FilterValueView {
 	let item = group.item(Some(&value.to_string()));
 
 	FilterValueView {
 		value: value.to_string(),
 		label: None,
-		display: value.to_string(),
+		display: display.to_string(),
 		note: FilterValueNote::None,
 		enabled: item.enabled,
 		locked: item.locked,
@@ -257,19 +262,21 @@ fn build_group<T: FilterValue>(
 
 fn mod_family_group(
 	filter: &GamesFilter,
-	mod_families: &[String],
+	mod_families: &BTreeMap<String, String>,
 	collapsed_filters: &HashSet<FilterGroupKey>,
 ) -> FilterGroupView {
 	let mut values: Vec<FilterValueView> = mod_families
 		.iter()
-		.map(|family| text_view(&filter.mod_families, family))
+		.map(|(family_id, title)| text_view(&filter.mod_families, family_id, title))
 		.collect();
 	values.sort_by_key(|value| value.display.to_lowercase());
+
+	let family_ids = mod_families.keys().cloned().collect::<Vec<_>>();
 
 	FilterGroupView {
 		key: FilterGroupKey::ModFamilies,
 		values,
-		has_changes: filter.mod_families.has_changes(mod_families, false),
+		has_changes: filter.mod_families.has_changes(&family_ids, false),
 		has_locked: filter.mod_families.has_locked(),
 		expanded: !collapsed_filters.contains(&FilterGroupKey::ModFamilies),
 	}
@@ -278,7 +285,7 @@ fn mod_family_group(
 fn group_view(
 	filter: &GamesFilter,
 	key: FilterGroupKey,
-	mod_families: &[String],
+	mod_families: &BTreeMap<String, String>,
 	collapsed_filters: &HashSet<FilterGroupKey>,
 	providers_with_games: &HashSet<GameProviderId>,
 ) -> FilterGroupView {
@@ -339,7 +346,7 @@ fn group_view(
 
 pub fn build_filter_views(
 	filter: &GamesFilter,
-	mod_families: &[String],
+	mod_families: &BTreeMap<String, String>,
 	collapsed_filters: &HashSet<FilterGroupKey>,
 	providers_with_games: &HashSet<GameProviderId>,
 ) -> Vec<FilterGroupView> {
@@ -385,7 +392,7 @@ where
 
 pub fn apply_filter_action(
 	filter: &mut GamesFilter,
-	mod_families: &[String],
+	mod_families: &BTreeMap<String, String>,
 	group_key: FilterGroupKey,
 	value: &str,
 	action: FilterAction,
@@ -402,7 +409,8 @@ pub fn apply_filter_action(
 			apply_string_value(&mut filter.engines, value, &EngineBrand::ALL, true, action)
 		}
 		FilterGroupKey::ModFamilies => {
-			apply_string_value(&mut filter.mod_families, value, mod_families, false, action)
+			let family_ids = mod_families.keys().cloned().collect::<Vec<_>>();
+			apply_string_value(&mut filter.mod_families, value, &family_ids, false, action)
 		}
 		FilterGroupKey::Tags => {
 			apply_string_value(&mut filter.tags, value, &GameTag::ALL, true, action)
@@ -453,7 +461,7 @@ fn value_key(values: impl Iterator<Item = String>) -> String {
 
 pub fn sync_filter_availability(
 	filter: &mut GamesFilter,
-	mod_families: &[String],
+	mod_families: &BTreeMap<String, String>,
 	providers_with_games: &HashSet<GameProviderId>,
 ) -> bool {
 	let providers_key = value_key(
@@ -462,7 +470,7 @@ pub fn sync_filter_availability(
 			.filter(|provider| providers_with_games.contains(provider))
 			.map(ToString::to_string),
 	);
-	let mod_families_key = value_key(mod_families.iter().cloned());
+	let mod_families_key = value_key(mod_families.keys().cloned());
 
 	let providers_changed = filter.providers.sync_availability_key(providers_key);
 	let mod_families_changed = filter.mod_families.sync_availability_key(mod_families_key);

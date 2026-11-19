@@ -1,4 +1,7 @@
-use std::{collections::HashSet, rc::Rc};
+use std::{
+	collections::{BTreeMap, HashSet},
+	rc::Rc,
+};
 
 use rai_pal_backend::{
 	filter_views::{FilterGroupView, FilterValueView, build_filter_views},
@@ -37,7 +40,7 @@ fn group_data(group: FilterGroupView) -> FilterGroupData {
 
 pub fn build_groups(
 	filter: &GamesFilter,
-	mod_families: &[String],
+	mod_families: &BTreeMap<String, String>,
 	collapsed_filters: &HashSet<FilterGroupKey>,
 	providers_with_games: &HashSet<GameProviderId>,
 ) -> Vec<FilterGroupData> {
@@ -59,16 +62,22 @@ pub fn load_providers_with_games(database: &Db) -> HashSet<GameProviderId> {
 	})
 }
 
-pub fn load_mod_families(database: &Db) -> Vec<String> {
+pub fn load_mod_families(database: &Db) -> BTreeMap<String, String> {
 	let Some(mods) = database.get_mod_map().ok_or_log("Failed to load mod map") else {
-		return Vec::new();
+		return BTreeMap::new();
 	};
+	let family_definitions = database
+		.get_mod_families()
+		.ok_or_log("Failed to load mod families")
+		.unwrap_or_default();
 
-	let mut families: Vec<String> = mods
-		.values()
-		.filter_map(|game_mod| game_mod.family.clone())
-		.collect();
-	families.sort_by_key(|family| family.to_lowercase());
-	families.dedup();
-	families
+	mods.values()
+		.filter_map(|game_mod| game_mod.family.as_ref())
+		.map(|family_id| {
+			let title = family_definitions
+				.get(family_id)
+				.map_or_else(|| family_id.clone(), |family| family.title.clone());
+			(family_id.clone(), title)
+		})
+		.collect()
 }

@@ -1,4 +1,8 @@
-use std::{collections::HashSet, rc::Rc, time::Duration};
+use std::{
+	collections::{BTreeMap, HashSet},
+	rc::Rc,
+	time::Duration,
+};
 
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
@@ -46,7 +50,7 @@ pub fn apply_settings_to_ui(
 	window: &MainWindow,
 	settings: &AppSettings,
 	detected_locale: Option<AppLocale>,
-	mod_families: &[String],
+	mod_families: &BTreeMap<String, String>,
 	providers_with_games: &HashSet<GameProviderId>,
 ) {
 	i18n::apply_translation(i18n::effective_locale(settings, detected_locale));

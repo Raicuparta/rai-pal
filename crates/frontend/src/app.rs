@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::HashSet, rc::Rc, sync::Arc};
+use std::{cell::RefCell, collections::BTreeMap, collections::HashSet, rc::Rc, sync::Arc};
 
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
@@ -199,7 +199,7 @@ fn apply_initial_state(
 	window: &MainWindow,
 	app_settings: &Rc<RefCell<AppSettings>>,
 	detected_locale: Option<AppLocale>,
-	mod_families: &[String],
+	mod_families: &BTreeMap<String, String>,
 	providers_with_games: &HashSet<GameProviderId>,
 	games_total_count: u32,
 ) {
