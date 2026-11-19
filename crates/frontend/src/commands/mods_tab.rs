@@ -91,7 +91,7 @@ fn mod_data(game_mod: Mod) -> ModsTabModData {
 		author: game_mod.author.into(),
 		engine_text: engine_text.into(),
 		deprecated: game_mod.deprecated == Some(true),
-		source_code: game_mod.source_code.into(),
+		website: game_mod.website.into(),
 		can_run: game_mod.run_standalone.is_some(),
 		can_install: game_mod.run_standalone.is_some() && game_mod.install.is_some(),
 	}

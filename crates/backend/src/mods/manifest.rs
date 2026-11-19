@@ -41,7 +41,7 @@ pub struct Mod {
 	pub title: String,
 	pub hide_from_game_mods_list: Option<bool>,
 	pub author: String,
-	pub source_code: String,
+	pub website: String,
 	pub description: String,
 	pub download: Option<ModDownload>,
 	pub engine: Option<EngineBrand>,

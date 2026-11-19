@@ -42,12 +42,12 @@ export component ModsTabRow inherits VerticalLayout {
 
         if root.has-mod-actions: PopupMenuSeparator { }
 
-        if mod-data.source-code != "": PopupMenuItem {
+        if mod-data.website != "": PopupMenuItem {
             text: @tr("modModal" => "Website");
             icon: Icon.external-link;
 
             clicked => {
-                ModActions.open-url(mod-data.source-code);
+                ModActions.open-url(mod-data.website);
                 menu.close();
             }
         }
