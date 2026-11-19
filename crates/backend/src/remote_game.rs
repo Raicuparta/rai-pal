@@ -16,7 +16,7 @@ const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
 // This way we prevent old versions of Rai Pal from breaking unless we want them to.
 // So when you need to change the database in a backwards-incompatible way,
 // you would create a new folder in the database repository and change this number to match the folder.
-const DATABASE_VERSION: i32 = 2;
+const DATABASE_VERSION: i32 = 3;
 
 // Version strings in PCGamingWiki can be all weird, so parsing is pretty lax here.
 // We just find some numbers in the string separated by something (usually periods).

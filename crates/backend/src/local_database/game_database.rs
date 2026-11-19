@@ -12,8 +12,8 @@ use crate::{
 	app_paths,
 	debug::LoggableInstant,
 	game::Game,
+	game_external_id::{ExternalIdProvider, ExternalIds},
 	game_providers::game_provider::GameProviderId,
-	game_title::get_normalized_titles,
 	games_query::{FilterGroup, GamesQuery, GamesSortBy, InstallState},
 	local_database::{
 		app_database::{AppDatabase, Db},
@@ -43,6 +43,26 @@ pub struct GameIdsResponse {
 	pub game_ids: Vec<GameId>,
 	pub total_count: u32,
 }
+
+pub(crate) const REMOTE_GAME_JOIN: &str = r"
+	LEFT JOIN main.remote_games rg ON rg.rowid = (
+		SELECT matching_remote.rowid
+		FROM main.game_external_ids game_external_id
+		INNER JOIN main.remote_games matching_remote
+			ON matching_remote.external_id = game_external_id.external_id
+			AND CASE matching_remote.provider_id
+				WHEN 'Manual' THEN 'NormalizedTitle'
+				ELSE matching_remote.provider_id
+			END = CASE game_external_id.external_id_provider
+				WHEN 'Manual' THEN 'NormalizedTitle'
+				ELSE game_external_id.external_id_provider
+			END
+		WHERE game_external_id.provider_id = g.provider_id
+			AND game_external_id.game_id = g.game_id
+		ORDER BY matching_remote.provider_id = game_external_id.external_id_provider DESC
+		LIMIT 1
+	)
+";
 
 fn build_nullable_exclusion_filter<T: std::fmt::Display + std::hash::Hash + std::cmp::Eq>(
 	column_expr: &str,
@@ -164,13 +184,14 @@ impl GameDatabase for Db {
 	}
 
 	fn get_game(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Game> {
-		self.read_db()?
-			.prepare_cached(
+		let db = self.read_db()?;
+
+		let mut game = db
+			.prepare_cached(&format!(
 				r"
 		SELECT
 			g.provider_id,
 			g.game_id,
-			g.external_id,
 			g.display_title,
 			g.title_discriminator,
 			g.thumbnail_url,
@@ -189,41 +210,57 @@ impl GameDatabase for Db {
 			g.supported_os
 		FROM main.games g
 		LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
-		LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
-		LEFT JOIN remote_games rg ON (
-				g.provider_id = rg.provider_id AND g.external_id = rg.external_id
-		) OR (
-				rg.provider_id = 'Manual' AND nt.normalized_title = rg.external_id
-		)
+		{REMOTE_GAME_JOIN}
 		WHERE g.provider_id = $1 AND g.game_id = $2
 		LIMIT 1
 	",
-			)?
+			))?
 			.query_row([provider_id.to_string(), game_id.to_string()], |row| {
 				Ok(Game {
 					provider_id: row.get(0)?,
 					game_id: row.get(1)?,
-					external_id: row.get(2)?,
-					display_title: row.get(3)?,
-					title_discriminator: row.get(4)?,
-					thumbnail_url: row.get(5)?,
-					release_date_rfc3339: row.get(6)?,
-					tags: row.get_json(7)?,
-					provider_commands: row.get_json(8)?,
-					exe_path: row.get_path(9)?,
-					unity_backend: row.get(10)?,
-					architecture: row.get(11)?,
-					executable_os: row.get(12)?,
-					engine_brand: row.get(13)?,
-					engine_version_major: row.get(14)?,
-					engine_version_minor: row.get(15)?,
-					engine_version_patch: row.get(16)?,
-					engine_version_display: row.get(17)?,
-					supported_os: row.get_json(18)?,
+					external_ids: ExternalIds::default(),
+					display_title: row.get(2)?,
+					title_discriminator: row.get(3)?,
+					thumbnail_url: row.get(4)?,
+					release_date_rfc3339: row.get(5)?,
+					tags: row.get_json(6)?,
+					provider_commands: row.get_json(7)?,
+					exe_path: row.get_path(8)?,
+					unity_backend: row.get(9)?,
+					architecture: row.get(10)?,
+					executable_os: row.get(11)?,
+					engine_brand: row.get(12)?,
+					engine_version_major: row.get(13)?,
+					engine_version_minor: row.get(14)?,
+					engine_version_patch: row.get(15)?,
+					engine_version_display: row.get(16)?,
+					supported_os: row.get_json(17)?,
 				})
 			})
 			.optional()?
-			.ok_or_else(|| Error::GameNotFound(format!("{provider_id}/{game_id}")))
+			.ok_or_else(|| Error::GameNotFound(format!("{provider_id}/{game_id}")))?;
+
+		let external_ids = db
+			.prepare_cached(
+				"SELECT external_id_provider, external_id FROM main.game_external_ids WHERE provider_id = $1 AND game_id = $2",
+			)?
+			.query_map(
+				rusqlite::params![game.provider_id, game.game_id],
+				|row| {
+					Ok((
+						row.get::<_, ExternalIdProvider>(0)?,
+						row.get::<_, String>(1)?,
+					))
+				},
+			)?
+			.collect::<rusqlite::Result<Vec<_>>>()?;
+
+		for (provider, external_id) in external_ids {
+			game.external_ids.insert(provider, external_id);
+		}
+
+		Ok(game)
 	}
 
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
@@ -442,7 +479,10 @@ impl GameDatabase for Db {
 		if !trimmed_search.is_empty() {
 			params.push(Box::new(format!("%{trimmed_search}%")));
 			params.push(Box::new(format!("%{trimmed_search}%")));
-			filters.push("(g.display_title LIKE ? OR nt.normalized_title LIKE ?)".to_string());
+			filters.push(
+				"(g.display_title LIKE ? OR EXISTS (SELECT 1 FROM main.game_external_ids game_external_id WHERE game_external_id.provider_id = g.provider_id AND game_external_id.game_id = g.game_id AND game_external_id.external_id_provider IN ('NormalizedTitle', 'Manual') AND game_external_id.external_id LIKE ?))"
+					.to_string(),
+			);
 		}
 
 		let where_clause = if filters.is_empty() {
@@ -464,12 +504,7 @@ impl GameDatabase for Db {
 					g.game_id as game_id
 			FROM main.games g
 			LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
-			LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
-			LEFT JOIN remote_games rg ON (
-					g.provider_id = rg.provider_id AND g.external_id = rg.external_id
-			) OR (
-					rg.provider_id = 'Manual' AND nt.normalized_title = rg.external_id
-			)
+			{REMOTE_GAME_JOIN}
 			WHERE {where_clause}
 			ORDER BY {sort_clause}
 			",
@@ -547,7 +582,7 @@ fn remove_stale_games(
 	)?
 	.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
 	transaction.prepare_cached(
-		"DELETE FROM main.normalized_titles WHERE provider_id = $1 AND game_id IN (SELECT game_id FROM main.games WHERE provider_id = $1 AND created_at < $2)",
+		"DELETE FROM main.game_external_ids WHERE provider_id = $1 AND game_id IN (SELECT game_id FROM main.games WHERE provider_id = $1 AND created_at < $2)",
 	)?
 	.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
 	transaction
@@ -592,7 +627,6 @@ fn insert_game_in_transaction(
 			"INSERT OR REPLACE INTO games (
 				provider_id,
 				game_id,
-				external_id,
 				display_title,
 				thumbnail_url,
 				release_date,
@@ -602,12 +636,11 @@ fn insert_game_in_transaction(
 				exe_path_hash,
 				created_at,
 				supported_os
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
 		)?
 		.execute(rusqlite::params![
 			game.provider_id,
 			game.game_id.clone(),
-			game.external_id.clone(),
 			game.display_title.clone(),
 			game.thumbnail_url.clone(),
 			game.release_date_rfc3339,
@@ -620,6 +653,12 @@ fn insert_game_in_transaction(
 			created_at,
 			JsonData(game.supported_os.clone()),
 		])?;
+
+	transaction
+		.prepare_cached(
+			"DELETE FROM main.game_external_ids WHERE provider_id = $1 AND game_id = $2",
+		)?
+		.execute(rusqlite::params![game.provider_id, game.game_id])?;
 
 	if let Some(exe_path) = game.exe_path.as_ref() {
 		transaction
@@ -654,17 +693,19 @@ fn insert_game_in_transaction(
 			])?;
 	}
 
-	for normalized_title in get_normalized_titles(&game.display_title) {
-		transaction
-			.prepare_cached(
-				"INSERT OR REPLACE INTO normalized_titles (provider_id, game_id, normalized_title)
-						VALUES ($1, $2, $3)",
-			)?
-			.execute(rusqlite::params![
+	for (provider, external_ids) in &game.external_ids.map {
+		let mut statement = transaction.prepare_cached(
+			"INSERT OR REPLACE INTO main.game_external_ids (provider_id, game_id, external_id_provider, external_id) VALUES ($1, $2, $3, $4)",
+		)?;
+
+		for external_id in external_ids {
+			statement.execute(rusqlite::params![
 				game.provider_id,
-				game.game_id.clone(),
-				normalized_title,
+				game.game_id,
+				provider,
+				external_id,
 			])?;
+		}
 	}
 
 	Ok(())
@@ -876,7 +917,6 @@ fn create_tables(connection: &rusqlite::Connection) -> Result {
 		CREATE TABLE IF NOT EXISTS games (
 			provider_id TEXT NOT NULL,
 			game_id TEXT NOT NULL,
-			external_id TEXT NOT NULL,
 			display_title TEXT NOT NULL,
 			title_discriminator TEXT,
 			thumbnail_url TEXT,
@@ -889,19 +929,18 @@ fn create_tables(connection: &rusqlite::Connection) -> Result {
 			PRIMARY KEY (provider_id, game_id)
 		);
 
-		CREATE INDEX IF NOT EXISTS idx_games_external_id ON games(provider_id, external_id);
 		CREATE INDEX IF NOT EXISTS idx_games_exe_path_hash ON games(exe_path_hash);
 
-		CREATE TABLE IF NOT EXISTS normalized_titles (
+		CREATE TABLE IF NOT EXISTS game_external_ids (
 			provider_id TEXT NOT NULL,
 			game_id TEXT NOT NULL,
-			normalized_title TEXT NOT NULL,
+			external_id_provider TEXT NOT NULL,
+			external_id TEXT NOT NULL,
 			FOREIGN KEY (provider_id, game_id) REFERENCES games(provider_id, game_id) ON DELETE CASCADE,
-			PRIMARY KEY (provider_id, game_id, normalized_title)
+			PRIMARY KEY (provider_id, game_id, external_id_provider, external_id)
 		);
 
-		CREATE INDEX IF NOT EXISTS idx_normalized_titles ON normalized_titles(provider_id, game_id);
-		CREATE INDEX IF NOT EXISTS idx_normalized_titles_title ON normalized_titles(normalized_title);
+		CREATE INDEX IF NOT EXISTS idx_game_external_ids_lookup ON game_external_ids(external_id_provider, external_id);
 
 		CREATE TABLE IF NOT EXISTS installed_games (
 			provider_id TEXT NOT NULL,

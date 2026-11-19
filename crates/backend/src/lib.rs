@@ -10,6 +10,7 @@ pub mod files;
 pub mod filter_views;
 pub mod game;
 pub mod game_engines;
+pub mod game_external_id;
 pub mod game_launch;
 pub mod game_providers;
 pub mod game_tag;

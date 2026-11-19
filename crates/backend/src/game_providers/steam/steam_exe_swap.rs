@@ -155,7 +155,7 @@ pub fn launch_via_steam_with_swapped_exe(
 	}
 	fs::set_permissions(exe_path, std::fs::Permissions::from_mode(0o755))?;
 
-	let url = format!("steam://rungameid/{}", game.external_id);
+	let url = format!("steam://rungameid/{}", game.try_get_provider_external_id()?);
 	log::info!(
 		"Replaced `{}` with a temporary launcher, asking Steam to launch `{url}`",
 		exe_path.display()

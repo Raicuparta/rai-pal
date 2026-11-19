@@ -133,7 +133,7 @@ pub trait WineProviderActions {
 			"Launched `{}` with Wine for game `{}` ({})",
 			exe_path.display(),
 			game.display_title,
-			game.external_id,
+			game.get_provider_external_id().unwrap_or(&game.game_id),
 		);
 
 		Ok(())

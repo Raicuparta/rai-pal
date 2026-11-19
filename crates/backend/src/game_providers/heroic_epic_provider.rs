@@ -148,7 +148,7 @@ impl ProviderActions for HeroicEpic {
 
 impl WineProviderActions for HeroicEpic {
 	fn get_wine_prefix_path(&self, game: &Game) -> Result<PathBuf> {
-		heroic_provider::get_wine_prefix_path(&game.external_id)
+		heroic_provider::get_wine_prefix_path(game.try_get_provider_external_id()?)
 	}
 
 	fn set_wine_dll_overrides(&self, game: &Game, dll_overrides: &[String]) -> Result {

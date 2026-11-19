@@ -9,12 +9,13 @@ use crate::{
 		unity::{self, UnityBackend},
 		unreal,
 	},
+	game_external_id::{ExternalIdProvider, ExternalIds},
 	game_providers::{
 		game_provider::GameProviderId,
 		provider_command::{ProviderCommand, ProviderCommandAction, ProviderCommandKind},
 	},
 	game_tag::GameTag,
-	game_title::is_probably_demo,
+	game_title::{get_normalized_titles, is_probably_demo},
 	operating_system::{self, OperatingSystem},
 	path_extensions::PathExt,
 	remote_config::{self, RemoteConfigs},
@@ -25,7 +26,7 @@ use crate::{
 pub struct Game {
 	pub provider_id: GameProviderId,
 	pub game_id: String,
-	pub external_id: String,
+	pub external_ids: ExternalIds,
 	pub display_title: String,
 	pub title_discriminator: Option<String>,
 	pub thumbnail_url: Option<String>,
@@ -46,10 +47,25 @@ pub struct Game {
 
 impl Game {
 	pub fn new(provider_id: GameProviderId, game_id: String, title: String) -> Self {
+		let normalized_titles = get_normalized_titles(&title);
+		let mut game = Self::new_internal(provider_id, game_id, title);
+
+		game.external_ids.insert(provider_id, game.game_id.clone());
+		game.external_ids
+			.insert_all(ExternalIdProvider::NormalizedTitle, normalized_titles);
+
+		game
+	}
+
+	pub fn new_manual(game_id: String, title: String) -> Self {
+		Self::new_internal(GameProviderId::Manual, game_id, title)
+	}
+
+	fn new_internal(provider_id: GameProviderId, game_id: String, title: String) -> Self {
 		let mut game = Self {
 			provider_id,
-			external_id: game_id.clone(),
 			game_id,
+			external_ids: ExternalIds::default(),
 			display_title: title,
 			title_discriminator: None,
 			thumbnail_url: None,
@@ -110,6 +126,15 @@ impl Game {
 			.and_then(|file_name| file_name.to_str())
 			.map(std::string::ToString::to_string)
 			.ok_or_else(|| Error::InvalidOsStr(path.display().to_string()))
+	}
+
+	pub fn get_provider_external_id(&self) -> Option<&str> {
+		self.external_ids.first(self.provider_id)
+	}
+
+	pub fn try_get_provider_external_id(&self) -> Result<&str> {
+		self.get_provider_external_id()
+			.ok_or(Error::MissingGameExternalId(self.provider_id))
 	}
 
 	pub fn add_provider_command(
@@ -182,6 +207,17 @@ impl Game {
 			}
 
 			self.exe_path = Some(exe_path.normalize());
+
+			if let Some(manual_id) = exe_path
+				.file_stem()
+				.and_then(|file_stem| file_stem.to_str())
+				.and_then(|file_stem| get_normalized_titles(file_stem).into_iter().next())
+			{
+				self.external_ids
+					.map
+					.remove(&ExternalIdProvider::GameProvider(GameProviderId::Manual));
+				self.external_ids.insert(GameProviderId::Manual, manual_id);
+			}
 
 			self.executable_os = operating_system::get_os_from_path(exe_path);
 

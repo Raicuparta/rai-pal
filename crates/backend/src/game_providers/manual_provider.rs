@@ -6,7 +6,7 @@ use std::{
 
 use log::error;
 
-use super::game_provider::{GameProviderId, ProviderActions};
+use super::game_provider::ProviderActions;
 use super::provider_command::{ProviderCommandAction, ProviderCommandKind};
 use crate::{
 	app_paths,
@@ -206,8 +206,7 @@ fn get_game_from_path(exe_path: &Path) -> Result<Game> {
 		.and_then(|p| p.file_name())
 		.map(|f| f.to_string_lossy().to_string());
 
-	let mut game = Game::new(
-		GameProviderId::Manual,
+	let mut game = Game::new_manual(
 		exe_path.hash_string(),
 		match parent_folder {
 			Some(ref folder) => format!("{folder} / {name}"),

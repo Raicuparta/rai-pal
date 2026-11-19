@@ -12,7 +12,7 @@ use crate::{
 	game_providers::game_provider::GameProviderId,
 	local_database::{
 		app_database::{AppDatabase, Db},
-		game_database::GameDatabase,
+		game_database::{GameDatabase, REMOTE_GAME_JOIN},
 		rusqlite_extensions::RowExt,
 	},
 	mod_providers::mod_provider::ModProviderId,
@@ -102,23 +102,21 @@ pub(crate) const GAME_IDS_COMPATIBILITY_FILTER: &str = r"(
 	json_extract(m.game_ids, '$') IS NULL
 	OR EXISTS (
 		SELECT 1
-		FROM json_each(m.game_ids) AS provider_game_ids
-		WHERE provider_game_ids.key = g.provider_id
-			AND (
-				EXISTS (
-					SELECT 1
-					FROM json_each(provider_game_ids.value) AS game_ids
-					WHERE game_ids.value = g.external_id
-				)
-				OR (
-					g.provider_id = 'Manual'
-					AND nt.normalized_title IS NOT NULL
-					AND EXISTS (
-						SELECT 1
-						FROM json_each(provider_game_ids.value) AS game_ids
-						WHERE game_ids.value = nt.normalized_title
-					)
-				)
+		FROM main.game_external_ids game_external_id
+		INNER JOIN json_each(m.game_ids) AS mod_game_ids
+			ON CASE mod_game_ids.key
+				WHEN 'Manual' THEN 'NormalizedTitle'
+				ELSE mod_game_ids.key
+			END = CASE game_external_id.external_id_provider
+				WHEN 'Manual' THEN 'NormalizedTitle'
+				ELSE game_external_id.external_id_provider
+			END
+		WHERE game_external_id.provider_id = g.provider_id
+			AND game_external_id.game_id = g.game_id
+			AND EXISTS (
+				SELECT 1
+				FROM json_each(mod_game_ids.value) AS mod_game_id
+				WHERE mod_game_id.value = game_external_id.external_id
 			)
 	)
 )";
@@ -592,12 +590,7 @@ impl ModDatabase for Db {
 					json_extract(m.engine_version_range, '$.maximum.patch') AS max_patch
 				FROM main.games g
 				LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
-				LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
-				LEFT JOIN remote_games rg ON (
-						g.provider_id = rg.provider_id AND g.external_id = rg.external_id
-				) OR (
-						rg.provider_id = 'Manual' AND nt.normalized_title = rg.external_id
-				)
+				{REMOTE_GAME_JOIN}
 				INNER JOIN main.mods m ON 1=1
 				LEFT JOIN main.installed_mods im ON
 					g.exe_path_hash = im.exe_path_hash
