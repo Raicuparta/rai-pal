@@ -20,6 +20,7 @@ use crate::{
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FilterValueLabel {
 	Unknown,
+	NoMods,
 	Arch64,
 	Arch32,
 	TagDemo,
@@ -271,12 +272,25 @@ fn mod_family_group(
 		.collect();
 	values.sort_by_key(|value| value.display.to_lowercase());
 
+	if !mod_families.is_empty() {
+		let item = filter.mod_families.item(None);
+		values.push(FilterValueView {
+			value: String::new(),
+			label: Some(FilterValueLabel::NoMods),
+			display: String::new(),
+			note: FilterValueNote::None,
+			enabled: item.enabled,
+			locked: item.locked,
+			available: true,
+		});
+	}
+
 	let family_ids = mod_families.keys().cloned().collect::<Vec<_>>();
 
 	FilterGroupView {
 		key: FilterGroupKey::ModFamilies,
 		values,
-		has_changes: filter.mod_families.has_changes(&family_ids, false),
+		has_changes: filter.mod_families.has_changes(&family_ids, true),
 		has_locked: filter.mod_families.has_locked(),
 		expanded: !collapsed_filters.contains(&FilterGroupKey::ModFamilies),
 	}
@@ -410,7 +424,7 @@ pub fn apply_filter_action(
 		}
 		FilterGroupKey::ModFamilies => {
 			let family_ids = mod_families.keys().cloned().collect::<Vec<_>>();
-			apply_string_value(&mut filter.mod_families, value, &family_ids, false, action)
+			apply_string_value(&mut filter.mod_families, value, &family_ids, true, action)
 		}
 		FilterGroupKey::Tags => {
 			apply_string_value(&mut filter.tags, value, &GameTag::ALL, true, action)

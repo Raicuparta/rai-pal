@@ -226,6 +226,10 @@ msgid "Unknown"
 msgstr "Desconhecido"
 
 msgctxt "filterValue"
+msgid "No mods"
+msgstr "Sem mods"
+
+msgctxt "filterValue"
 msgid "64-bit"
 msgstr "64-bit"
 

@@ -112,6 +112,9 @@ export global Tr {
         if label == FilterValueLabel.unknown {
             return @tr("filterValue" => "Unknown");
         }
+        if label == FilterValueLabel.no-mods {
+            return @tr("filterValue" => "No mods");
+        }
         if label == FilterValueLabel.arch-64 {
             return @tr("filterValue" => "64-bit");
         }

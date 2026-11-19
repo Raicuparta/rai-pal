@@ -17,7 +17,7 @@ use crate::{
 	games_query::{FilterGroup, GamesQuery, GamesSortBy, InstallState},
 	local_database::{
 		app_database::{AppDatabase, Db},
-		mod_database::{self, GAME_IDS_COMPATIBILITY_FILTER, ModDatabase},
+		mod_database::{self, ModDatabase},
 		rusqlite_extensions::{JsonData, RowExt},
 	},
 	operating_system::OperatingSystem,
@@ -158,6 +158,169 @@ fn build_supported_os_inclusion_filter(
 	Some(format!("({})", branches.join(" OR ")))
 }
 
+const MOD_COMPATIBILITY_FILTER: &str = r"
+	(m.engine_key IS NULL OR m.engine_key = COALESCE(ig.engine_brand, rg.engine_brand))
+	AND (m.unity_backend_key IS NULL OR ig.unity_backend IS NULL OR m.unity_backend_key = ig.unity_backend)
+	AND (m.architecture_key IS NULL OR ig.architecture IS NULL OR m.architecture_key = ig.architecture)
+	AND (m.game_os_key IS NULL OR ig.executable_os IS NULL OR m.game_os_key = ig.executable_os)
+	AND (m.host_os_key IS NULL OR m.host_os_key = ?)
+	AND (
+		COALESCE(ig.engine_version_major, rg.engine_version_major) IS NULL
+		OR (
+			(m.engine_min_major IS NULL OR NOT (
+				m.engine_min_major > COALESCE(ig.engine_version_major, rg.engine_version_major)
+				OR (
+					m.engine_min_major = COALESCE(ig.engine_version_major, rg.engine_version_major)
+					AND m.engine_min_minor IS NOT NULL
+					AND COALESCE(ig.engine_version_minor, rg.engine_version_minor) IS NOT NULL
+					AND (
+						m.engine_min_minor > COALESCE(ig.engine_version_minor, rg.engine_version_minor)
+						OR (
+							m.engine_min_minor = COALESCE(ig.engine_version_minor, rg.engine_version_minor)
+							AND m.engine_min_patch IS NOT NULL
+							AND COALESCE(ig.engine_version_patch, rg.engine_version_patch) IS NOT NULL
+							AND m.engine_min_patch > COALESCE(ig.engine_version_patch, rg.engine_version_patch)
+						)
+					)
+				)
+			))
+			AND (m.engine_max_major IS NULL OR NOT (
+				m.engine_max_major < COALESCE(ig.engine_version_major, rg.engine_version_major)
+				OR (
+					m.engine_max_major = COALESCE(ig.engine_version_major, rg.engine_version_major)
+					AND m.engine_max_minor IS NOT NULL
+					AND COALESCE(ig.engine_version_minor, rg.engine_version_minor) IS NOT NULL
+					AND (
+						m.engine_max_minor < COALESCE(ig.engine_version_minor, rg.engine_version_minor)
+						OR (
+							m.engine_max_minor = COALESCE(ig.engine_version_minor, rg.engine_version_minor)
+							AND m.engine_max_patch IS NOT NULL
+							AND COALESCE(ig.engine_version_patch, rg.engine_version_patch) IS NOT NULL
+							AND m.engine_max_patch < COALESCE(ig.engine_version_patch, rg.engine_version_patch)
+						)
+					)
+				)
+			))
+		)
+	)
+";
+
+fn build_mod_family_inclusion_filter(
+	group: &FilterGroup<String>,
+	filterable_families: &[String],
+	params: &mut Vec<Box<dyn rusqlite::types::ToSql>>,
+) -> Option<String> {
+	if filterable_families.is_empty() {
+		return None;
+	}
+
+	let disabled: HashSet<&String> = group
+		.known
+		.iter()
+		.filter(|(family, item)| !item.enabled && filterable_families.contains(family))
+		.map(|(family, _)| family)
+		.collect();
+	let unknown_enabled = group.unknown.as_ref().is_none_or(|item| item.enabled);
+
+	if disabled.is_empty() && unknown_enabled {
+		return None;
+	}
+
+	let enabled: Vec<&String> = filterable_families
+		.iter()
+		.filter(|family| !disabled.contains(family))
+		.collect();
+
+	let mut branches: Vec<String> = Vec::new();
+
+	if !enabled.is_empty() {
+		let placeholders: Vec<String> = enabled
+			.iter()
+			.map(|family| {
+				params.push(Box::new((*family).clone()));
+				"?".to_string()
+			})
+			.collect();
+		branches.push(format!(
+			"EXISTS (
+				SELECT 1
+				FROM game_mod_families game_mod_family
+				WHERE game_mod_family.provider_id = g.provider_id
+					AND game_mod_family.game_id = g.game_id
+					AND game_mod_family.family IN ({})
+			)",
+			placeholders.join(", ")
+		));
+	}
+
+	if unknown_enabled {
+		branches.push(
+			"NOT EXISTS (
+				SELECT 1
+				FROM game_mod_families game_mod_family
+				WHERE game_mod_family.provider_id = g.provider_id
+					AND game_mod_family.game_id = g.game_id
+			)"
+			.to_string(),
+		);
+	}
+
+	if branches.is_empty() {
+		Some("1=0".to_string())
+	} else {
+		Some(format!("({})", branches.join(" OR ")))
+	}
+}
+
+fn build_game_mod_families_cte(
+	filterable_families: &[String],
+	params: &mut Vec<Box<dyn rusqlite::types::ToSql>>,
+) -> String {
+	let families_json =
+		serde_json::to_string(filterable_families).unwrap_or_else(|_| "[]".to_string());
+	params.push(Box::new(families_json));
+
+	let current_os = OperatingSystem::get_current().to_string();
+	params.push(Box::new(current_os.clone()));
+	params.push(Box::new(current_os));
+
+	format!(
+		r"
+		WITH filterable_families AS MATERIALIZED (
+			SELECT value AS family_id FROM json_each(?)
+		),
+		game_mod_families AS MATERIALIZED (
+			SELECT DISTINCT g.provider_id, g.game_id, m.family
+			FROM main.games g
+			LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
+			{REMOTE_GAME_JOIN}
+			INNER JOIN main.game_external_ids game_external_id
+				ON game_external_id.provider_id = g.provider_id
+				AND game_external_id.game_id = g.game_id
+			INNER JOIN main.mod_game_ids mod_game_id
+				ON mod_game_id.external_id_provider = CASE game_external_id.external_id_provider
+					WHEN 'Manual' THEN 'NormalizedTitle'
+					ELSE game_external_id.external_id_provider
+				END
+				AND mod_game_id.external_id = game_external_id.external_id
+			INNER JOIN main.mods m ON m.id = mod_game_id.mod_id
+			INNER JOIN filterable_families ON filterable_families.family_id = m.family
+			WHERE COALESCE(m.hide_from_game_mods_list, 0) = 0
+				AND {MOD_COMPATIBILITY_FILTER}
+			UNION
+			SELECT DISTINCT g.provider_id, g.game_id, m.family
+			FROM main.games g
+			LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
+			{REMOTE_GAME_JOIN}
+			INNER JOIN main.mods m ON m.has_game_ids = 0
+			INNER JOIN filterable_families ON filterable_families.family_id = m.family
+			WHERE COALESCE(m.hide_from_game_mods_list, 0) = 0
+				AND {MOD_COMPATIBILITY_FILTER}
+		)
+		"
+	)
+}
+
 impl GameDatabase for Db {
 	fn insert_game(&self, game: &Game) {
 		if let Err(err) = try_insert_games(self, std::slice::from_ref(game)) {
@@ -287,6 +450,8 @@ impl GameDatabase for Db {
 		// Build filtering logic dynamically with parameterized queries
 		let mut filters = Vec::<String>::new();
 		let mut params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
+		let mut mod_family_cte = String::new();
+		let mut mod_family_params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
 
 		if let Some(filter) = query.as_ref().map(|q| &q.filter) {
 			// Installed filter
@@ -390,88 +555,24 @@ impl GameDatabase for Db {
 			}
 
 			// Mod families filter
-			// When no family definitions are available (e.g. offline before the first
-			// successful refresh), a saved selection can't be shown in the UI, so ignore
-			// it instead of filtering on families we know nothing about.
-			if !self.get_mod_families()?.is_empty() {
-				let disabled: Vec<_> = filter
-					.mod_families
-					.known
-					.iter()
-					.filter(|(_, item)| !item.enabled)
-					.collect();
-				if !disabled.is_empty() {
-					let family_placeholders: Vec<String> = disabled
-						.iter()
-						.map(|(family, _)| {
-							params.push(Box::new((*family).clone()));
-							"?".to_string()
-						})
-						.collect();
+			// The "unknown" value means the game has no compatible mod from any
+			// filterable family. This lets "Only" on one family actually show only
+			// games that have a mod from that family.
+			let filterable_mod_families: Vec<String> = self
+				.get_mod_families()?
+				.into_iter()
+				.filter(|(_, family)| family.filterable == Some(true))
+				.map(|(family_id, _)| family_id)
+				.collect();
 
-					let current_os = OperatingSystem::get_current().to_string();
-					params.push(Box::new(current_os));
-
-					filters.push(format!(
-						r"EXISTS (
-						SELECT 1 FROM main.mods m
-						WHERE m.family NOT IN ({})
-						AND COALESCE(m.hide_from_game_mods_list, 0) = 0
-						AND (json_extract(m.engine, '$') IS NULL OR json_extract(m.engine, '$') = COALESCE(ig.engine_brand, rg.engine_brand))
-						AND (json_extract(m.unity_backend, '$') IS NULL OR ig.unity_backend IS NULL OR json_extract(m.unity_backend, '$') = ig.unity_backend)
-					AND (json_extract(m.architecture, '$') IS NULL OR ig.architecture IS NULL OR json_extract(m.architecture, '$') = ig.architecture)
-					AND (json_extract(m.game_os, '$') IS NULL OR ig.executable_os IS NULL OR json_extract(m.game_os, '$') = ig.executable_os)
-					AND (json_extract(m.host_os, '$') IS NULL OR json_extract(m.host_os, '$') = ?)
-						AND {GAME_IDS_COMPATIBILITY_FILTER}
-						AND (
-							COALESCE(ig.engine_version_major, rg.engine_version_major) IS NULL
-							OR (
-								(
-									json_extract(m.engine_version_range, '$.minimum.major') IS NULL
-									OR NOT (
-										json_extract(m.engine_version_range, '$.minimum.major') > COALESCE(ig.engine_version_major, rg.engine_version_major)
-										OR (
-											json_extract(m.engine_version_range, '$.minimum.major') = COALESCE(ig.engine_version_major, rg.engine_version_major)
-											AND json_extract(m.engine_version_range, '$.minimum.minor') IS NOT NULL
-											AND COALESCE(ig.engine_version_minor, rg.engine_version_minor) IS NOT NULL
-											AND (
-												json_extract(m.engine_version_range, '$.minimum.minor') > COALESCE(ig.engine_version_minor, rg.engine_version_minor)
-												OR (
-													json_extract(m.engine_version_range, '$.minimum.minor') = COALESCE(ig.engine_version_minor, rg.engine_version_minor)
-													AND json_extract(m.engine_version_range, '$.minimum.patch') IS NOT NULL
-													AND COALESCE(ig.engine_version_patch, rg.engine_version_patch) IS NOT NULL
-													AND json_extract(m.engine_version_range, '$.minimum.patch') > COALESCE(ig.engine_version_patch, rg.engine_version_patch)
-												)
-											)
-										)
-									)
-								)
-								AND (
-									json_extract(m.engine_version_range, '$.maximum.major') IS NULL
-									OR NOT (
-										json_extract(m.engine_version_range, '$.maximum.major') < COALESCE(ig.engine_version_major, rg.engine_version_major)
-										OR (
-											json_extract(m.engine_version_range, '$.maximum.major') = COALESCE(ig.engine_version_major, rg.engine_version_major)
-											AND json_extract(m.engine_version_range, '$.maximum.minor') IS NOT NULL
-											AND COALESCE(ig.engine_version_minor, rg.engine_version_minor) IS NOT NULL
-											AND (
-												json_extract(m.engine_version_range, '$.maximum.minor') < COALESCE(ig.engine_version_minor, rg.engine_version_minor)
-												OR (
-													json_extract(m.engine_version_range, '$.maximum.minor') = COALESCE(ig.engine_version_minor, rg.engine_version_minor)
-													AND json_extract(m.engine_version_range, '$.maximum.patch') IS NOT NULL
-													AND COALESCE(ig.engine_version_patch, rg.engine_version_patch) IS NOT NULL
-													AND json_extract(m.engine_version_range, '$.maximum.patch') < COALESCE(ig.engine_version_patch, rg.engine_version_patch)
-												)
-											)
-										)
-									)
-								)
-							)
-						)
-					)",
-						family_placeholders.join(", ")
-					));
-				}
+			if let Some(cond) = build_mod_family_inclusion_filter(
+				&filter.mod_families,
+				&filterable_mod_families,
+				&mut params,
+			) {
+				mod_family_cte =
+					build_game_mod_families_cte(&filterable_mod_families, &mut mod_family_params);
+				filters.push(cond);
 			}
 		}
 
@@ -499,6 +600,7 @@ impl GameDatabase for Db {
 
 		let sql_query = format!(
 			r"
+			{mod_family_cte}
 			SELECT DISTINCT
 					g.provider_id as provider_id,
 					g.game_id as game_id
@@ -510,7 +612,10 @@ impl GameDatabase for Db {
 			",
 		);
 
-		let param_refs: Vec<&dyn rusqlite::types::ToSql> = params.iter().map(|p| &**p).collect();
+		let mut all_params = mod_family_params;
+		all_params.extend(params);
+		let param_refs: Vec<&dyn rusqlite::types::ToSql> =
+			all_params.iter().map(|p| &**p).collect();
 		let game_ids = self
 			.read_db()?
 			.prepare(&sql_query)?

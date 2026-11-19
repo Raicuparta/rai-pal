@@ -99,27 +99,29 @@ pub(crate) fn scope_id<'a>(scope: &'a str, original_id: &'a str) -> Cow<'a, str>
 }
 
 pub(crate) const GAME_IDS_COMPATIBILITY_FILTER: &str = r"(
-	json_extract(m.game_ids, '$') IS NULL
+	m.has_game_ids = 0
 	OR EXISTS (
 		SELECT 1
-		FROM main.game_external_ids game_external_id
-		INNER JOIN json_each(m.game_ids) AS mod_game_ids
-			ON CASE mod_game_ids.key
-				WHEN 'Manual' THEN 'NormalizedTitle'
-				ELSE mod_game_ids.key
-			END = CASE game_external_id.external_id_provider
+		FROM main.mod_game_ids mod_game_id
+		INNER JOIN main.game_external_ids game_external_id
+			ON mod_game_id.external_id_provider = CASE game_external_id.external_id_provider
 				WHEN 'Manual' THEN 'NormalizedTitle'
 				ELSE game_external_id.external_id_provider
 			END
-		WHERE game_external_id.provider_id = g.provider_id
+			AND game_external_id.external_id = mod_game_id.external_id
+		WHERE mod_game_id.mod_id = m.id
+			AND game_external_id.provider_id = g.provider_id
 			AND game_external_id.game_id = g.game_id
-			AND EXISTS (
-				SELECT 1
-				FROM json_each(mod_game_ids.value) AS mod_game_id
-				WHERE mod_game_id.value = game_external_id.external_id
-			)
 	)
 )";
+
+fn normalize_external_id_provider(provider: &str) -> &str {
+	if provider == "Manual" {
+		"NormalizedTitle"
+	} else {
+		provider
+	}
+}
 
 pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 	connection.execute_batch(
@@ -151,10 +153,33 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 				hash TEXT,
 				family TEXT,
 				game_ids TEXT,
-				created_at INTEGER
+				created_at INTEGER,
+				has_game_ids INTEGER GENERATED ALWAYS AS (json_extract(game_ids, '$') IS NOT NULL) VIRTUAL,
+				engine_key TEXT GENERATED ALWAYS AS (json_extract(engine, '$')) VIRTUAL,
+				unity_backend_key TEXT GENERATED ALWAYS AS (json_extract(unity_backend, '$')) VIRTUAL,
+				architecture_key TEXT GENERATED ALWAYS AS (json_extract(architecture, '$')) VIRTUAL,
+				game_os_key TEXT GENERATED ALWAYS AS (json_extract(game_os, '$')) VIRTUAL,
+				host_os_key TEXT GENERATED ALWAYS AS (json_extract(host_os, '$')) VIRTUAL,
+				engine_min_major INTEGER GENERATED ALWAYS AS (json_extract(engine_version_range, '$.minimum.major')) VIRTUAL,
+				engine_min_minor INTEGER GENERATED ALWAYS AS (json_extract(engine_version_range, '$.minimum.minor')) VIRTUAL,
+				engine_min_patch INTEGER GENERATED ALWAYS AS (json_extract(engine_version_range, '$.minimum.patch')) VIRTUAL,
+				engine_max_major INTEGER GENERATED ALWAYS AS (json_extract(engine_version_range, '$.maximum.major')) VIRTUAL,
+				engine_max_minor INTEGER GENERATED ALWAYS AS (json_extract(engine_version_range, '$.maximum.minor')) VIRTUAL,
+				engine_max_patch INTEGER GENERATED ALWAYS AS (json_extract(engine_version_range, '$.maximum.patch')) VIRTUAL
 			);
 
 			CREATE INDEX IF NOT EXISTS idx_mods_created_at ON mods(created_at);
+			CREATE INDEX IF NOT EXISTS idx_mods_family ON mods(family);
+			CREATE INDEX IF NOT EXISTS idx_mods_has_game_ids ON mods(has_game_ids);
+
+			CREATE TABLE IF NOT EXISTS mod_game_ids (
+				mod_id TEXT NOT NULL,
+				external_id_provider TEXT NOT NULL,
+				external_id TEXT NOT NULL,
+				PRIMARY KEY (mod_id, external_id_provider, external_id)
+			);
+
+			CREATE INDEX IF NOT EXISTS idx_mod_game_ids_lookup ON mod_game_ids(external_id_provider, external_id);
 
 			CREATE TABLE IF NOT EXISTS mod_families (
 				id TEXT NOT NULL PRIMARY KEY,
@@ -746,11 +771,20 @@ impl ModDatabase for Db {
 	fn remove_mods_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result {
 		let keep_json = serde_json::to_string(keep_ids)?;
 
-		self.write_db()?
+		let mut connection = self.write_db()?;
+		let transaction = connection.transaction()?;
+
+		transaction.prepare_cached(
+			"DELETE FROM main.mod_game_ids WHERE mod_id IN (SELECT id FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?)));",
+		)?
+		.execute(rusqlite::params![provider_id, keep_json])?;
+		transaction
 			.prepare_cached(
 				"DELETE FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?));",
 			)?
 			.execute(rusqlite::params![provider_id, keep_json])?;
+
+		transaction.commit()?;
 
 		Ok(())
 	}
@@ -918,8 +952,10 @@ fn try_insert_mod(
 		.map(|deps| scope_dependencies(deps, &scope));
 	let stored_config = canonicalize_config(game_mod.config.as_ref(), &game_mod.id);
 
-	connection_mutex
-		.write_db()?
+	let mut connection = connection_mutex.write_db()?;
+	let transaction = connection.transaction()?;
+
+	transaction
 		.prepare_cached(
 			"INSERT OR REPLACE INTO mods (
 				id,
@@ -983,6 +1019,25 @@ fn try_insert_mod(
 			scope,
 			serialize_json_option(game_mod.game_ids.as_ref())?,
 		])?;
+
+	transaction
+		.prepare_cached("DELETE FROM main.mod_game_ids WHERE mod_id = $1;")?
+		.execute([scoped_id.as_ref()])?;
+
+	if let Some(game_ids) = &game_mod.game_ids {
+		let mut statement = transaction
+			.prepare_cached("INSERT OR IGNORE INTO main.mod_game_ids (mod_id, external_id_provider, external_id) VALUES ($1, $2, $3);")?;
+
+		for (provider, ids) in &game_ids.0 {
+			let provider = normalize_external_id_provider(provider);
+
+			for id in ids {
+				statement.execute(rusqlite::params![scoped_id.as_ref(), provider, id])?;
+			}
+		}
+	}
+
+	transaction.commit()?;
 
 	Ok(())
 }

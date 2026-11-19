@@ -226,6 +226,10 @@ msgid "Unknown"
 msgstr "알 수 없음"
 
 msgctxt "filterValue"
+msgid "No mods"
+msgstr "모드 없음"
+
+msgctxt "filterValue"
 msgid "64-bit"
 msgstr "64비트"
 
