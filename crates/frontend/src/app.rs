@@ -160,6 +160,12 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	crate::commands::register(&main_window);
 	window_state::register_events(&main_window);
 
+	if window_state::in_gamescope() && !app_settings.borrow().skip_steam_deck_shortcut_prompt {
+		main_window
+			.global::<crate::SteamDeckPromptState>()
+			.set_open(true);
+	}
+
 	os_integration::register();
 	for argument in std::env::args().skip(1) {
 		ctx.handle_deep_link(&argument);

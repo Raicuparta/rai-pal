@@ -195,14 +195,16 @@ fn update_state(window: &slint::Window, settings: &mut AppSettings) {
 	}
 }
 
+pub fn in_gamescope() -> bool {
+	std::env::var_os("GAMESCOPE_WAYLAND_DISPLAY").is_some()
+		|| std::env::var("XDG_SESSION_DESKTOP").is_ok_and(|value| value == "gamescope")
+}
+
 /// Gamescope's Xwayland reports bogus output dimensions and no `Xft.dpi`, so winit's X11
 /// DPI heuristic derives a ~2.17x scale factor from them. Gamescope already scales the
 /// window to the display, so the UI must be rendered at 1x there.
 pub fn fix_gamescope_scale_factor() {
-	let in_gamescope = std::env::var_os("GAMESCOPE_WAYLAND_DISPLAY").is_some()
-		|| std::env::var("XDG_SESSION_DESKTOP").is_ok_and(|value| value == "gamescope");
-
-	if !in_gamescope
+	if !in_gamescope()
 		|| std::env::var_os("SLINT_SCALE_FACTOR").is_some()
 		|| std::env::var_os("WINIT_X11_SCALE_FACTOR").is_some()
 	{

@@ -18,7 +18,6 @@ import { UpdateState } from "app_update_popup.slint";
 export component AppMenu inherits Rectangle {
     private property <bool> about-open: false;
     private property <bool> steam-cache-open: false;
-    private property <bool> steam-shortcut-open: false;
     private property <string> menu-tooltip: @tr("appDropdownMenu" => "App menu");
     private property <[SelectOption]> color-scheme-options: [
         { label: @tr("appDropdownMenu" => "Auto"), value: "auto" },
@@ -111,7 +110,7 @@ export component AppMenu inherits Rectangle {
                 clicked => {
                     SteamShortcutState.state = ActionState.idle;
                     SteamShortcutState.error = { context: MessageContext.none, subject: "", detail: "" };
-                    root.steam-shortcut-open = true;
+                    SteamShortcutState.open = true;
                     menu.close();
                 }
             }
@@ -250,10 +249,5 @@ export component AppMenu inherits Rectangle {
     SteamShortcutPopup {
         x: -root.absolute-position.x;
         y: -root.absolute-position.y;
-        open: root.steam-shortcut-open;
-
-        closed => {
-            root.steam-shortcut-open = false;
-        }
     }
 }

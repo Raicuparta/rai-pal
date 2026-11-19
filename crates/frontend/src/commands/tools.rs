@@ -67,6 +67,32 @@ impl CommandHandler {
 		});
 	}
 
+	pub fn respond_to_steam_deck_prompt(&self, add_shortcut: bool) {
+		let Some(window) = self.ui() else {
+			return;
+		};
+
+		let prompt = window.global::<crate::SteamDeckPromptState>();
+		let dont_ask_again = prompt.get_dont_ask_again();
+		prompt.set_open(false);
+
+		if dont_ask_again && !self.settings.borrow().skip_steam_deck_shortcut_prompt {
+			self.settings.borrow_mut().skip_steam_deck_shortcut_prompt = true;
+			self.persist_settings();
+		}
+
+		if !add_shortcut {
+			return;
+		}
+
+		let shortcut = window.global::<crate::SteamShortcutState>();
+		shortcut.set_state(crate::ActionState::Idle);
+		shortcut.set_error(MessageData::default());
+		shortcut.set_open(true);
+
+		self.add_steam_shortcut();
+	}
+
 	pub fn add_steam_shortcut(&self) {
 		let Some(ui_window) = self.ui() else {
 			return;
@@ -158,5 +184,8 @@ pub fn register(window: &crate::MainWindow) {
 	});
 	on_command!(window, DialogActions, on_add_steam_shortcut, || handler => {
 		handler.add_steam_shortcut();
+	});
+	on_command!(window, DialogActions, on_steam_deck_prompt_response, |add_shortcut| handler => {
+		handler.respond_to_steam_deck_prompt(add_shortcut);
 	});
 }

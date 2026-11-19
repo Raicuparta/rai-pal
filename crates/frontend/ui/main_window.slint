@@ -17,6 +17,7 @@ import { ModsPage } from "components/mods_page.slint";
 import { ThanksPage } from "components/thanks_page.slint";
 import { AppUpdatePopup } from "components/app_update_popup.slint";
 import { ConfirmationPopup } from "components/confirmation_popup.slint";
+import { SteamDeckPrompt } from "components/steam_deck_prompt.slint";
 import { NotificationsOverlay } from "components/notifications.slint";
 import { GameDetailsPopup } from "components/game_details_popup.slint";
 import { AppSettings } from "settings.slint";
@@ -53,6 +54,7 @@ export {
 } from "components/confirm_mod_source_popup.slint";
 export { SteamCacheState } from "components/steam_cache_popup.slint";
 export { SteamShortcutState } from "components/steam_shortcut_popup.slint";
+export { SteamDeckPromptState } from "components/steam_deck_prompt.slint";
 export { UpdateState } from "components/app_update_popup.slint";
 export { ConfirmationState } from "components/confirmation_popup.slint";
 export { AppActions, GamesActions, DialogActions } from "actions.slint";
@@ -244,6 +246,8 @@ export component MainWindow inherits Window {
     }
 
     ConfirmationPopup { }
+
+    SteamDeckPrompt { }
 
     GameDetailsPopup { }
 

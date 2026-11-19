@@ -93,6 +93,14 @@ msgctxt "commandButton"
 msgid "Cancel"
 msgstr "Waaaah!"
 
+msgctxt "commandButton"
+msgid "No"
+msgstr "Waaah!"
+
+msgctxt "commandButton"
+msgid "Yes"
+msgstr "Waah!"
+
 msgctxt "debugData"
 msgid "Copy debug data"
 msgstr "Waah waaah waah!"
@@ -688,6 +696,10 @@ msgstr "Wah waah if wah wah is waaaaah waaah wah waaah waaaaaah wah on waaaah wa
 msgctxt "steamCache"
 msgid "The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal."
 msgstr "Wah waaah waah wah waah waaaaaah waaaah waaaaah waaaah waah a wah waaaaaah wah waah waaah wah waaaaah waaaah on wah waah!"
+
+msgctxt "steamDeckPrompt"
+msgid "Would you like to add Rai Pal to your Steam Library? This makes it easier to launch it from Game Mode on Steam Deck, for instance."
+msgstr "Waah wah waaah wah waaah Steam Library? Waaah wah waaah waaah wah Game Mode on Steam Deck, waah wah waaah!"
 
 msgctxt "steamShortcut"
 msgid "Add Rai Pal to Steam library"

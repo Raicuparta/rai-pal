@@ -94,6 +94,8 @@ pub struct AppSettings {
 	#[serde(default)]
 	pub skip_confirm_dialogs: HashSet<SkipConfirmation>,
 	#[serde(default)]
+	pub skip_steam_deck_shortcut_prompt: bool,
+	#[serde(default)]
 	pub collapsed_filters: HashSet<FilterGroupKey>,
 	#[serde(default)]
 	pub color_scheme: ColorScheme,

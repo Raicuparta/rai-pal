@@ -9,13 +9,18 @@ import { Tr } from "../translations.slint";
 import { ErrorMessage } from "message_state.slint";
 
 export global SteamShortcutState {
+    in-out property <bool> open: false;
     in property <ActionState> state: idle;
     in-out property <MessageData> error;
 }
 
 export component SteamShortcutPopup inherits Modal {
+    open: SteamShortcutState.open;
     title: @tr("steamShortcut" => "Add Rai Pal to Steam Library");
 
+    closed => {
+        SteamShortcutState.open = false;
+    }
 
     Text {
         text: @tr("steamShortcut" => "This is especially useful on Steam Deck, to be able to launch Rai Pal in Game Mode. You'll have to restart Steam after doing this.");

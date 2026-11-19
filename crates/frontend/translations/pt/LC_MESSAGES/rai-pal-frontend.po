@@ -93,6 +93,14 @@ msgctxt "commandButton"
 msgid "Cancel"
 msgstr "Cancelar"
 
+msgctxt "commandButton"
+msgid "No"
+msgstr "Não"
+
+msgctxt "commandButton"
+msgid "Yes"
+msgstr "Sim"
+
 msgctxt "debugData"
 msgid "Copy debug data"
 msgstr "Copiar dados de depuração"
@@ -688,6 +696,10 @@ msgstr "Usa isto se o Rai Pal estiver a mostrar jogos que não possuis na Steam.
 msgctxt "steamCache"
 msgid "The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal."
 msgstr "O ficheiro de cache foi apagado. Reinicia a Steam, espera alguns segundos e depois clica no botão de atualização no Rai Pal."
+
+msgctxt "steamDeckPrompt"
+msgid "Would you like to add Rai Pal to your Steam Library? This makes it easier to launch it from Game Mode on Steam Deck, for instance."
+msgstr "Queres adicionar o Rai Pal à tua biblioteca da Steam? Isto facilita o lançamento a partir do Modo Jogo no Steam Deck, por exemplo."
 
 msgctxt "steamShortcut"
 msgid "Add Rai Pal to Steam library"

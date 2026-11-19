@@ -18,7 +18,9 @@ export component Modal inherits Rectangle {
     in-out property <bool> open: false;
     in property <bool> close-on-click-outside: true;
     in property <bool> show-close-button: true;
+    in property <bool> default-action-enabled: false;
     callback closed;
+    callback default-action;
 
     width: 0;
     height: 0;
@@ -88,9 +90,14 @@ export component Modal inherits Rectangle {
 
             modal-scope := EscapeScope {
                 escape-enabled: root.show-close-button;
+                default-action-enabled: root.default-action-enabled;
 
                 escaped => {
                     root.dismiss();
+                }
+
+                default-action => {
+                    root.default-action();
                 }
 
                 VerticalLayout {

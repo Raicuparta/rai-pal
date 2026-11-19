@@ -1,0 +1,63 @@
+import { CheckBox } from "std-widgets.slint";
+import { Button } from "button.slint";
+import { Theme } from "../theme.slint";
+import { Modal } from "modal.slint";
+import { DialogActions } from "../actions.slint";
+
+export global SteamDeckPromptState {
+    in-out property <bool> open: false;
+    in-out property <bool> dont-ask-again: false;
+}
+
+export component SteamDeckPrompt inherits Modal {
+    open: SteamDeckPromptState.open;
+    title: @tr("steamShortcut" => "Add Rai Pal to Steam Library");
+    default-action-enabled: true;
+
+    closed => {
+        root.respond(false);
+    }
+
+    default-action => {
+        root.respond(false);
+    }
+
+    function respond(add-shortcut: bool) {
+        SteamDeckPromptState.open = false;
+        DialogActions.steam-deck-prompt-response(add-shortcut);
+    }
+
+    Text {
+        text: @tr("steamDeckPrompt" => "Would you like to add Rai Pal to your Steam Library? This makes it easier to launch it from Game Mode on Steam Deck, for instance.");
+        wrap: word-wrap;
+    }
+
+    CheckBox {
+        text: @tr("commandButton" => "Don't ask again");
+        checked <=> SteamDeckPromptState.dont-ask-again;
+    }
+
+    HorizontalLayout {
+        alignment: center;
+        spacing: Theme.space-sm;
+
+        Button {
+            text: @tr("commandButton" => "No");
+            reserve-icon-space: false;
+
+            clicked => {
+                root.respond(false);
+            }
+        }
+
+        Button {
+            text: @tr("commandButton" => "Yes");
+            reserve-icon-space: false;
+            tint: Theme.primary;
+
+            clicked => {
+                root.respond(true);
+            }
+        }
+    }
+}

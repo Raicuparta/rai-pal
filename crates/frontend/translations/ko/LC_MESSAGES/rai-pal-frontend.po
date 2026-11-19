@@ -93,6 +93,14 @@ msgctxt "commandButton"
 msgid "Cancel"
 msgstr "취소"
 
+msgctxt "commandButton"
+msgid "No"
+msgstr "아니요"
+
+msgctxt "commandButton"
+msgid "Yes"
+msgstr "예"
+
 msgctxt "debugData"
 msgid "Copy debug data"
 msgstr "디버그 데이터 복사"
@@ -688,6 +696,10 @@ msgstr "Rai Pal에 내가 가지고 있지 않은 Steam 게임이 표시될 때 
 msgctxt "steamCache"
 msgid "The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal."
 msgstr "캐시 파일이 삭제되었습니다. Steam을 다시 시작하고 몇 초 기다린 후 Rai Pal에서 새로고침 버튼을 누르세요."
+
+msgctxt "steamDeckPrompt"
+msgid "Would you like to add Rai Pal to your Steam Library? This makes it easier to launch it from Game Mode on Steam Deck, for instance."
+msgstr "Rai Pal을 Steam 라이브러리에 추가할까요? 그러면 예를 들어 Steam Deck의 게임 모드에서 더 쉽게 실행할 수 있어요."
 
 msgctxt "steamShortcut"
 msgid "Add Rai Pal to Steam library"
