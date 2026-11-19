@@ -98,6 +98,31 @@ pub(crate) fn scope_id<'a>(scope: &'a str, original_id: &'a str) -> Cow<'a, str>
 	}
 }
 
+pub(crate) const GAME_IDS_COMPATIBILITY_FILTER: &str = r"(
+	json_extract(m.game_ids, '$') IS NULL
+	OR EXISTS (
+		SELECT 1
+		FROM json_each(m.game_ids) AS provider_game_ids
+		WHERE provider_game_ids.key = g.provider_id
+			AND (
+				EXISTS (
+					SELECT 1
+					FROM json_each(provider_game_ids.value) AS game_ids
+					WHERE game_ids.value = g.external_id
+				)
+				OR (
+					g.provider_id = 'Manual'
+					AND nt.normalized_title IS NOT NULL
+					AND EXISTS (
+						SELECT 1
+						FROM json_each(provider_game_ids.value) AS game_ids
+						WHERE game_ids.value = nt.normalized_title
+					)
+				)
+			)
+	)
+)";
+
 pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 	connection.execute_batch(
 		r"
@@ -127,6 +152,7 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 				game_environment TEXT,
 				hash TEXT,
 				family TEXT,
+				game_ids TEXT,
 				created_at INTEGER
 			);
 
@@ -195,7 +221,8 @@ impl ModDatabase for Db {
 				hide_from_game_mods_list,
 				family,
 				scope,
-				game_environment
+				game_environment,
+				game_ids
 			FROM main.mods
 			WHERE id = $1
 			LIMIT 1
@@ -227,6 +254,7 @@ impl ModDatabase for Db {
 					family: row.get(21)?,
 					scope: row.get(22)?,
 					game_environment: row.get_json(23)?,
+					game_ids: row.get_json(24)?,
 				})
 			})
 			.optional()?
@@ -380,7 +408,8 @@ impl ModDatabase for Db {
 				hide_from_game_mods_list,
 				family,
 				scope,
-				game_environment
+				game_environment,
+				game_ids
 			FROM main.mods
 		",
 			)?
@@ -410,6 +439,7 @@ impl ModDatabase for Db {
 					family: row.get(21)?,
 					scope: row.get(22)?,
 					game_environment: row.get_json(23)?,
+					game_ids: row.get_json(24)?,
 				})
 			})?
 			.filter_map(|game_mod| match game_mod {
@@ -531,7 +561,7 @@ impl ModDatabase for Db {
 	fn get_game_mods(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Vec<ModInfo>> {
 		let mut mod_infos = self
 			.read_db()?
-			.prepare_cached(
+			.prepare_cached(&format!(
 				r"
 			WITH candidate_mods AS (
 				SELECT DISTINCT
@@ -574,6 +604,7 @@ impl ModDatabase for Db {
 					AND m.id = im.mod_id
 				WHERE g.provider_id = $1
 					AND g.game_id = $2
+					AND {GAME_IDS_COMPATIBILITY_FILTER}
 					AND (
 						m.deprecated IS NULL
 						OR m.deprecated = 0
@@ -674,7 +705,7 @@ impl ModDatabase for Db {
 				cm.family
 			FROM candidate_mods cm
 		",
-			)?
+			))?
 			.query_map(
 				[
 					provider_id.to_string(),
@@ -919,8 +950,9 @@ fn try_insert_mod(
 				hash,
 				family,
 				created_at,
-				scope
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)",
+				scope,
+				game_ids
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)",
 		)?
 		.execute(rusqlite::params![
 			scoped_id.as_ref(),
@@ -951,7 +983,8 @@ fn try_insert_mod(
 				.duration_since(UNIX_EPOCH)?
 				.as_secs()
 				.cast_signed(),
-			scope
+			scope,
+			serialize_json_option(game_mod.game_ids.as_ref())?,
 		])?;
 
 	Ok(())

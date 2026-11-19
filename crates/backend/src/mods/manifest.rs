@@ -27,12 +27,17 @@ use crate::{
 	result::{Error, LogErrExt, Result},
 };
 
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Default)]
+#[serde(transparent)]
+pub struct GameIds(pub BTreeMap<String, Vec<String>>);
+
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Mod {
 	pub id: String,
 	pub scope: Option<String>,
 	pub family: Option<String>,
+	pub game_ids: Option<GameIds>,
 	pub title: String,
 	pub hide_from_game_mods_list: Option<bool>,
 	pub author: String,

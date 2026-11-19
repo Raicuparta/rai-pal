@@ -17,7 +17,7 @@ use crate::{
 	games_query::{FilterGroup, GamesQuery, GamesSortBy, InstallState},
 	local_database::{
 		app_database::{AppDatabase, Db},
-		mod_database::{self, ModDatabase},
+		mod_database::{self, GAME_IDS_COMPATIBILITY_FILTER, ModDatabase},
 		rusqlite_extensions::{JsonData, RowExt},
 	},
 	operating_system::OperatingSystem,
@@ -385,6 +385,7 @@ impl GameDatabase for Db {
 					AND (json_extract(m.architecture, '$') IS NULL OR ig.architecture IS NULL OR json_extract(m.architecture, '$') = ig.architecture)
 					AND (json_extract(m.game_os, '$') IS NULL OR ig.executable_os IS NULL OR json_extract(m.game_os, '$') = ig.executable_os)
 					AND (json_extract(m.host_os, '$') IS NULL OR json_extract(m.host_os, '$') = ?)
+						AND {GAME_IDS_COMPATIBILITY_FILTER}
 						AND (
 							COALESCE(ig.engine_version_major, rg.engine_version_major) IS NULL
 							OR (
