@@ -226,6 +226,10 @@ msgid "Unknown"
 msgstr "Desconocido"
 
 msgctxt "filterValue"
+msgid "No family"
+msgstr "Sin familia"
+
+msgctxt "filterValue"
 msgid "No mods"
 msgstr "Sin mods"
 
@@ -644,6 +648,14 @@ msgstr "Obsoleto"
 msgctxt "modsPage"
 msgid "{} mods"
 msgstr "{} mods"
+
+msgctxt "modsPage"
+msgid "Search mods"
+msgstr "Buscar mods"
+
+msgctxt "modsPage"
+msgid "No mods match your search and filters."
+msgstr "Ningún mod coincide con tu búsqueda y filtros."
 
 msgctxt "modsPage"
 msgid "Open Local Mods Folder"

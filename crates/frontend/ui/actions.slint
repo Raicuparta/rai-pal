@@ -42,6 +42,18 @@ export global GamesActions {
     callback request-mod-debug-data(mod-id: string);
 }
 
+export global ModsTabActions {
+    callback search-changed(text: string);
+    callback filter-toggled(group: FilterGroupId, value: string, checked: bool);
+    callback filter-lock-toggled(group: FilterGroupId, value: string);
+    callback filter-only(group: FilterGroupId, value: string);
+    callback filter-reset(group: FilterGroupId);
+    callback filters-reset;
+    callback filters-collapse-all;
+    callback filters-expand-all;
+    callback filter-expanded-changed(group: FilterGroupId, expanded: bool);
+}
+
 export global DialogActions {
     callback request-url-mod-sources;
     callback set-url-mod-source-enabled(url: string, enabled: bool);

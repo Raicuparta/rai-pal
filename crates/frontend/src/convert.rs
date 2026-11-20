@@ -76,6 +76,7 @@ slint_enum_conversions!(FilterGroupKey => FilterGroupId {
 slint_optional_enum_conversions!(FilterValueLabel => UiFilterValueLabel {
 	Unknown,
 	NoMods,
+	NoFamily,
 	Arch64,
 	Arch32,
 	TagDemo,

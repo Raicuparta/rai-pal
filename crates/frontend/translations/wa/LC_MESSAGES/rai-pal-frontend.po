@@ -226,6 +226,10 @@ msgid "Unknown"
 msgstr "Waaaaah!"
 
 msgctxt "filterValue"
+msgid "No family"
+msgstr "Wah family!"
+
+msgctxt "filterValue"
 msgid "No mods"
 msgstr "Waaaah!"
 
@@ -644,6 +648,14 @@ msgstr "Waaaaaaaah!"
 msgctxt "modsPage"
 msgid "{} mods"
 msgstr "{} waahs!"
+
+msgctxt "modsPage"
+msgid "Search mods"
+msgstr "Wah mods!"
+
+msgctxt "modsPage"
+msgid "No mods match your search and filters."
+msgstr "Waaaah! No mods!"
 
 msgctxt "modsPage"
 msgid "Open Local Mods Folder"

@@ -226,6 +226,10 @@ msgid "Unknown"
 msgstr "不明"
 
 msgctxt "filterValue"
+msgid "No family"
+msgstr "ファミリーなし"
+
+msgctxt "filterValue"
 msgid "No mods"
 msgstr "Modなし"
 
@@ -644,6 +648,14 @@ msgstr "非推奨"
 msgctxt "modsPage"
 msgid "{} mods"
 msgstr "{} Mod"
+
+msgctxt "modsPage"
+msgid "Search mods"
+msgstr "Modを検索"
+
+msgctxt "modsPage"
+msgid "No mods match your search and filters."
+msgstr "検索とフィルターに一致するModはありません。"
 
 msgctxt "modsPage"
 msgid "Open Local Mods Folder"

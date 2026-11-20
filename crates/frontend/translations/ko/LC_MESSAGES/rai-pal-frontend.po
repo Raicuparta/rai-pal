@@ -226,6 +226,10 @@ msgid "Unknown"
 msgstr "알 수 없음"
 
 msgctxt "filterValue"
+msgid "No family"
+msgstr "패밀리 없음"
+
+msgctxt "filterValue"
 msgid "No mods"
 msgstr "모드 없음"
 
@@ -644,6 +648,14 @@ msgstr "사용 중지됨"
 msgctxt "modsPage"
 msgid "{} mods"
 msgstr "모드 {}개"
+
+msgctxt "modsPage"
+msgid "Search mods"
+msgstr "모드 검색"
+
+msgctxt "modsPage"
+msgid "No mods match your search and filters."
+msgstr "검색 및 필터와 일치하는 모드가 없습니다."
 
 msgctxt "modsPage"
 msgid "Open Local Mods Folder"

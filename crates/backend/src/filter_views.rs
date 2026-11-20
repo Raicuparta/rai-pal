@@ -13,6 +13,7 @@ use crate::{
 	game_providers::game_provider::GameProviderId,
 	game_tag::GameTag,
 	games_query::{FilterAction, FilterGroup, FilterGroupKey, GamesFilter, InstallState},
+	mods_query::ModsFilter,
 	operating_system::OperatingSystem,
 	result::LogErrExt,
 };
@@ -21,6 +22,7 @@ use crate::{
 pub enum FilterValueLabel {
 	Unknown,
 	NoMods,
+	NoFamily,
 	Arch64,
 	Arch32,
 	TagDemo,
@@ -252,31 +254,50 @@ fn build_group<T: FilterValue>(
 	values: Vec<FilterValueView>,
 	collapsed_filters: &HashSet<FilterGroupKey>,
 ) -> FilterGroupView {
+	build_group_view(
+		key,
+		group,
+		values,
+		T::VALUES,
+		T::HAS_UNKNOWN,
+		collapsed_filters,
+	)
+}
+
+fn build_group_view<T: Hash + Eq>(
+	key: FilterGroupKey,
+	group: &FilterGroup<T>,
+	values: Vec<FilterValueView>,
+	possible_values: &[T],
+	has_unknown: bool,
+	collapsed_filters: &HashSet<FilterGroupKey>,
+) -> FilterGroupView {
 	FilterGroupView {
 		key,
 		values,
-		has_changes: group.has_changes(T::VALUES, T::HAS_UNKNOWN),
+		has_changes: group.has_changes(possible_values, has_unknown),
 		has_locked: group.has_locked(),
 		expanded: !collapsed_filters.contains(&key),
 	}
 }
 
-fn mod_family_group(
-	filter: &GamesFilter,
+fn family_group_view(
+	group: &FilterGroup<String>,
 	mod_families: &BTreeMap<String, String>,
+	unknown_label: Option<FilterValueLabel>,
 	collapsed_filters: &HashSet<FilterGroupKey>,
 ) -> FilterGroupView {
 	let mut values: Vec<FilterValueView> = mod_families
 		.iter()
-		.map(|(family_id, title)| text_view(&filter.mod_families, family_id, title))
+		.map(|(family_id, title)| text_view(group, family_id, title))
 		.collect();
 	values.sort_by_key(|value| value.display.to_lowercase());
 
-	if !mod_families.is_empty() {
-		let item = filter.mod_families.item(None);
+	if let Some(label) = unknown_label {
+		let item = group.item(None);
 		values.push(FilterValueView {
 			value: String::new(),
-			label: Some(FilterValueLabel::NoMods),
+			label: Some(label),
 			display: String::new(),
 			note: FilterValueNote::None,
 			enabled: item.enabled,
@@ -287,13 +308,45 @@ fn mod_family_group(
 
 	let family_ids = mod_families.keys().cloned().collect::<Vec<_>>();
 
-	FilterGroupView {
-		key: FilterGroupKey::ModFamilies,
+	build_group_view(
+		FilterGroupKey::ModFamilies,
+		group,
 		values,
-		has_changes: filter.mod_families.has_changes(&family_ids, true),
-		has_locked: filter.mod_families.has_locked(),
-		expanded: !collapsed_filters.contains(&FilterGroupKey::ModFamilies),
-	}
+		&family_ids,
+		unknown_label.is_some(),
+		collapsed_filters,
+	)
+}
+
+fn mod_family_group(
+	filter: &GamesFilter,
+	mod_families: &BTreeMap<String, String>,
+	collapsed_filters: &HashSet<FilterGroupKey>,
+) -> FilterGroupView {
+	let unknown_label = (!mod_families.is_empty()).then_some(FilterValueLabel::NoMods);
+
+	family_group_view(
+		&filter.mod_families,
+		mod_families,
+		unknown_label,
+		collapsed_filters,
+	)
+}
+
+pub fn build_mods_filter_views(
+	filter: &ModsFilter,
+	mod_families: &BTreeMap<String, String>,
+	collapsed_filters: &HashSet<FilterGroupKey>,
+	has_unfamilied_mods: bool,
+) -> Vec<FilterGroupView> {
+	let unknown_label = has_unfamilied_mods.then_some(FilterValueLabel::NoFamily);
+
+	vec![family_group_view(
+		&filter.mod_families,
+		mod_families,
+		unknown_label,
+		collapsed_filters,
+	)]
 }
 
 fn group_view(
@@ -467,6 +520,22 @@ pub fn apply_filter_action(
 	}
 }
 
+pub fn apply_mods_filter_action(
+	filter: &mut ModsFilter,
+	mod_families: &BTreeMap<String, String>,
+	group_key: FilterGroupKey,
+	value: &str,
+	action: FilterAction,
+) -> bool {
+	match group_key {
+		FilterGroupKey::ModFamilies => {
+			let family_ids = mod_families.keys().cloned().collect::<Vec<_>>();
+			apply_string_value(&mut filter.mod_families, value, &family_ids, true, action)
+		}
+		_ => false,
+	}
+}
+
 fn value_key(values: impl Iterator<Item = String>) -> String {
 	let mut values: Vec<String> = values.collect();
 	values.sort_unstable();
@@ -490,6 +559,29 @@ pub fn sync_filter_availability(
 	let mod_families_changed = filter.mod_families.sync_availability_key(mod_families_key);
 
 	providers_changed || mod_families_changed
+}
+
+pub fn sync_mods_filter_availability(
+	filter: &mut ModsFilter,
+	mod_families: &BTreeMap<String, String>,
+) -> bool {
+	let mod_families_key = value_key(mod_families.keys().cloned());
+	filter.mod_families.sync_availability_key(mod_families_key)
+}
+
+pub fn reset_mods_filter_group(filter: &mut ModsFilter, group_key: FilterGroupKey) {
+	match group_key {
+		FilterGroupKey::ModFamilies => filter.mod_families.keep_only_locked(),
+		_ => {}
+	}
+}
+
+pub fn collapse_mods_filters(collapsed_filters: &mut HashSet<FilterGroupKey>) {
+	collapsed_filters.insert(FilterGroupKey::ModFamilies);
+}
+
+pub fn reset_all_mods_filters(filter: &mut ModsFilter) {
+	filter.mod_families.keep_only_locked();
 }
 
 pub fn reset_filter_group(filter: &mut GamesFilter, group_key: FilterGroupKey) {

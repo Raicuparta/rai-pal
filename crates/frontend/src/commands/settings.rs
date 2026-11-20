@@ -104,6 +104,7 @@ impl CommandHandler {
 			&providers_with_games,
 		);
 		self.start_query(Duration::ZERO, ScrollBehavior::Reset);
+		self.load_mods_tab();
 	}
 
 	pub fn set_language(&self, value: &str) {

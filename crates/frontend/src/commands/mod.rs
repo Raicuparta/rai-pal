@@ -62,6 +62,7 @@ pub fn register(window: &MainWindow) {
 	manual::register(window);
 	mod_sources::register(window);
 	mods::register(window);
+	mods_tab::register(window);
 	query::register(window);
 	refresh::register(window);
 	settings::register(window);

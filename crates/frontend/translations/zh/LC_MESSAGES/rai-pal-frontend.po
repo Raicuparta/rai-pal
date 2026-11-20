@@ -226,6 +226,10 @@ msgid "Unknown"
 msgstr "未知"
 
 msgctxt "filterValue"
+msgid "No family"
+msgstr "无家族"
+
+msgctxt "filterValue"
 msgid "No mods"
 msgstr "无模组"
 
@@ -644,6 +648,14 @@ msgstr "已弃用"
 msgctxt "modsPage"
 msgid "{} mods"
 msgstr "{} 个模组"
+
+msgctxt "modsPage"
+msgid "Search mods"
+msgstr "搜索模组"
+
+msgctxt "modsPage"
+msgid "No mods match your search and filters."
+msgstr "没有符合你的搜索和筛选条件的模组。"
 
 msgctxt "modsPage"
 msgid "Open Local Mods Folder"

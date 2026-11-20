@@ -1,17 +1,33 @@
 use slint::ComponentHandle as _;
-use std::rc::Rc;
+use std::{
+	rc::Rc,
+	sync::atomic::{AtomicU64, Ordering},
+	time::Duration,
+};
 
 use rai_pal_backend::{
-	local_database::{app_database::Db, mod_database::ModDatabase},
+	filter_views::{
+		apply_mods_filter_action, collapse_mods_filters, expand_all_filters,
+		reset_all_mods_filters, reset_mods_filter_group, sync_mods_filter_availability,
+	},
+	games_query::{FilterAction, FilterGroupKey},
+	local_database::mod_database::ModDatabase,
 	mods::manifest::Mod,
 };
 
-use crate::{MainWindow, MessageContext, ModsTabModData, notifications};
+use crate::{
+	FilterGroupId, MessageContext, ModsTabModData,
+	filters::{build_mods_groups, load_all_mod_families},
+	notifications,
+};
 
 use super::{
 	CommandHandler,
 	mods::{download_version, engine_text, release_date_display},
+	on_command,
 };
+
+static MODS_SEARCH_GENERATION: AtomicU64 = AtomicU64::new(0);
 
 impl CommandHandler {
 	pub fn load_mods_tab(&self) {
@@ -19,38 +35,146 @@ impl CommandHandler {
 			return;
 		};
 
-		load(&window, &self.database);
-	}
-}
+		let mods = match self.database.get_mod_map() {
+			Ok(mods) => mods,
+			Err(err) => {
+				notifications::error(&window, notifications::data(MessageContext::LoadMods, &err));
+				let state = window.global::<crate::ModsState>();
+				state
+					.set_items(Rc::new(slint::VecModel::from(Vec::<ModsTabModData>::new())).into());
+				state.set_total_count(0);
+				return;
+			}
+		};
 
-fn load(window: &MainWindow, database: &Db) {
-	let mods = match database.get_mod_map() {
-		Ok(mods) => mods,
-		Err(err) => {
-			notifications::error(window, notifications::data(MessageContext::LoadMods, &err));
-			let state = window.global::<crate::ModsState>();
-			state.set_items(Rc::new(slint::VecModel::from(Vec::<ModsTabModData>::new())).into());
-			state.set_total_count(0);
+		let mod_families = load_all_mod_families(&self.database);
+		let has_unfamilied_mods = mods.values().any(|game_mod| game_mod.family.is_none());
+		let (query, groups, availability_changed) = {
+			let mut settings = self.settings.borrow_mut();
+			let availability_changed =
+				sync_mods_filter_availability(&mut settings.mods_query.filter, &mod_families);
+			let groups = build_mods_groups(
+				&settings.mods_query.filter,
+				&mod_families,
+				&settings.mods_collapsed_filters,
+				has_unfamilied_mods,
+			);
+			(settings.mods_query.clone(), groups, availability_changed)
+		};
+
+		if availability_changed {
+			self.persist_settings();
+		}
+
+		let query_ui = window.global::<crate::ModsQuery>();
+		query_ui.set_search_text(query.search.clone().into());
+		query_ui.set_filters_have_changes(groups.iter().any(|group| group.has_changes));
+		query_ui.set_filters_have_expanded(groups.iter().any(|group| group.expanded));
+		query_ui.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
+
+		let total_count = mods.len();
+		let mut mods = mods
+			.into_values()
+			.filter(|game_mod| query.matches(game_mod))
+			.collect::<Vec<_>>();
+		mods.sort_by(|a, b| {
+			b.release_date()
+				.unwrap_or_default()
+				.cmp(a.release_date().unwrap_or_default())
+		});
+
+		let items = mods.into_iter().map(mod_data).collect::<Vec<_>>();
+
+		let state = window.global::<crate::ModsState>();
+		state.set_items(Rc::new(slint::VecModel::from(items)).into());
+		state.set_total_count(i32::try_from(total_count).unwrap_or_else(|err| {
+			log::warn!("Mods count exceeds i32: {err}");
+			i32::MAX
+		}));
+	}
+
+	pub fn set_mods_search_text(&self, text: &str) {
+		self.settings.borrow_mut().mods_query.search = text.to_string();
+
+		let generation = MODS_SEARCH_GENERATION.fetch_add(1, Ordering::Relaxed) + 1;
+
+		slint::Timer::single_shot(Duration::from_millis(200), move || {
+			if MODS_SEARCH_GENERATION.load(Ordering::Relaxed) != generation {
+				return;
+			}
+
+			let Some(handler) = CommandHandler::current() else {
+				return;
+			};
+
+			handler.load_mods_tab();
+		});
+	}
+
+	pub fn apply_mods_filter(&self, group: FilterGroupId, value: &str, action: FilterAction) {
+		let mod_families = load_all_mod_families(&self.database);
+		let changed = {
+			let mut settings = self.settings.borrow_mut();
+			apply_mods_filter_action(
+				&mut settings.mods_query.filter,
+				&mod_families,
+				group.into(),
+				value,
+				action,
+			)
+		};
+
+		if !changed {
 			return;
 		}
-	};
 
-	let mut mods = mods.into_values().collect::<Vec<_>>();
-	mods.sort_by(|a, b| {
-		b.release_date()
-			.unwrap_or_default()
-			.cmp(a.release_date().unwrap_or_default())
-	});
+		self.persist_settings();
+		self.load_mods_tab();
+	}
 
-	let total_count = mods.len();
-	let items = mods.into_iter().map(mod_data).collect::<Vec<_>>();
+	pub fn reset_mods_filter(&self, group: FilterGroupId) {
+		{
+			let mut settings = self.settings.borrow_mut();
+			reset_mods_filter_group(&mut settings.mods_query.filter, group.into());
+		}
 
-	let state = window.global::<crate::ModsState>();
-	state.set_items(Rc::new(slint::VecModel::from(items)).into());
-	state.set_total_count(i32::try_from(total_count).unwrap_or_else(|err| {
-		log::warn!("Mods count exceeds i32: {err}");
-		i32::MAX
-	}));
+		self.persist_settings();
+		self.load_mods_tab();
+	}
+
+	pub fn reset_mods_filters(&self) {
+		reset_all_mods_filters(&mut self.settings.borrow_mut().mods_query.filter);
+
+		self.persist_settings();
+		self.load_mods_tab();
+	}
+
+	pub fn collapse_mods_filters(&self) {
+		collapse_mods_filters(&mut self.settings.borrow_mut().mods_collapsed_filters);
+		self.persist_settings();
+		self.load_mods_tab();
+	}
+
+	pub fn expand_mods_filters(&self) {
+		expand_all_filters(&mut self.settings.borrow_mut().mods_collapsed_filters);
+		self.persist_settings();
+		self.load_mods_tab();
+	}
+
+	pub fn set_mods_filter_expanded(&self, group: FilterGroupId, expanded: bool) {
+		let group = FilterGroupKey::from(group);
+		{
+			let mut settings = self.settings.borrow_mut();
+			if expanded {
+				settings.mods_collapsed_filters.remove(&group);
+			} else {
+				settings.mods_collapsed_filters.insert(group);
+			}
+		}
+
+		self.persist_settings();
+		self.load_mods_tab();
+	}
 }
 
 fn mod_data(game_mod: Mod) -> ModsTabModData {
@@ -71,4 +195,34 @@ fn mod_data(game_mod: Mod) -> ModsTabModData {
 		can_run: game_mod.run_standalone.is_some(),
 		can_install: game_mod.run_standalone.is_some() && game_mod.install.is_some(),
 	}
+}
+
+pub fn register(window: &crate::MainWindow) {
+	on_command!(window, ModsTabActions, on_search_changed, |text| handler => {
+		handler.set_mods_search_text(text.as_str());
+	});
+	on_command!(window, ModsTabActions, on_filter_toggled, |group, value, checked| handler => {
+		handler.apply_mods_filter(group, value.as_str(), FilterAction::Toggle(checked));
+	});
+	on_command!(window, ModsTabActions, on_filter_lock_toggled, |group, value| handler => {
+		handler.apply_mods_filter(group, value.as_str(), FilterAction::Lock);
+	});
+	on_command!(window, ModsTabActions, on_filter_only, |group, value| handler => {
+		handler.apply_mods_filter(group, value.as_str(), FilterAction::Only);
+	});
+	on_command!(window, ModsTabActions, on_filter_reset, |group| handler => {
+		handler.reset_mods_filter(group);
+	});
+	on_command!(window, ModsTabActions, on_filters_reset, || handler => {
+		handler.reset_mods_filters();
+	});
+	on_command!(window, ModsTabActions, on_filters_collapse_all, || handler => {
+		handler.collapse_mods_filters();
+	});
+	on_command!(window, ModsTabActions, on_filters_expand_all, || handler => {
+		handler.expand_mods_filters();
+	});
+	on_command!(window, ModsTabActions, on_filter_expanded_changed, |group, expanded| handler => {
+		handler.set_mods_filter_expanded(group, expanded);
+	});
 }

@@ -20,6 +20,7 @@ pub mod http;
 pub mod local_database;
 pub mod mod_providers;
 pub mod mods;
+pub mod mods_query;
 pub mod open_better;
 pub mod operating_system;
 pub mod path_extensions;

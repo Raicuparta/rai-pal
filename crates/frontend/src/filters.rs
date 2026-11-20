@@ -4,10 +4,11 @@ use std::{
 };
 
 use rai_pal_backend::{
-	filter_views::{FilterGroupView, FilterValueView, build_filter_views},
+	filter_views::{FilterGroupView, FilterValueView, build_filter_views, build_mods_filter_views},
 	game_providers::game_provider::GameProviderId,
 	games_query::{FilterGroupKey, GamesFilter},
 	local_database::{app_database::Db, game_database::GameDatabase, mod_database::ModDatabase},
+	mods_query::ModsFilter,
 	result::LogErrExt,
 };
 
@@ -55,6 +56,18 @@ pub fn build_groups(
 	.collect()
 }
 
+pub fn build_mods_groups(
+	filter: &ModsFilter,
+	mod_families: &BTreeMap<String, String>,
+	collapsed_filters: &HashSet<FilterGroupKey>,
+	has_unfamilied_mods: bool,
+) -> Vec<FilterGroupData> {
+	build_mods_filter_views(filter, mod_families, collapsed_filters, has_unfamilied_mods)
+		.into_iter()
+		.map(group_data)
+		.collect()
+}
+
 pub fn load_providers_with_games(database: &Db) -> HashSet<GameProviderId> {
 	database.get_providers_with_games().unwrap_or_else(|err| {
 		log::warn!("Failed to load providers with games: {err}");
@@ -63,6 +76,14 @@ pub fn load_providers_with_games(database: &Db) -> HashSet<GameProviderId> {
 }
 
 pub fn load_mod_families(database: &Db) -> BTreeMap<String, String> {
+	load_families(database, true)
+}
+
+pub fn load_all_mod_families(database: &Db) -> BTreeMap<String, String> {
+	load_families(database, false)
+}
+
+fn load_families(database: &Db, filterable_only: bool) -> BTreeMap<String, String> {
 	let Some(mods) = database.get_mod_map().ok_or_log("Failed to load mod map") else {
 		return BTreeMap::new();
 	};
@@ -75,7 +96,7 @@ pub fn load_mod_families(database: &Db) -> BTreeMap<String, String> {
 		.filter_map(|game_mod| game_mod.family.as_ref())
 		.filter_map(|family_id| {
 			let family = family_definitions.get(family_id)?;
-			if family.filterable != Some(true) {
+			if filterable_only && family.filterable != Some(true) {
 				return None;
 			}
 			Some((family_id.clone(), family.title.clone()))
