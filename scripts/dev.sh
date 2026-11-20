@@ -52,14 +52,18 @@ RESTART_STAMP="$STAMP_DIR/restart"
 APP_PID=""
 WATCHER_PID=""
 
-changed_since() {
+rust_changed_since() {
   [ -n "$(find crates Cargo.toml Cargo.lock \
     \( -name '*.rs' -o -name 'Cargo.toml' -o -name 'Cargo.lock' \) \
     -newermt "@$1" -print -quit 2>/dev/null)" ]
 }
 
-wait_for_change() {
-  while ! changed_since "$1"; do
+slint_changed_since() {
+  [ -n "$(find crates -name '*.slint' -newermt "@$1" -print -quit 2>/dev/null)" ]
+}
+
+wait_for_any_change() {
+  while ! rust_changed_since "$1" && ! slint_changed_since "$1"; do
     sleep 0.5
   done
 }
@@ -67,7 +71,7 @@ wait_for_change() {
 watch_for_changes() {
   while kill -0 "$$" 2>/dev/null; do
     sleep 0.5
-    if changed_since "$1"; then
+    if rust_changed_since "$1"; then
       touch "$RESTART_STAMP"
       kill -TERM "$APP_PID" 2>/dev/null || true
       return
@@ -88,8 +92,8 @@ while true; do
   since="$(date +%s.%N)"
 
   if ! build; then
-    echo "==> Build failed, waiting for Rust changes"
-    wait_for_change "$(date +%s.%N)"
+    echo "==> Build failed, waiting for Rust or Slint changes"
+    wait_for_any_change "$(date +%s.%N)"
     continue
   fi
 
@@ -117,6 +121,6 @@ while true; do
     exit 0
   fi
 
-  echo "==> App exited with status $status, waiting for Rust changes"
-  wait_for_change "$(date +%s.%N)"
+  echo "==> App exited with status $status, waiting for Rust or Slint changes"
+  wait_for_any_change "$(date +%s.%N)"
 done
