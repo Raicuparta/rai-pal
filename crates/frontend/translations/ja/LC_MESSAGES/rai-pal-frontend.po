@@ -346,6 +346,14 @@ msgid "Uninstall all mods"
 msgstr "すべてのModをアンインストール"
 
 msgctxt "gameModal"
+msgid "Mods"
+msgstr "Mod"
+
+msgctxt "gameModal"
+msgid "Update all mods"
+msgstr "すべてのModを更新"
+
+msgctxt "gameModal"
 msgid "Available Mods"
 msgstr "利用可能なMod"
 
@@ -544,6 +552,10 @@ msgstr "Mod {0}をアンインストールできませんでした"
 msgctxt "messages"
 msgid "Failed to uninstall all mods"
 msgstr "すべてのModをアンインストールできませんでした"
+
+msgctxt "messages"
+msgid "Failed to update all mods"
+msgstr "すべてのModを更新できませんでした"
 
 msgctxt "messages"
 msgid "Failed to run mod {0}"

@@ -104,31 +104,51 @@ impl CommandHandler {
 			action_state::key(ActionKind::GameModInstall, mod_id.clone()),
 			MessageContext::InstallMod,
 			move || {
-				let (game_mod, deps_to_install) = collect_install_mods(&database, &game, &mod_id)
-					.map_err(|err| err.to_string())?;
+				let result = install_mods(&database, &game, &[mod_id], &downloads);
 
-				let all_owned = deps_to_install
-					.iter()
-					.chain(std::iter::once(&game_mod))
-					.cloned()
+				if result.is_ok() {
+					refresh_after_action(&window, &database, &game);
+				}
+
+				result
+			},
+		);
+	}
+
+	pub fn update_all_mods(&self, game: Game) {
+		let database = Arc::clone(&self.database);
+		let window = self.window();
+		let downloads = self.downloads.clone();
+
+		self.spawn_action(
+			action_state::key(ActionKind::GameModUpdateAll, ""),
+			MessageContext::UpdateAllMods,
+			move || {
+				let outdated_ids = database
+					.get_game_mods(&game.provider_id, &game.game_id)
+					.map_err(|err| err.to_string())?
+					.into_iter()
+					.filter(|info| {
+						info.compatible && info.is_outdated && info.installed_hash.is_some()
+					})
+					.map(|info| info.mod_id)
 					.collect::<Vec<_>>();
-				let steps = install_steps(&all_owned);
-				downloads.pending_steps(&steps);
 
-				let result = runtime::block_on(install_mod(
-					&database,
-					&game,
-					game_mod,
-					deps_to_install,
-					&downloads,
-				));
+				analytics::record_all(outdated_ids.iter().filter_map(|mod_id| {
+					let game_mod = database
+						.get_mod(mod_id)
+						.ok_or_log("Failed to load mod for analytics")?;
+					Some(Event::UpdateMod {
+						mod_id: game_mod.id,
+						tags: game_mod.tags,
+						game: Some(game.display_title.clone()),
+					})
+				}));
 
-				match &result {
-					Ok(()) => {
-						downloads.finish_steps(&steps);
-						refresh_after_action(&window, &database, &game);
-					}
-					Err(_) => downloads.fail_steps(&steps),
+				let result = install_mods(&database, &game, &outdated_ids, &downloads);
+
+				if result.is_ok() {
+					refresh_after_action(&window, &database, &game);
 				}
 
 				result
@@ -340,6 +360,14 @@ fn apply_mods(
 			return;
 		}
 	};
+	let has_outdated_mods = loaded
+		.installed
+		.iter()
+		.chain(loaded.hidden.iter())
+		.any(|mod_data| mod_data.outdated);
+	window
+		.global::<crate::GameDetailsState>()
+		.set_has_outdated_mods(has_outdated_mods);
 	window
 		.global::<crate::GameDetailsState>()
 		.set_installed(Rc::new(slint::VecModel::from(loaded.installed)).into());
@@ -534,6 +562,44 @@ fn collect_install_mods(database: &Db, game: &Game, mod_id: &str) -> Result<(Mod
 	);
 
 	Ok((game_mod, deps_to_install))
+}
+
+fn install_mods(
+	database: &Db,
+	game: &Game,
+	mod_ids: &[String],
+	downloads: &Tracker,
+) -> std::result::Result<(), String> {
+	for mod_id in mod_ids {
+		let (game_mod, deps_to_install) =
+			collect_install_mods(database, game, mod_id).map_err(|err| err.to_string())?;
+
+		let all_owned = deps_to_install
+			.iter()
+			.chain(std::iter::once(&game_mod))
+			.cloned()
+			.collect::<Vec<_>>();
+		let steps = install_steps(&all_owned);
+		downloads.pending_steps(&steps);
+
+		let result = runtime::block_on(install_mod(
+			database,
+			game,
+			game_mod,
+			deps_to_install,
+			downloads,
+		));
+
+		match &result {
+			Ok(()) => downloads.finish_steps(&steps),
+			Err(err) => {
+				downloads.fail_steps(&steps);
+				return Err(err.to_string());
+			}
+		}
+	}
+
+	Ok(())
 }
 
 async fn install_mod(

@@ -346,6 +346,14 @@ msgid "Uninstall all mods"
 msgstr "Waaaaaaah wah waah!"
 
 msgctxt "gameModal"
+msgid "Mods"
+msgstr "Waah!"
+
+msgctxt "gameModal"
+msgid "Update all mods"
+msgstr "Waaaah wah wah!"
+
+msgctxt "gameModal"
 msgid "Available Mods"
 msgstr "Waaaaaaah waah!"
 
@@ -544,6 +552,10 @@ msgstr "Waaaah to waaaaaaah wah {0}"
 msgctxt "messages"
 msgid "Failed to uninstall all mods"
 msgstr "Waaaah to waaaaaaah wah waah!"
+
+msgctxt "messages"
+msgid "Failed to update all mods"
+msgstr "Waaaah to waaaaah wah wah!"
 
 msgctxt "messages"
 msgid "Failed to run mod {0}"

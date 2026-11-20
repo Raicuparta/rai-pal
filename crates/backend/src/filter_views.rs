@@ -564,7 +564,7 @@ pub fn sync_mods_filter_availability(
 
 pub fn reset_mods_filter_group(filter: &mut ModsFilter, group_key: FilterGroupKey) {
 	if group_key == FilterGroupKey::ModTags {
-		filter.mod_tags.keep_only_locked()
+		filter.mod_tags.keep_only_locked();
 	}
 }
 

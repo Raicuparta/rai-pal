@@ -346,6 +346,14 @@ msgid "Uninstall all mods"
 msgstr "모드 모두 제거"
 
 msgctxt "gameModal"
+msgid "Mods"
+msgstr "모드"
+
+msgctxt "gameModal"
+msgid "Update all mods"
+msgstr "모드 모두 업데이트"
+
+msgctxt "gameModal"
 msgid "Available Mods"
 msgstr "설치 가능한 모드"
 
@@ -544,6 +552,10 @@ msgstr "모드 {0}을(를) 제거하지 못했습니다"
 msgctxt "messages"
 msgid "Failed to uninstall all mods"
 msgstr "모든 모드를 제거하지 못했습니다"
+
+msgctxt "messages"
+msgid "Failed to update all mods"
+msgstr "모든 모드를 업데이트하지 못했습니다"
 
 msgctxt "messages"
 msgid "Failed to run mod {0}"

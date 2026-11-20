@@ -250,6 +250,9 @@ export global Tr {
         if data.context == MessageContext.uninstall-all-mods {
             return @tr("messages" => "Failed to uninstall all mods");
         }
+        if data.context == MessageContext.update-all-mods {
+            return @tr("messages" => "Failed to update all mods");
+        }
         if data.context == MessageContext.run-mod {
             return @tr("messages" => "Failed to run mod {0}", data.subject);
         }

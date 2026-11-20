@@ -346,6 +346,14 @@ msgid "Uninstall all mods"
 msgstr "Desinstalar todos os mods"
 
 msgctxt "gameModal"
+msgid "Mods"
+msgstr "Mods"
+
+msgctxt "gameModal"
+msgid "Update all mods"
+msgstr "Atualizar todos os mods"
+
+msgctxt "gameModal"
 msgid "Available Mods"
 msgstr "Mods disponíveis"
 
@@ -544,6 +552,10 @@ msgstr "Falha ao desinstalar o mod {0}"
 msgctxt "messages"
 msgid "Failed to uninstall all mods"
 msgstr "Falha ao desinstalar todos os mods"
+
+msgctxt "messages"
+msgid "Failed to update all mods"
+msgstr "Falha ao atualizar todos os mods"
 
 msgctxt "messages"
 msgid "Failed to run mod {0}"

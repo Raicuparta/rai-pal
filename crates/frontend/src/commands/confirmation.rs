@@ -129,4 +129,9 @@ pub fn register(window: &crate::MainWindow) {
 	on_command!(window, ModActions, on_request_uninstall_all, || handler => {
 		handler.prompt_uninstall_all_mods();
 	});
+	on_command!(window, ModActions, on_request_update_all, || handler => {
+		if let Some((_, game)) = handler.selected_game() {
+			handler.update_all_mods(game);
+		}
+	});
 }

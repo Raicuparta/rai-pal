@@ -21,6 +21,7 @@ import { GamesActions } from "../actions.slint";
 export global GameDetailsState {
     in property <string> provider-name: "";
     in property <bool> show-wine-folders: false;
+    in property <bool> has-outdated-mods: false;
     in property <[ProviderActionData]> provider-actions;
     in property <[GameModData]> installed;
     in property <[GameModData]> game-specific;
@@ -86,7 +87,7 @@ export component GameDetailsPage inherits HorizontalLayout {
                         inset: Theme.space-md;
                         text: Tr.provider-command(action.action);
                         icon: root.provider-command-icon(action.action);
-                        tint: index == 0 ? Theme.primary : transparent;
+                        tint: index == 0 && !GameDetailsState.has-outdated-mods ? Theme.primary : transparent;
                         action-key: { kind: ActionKind.provider-action, target: action.action-id };
 
                         clicked => {
@@ -95,6 +96,41 @@ export component GameDetailsPage inherits HorizontalLayout {
                             } else {
                                 GamesActions.run-provider-action(action.action);
                             }
+                        }
+                    }
+                }
+
+                if GameDetailsState.has-outdated-mods || GameDetailsState.installed.length > 0: VerticalLayout {
+                    alignment: start;
+
+                    LabeledDivider {
+                        label: @tr("gameModal" => "Mods");
+                        horizontal-stretch: 1;
+                        padding-left: Theme.space-md;
+                        padding-right: Theme.space-md;
+                        padding-bottom: Theme.space-xs;
+                    }
+
+                    if GameDetailsState.has-outdated-mods: ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("gameModal" => "Update all mods");
+                        icon: Icon.update;
+                        tint: Theme.primary;
+                        action-key: { kind: ActionKind.game-mod-update-all, target: "" };
+
+                        clicked => {
+                            ModActions.request-update-all();
+                        }
+                    }
+
+                    if GameDetailsState.installed.length > 0: ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("gameModal" => "Uninstall all mods");
+                        icon: Icon.delete;
+                        action-key: { kind: ActionKind.game-mod-uninstall-all, target: "" };
+
+                        clicked => {
+                            ModActions.request-uninstall-all();
                         }
                     }
                 }
@@ -243,31 +279,9 @@ export component GameDetailsPage inherits HorizontalLayout {
                 vertical-stretch: 0;
                 spacing: Theme.space-sm;
 
-                if GameDetailsState.installed.length > 0: VerticalLayout {
-                    alignment: start;
-                    vertical-stretch: 0;
-                    spacing: Theme.space-xs;
-
-                    ModsSection {
-                        label: @tr("gameModal" => "Installed Mods");
-                        mods: GameDetailsState.installed;
-                    }
-
-                    HorizontalLayout {
-                        padding: Theme.space-sm;
-                        alignment: start;
-
-                        ActionButton {
-                            text: @tr("gameModal" => "Uninstall all mods");
-                            icon: Icon.delete;
-                            action-key: { kind: ActionKind.game-mod-uninstall-all, target: "" };
-                            tint: Theme.danger;
-
-                            clicked => {
-                                ModActions.request-uninstall-all();
-                            }
-                        }
-                    }
+                if GameDetailsState.installed.length > 0: ModsSection {
+                    label: @tr("gameModal" => "Installed Mods");
+                    mods: GameDetailsState.installed;
                 }
 
                 if GameDetailsState.game-specific.length > 0: ModsSection {

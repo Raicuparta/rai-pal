@@ -346,6 +346,14 @@ msgid "Uninstall all mods"
 msgstr "卸载所有模组"
 
 msgctxt "gameModal"
+msgid "Mods"
+msgstr "模组"
+
+msgctxt "gameModal"
+msgid "Update all mods"
+msgstr "更新所有模组"
+
+msgctxt "gameModal"
 msgid "Available Mods"
 msgstr "可用模组"
 
@@ -544,6 +552,10 @@ msgstr "卸载模组 {0} 失败"
 msgctxt "messages"
 msgid "Failed to uninstall all mods"
 msgstr "卸载所有模组失败"
+
+msgctxt "messages"
+msgid "Failed to update all mods"
+msgstr "更新所有模组失败"
 
 msgctxt "messages"
 msgid "Failed to run mod {0}"
