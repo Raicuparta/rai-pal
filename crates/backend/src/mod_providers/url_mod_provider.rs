@@ -13,7 +13,7 @@ use crate::{
 		mod_database::{ModDatabase, compute_scope, scope_id},
 	},
 	mod_providers::mod_provider::ModProviderId,
-	mods::{manifest::Mod, mod_family::ModFamily},
+	mods::{manifest::Mod, mod_tag::ModTag},
 	path_extensions::PathExt,
 	result::{LogErrExt, Result},
 };
@@ -21,7 +21,7 @@ use crate::{
 #[derive(serde::Deserialize)]
 pub struct UrlModDatabase {
 	#[serde(default)]
-	pub families: BTreeMap<String, ModFamily>,
+	pub tags: BTreeMap<String, ModTag>,
 	pub mods: Vec<Mod>,
 }
 
@@ -199,15 +199,15 @@ impl ModProvider for UrlModProvider {
 		);
 
 		let mut keep_ids = Vec::new();
-		let mut keep_family_ids = Vec::new();
+		let mut keep_tag_ids = Vec::new();
 
 		for (url, source_hash) in enabled_sources {
 			let scope = compute_scope(Self::get_id(), &source_hash);
 
 			match fetch_and_insert(&url, &source_hash, &scope, db).await {
-				Ok((ids, family_ids)) => {
+				Ok((ids, tag_ids)) => {
 					keep_ids.extend(ids);
-					keep_family_ids.extend(family_ids);
+					keep_tag_ids.extend(tag_ids);
 				}
 				Err(error) => {
 					// If a source fails to refresh, keep whatever we already had
@@ -216,13 +216,13 @@ impl ModProvider for UrlModProvider {
 						"Failed to refresh mod source `{url}`, keeping existing mods as fallback: {error}"
 					);
 					keep_ids.extend(db.get_mod_ids_in_scope(Self::get_id(), &scope)?);
-					keep_family_ids.extend(db.get_family_ids_in_scope(Self::get_id(), &scope)?);
+					keep_tag_ids.extend(db.get_tag_ids_in_scope(Self::get_id(), &scope)?);
 				}
 			}
 		}
 
 		db.remove_mods_except(Self::get_id(), &keep_ids)?;
-		db.remove_mod_families_except(Self::get_id(), &keep_family_ids)?;
+		db.remove_mod_tags_except(Self::get_id(), &keep_tag_ids)?;
 
 		Ok(())
 	}
@@ -244,7 +244,7 @@ async fn fetch_and_insert(
 		.json::<UrlModDatabase>()
 		.await?;
 
-	db.insert_mod_families(&database.families, ModProviderId::Url, source_hash);
+	db.insert_mod_tags(&database.tags, ModProviderId::Url, source_hash);
 
 	let mut ids = Vec::with_capacity(database.mods.len());
 
@@ -253,11 +253,11 @@ async fn fetch_and_insert(
 		ids.push(scope_id(scope, &game_mod.id).into_owned());
 	}
 
-	let family_ids = database
-		.families
+	let tag_ids = database
+		.tags
 		.keys()
-		.map(|family_id| scope_id(scope, family_id).into_owned())
+		.map(|tag_id| scope_id(scope, tag_id).into_owned())
 		.collect();
 
-	Ok((ids, family_ids))
+	Ok((ids, tag_ids))
 }

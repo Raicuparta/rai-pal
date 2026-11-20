@@ -190,8 +190,8 @@ msgid "Provider"
 msgstr "Fournisseur"
 
 msgctxt "filterProperty"
-msgid "Tag"
-msgstr "Tag"
+msgid "Game Tag"
+msgstr "Étiquette de jeu"
 
 msgctxt "filterProperty"
 msgid "Architecture"
@@ -218,20 +218,12 @@ msgid "Install status"
 msgstr "Statut d'installation"
 
 msgctxt "filterProperty"
-msgid "Mod"
-msgstr "Mod"
+msgid "Mod Tag"
+msgstr "Étiquette de mod"
 
 msgctxt "filterValue"
 msgid "Unknown"
 msgstr "Inconnu"
-
-msgctxt "filterValue"
-msgid "No family"
-msgstr "Aucune famille"
-
-msgctxt "filterValue"
-msgid "No mods"
-msgstr "Aucun mod"
 
 msgctxt "filterValue"
 msgid "64-bit"

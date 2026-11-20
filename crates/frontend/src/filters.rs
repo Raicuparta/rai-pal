@@ -41,28 +41,23 @@ fn group_data(group: FilterGroupView) -> FilterGroupData {
 
 pub fn build_groups(
 	filter: &GamesFilter,
-	mod_families: &BTreeMap<String, String>,
+	mod_tags: &BTreeMap<String, String>,
 	collapsed_filters: &HashSet<FilterGroupKey>,
 	providers_with_games: &HashSet<GameProviderId>,
 ) -> Vec<FilterGroupData> {
-	build_filter_views(
-		filter,
-		mod_families,
-		collapsed_filters,
-		providers_with_games,
-	)
-	.into_iter()
-	.map(group_data)
-	.collect()
+	build_filter_views(filter, mod_tags, collapsed_filters, providers_with_games)
+		.into_iter()
+		.map(group_data)
+		.collect()
 }
 
 pub fn build_mods_groups(
 	filter: &ModsFilter,
-	mod_families: &BTreeMap<String, String>,
+	mod_tags: &BTreeMap<String, String>,
 	collapsed_filters: &HashSet<FilterGroupKey>,
-	has_unfamilied_mods: bool,
+	has_untagged_mods: bool,
 ) -> Vec<FilterGroupData> {
-	build_mods_filter_views(filter, mod_families, collapsed_filters, has_unfamilied_mods)
+	build_mods_filter_views(filter, mod_tags, collapsed_filters, has_untagged_mods)
 		.into_iter()
 		.map(group_data)
 		.collect()
@@ -75,31 +70,32 @@ pub fn load_providers_with_games(database: &Db) -> HashSet<GameProviderId> {
 	})
 }
 
-pub fn load_mod_families(database: &Db) -> BTreeMap<String, String> {
-	load_families(database, true)
+pub fn load_mod_tags(database: &Db) -> BTreeMap<String, String> {
+	load_tags(database, true)
 }
 
-pub fn load_all_mod_families(database: &Db) -> BTreeMap<String, String> {
-	load_families(database, false)
+pub fn load_all_mod_tags(database: &Db) -> BTreeMap<String, String> {
+	load_tags(database, false)
 }
 
-fn load_families(database: &Db, filterable_only: bool) -> BTreeMap<String, String> {
+fn load_tags(database: &Db, filterable_only: bool) -> BTreeMap<String, String> {
 	let Some(mods) = database.get_mod_map().ok_or_log("Failed to load mod map") else {
 		return BTreeMap::new();
 	};
-	let family_definitions = database
-		.get_mod_families()
-		.ok_or_log("Failed to load mod families")
+	let tag_definitions = database
+		.get_mod_tags()
+		.ok_or_log("Failed to load mod tags")
 		.unwrap_or_default();
 
 	mods.values()
-		.filter_map(|game_mod| game_mod.family.as_ref())
-		.filter_map(|family_id| {
-			let family = family_definitions.get(family_id)?;
-			if filterable_only && family.filterable != Some(true) {
+		.filter_map(|game_mod| game_mod.tags.as_ref())
+		.flatten()
+		.filter_map(|tag_id| {
+			let tag = tag_definitions.get(tag_id)?;
+			if filterable_only && tag.filterable != Some(true) {
 				return None;
 			}
-			Some((family_id.clone(), family.title.clone()))
+			Some((tag_id.clone(), tag.title.clone()))
 		})
 		.collect()
 }

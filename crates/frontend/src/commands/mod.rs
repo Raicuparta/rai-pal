@@ -186,10 +186,10 @@ impl CommandHandler {
 		}
 	}
 
-	fn mod_family(&self, mod_id: &str) -> Option<String> {
+	fn mod_tags(&self, mod_id: &str) -> Option<Vec<String>> {
 		self.database
 			.get_mod(mod_id)
 			.ok_or_log("Failed to load mod for analytics")
-			.and_then(|game_mod| game_mod.family)
+			.and_then(|game_mod| game_mod.tags)
 	}
 }

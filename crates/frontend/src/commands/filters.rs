@@ -11,7 +11,7 @@ use slint::ComponentHandle as _;
 
 use crate::{
 	FilterGroupId,
-	filters::{build_groups, load_mod_families, load_providers_with_games},
+	filters::{build_groups, load_mod_tags, load_providers_with_games},
 };
 
 use super::query::ScrollBehavior;
@@ -20,12 +20,12 @@ use super::{CommandHandler, on_command};
 impl CommandHandler {
 	pub fn refresh_filters(&self) {
 		let providers_with_games = load_providers_with_games(&self.database);
-		let mod_families = load_mod_families(&self.database);
+		let mod_tags = load_mod_tags(&self.database);
 		let changed = {
 			let mut settings = self.settings.borrow_mut();
 			sync_filter_availability(
 				&mut settings.games_query.filter,
-				&mod_families,
+				&mod_tags,
 				&providers_with_games,
 			)
 		};
@@ -38,7 +38,7 @@ impl CommandHandler {
 			let settings = self.settings.borrow();
 			build_groups(
 				&settings.games_query.filter,
-				&mod_families,
+				&mod_tags,
 				&settings.collapsed_filters,
 				&providers_with_games,
 			)
@@ -55,12 +55,12 @@ impl CommandHandler {
 	}
 
 	pub fn apply_filter(&self, group: FilterGroupId, value: &str, action: FilterAction) {
-		let mod_families = load_mod_families(&self.database);
+		let mod_tags = load_mod_tags(&self.database);
 		let changed = {
 			let mut settings = self.settings.borrow_mut();
 			apply_filter_action(
 				&mut settings.games_query.filter,
-				&mod_families,
+				&mod_tags,
 				group.into(),
 				value,
 				action,

@@ -205,20 +205,20 @@ const MOD_COMPATIBILITY_FILTER: &str = r"
 	)
 ";
 
-fn build_mod_family_inclusion_filter(
+fn build_mod_tag_inclusion_filter(
 	group: &FilterGroup<String>,
-	filterable_families: &[String],
+	filterable_tags: &[String],
 	params: &mut Vec<Box<dyn rusqlite::types::ToSql>>,
 ) -> Option<String> {
-	if filterable_families.is_empty() {
+	if filterable_tags.is_empty() {
 		return None;
 	}
 
 	let disabled: HashSet<&String> = group
 		.known
 		.iter()
-		.filter(|(family, item)| !item.enabled && filterable_families.contains(family))
-		.map(|(family, _)| family)
+		.filter(|(tag, item)| !item.enabled && filterable_tags.contains(tag))
+		.map(|(tag, _)| tag)
 		.collect();
 	let unknown_enabled = group.unknown.as_ref().is_none_or(|item| item.enabled);
 
@@ -226,9 +226,9 @@ fn build_mod_family_inclusion_filter(
 		return None;
 	}
 
-	let enabled: Vec<&String> = filterable_families
+	let enabled: Vec<&String> = filterable_tags
 		.iter()
-		.filter(|family| !disabled.contains(family))
+		.filter(|tag| !disabled.contains(tag))
 		.collect();
 
 	let mut branches: Vec<String> = Vec::new();
@@ -236,18 +236,18 @@ fn build_mod_family_inclusion_filter(
 	if !enabled.is_empty() {
 		let placeholders: Vec<String> = enabled
 			.iter()
-			.map(|family| {
-				params.push(Box::new((*family).clone()));
+			.map(|tag| {
+				params.push(Box::new((*tag).clone()));
 				"?".to_string()
 			})
 			.collect();
 		branches.push(format!(
 			"EXISTS (
 				SELECT 1
-				FROM game_mod_families game_mod_family
-				WHERE game_mod_family.provider_id = g.provider_id
-					AND game_mod_family.game_id = g.game_id
-					AND game_mod_family.family IN ({})
+				FROM game_mod_tags game_mod_tag
+				WHERE game_mod_tag.provider_id = g.provider_id
+					AND game_mod_tag.game_id = g.game_id
+					AND game_mod_tag.tag IN ({})
 			)",
 			placeholders.join(", ")
 		));
@@ -257,9 +257,9 @@ fn build_mod_family_inclusion_filter(
 		branches.push(
 			"NOT EXISTS (
 				SELECT 1
-				FROM game_mod_families game_mod_family
-				WHERE game_mod_family.provider_id = g.provider_id
-					AND game_mod_family.game_id = g.game_id
+				FROM game_mod_tags game_mod_tag
+				WHERE game_mod_tag.provider_id = g.provider_id
+					AND game_mod_tag.game_id = g.game_id
 			)"
 			.to_string(),
 		);
@@ -272,13 +272,12 @@ fn build_mod_family_inclusion_filter(
 	}
 }
 
-fn build_game_mod_families_cte(
-	filterable_families: &[String],
+fn build_game_mod_tags_cte(
+	filterable_tags: &[String],
 	params: &mut Vec<Box<dyn rusqlite::types::ToSql>>,
 ) -> String {
-	let families_json =
-		serde_json::to_string(filterable_families).unwrap_or_else(|_| "[]".to_string());
-	params.push(Box::new(families_json));
+	let tags_json = serde_json::to_string(filterable_tags).unwrap_or_else(|_| "[]".to_string());
+	params.push(Box::new(tags_json));
 
 	let current_os = OperatingSystem::get_current().to_string();
 	params.push(Box::new(current_os.clone()));
@@ -286,11 +285,11 @@ fn build_game_mod_families_cte(
 
 	format!(
 		r"
-		WITH filterable_families AS MATERIALIZED (
-			SELECT value AS family_id FROM json_each(?)
+		WITH filterable_tags AS MATERIALIZED (
+			SELECT value AS tag_id FROM json_each(?)
 		),
-		game_mod_families AS MATERIALIZED (
-			SELECT DISTINCT g.provider_id, g.game_id, m.family
+		game_mod_tags AS MATERIALIZED (
+			SELECT DISTINCT g.provider_id, g.game_id, mod_tag.value AS tag
 			FROM main.games g
 			LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
 			{REMOTE_GAME_JOIN}
@@ -304,16 +303,18 @@ fn build_game_mod_families_cte(
 				END
 				AND mod_game_id.external_id = game_external_id.external_id
 			INNER JOIN main.mods m ON m.id = mod_game_id.mod_id
-			INNER JOIN filterable_families ON filterable_families.family_id = m.family
+			INNER JOIN json_each(m.tags) mod_tag ON 1=1
+			INNER JOIN filterable_tags ON filterable_tags.tag_id = mod_tag.value
 			WHERE COALESCE(m.hide_from_game_mods_list, 0) = 0
 				AND {MOD_COMPATIBILITY_FILTER}
 			UNION
-			SELECT DISTINCT g.provider_id, g.game_id, m.family
+			SELECT DISTINCT g.provider_id, g.game_id, mod_tag.value AS tag
 			FROM main.games g
 			LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
 			{REMOTE_GAME_JOIN}
 			INNER JOIN main.mods m ON m.has_game_ids = 0
-			INNER JOIN filterable_families ON filterable_families.family_id = m.family
+			INNER JOIN json_each(m.tags) mod_tag ON 1=1
+			INNER JOIN filterable_tags ON filterable_tags.tag_id = mod_tag.value
 			WHERE COALESCE(m.hide_from_game_mods_list, 0) = 0
 				AND {MOD_COMPATIBILITY_FILTER}
 		)
@@ -450,8 +451,8 @@ impl GameDatabase for Db {
 		// Build filtering logic dynamically with parameterized queries
 		let mut filters = Vec::<String>::new();
 		let mut params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
-		let mut mod_family_cte = String::new();
-		let mut mod_family_params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
+		let mut mod_tag_cte = String::new();
+		let mut mod_tag_params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
 
 		if let Some(filter) = query.as_ref().map(|q| &q.filter) {
 			// Installed filter
@@ -554,24 +555,21 @@ impl GameDatabase for Db {
 				filters.push(cond);
 			}
 
-			// Mod families filter
+			// Mod tags filter
 			// The "unknown" value means the game has no compatible mod from any
-			// filterable family. This lets "Only" on one family actually show only
-			// games that have a mod from that family.
-			let filterable_mod_families: Vec<String> = self
-				.get_mod_families()?
+			// filterable tag. This lets "Only" on one tag actually show only
+			// games that have a mod from that tag.
+			let filterable_mod_tags: Vec<String> = self
+				.get_mod_tags()?
 				.into_iter()
-				.filter(|(_, family)| family.filterable == Some(true))
-				.map(|(family_id, _)| family_id)
+				.filter(|(_, tag)| tag.filterable == Some(true))
+				.map(|(tag_id, _)| tag_id)
 				.collect();
 
-			if let Some(cond) = build_mod_family_inclusion_filter(
-				&filter.mod_families,
-				&filterable_mod_families,
-				&mut params,
-			) {
-				mod_family_cte =
-					build_game_mod_families_cte(&filterable_mod_families, &mut mod_family_params);
+			if let Some(cond) =
+				build_mod_tag_inclusion_filter(&filter.mod_tags, &filterable_mod_tags, &mut params)
+			{
+				mod_tag_cte = build_game_mod_tags_cte(&filterable_mod_tags, &mut mod_tag_params);
 				filters.push(cond);
 			}
 		}
@@ -600,7 +598,7 @@ impl GameDatabase for Db {
 
 		let sql_query = format!(
 			r"
-			{mod_family_cte}
+			{mod_tag_cte}
 			SELECT DISTINCT
 					g.provider_id as provider_id,
 					g.game_id as game_id
@@ -612,7 +610,7 @@ impl GameDatabase for Db {
 			",
 		);
 
-		let mut all_params = mod_family_params;
+		let mut all_params = mod_tag_params;
 		all_params.extend(params);
 		let param_refs: Vec<&dyn rusqlite::types::ToSql> =
 			all_params.iter().map(|p| &**p).collect();

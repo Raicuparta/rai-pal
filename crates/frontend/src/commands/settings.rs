@@ -50,7 +50,7 @@ pub fn apply_settings_to_ui(
 	window: &MainWindow,
 	settings: &AppSettings,
 	detected_locale: Option<AppLocale>,
-	mod_families: &BTreeMap<String, String>,
+	mod_tags: &BTreeMap<String, String>,
 	providers_with_games: &HashSet<GameProviderId>,
 ) {
 	i18n::apply_translation(i18n::effective_locale(settings, detected_locale));
@@ -62,7 +62,7 @@ pub fn apply_settings_to_ui(
 
 	let groups = build_groups(
 		&settings.games_query.filter,
-		mod_families,
+		mod_tags,
 		&settings.collapsed_filters,
 		providers_with_games,
 	);
@@ -95,12 +95,12 @@ impl CommandHandler {
 		self.scheduler.set_thumbnails_enabled(true);
 
 		let providers_with_games = crate::filters::load_providers_with_games(&self.database);
-		let mod_families = crate::filters::load_mod_families(&self.database);
+		let mod_tags = crate::filters::load_mod_tags(&self.database);
 		apply_settings_to_ui(
 			&window,
 			&self.settings.borrow(),
 			self.detected_locale,
-			&mod_families,
+			&mod_tags,
 			&providers_with_games,
 		);
 		self.start_query(Duration::ZERO, ScrollBehavior::Reset);

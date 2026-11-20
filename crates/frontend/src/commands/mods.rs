@@ -80,7 +80,7 @@ impl CommandHandler {
 	pub fn install_mod(&self, game: Game, mod_id: String) {
 		analytics::record(Event::InstallMod {
 			mod_id: mod_id.clone(),
-			family: self.mod_family(&mod_id),
+			tags: self.mod_tags(&mod_id),
 			game: Some(game.display_title.clone()),
 		});
 		self.install_mod_inner(game, mod_id);
@@ -89,7 +89,7 @@ impl CommandHandler {
 	pub fn update_mod(&self, game: Game, mod_id: String) {
 		analytics::record(Event::UpdateMod {
 			mod_id: mod_id.clone(),
-			family: self.mod_family(&mod_id),
+			tags: self.mod_tags(&mod_id),
 			game: Some(game.display_title.clone()),
 		});
 		self.install_mod_inner(game, mod_id);
@@ -164,7 +164,7 @@ impl CommandHandler {
 	pub fn uninstall_mod(&self, game: Game, mod_id: String) {
 		analytics::record(Event::UninstallMod {
 			mod_id: mod_id.clone(),
-			family: self.mod_family(&mod_id),
+			tags: self.mod_tags(&mod_id),
 			game: Some(game.display_title.clone()),
 		});
 
@@ -206,7 +206,7 @@ impl CommandHandler {
 					analytics::record_all(installed_mods.iter().map(|installed_mod| {
 						Event::UninstallMod {
 							mod_id: installed_mod.game_mod.id.clone(),
-							family: installed_mod.game_mod.family.clone(),
+							tags: installed_mod.game_mod.tags.clone(),
 							game: Some(game.display_title.clone()),
 						}
 					}));
@@ -231,7 +231,7 @@ impl CommandHandler {
 	pub fn run_mod(&self, game: Game, mod_id: String) {
 		analytics::record(Event::RunMod {
 			mod_id: mod_id.clone(),
-			family: self.mod_family(&mod_id),
+			tags: self.mod_tags(&mod_id),
 			game: Some(game.display_title.clone()),
 		});
 
@@ -599,11 +599,9 @@ fn collect_deps_to_install(
 					.iter()
 					.filter(|info| info.compatible && info.mod_id == *dep_id)
 					.collect::<Vec<_>>(),
-				ModDependency::Family { family: dep_family } => relevant_mods
+				ModDependency::Tag { tag: dep_tag } => relevant_mods
 					.iter()
-					.filter(|info| {
-						info.compatible && info.family.as_deref() == Some(dep_family.as_str())
-					})
+					.filter(|info| info.compatible && info.tags.contains(dep_tag))
 					.collect::<Vec<_>>(),
 			};
 

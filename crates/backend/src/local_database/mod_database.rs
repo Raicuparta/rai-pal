@@ -20,7 +20,7 @@ use crate::{
 		installed_mod::InstalledMod,
 		manifest::{Mod, ModDependency},
 		mod_config::ModConfig,
-		mod_family::ModFamily,
+		mod_tag::ModTag,
 	},
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
@@ -35,7 +35,7 @@ pub struct ModInfo {
 	pub is_outdated: bool,
 	pub has_installed_dependants: bool,
 	pub compatible: bool,
-	pub family: Option<String>,
+	pub tags: Vec<String>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -66,20 +66,15 @@ pub trait ModDatabase {
 	fn get_game_mods(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Vec<ModInfo>>;
 	fn get_mod_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>>;
 	fn remove_mods_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result;
-	fn insert_mod_families(
+	fn insert_mod_tags(
 		&self,
-		families: &BTreeMap<String, ModFamily>,
+		tags: &BTreeMap<String, ModTag>,
 		provider_id: ModProviderId,
 		source_hash: &str,
 	);
-	fn get_mod_families(&self) -> Result<BTreeMap<String, ModFamily>>;
-	fn get_family_ids_in_scope(
-		&self,
-		provider_id: ModProviderId,
-		scope: &str,
-	) -> Result<Vec<String>>;
-	fn remove_mod_families_except(&self, provider_id: ModProviderId, keep_ids: &[String])
-	-> Result;
+	fn get_mod_tags(&self) -> Result<BTreeMap<String, ModTag>>;
+	fn get_tag_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>>;
+	fn remove_mod_tags_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result;
 }
 
 pub(crate) fn compute_scope(provider_id: ModProviderId, source_hash: &str) -> String {
@@ -151,7 +146,7 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 				run_standalone TEXT,
 				game_environment TEXT,
 				hash TEXT,
-				family TEXT,
+				tags TEXT,
 				game_ids TEXT,
 				created_at INTEGER,
 				has_game_ids INTEGER GENERATED ALWAYS AS (json_extract(game_ids, '$') IS NOT NULL) VIRTUAL,
@@ -169,7 +164,7 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 			);
 
 			CREATE INDEX IF NOT EXISTS idx_mods_created_at ON mods(created_at);
-			CREATE INDEX IF NOT EXISTS idx_mods_family ON mods(family);
+
 			CREATE INDEX IF NOT EXISTS idx_mods_has_game_ids ON mods(has_game_ids);
 
 			CREATE TABLE IF NOT EXISTS mod_game_ids (
@@ -181,11 +176,11 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 
 			CREATE INDEX IF NOT EXISTS idx_mod_game_ids_lookup ON mod_game_ids(external_id_provider, external_id);
 
-			CREATE TABLE IF NOT EXISTS mod_families (
+			CREATE TABLE IF NOT EXISTS mod_tags (
 				id TEXT NOT NULL PRIMARY KEY,
 				scope TEXT NOT NULL DEFAULT '',
 				provider_id TEXT NOT NULL,
-				family_id TEXT NOT NULL,
+				tag_id TEXT NOT NULL,
 				data TEXT NOT NULL
 			);
 
@@ -242,7 +237,7 @@ impl ModDatabase for Db {
 				run_standalone,
 				hash,
 				hide_from_game_mods_list,
-				family,
+				tags,
 				scope,
 				game_environment,
 				game_ids
@@ -274,7 +269,7 @@ impl ModDatabase for Db {
 					run_standalone: row.get_json(18)?,
 					hash: row.get(19)?,
 					hide_from_game_mods_list: row.get(20)?,
-					family: row.get(21)?,
+					tags: row.get_json(21)?,
 					scope: row.get(22)?,
 					game_environment: row.get_json(23)?,
 					game_ids: row.get_json(24)?,
@@ -429,7 +424,7 @@ impl ModDatabase for Db {
 				run_standalone,
 				hash,
 				hide_from_game_mods_list,
-				family,
+				tags,
 				scope,
 				game_environment,
 				game_ids
@@ -459,7 +454,7 @@ impl ModDatabase for Db {
 					run_standalone: row.get_json(18)?,
 					hash: row.get(19)?,
 					hide_from_game_mods_list: row.get(20)?,
-					family: row.get(21)?,
+					tags: row.get_json(21)?,
 					scope: row.get(22)?,
 					game_environment: row.get_json(23)?,
 					game_ids: row.get_json(24)?,
@@ -597,7 +592,7 @@ impl ModDatabase for Db {
 					im.installed_hash AS installed_hash,
 					m.optional_dependencies AS optional_dependencies,
 					m.required_dependencies AS required_dependencies,
-					m.family AS family,
+					m.tags AS tags,
 					CASE
 						WHEN im.mod_id IS NULL THEN 0
 						ELSE 1
@@ -670,7 +665,7 @@ impl ModDatabase for Db {
 							AND dependant.is_installed = 1
 							AND (
 								json_extract(dep.value, '$.modId') = cm.mod_id
-								OR json_extract(dep.value, '$.family') = cm.family
+								OR json_extract(dep.value, '$.tag') IN (SELECT value FROM json_each(cm.tags))
 							)
 					) THEN 1
 					WHEN EXISTS (
@@ -681,7 +676,7 @@ impl ModDatabase for Db {
 							AND dependant.is_installed = 1
 							AND (
 								json_extract(dep.value, '$.modId') = cm.mod_id
-								OR json_extract(dep.value, '$.family') = cm.family
+								OR json_extract(dep.value, '$.tag') IN (SELECT value FROM json_each(cm.tags))
 							)
 					) THEN 1
 					ELSE 0
@@ -724,7 +719,7 @@ impl ModDatabase for Db {
 					) THEN 0
 					ELSE 1
 				END AS compatible,
-				cm.family
+				cm.tags
 			FROM candidate_mods cm
 		",
 			))?
@@ -742,7 +737,7 @@ impl ModDatabase for Db {
 						is_outdated: row.get(3)?,
 						has_installed_dependants: row.get(4)?,
 						compatible: row.get(5)?,
-						family: row.get(6)?,
+						tags: row.get_json(6)?,
 					})
 				},
 			)?
@@ -789,54 +784,46 @@ impl ModDatabase for Db {
 		Ok(())
 	}
 
-	fn insert_mod_families(
+	fn insert_mod_tags(
 		&self,
-		families: &BTreeMap<String, ModFamily>,
+		tags: &BTreeMap<String, ModTag>,
 		provider_id: ModProviderId,
 		source_hash: &str,
 	) {
-		if let Err(err) = try_insert_mod_families(self, families, provider_id, source_hash) {
-			log::error!("Failed to insert mod families into local database: {err}");
+		if let Err(err) = try_insert_mod_tags(self, tags, provider_id, source_hash) {
+			log::error!("Failed to insert mod tags into local database: {err}");
 		}
 	}
 
-	fn get_mod_families(&self) -> Result<BTreeMap<String, ModFamily>> {
+	fn get_mod_tags(&self) -> Result<BTreeMap<String, ModTag>> {
 		let rows = self
 			.read_db()?
-			.prepare_cached("SELECT family_id, data FROM main.mod_families ORDER BY id;")?
+			.prepare_cached("SELECT tag_id, data FROM main.mod_tags ORDER BY id;")?
 			.query_map([], |row| {
 				Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
 			})?
 			.collect::<rusqlite::Result<Vec<(String, String)>>>()?;
 
-		let mut families = BTreeMap::new();
+		let mut tags = BTreeMap::new();
 
-		for (family_id, data) in rows {
-			match serde_json::from_str::<ModFamily>(&data) {
-				Ok(family) => {
-					families.insert(family_id, family);
+		for (tag_id, data) in rows {
+			match serde_json::from_str::<ModTag>(&data) {
+				Ok(tag) => {
+					tags.insert(tag_id, tag);
 				}
 				Err(err) => {
-					log::warn!(
-						"Failed to parse mod family `{family_id}` from local database: {err}"
-					);
+					log::warn!("Failed to parse mod tag `{tag_id}` from local database: {err}");
 				}
 			}
 		}
 
-		Ok(families)
+		Ok(tags)
 	}
 
-	fn get_family_ids_in_scope(
-		&self,
-		provider_id: ModProviderId,
-		scope: &str,
-	) -> Result<Vec<String>> {
+	fn get_tag_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>> {
 		let ids = self
 			.read_db()?
-			.prepare_cached(
-				"SELECT id FROM main.mod_families WHERE provider_id = $1 AND scope = $2;",
-			)?
+			.prepare_cached("SELECT id FROM main.mod_tags WHERE provider_id = $1 AND scope = $2;")?
 			.query_map(rusqlite::params![provider_id, scope], |row| {
 				row.get::<_, String>(0)
 			})?
@@ -845,16 +832,12 @@ impl ModDatabase for Db {
 		Ok(ids)
 	}
 
-	fn remove_mod_families_except(
-		&self,
-		provider_id: ModProviderId,
-		keep_ids: &[String],
-	) -> Result {
+	fn remove_mod_tags_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result {
 		let keep_json = serde_json::to_string(keep_ids)?;
 
 		self.write_db()?
 			.prepare_cached(
-				"DELETE FROM main.mod_families WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?));",
+				"DELETE FROM main.mod_tags WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?));",
 			)?
 			.execute(rusqlite::params![provider_id, keep_json])?;
 
@@ -883,7 +866,7 @@ fn scope_dependencies(deps: &[ModDependency], scope: &str) -> Vec<ModDependency>
 			ModDependency::ModId { mod_id } => ModDependency::ModId {
 				mod_id: scope_id(scope, mod_id).into_owned(),
 			},
-			ModDependency::Family { .. } => dep.clone(),
+			ModDependency::Tag { .. } => dep.clone(),
 		})
 		.collect()
 }
@@ -929,7 +912,7 @@ fn apply_required_dependency_compatibility(
 fn dependency_matches(dep: &ModDependency, info: &ModInfo) -> bool {
 	match dep {
 		ModDependency::ModId { mod_id } => info.mod_id == *mod_id,
-		ModDependency::Family { family } => info.family.as_deref() == Some(family.as_str()),
+		ModDependency::Tag { tag } => info.tags.contains(tag),
 	}
 }
 
@@ -981,7 +964,7 @@ fn try_insert_mod(
 				game_environment,
 				hide_from_game_mods_list,
 				hash,
-				family,
+				tags,
 				created_at,
 				scope,
 				game_ids
@@ -1011,7 +994,7 @@ fn try_insert_mod(
 			serialize_json_option(game_mod.game_environment.as_ref())?,
 			game_mod.hide_from_game_mods_list,
 			game_mod.hash,
-			game_mod.family,
+			serde_json::to_string(&game_mod.tags.clone().unwrap_or_default())?,
 			SystemTime::now()
 				.duration_since(UNIX_EPOCH)?
 				.as_secs()
@@ -1042,9 +1025,9 @@ fn try_insert_mod(
 	Ok(())
 }
 
-fn try_insert_mod_families(
+fn try_insert_mod_tags(
 	connection_mutex: &Db,
-	families: &BTreeMap<String, ModFamily>,
+	tags: &BTreeMap<String, ModTag>,
 	provider_id: ModProviderId,
 	source_hash: &str,
 ) -> Result {
@@ -1055,24 +1038,24 @@ fn try_insert_mod_families(
 
 	{
 		let mut statement = transaction.prepare_cached(
-			"INSERT OR REPLACE INTO mod_families (
+			"INSERT OR REPLACE INTO mod_tags (
 				id,
 				scope,
 				provider_id,
-				family_id,
+				tag_id,
 				data
 			) VALUES ($1, $2, $3, $4, $5)",
 		)?;
 
-		for (family_id, family) in families {
-			let scoped_id = scope_id(&scope, family_id);
+		for (tag_id, tag) in tags {
+			let scoped_id = scope_id(&scope, tag_id);
 
 			statement.execute(rusqlite::params![
 				scoped_id.as_ref(),
 				scope,
 				provider_id,
-				family_id,
-				serde_json::to_string(family)?,
+				tag_id,
+				serde_json::to_string(tag)?,
 			])?;
 		}
 	}

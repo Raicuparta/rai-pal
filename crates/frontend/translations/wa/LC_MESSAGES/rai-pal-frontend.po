@@ -190,8 +190,8 @@ msgid "Provider"
 msgstr "Waaaaaah!"
 
 msgctxt "filterProperty"
-msgid "Tag"
-msgstr "Wah!"
+msgid "Game Tag"
+msgstr "Wah game tag!"
 
 msgctxt "filterProperty"
 msgid "Architecture"
@@ -218,20 +218,12 @@ msgid "Install status"
 msgstr "Waaaaah waaaah!"
 
 msgctxt "filterProperty"
-msgid "Mod"
-msgstr "Wah!"
+msgid "Mod Tag"
+msgstr "Wah mod tag!"
 
 msgctxt "filterValue"
 msgid "Unknown"
 msgstr "Waaaaah!"
-
-msgctxt "filterValue"
-msgid "No family"
-msgstr "Wah family!"
-
-msgctxt "filterValue"
-msgid "No mods"
-msgstr "Waaaah!"
 
 msgctxt "filterValue"
 msgid "64-bit"

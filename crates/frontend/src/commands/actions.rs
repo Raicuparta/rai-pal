@@ -133,7 +133,7 @@ impl CommandHandler {
 	pub fn run_standalone_mod(&self, mod_id: String) {
 		analytics::record(Event::RunMod {
 			mod_id: mod_id.clone(),
-			family: self.mod_family(&mod_id),
+			tags: self.mod_tags(&mod_id),
 			game: None,
 		});
 
@@ -150,7 +150,7 @@ impl CommandHandler {
 	pub fn install_standalone_mod(&self, mod_id: String) {
 		analytics::record(Event::InstallMod {
 			mod_id: mod_id.clone(),
-			family: self.mod_family(&mod_id),
+			tags: self.mod_tags(&mod_id),
 			game: None,
 		});
 

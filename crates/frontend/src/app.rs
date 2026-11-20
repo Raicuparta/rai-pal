@@ -16,7 +16,7 @@ use crate::{
 		CommandHandler, os_integration, query::load_game_ids, settings::apply_settings_to_ui,
 	},
 	fetch::spawn_fetchers,
-	filters::{load_mod_families, load_providers_with_games},
+	filters::{load_mod_tags, load_providers_with_games},
 	i18n, logging,
 	model::make_rows,
 	single_instance, window_state,
@@ -44,13 +44,13 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 	let app_settings = Rc::new(RefCell::new(AppSettings::read()));
 	let detected_locale = i18n::detect_locale();
-	let mod_families = load_mod_families(&app_database);
+	let mod_tags = load_mod_tags(&app_database);
 	let providers_with_games = load_providers_with_games(&app_database);
 	{
 		let mut settings = app_settings.borrow_mut();
 		if sync_filter_availability(
 			&mut settings.games_query.filter,
-			&mod_families,
+			&mod_tags,
 			&providers_with_games,
 		) && let Err(err) = settings.try_write()
 		{
@@ -94,7 +94,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		&main_window,
 		&app_settings,
 		detected_locale,
-		&mod_families,
+		&mod_tags,
 		&providers_with_games,
 		games_total_count,
 	);
@@ -213,7 +213,7 @@ fn apply_initial_state(
 	window: &MainWindow,
 	app_settings: &Rc<RefCell<AppSettings>>,
 	detected_locale: Option<AppLocale>,
-	mod_families: &BTreeMap<String, String>,
+	mod_tags: &BTreeMap<String, String>,
 	providers_with_games: &HashSet<GameProviderId>,
 	games_total_count: u32,
 ) {
@@ -223,7 +223,7 @@ fn apply_initial_state(
 		window,
 		&app_settings,
 		detected_locale,
-		mod_families,
+		mod_tags,
 		providers_with_games,
 	);
 	window

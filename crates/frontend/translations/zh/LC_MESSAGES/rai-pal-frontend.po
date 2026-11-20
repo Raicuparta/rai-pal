@@ -190,8 +190,8 @@ msgid "Provider"
 msgstr "平台"
 
 msgctxt "filterProperty"
-msgid "Tag"
-msgstr "标签"
+msgid "Game Tag"
+msgstr "游戏标签"
 
 msgctxt "filterProperty"
 msgid "Architecture"
@@ -218,20 +218,12 @@ msgid "Install status"
 msgstr "安装状态"
 
 msgctxt "filterProperty"
-msgid "Mod"
-msgstr "模组"
+msgid "Mod Tag"
+msgstr "模组标签"
 
 msgctxt "filterValue"
 msgid "Unknown"
 msgstr "未知"
-
-msgctxt "filterValue"
-msgid "No family"
-msgstr "无家族"
-
-msgctxt "filterValue"
-msgid "No mods"
-msgstr "无模组"
 
 msgctxt "filterValue"
 msgid "64-bit"

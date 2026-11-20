@@ -17,7 +17,7 @@ use rai_pal_backend::{
 
 use crate::{
 	FilterGroupId, MessageContext, ModsTabModData,
-	filters::{build_mods_groups, load_all_mod_families},
+	filters::{build_mods_groups, load_all_mod_tags},
 	notifications,
 };
 
@@ -47,17 +47,19 @@ impl CommandHandler {
 			}
 		};
 
-		let mod_families = load_all_mod_families(&self.database);
-		let has_unfamilied_mods = mods.values().any(|game_mod| game_mod.family.is_none());
+		let mod_tags = load_all_mod_tags(&self.database);
+		let has_untagged_mods = mods
+			.values()
+			.any(|game_mod| game_mod.tags.as_ref().is_none_or(|tags| tags.is_empty()));
 		let (query, groups, availability_changed) = {
 			let mut settings = self.settings.borrow_mut();
 			let availability_changed =
-				sync_mods_filter_availability(&mut settings.mods_query.filter, &mod_families);
+				sync_mods_filter_availability(&mut settings.mods_query.filter, &mod_tags);
 			let groups = build_mods_groups(
 				&settings.mods_query.filter,
-				&mod_families,
+				&mod_tags,
 				&settings.mods_collapsed_filters,
-				has_unfamilied_mods,
+				has_untagged_mods,
 			);
 			(settings.mods_query.clone(), groups, availability_changed)
 		};
@@ -112,12 +114,12 @@ impl CommandHandler {
 	}
 
 	pub fn apply_mods_filter(&self, group: FilterGroupId, value: &str, action: FilterAction) {
-		let mod_families = load_all_mod_families(&self.database);
+		let mod_tags = load_all_mod_tags(&self.database);
 		let changed = {
 			let mut settings = self.settings.borrow_mut();
 			apply_mods_filter_action(
 				&mut settings.mods_query.filter,
-				&mod_families,
+				&mod_tags,
 				group.into(),
 				value,
 				action,

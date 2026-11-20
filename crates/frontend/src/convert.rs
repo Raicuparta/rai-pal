@@ -64,7 +64,7 @@ macro_rules! slint_optional_enum_conversions {
 slint_enum_conversions!(FilterGroupKey => FilterGroupId {
 	Installed,
 	Engines,
-	ModFamilies,
+	ModTags,
 	Tags,
 	Providers,
 	UnityBackends,
@@ -75,8 +75,6 @@ slint_enum_conversions!(FilterGroupKey => FilterGroupId {
 
 slint_optional_enum_conversions!(FilterValueLabel => UiFilterValueLabel {
 	Unknown,
-	NoMods,
-	NoFamily,
 	Arch64,
 	Arch32,
 	TagDemo,

@@ -68,18 +68,18 @@ impl GameModGroups {
 			}
 		}
 
-		let compatible_families = compatible_parts
+		let compatible_tags = compatible_parts
 			.iter()
 			.chain(hidden_parts.iter())
-			.filter_map(|entry| entry.manifest.family.clone())
+			.filter_map(|entry| entry.manifest.tags.as_ref())
+			.flatten()
+			.cloned()
 			.collect::<HashSet<_>>();
 
 		incompatible_parts.retain(|entry| {
-			entry
-				.manifest
-				.family
-				.as_ref()
-				.is_none_or(|family| !compatible_families.contains(family))
+			let tags = entry.manifest.tags.as_deref().unwrap_or_default();
+
+			tags.is_empty() || !tags.iter().all(|tag| compatible_tags.contains(tag))
 		});
 
 		sort_entries(&mut compatible_parts);

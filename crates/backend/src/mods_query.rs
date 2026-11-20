@@ -3,12 +3,18 @@ use crate::{games_query::FilterGroup, mods::manifest::Mod};
 #[derive(serde::Serialize, serde::Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ModsFilter {
-	pub mod_families: FilterGroup<String>,
+	#[serde(alias = "modFamilies")]
+	pub mod_tags: FilterGroup<String>,
 }
 
 impl ModsFilter {
 	pub fn matches(&self, game_mod: &Mod) -> bool {
-		self.mod_families.item(game_mod.family.as_ref()).enabled
+		match game_mod.tags.as_deref() {
+			Some(tags) if !tags.is_empty() => {
+				tags.iter().any(|tag| self.mod_tags.item(Some(tag)).enabled)
+			}
+			_ => self.mod_tags.item(None).enabled,
+		}
 	}
 }
 
