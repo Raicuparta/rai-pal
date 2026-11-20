@@ -1,5 +1,5 @@
 import { ActionKind } from "../action_state.slint";
-import { ScrollView } from "std-widgets.slint";
+import { ListView } from "std-widgets.slint";
 import { DialogActions, ModActions } from "../actions.slint";
 import { UrlModSourcesPopup } from "url_mod_sources_popup.slint";
 import { ConfirmModSourcePopup } from "confirm_mod_source_popup.slint";
@@ -66,13 +66,9 @@ export component ModsPage inherits Rectangle {
         Rectangle {
             horizontal-stretch: 1;
 
-            ScrollView {
-                VerticalLayout {
-                    alignment: start;
-
-                    for mod-row in ModsState.items: ModsTabRow {
-                        mod-data: mod-row;
-                    }
+            ListView {
+                for mod-row in ModsState.items: ModsTabRow {
+                    mod-data: mod-row;
                 }
             }
         }
