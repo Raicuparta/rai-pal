@@ -21,7 +21,7 @@ impl log::Log for Logger {
 			return false;
 		}
 
-		metadata.level() <= LevelFilter::Info || metadata.target().starts_with("rai_pal")
+		metadata.level() <= LevelFilter::Warn || metadata.target().starts_with("rai_pal")
 	}
 
 	fn log(&self, record: &Record) {
