@@ -100,6 +100,12 @@ fn steam_appinfo_basic() {
 }
 
 #[test]
+fn steam_appinfo_sharded() {
+	let (root, games) = parse_path_fixture(&Steam, "steam/appinfo-sharded");
+	assert_expected_games(&root, &games);
+}
+
+#[test]
 fn itch_database_basic() {
 	let root = fixture("itch/database-basic");
 	let db_path = root.join("db/butler.db");

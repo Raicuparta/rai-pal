@@ -9,7 +9,7 @@ use steamlocate::SteamDir;
 use super::{
 	appinfo::{SteamAppInfo, SteamLaunchOption},
 	packageinfo::PackageInfo,
-	steam_dir::{find_steam_dir, get_appinfo_path},
+	steam_dir::{find_steam_dir, get_appinfo_dir, get_appinfo_path, get_appinfo_paths},
 };
 use crate::{
 	game::Game,
@@ -207,10 +207,15 @@ impl Steam {
 		let steam_dir = find_steam_dir()?;
 		let steam_path = steam_dir.path();
 		let appinfo_path = get_appinfo_path(steam_path);
+		let appinfo_dir = get_appinfo_dir(steam_path);
 		let packageinfo_path = Self::get_packageinfo_path(steam_path);
 
 		if appinfo_path.exists() {
 			fs_err::remove_file(appinfo_path)?;
+		}
+
+		if appinfo_dir.exists() {
+			fs_err::remove_dir_all(appinfo_dir)?;
 		}
 
 		if packageinfo_path.exists() {
@@ -227,10 +232,10 @@ impl ProviderParser for Steam {
 	fn parse_games(&self, steam_path: &Self::Source) -> Result<Vec<Game>> {
 		let mut games = Vec::new();
 		let steam_dir = SteamDir::from_dir(steam_path)?;
-		let appinfo_path = get_appinfo_path(steam_dir.path());
+		let appinfo_paths = get_appinfo_paths(steam_dir.path())?;
 
-		if appinfo_path.exists() {
-			let app_info_reader = SteamAppInfoReader::new(&appinfo_path)?;
+		if !appinfo_paths.is_empty() {
+			let app_info_reader = SteamAppInfoReader::new(&appinfo_paths)?;
 			let mut app_paths = HashMap::<u32, PathBuf>::new();
 			for library in (steam_dir.libraries()?).flatten() {
 				for app in library.apps().flatten() {
@@ -340,8 +345,9 @@ impl ProviderParser for Steam {
 			}
 		} else {
 			log::warn!(
-				"Steam appinfo.vdf not found at `{}`. Skipping Steam appinfo game insertion.",
-				appinfo_path.display()
+				"Steam appinfo cache not found at `{}` or `{}`. Skipping Steam appinfo game insertion.",
+				get_appinfo_dir(steam_dir.path()).display(),
+				get_appinfo_path(steam_dir.path()).display()
 			);
 		}
 
