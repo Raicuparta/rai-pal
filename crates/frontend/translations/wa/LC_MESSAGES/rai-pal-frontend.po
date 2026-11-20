@@ -270,18 +270,6 @@ msgid "GameMaker games are not fully supported yet."
 msgstr "Waaaaaaah waaah wah wah waaah waaaaaaah waah!"
 
 msgctxt "gameModRow"
-msgid "Edit Mod Config"
-msgstr "Waah wah waaaah!"
-
-msgctxt "gameModRow"
-msgid "Open Config Folder"
-msgstr "Waah wah waaaah waaah!"
-
-msgctxt "gameModRow"
-msgid "Open Mod Folder"
-msgstr "Waah wah waaaah!"
-
-msgctxt "gameModRow"
 msgid "Reinstall"
 msgstr "Waaaaaaah!"
 
@@ -546,12 +534,8 @@ msgid "Failed to run mod {0}"
 msgstr "Waaaah to wah wah {0}"
 
 msgctxt "messages"
-msgid "Failed to open mod folder {0}"
+msgid "Failed to open mod path {0}"
 msgstr "Waaaah to waah wah waaaah {0}"
-
-msgctxt "messages"
-msgid "Failed to configure mod {0}"
-msgstr "Waaaah to waaaaaaah wah {0}"
 
 msgctxt "messages"
 msgid "Failed to refresh game"
@@ -836,3 +820,11 @@ msgstr "Wah wah waaah wah"
 msgctxt "textField"
 msgid "Clear"
 msgstr "Wah"
+
+msgctxt "gameModRow"
+msgid "Open: {0}"
+msgstr "Waah: {0}"
+
+msgctxt "gameModRow"
+msgid "Open Folder: {0}"
+msgstr "Waaah folder: {0}"

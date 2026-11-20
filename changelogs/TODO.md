@@ -9,6 +9,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Do later
 
 - "Manual" rename to "Executable" i think?
+- Suddenly refresh individual game way way slower?
+- Refreshing game resets component state, so that sucks. For instance, if a dropdown menu or popup is open, and refresh happens (which always happens after selecting game), it closes again.
 
 ## Notes, questions, decisions, etc
 

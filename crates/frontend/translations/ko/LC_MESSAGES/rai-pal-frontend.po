@@ -270,18 +270,6 @@ msgid "GameMaker games are not fully supported yet."
 msgstr "GameMaker 게임은 아직 완전히 지원되지 않습니다."
 
 msgctxt "gameModRow"
-msgid "Edit Mod Config"
-msgstr "모드 설정 편집"
-
-msgctxt "gameModRow"
-msgid "Open Config Folder"
-msgstr "설정 폴더 열기"
-
-msgctxt "gameModRow"
-msgid "Open Mod Folder"
-msgstr "모드 폴더 열기"
-
-msgctxt "gameModRow"
 msgid "Reinstall"
 msgstr "재설치"
 
@@ -546,12 +534,8 @@ msgid "Failed to run mod {0}"
 msgstr "모드 {0}을(를) 실행하지 못했습니다"
 
 msgctxt "messages"
-msgid "Failed to open mod folder {0}"
+msgid "Failed to open mod path {0}"
 msgstr "모드 {0}의 폴더를 열지 못했습니다"
-
-msgctxt "messages"
-msgid "Failed to configure mod {0}"
-msgstr "모드 {0}을(를) 구성하지 못했습니다"
 
 msgctxt "messages"
 msgid "Failed to refresh game"
@@ -836,3 +820,11 @@ msgstr "게임 정렬"
 msgctxt "textField"
 msgid "Clear"
 msgstr "지우기"
+
+msgctxt "gameModRow"
+msgid "Open: {0}"
+msgstr "열기: {0}"
+
+msgctxt "gameModRow"
+msgid "Open Folder: {0}"
+msgstr "폴더 열기: {0}"

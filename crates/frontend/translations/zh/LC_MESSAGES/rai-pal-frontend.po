@@ -270,18 +270,6 @@ msgid "GameMaker games are not fully supported yet."
 msgstr "GameMaker 游戏尚未完全支持。"
 
 msgctxt "gameModRow"
-msgid "Edit Mod Config"
-msgstr "编辑模组配置"
-
-msgctxt "gameModRow"
-msgid "Open Config Folder"
-msgstr "打开配置文件夹"
-
-msgctxt "gameModRow"
-msgid "Open Mod Folder"
-msgstr "打开模组文件夹"
-
-msgctxt "gameModRow"
 msgid "Reinstall"
 msgstr "重新安装"
 
@@ -546,12 +534,8 @@ msgid "Failed to run mod {0}"
 msgstr "运行模组 {0} 失败"
 
 msgctxt "messages"
-msgid "Failed to open mod folder {0}"
+msgid "Failed to open mod path {0}"
 msgstr "打开模组 {0} 的文件夹失败"
-
-msgctxt "messages"
-msgid "Failed to configure mod {0}"
-msgstr "配置模组 {0} 失败"
 
 msgctxt "messages"
 msgid "Failed to refresh game"
@@ -836,3 +820,11 @@ msgstr "排序游戏"
 msgctxt "textField"
 msgid "Clear"
 msgstr "清除"
+
+msgctxt "gameModRow"
+msgid "Open: {0}"
+msgstr "打开：{0}"
+
+msgctxt "gameModRow"
+msgid "Open Folder: {0}"
+msgstr "打开文件夹：{0}"

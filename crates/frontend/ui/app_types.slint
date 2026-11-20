@@ -114,8 +114,7 @@ export enum MessageContext {
     uninstall-all-mods,
     update-all-mods,
     run-mod,
-    open-mod-folder,
-    configure-mod,
+    open-mod-path,
     refresh-game,
     refresh-games,
     refresh-installed-mods,
@@ -189,6 +188,14 @@ export struct FilterGroupData {
     expanded: bool,
 }
 
+export struct ModPathData {
+    id: string,
+    title: string,
+    is-folder: bool,
+    open-folder: bool,
+    exists: bool,
+}
+
 export struct GameModData {
     mod-id: string,
     title: string,
@@ -205,7 +212,7 @@ export struct GameModData {
     has-exe-path: bool,
     has-install: bool,
     has-run: bool,
-    has-config: bool,
+    paths: [ModPathData],
     has-installed-dependants: bool,
 }
 

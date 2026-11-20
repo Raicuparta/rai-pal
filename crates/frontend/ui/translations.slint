@@ -253,11 +253,8 @@ export global Tr {
         if data.context == MessageContext.run-mod {
             return @tr("messages" => "Failed to run mod {0}", data.subject);
         }
-        if data.context == MessageContext.open-mod-folder {
-            return @tr("messages" => "Failed to open mod folder {0}", data.subject);
-        }
-        if data.context == MessageContext.configure-mod {
-            return @tr("messages" => "Failed to configure mod {0}", data.subject);
+        if data.context == MessageContext.open-mod-path {
+            return @tr("messages" => "Failed to open mod path {0}", data.subject);
         }
         if data.context == MessageContext.refresh-game {
             return @tr("messages" => "Failed to refresh game");

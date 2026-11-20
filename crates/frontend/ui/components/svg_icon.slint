@@ -18,6 +18,7 @@ export enum Icon {
     engine,
     error,
     external-link,
+    file,
     filter,
     folder-mods,
     folder,
@@ -98,6 +99,7 @@ export component SvgIcon inherits Image {
         if icon == Icon.engine { return @image-url("../icons/ui/engine.svg"); }
         if icon == Icon.error { return @image-url("../icons/ui/error.svg"); }
         if icon == Icon.external-link { return @image-url("../icons/ui/external-link.svg"); }
+        if icon == Icon.file { return @image-url("../icons/ui/file.svg"); }
         if icon == Icon.filter { return @image-url("../icons/ui/filter.svg"); }
         if icon == Icon.folder-mods { return @image-url("../icons/ui/folder-mods.svg"); }
         if icon == Icon.folder { return @image-url("../icons/ui/folder.svg"); }

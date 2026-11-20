@@ -3,8 +3,6 @@ use std::path::PathBuf;
 use crate::{
 	game::Game,
 	mods::{manifest::Mod, replacement_token::replace_tokens},
-	open_better::open_detached_better,
-	path_extensions::PathExt,
 	result::{Error, Result},
 };
 
@@ -16,26 +14,6 @@ pub struct InstalledMod {
 impl InstalledMod {
 	pub const fn new(game_mod: Mod, game: Option<Game>) -> Self {
 		Self { game_mod, game }
-	}
-
-	pub fn open_folder(&self) -> Result {
-		PathBuf::from(replace_tokens(
-			self.game_mod
-				.get_install()?
-				.main_installed_folder_path
-				.as_ref()
-				.ok_or_else(|| {
-					Error::ModInfoMissing(
-						self.game_mod.id.clone(),
-						"main_installed_folder_path".to_string(),
-					)
-				})?,
-			self.game.as_ref(),
-			&self.game_mod,
-		))
-		.open_folder_or_parent()?;
-
-		Ok(())
 	}
 
 	pub async fn uninstall(&self) -> Result {
@@ -90,24 +68,6 @@ impl InstalledMod {
 		let manifest_path = self.game_mod.get_manifest_target_path(self.game.as_ref())?;
 		if manifest_path.exists() {
 			fs_err::tokio::remove_file(manifest_path).await?;
-		}
-
-		Ok(())
-	}
-
-	pub fn configure(&self, open_folder: bool) -> Result {
-		if let Some(config_path) = self.game_mod.config_path.as_ref() {
-			let config_path = PathBuf::from(replace_tokens(
-				config_path,
-				self.game.as_ref(),
-				&self.game_mod,
-			));
-
-			if open_folder {
-				config_path.open_folder_or_parent()?;
-			} else {
-				open_detached_better(config_path)?;
-			}
 		}
 
 		Ok(())

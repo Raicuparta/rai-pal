@@ -80,9 +80,7 @@ export global ModActions {
     callback update(mod-id: string);
     callback reinstall(mod-id: string);
     callback run(mod-id: string);
-    callback open-folder(mod-id: string);
-    callback configure(mod-id: string);
-    callback configure-folder(mod-id: string);
+    callback open-path(mod-id: string, path-id: string, open-folder: bool);
     callback request-uninstall-all;
     callback request-update-all;
     callback run-standalone(mod-id: string);

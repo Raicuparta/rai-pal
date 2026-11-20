@@ -17,13 +17,11 @@ export component GameModRow inherits VerticalLayout {
     private property <bool> can-install: root.can-show-actions && !game-mod.installed && !game-mod.outdated && game-mod.has-install;
     private property <bool> can-update: root.can-show-actions && game-mod.outdated;
     private property <bool> can-run: root.can-show-actions && game-mod.has-run && (!game-mod.has-install || game-mod.installed);
-    private property <bool> can-edit-config: root.can-show-actions && game-mod.installed && game-mod.has-config;
-    private property <bool> can-open-mod-folder: root.can-show-actions && game-mod.installed;
     private property <bool> can-open-website: game-mod.website != "";
     private property <bool> can-open-website-primary: root.can-open-website && root.is-link-only;
     private property <bool> can-reinstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
     private property <bool> can-uninstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
-    private property <bool> has-mod-actions: root.can-edit-config || root.can-open-mod-folder || root.can-reinstall || root.can-uninstall;
+    private property <bool> has-mod-actions: root.can-reinstall || root.can-uninstall;
 
     private property <length> menu-x: 0;
     private property <length> menu-y: 0;
@@ -35,37 +33,18 @@ export component GameModRow inherits VerticalLayout {
         x: root.menu-x;
         y: root.menu-y;
 
-        if root.can-edit-config: PopupMenuItem {
-            text: @tr("gameModRow" => "Edit Mod Config");
-            icon: Icon.settings;
+        for path in game-mod.paths: PopupMenuItem {
+            text: path.is-folder ? @tr("gameModRow" => "Open Folder: {0}", path.title) : @tr("gameModRow" => "Open: {0}", path.title);
+            icon: path.is-folder ? Icon.folder : Icon.file;
+            enabled: path.exists;
 
             clicked => {
-                ModActions.configure(game-mod.mod-id);
+                ModActions.open-path(game-mod.mod-id, path.id, path.open-folder);
                 menu.close();
             }
         }
 
-        if root.can-edit-config: PopupMenuItem {
-            text: @tr("gameModRow" => "Open Config Folder");
-            icon: Icon.folder-mods;
-
-            clicked => {
-                ModActions.configure-folder(game-mod.mod-id);
-                menu.close();
-            }
-        }
-
-        if root.can-edit-config: PopupMenuSeparator { }
-
-        if root.can-open-mod-folder: PopupMenuItem {
-            text: @tr("gameModRow" => "Open Mod Folder");
-            icon: Icon.folder-mods;
-
-            clicked => {
-                ModActions.open-folder(game-mod.mod-id);
-                menu.close();
-            }
-        }
+        if game-mod.paths.length > 0: PopupMenuSeparator { }
 
         if root.can-reinstall: PopupMenuItem {
             text: @tr("gameModRow" => "Reinstall");

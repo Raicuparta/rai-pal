@@ -1,16 +1,23 @@
-use std::{collections::HashSet, rc::Rc, sync::Arc};
+use std::{
+	cell::RefCell,
+	collections::{HashMap, HashSet},
+	rc::Rc,
+	sync::Arc,
+	thread,
+};
 
 use rai_pal_backend::{
 	analytics::Event,
 	game::Game,
 	game_engines::game_engine::{EngineVersionNumbers, EngineVersionRange},
+	game_providers::game_provider::GameProviderId,
 	local_database::{
 		app_database::Db,
 		mod_database::{ModDatabase, ModInfo},
 	},
 	mods::{
 		game_mods::{GameMod, GameModGroups},
-		manifest::{Mod, ModDependency, install_steps},
+		manifest::{Mod, ModDependency, ModPathType, install_steps},
 	},
 	result::{LogErrExt, Result},
 };
@@ -30,6 +37,35 @@ struct LoadedMods {
 	available: Vec<GameModData>,
 	hidden: Vec<GameModData>,
 	incompatible: Vec<GameModData>,
+}
+
+type PathStateMap = HashMap<(String, String, bool), bool>;
+
+thread_local! {
+	static PATH_STATES: RefCell<HashMap<(GameProviderId, String), PathStateMap>> =
+		RefCell::new(HashMap::new());
+}
+
+fn game_key(game: &Game) -> (GameProviderId, String) {
+	(game.provider_id, game.game_id.clone())
+}
+
+fn cached_path_exists(game: &Game, mod_id: &str, path_id: &str, open_folder: bool) -> bool {
+	let exists = PATH_STATES.with(|cache| {
+		cache.borrow().get(&game_key(game)).and_then(|states| {
+			states
+				.get(&(mod_id.to_string(), path_id.to_string(), open_folder))
+				.copied()
+		})
+	});
+
+	exists.unwrap_or(game.exe_path.is_some())
+}
+
+fn store_path_states(game: &Game, states: PathStateMap) {
+	PATH_STATES.with(|cache| {
+		cache.borrow_mut().insert(game_key(game), states);
+	});
 }
 
 impl CommandHandler {
@@ -207,35 +243,16 @@ impl CommandHandler {
 		);
 	}
 
-	pub fn open_mod_folder(&self, game: Game, mod_id: String) {
+	pub fn open_mod_path(&self, game: Game, mod_id: String, path_id: String, open_folder: bool) {
 		let database = Arc::clone(&self.database);
 
 		self.spawn_action(
-			action_state::key(ActionKind::GameModOpenFolder, mod_id.clone()),
-			MessageContext::OpenModFolder,
+			action_state::key(ActionKind::GameModOpenPath, mod_id.clone()),
+			MessageContext::OpenModPath,
 			move || {
 				database
-					.try_get_installed_mod(&game.provider_id, &game.game_id, &mod_id)
-					.and_then(|installed_mod| installed_mod.open_folder())
-			},
-		);
-	}
-
-	pub fn configure_mod(&self, game: Game, mod_id: String, open_folder: bool) {
-		let database = Arc::clone(&self.database);
-		let kind = if open_folder {
-			ActionKind::GameModConfigureFolder
-		} else {
-			ActionKind::GameModConfigure
-		};
-
-		self.spawn_action(
-			action_state::key(kind, mod_id.clone()),
-			MessageContext::ConfigureMod,
-			move || {
-				database
-					.try_get_installed_mod(&game.provider_id, &game.game_id, &mod_id)
-					.and_then(|installed_mod| installed_mod.configure(open_folder))
+					.get_mod(&mod_id)
+					.and_then(|game_mod| game_mod.open_path(&path_id, Some(&game), open_folder))
 			},
 		);
 	}
@@ -243,6 +260,51 @@ impl CommandHandler {
 
 fn refresh_mods_ui(window: &MainWindow, database: &Arc<Db>, game: &Game) {
 	apply_mods(window, database, game);
+	refresh_path_states(window.as_weak(), Arc::clone(database), game.clone());
+}
+
+fn refresh_path_states(window: slint::Weak<MainWindow>, database: Arc<Db>, game: Game) {
+	thread::spawn(move || {
+		let Ok(mod_infos) = database.get_game_mods(&game.provider_id, &game.game_id) else {
+			return;
+		};
+		let Ok(mods) = database.get_mod_map() else {
+			return;
+		};
+		let mut states = PathStateMap::new();
+
+		for info in mod_infos {
+			let Some(manifest) = mods.get(&info.mod_id) else {
+				continue;
+			};
+			let Some(paths) = manifest.paths.as_ref() else {
+				continue;
+			};
+
+			for path in paths {
+				if matches!(&path.path_type, ModPathType::Folder) {
+					if let Ok(exists) = manifest.path_exists(&path.id, Some(&game), true) {
+						states.insert((manifest.id.clone(), path.id.clone(), true), exists);
+					}
+				} else {
+					if let Ok(exists) = manifest.path_exists(&path.id, Some(&game), false) {
+						states.insert((manifest.id.clone(), path.id.clone(), false), exists);
+					}
+					if let Ok(exists) = manifest.path_exists(&path.id, Some(&game), true) {
+						states.insert((manifest.id.clone(), path.id.clone(), true), exists);
+					}
+				}
+			}
+		}
+
+		let database = Arc::clone(&database);
+		let game = game.clone();
+
+		crate::runtime::with_ui_window(&window, move |window| {
+			store_path_states(&game, states);
+			apply_mods(&window, &database, &game);
+		});
+	});
 }
 
 fn apply_mods(window: &MainWindow, database: &Db, game: &Game) {
@@ -323,6 +385,47 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	let version_text = version_text(&info, &manifest);
 	let release_date = release_date_display(&manifest);
 	let engine_text = engine_text(&manifest);
+	let mod_id = manifest.id.as_str();
+	let paths = manifest
+		.paths
+		.as_deref()
+		.unwrap_or_default()
+		.iter()
+		.flat_map(|path| {
+			let is_folder = matches!(&path.path_type, ModPathType::Folder);
+			let id: slint::SharedString = path.id.as_str().into();
+			let title: slint::SharedString = path.title.as_str().into();
+			let file_exists = cached_path_exists(game, mod_id, &path.id, false);
+			let folder_exists = cached_path_exists(game, mod_id, &path.id, true);
+
+			if is_folder {
+				vec![crate::ModPathData {
+					id,
+					title,
+					is_folder,
+					open_folder: true,
+					exists: folder_exists,
+				}]
+			} else {
+				vec![
+					crate::ModPathData {
+						id: id.clone(),
+						title: title.clone(),
+						is_folder: false,
+						open_folder: false,
+						exists: file_exists,
+					},
+					crate::ModPathData {
+						id,
+						title,
+						is_folder: true,
+						open_folder: true,
+						exists: folder_exists,
+					},
+				]
+			}
+		})
+		.collect::<Vec<_>>();
 
 	GameModData {
 		mod_id: manifest.id.into(),
@@ -340,7 +443,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		has_exe_path: game.exe_path.is_some(),
 		has_install: manifest.install.is_some(),
 		has_run: manifest.run_for_game.is_some(),
-		has_config: manifest.config_path.is_some(),
+		paths: Rc::new(slint::VecModel::from(paths)).into(),
 		has_installed_dependants: info.has_installed_dependants,
 	}
 }
@@ -606,17 +709,9 @@ pub fn register(window: &crate::MainWindow) {
 	on_command!(window, ModActions, on_run, |mod_id| handler => {
 		handler.with_selected_mod(mod_id.as_str(), CommandHandler::run_mod);
 	});
-	on_command!(window, ModActions, on_open_folder, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), CommandHandler::open_mod_folder);
-	});
-	on_command!(window, ModActions, on_configure, |mod_id| handler => {
+	on_command!(window, ModActions, on_open_path, |mod_id, path_id, open_folder| handler => {
 		handler.with_selected_mod(mod_id.as_str(), |handler, game, mod_id| {
-			handler.configure_mod(game, mod_id, false);
-		});
-	});
-	on_command!(window, ModActions, on_configure_folder, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), |handler, game, mod_id| {
-			handler.configure_mod(game, mod_id, true);
+			handler.open_mod_path(game, mod_id, path_id.to_string(), open_folder);
 		});
 	});
 }

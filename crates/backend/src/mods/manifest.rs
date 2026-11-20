@@ -5,6 +5,7 @@ use std::{
 };
 
 use fs_err::PathExt as FsErrPathExt;
+use rai_pal_proc_macros::serde_enum;
 
 use crate::{
 	app_paths,
@@ -19,11 +20,28 @@ use crate::{
 	game_providers::game_provider,
 	http::{self},
 	mods::replacement_token::replace_tokens,
+	open_better::open_detached_better,
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
 	result::{Error, LogErrExt, Result},
 };
+
+#[serde_enum]
+pub enum ModPathType {
+	File,
+	Folder,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ModPath {
+	pub id: String,
+	pub title: String,
+	pub path: String,
+	#[serde(rename = "type")]
+	pub path_type: ModPathType,
+}
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Default)]
 #[serde(transparent)]
@@ -49,7 +67,7 @@ pub struct Mod {
 	pub game_os: Option<OperatingSystem>,
 	pub host_os: Option<OperatingSystem>,
 	pub deprecated: Option<bool>,
-	pub config_path: Option<String>,
+	pub paths: Option<Vec<ModPath>>,
 	pub optional_dependencies: Option<Vec<ModDependency>>,
 	pub required_dependencies: Option<Vec<ModDependency>>,
 	pub install: Option<ModInstall>,
@@ -87,7 +105,6 @@ pub struct ModInstall {
 	pub copy: Option<Vec<ModInstallCopy>>,
 	pub write: Option<Vec<ModInstallWrite>>,
 	pub wine_dll_overrides: Option<Vec<String>>,
-	pub main_installed_folder_path: Option<String>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
@@ -236,6 +253,46 @@ impl Mod {
 		self.update_installed_mod_manifest(game_option).await?;
 
 		Ok(())
+	}
+
+	pub fn open_path(&self, path_id: &str, game: Option<&Game>, open_folder: bool) -> Result {
+		let path = self.get_path(path_id)?;
+		let resolved_path = PathBuf::from(replace_tokens(&path.path, game, self));
+
+		if open_folder || matches!(&path.path_type, ModPathType::Folder) {
+			resolved_path.open_folder_or_parent()?;
+		} else if resolved_path.is_file() {
+			open_detached_better(resolved_path)?;
+		} else {
+			resolved_path.open_folder_or_parent()?;
+		}
+
+		Ok(())
+	}
+
+	pub fn path_exists(
+		&self,
+		path_id: &str,
+		game: Option<&Game>,
+		open_folder: bool,
+	) -> Result<bool> {
+		let path = self.get_path(path_id)?;
+		let resolved_path = PathBuf::from(replace_tokens(&path.path, game, self));
+
+		Ok(if matches!(&path.path_type, ModPathType::Folder) {
+			resolved_path.is_dir()
+		} else if open_folder {
+			resolved_path.parent().is_some_and(|parent| parent.is_dir())
+		} else {
+			resolved_path.is_file()
+		})
+	}
+
+	fn get_path(&self, path_id: &str) -> Result<&ModPath> {
+		self.paths
+			.as_ref()
+			.and_then(|paths| paths.iter().find(|path| path.id == path_id))
+			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), format!("path `{path_id}`")))
 	}
 
 	pub fn get_run(&self, game_option: Option<&Game>) -> Result<&ModRun> {

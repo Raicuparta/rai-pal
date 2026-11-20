@@ -270,18 +270,6 @@ msgid "GameMaker games are not fully supported yet."
 msgstr "Les jeux GameMaker ne sont pas encore entièrement pris en charge."
 
 msgctxt "gameModRow"
-msgid "Edit Mod Config"
-msgstr "Modifier la configuration du mod"
-
-msgctxt "gameModRow"
-msgid "Open Config Folder"
-msgstr "Ouvrir le dossier de configuration"
-
-msgctxt "gameModRow"
-msgid "Open Mod Folder"
-msgstr "Ouvrir le dossier du mod"
-
-msgctxt "gameModRow"
 msgid "Reinstall"
 msgstr "Réinstaller"
 
@@ -546,12 +534,8 @@ msgid "Failed to run mod {0}"
 msgstr "Échec du lancement du mod {0}"
 
 msgctxt "messages"
-msgid "Failed to open mod folder {0}"
+msgid "Failed to open mod path {0}"
 msgstr "Échec de l'ouverture du dossier du mod {0}"
-
-msgctxt "messages"
-msgid "Failed to configure mod {0}"
-msgstr "Échec de la configuration du mod {0}"
 
 msgctxt "messages"
 msgid "Failed to refresh game"
@@ -836,3 +820,11 @@ msgstr "Trier les jeux"
 msgctxt "textField"
 msgid "Clear"
 msgstr "Effacer"
+
+msgctxt "gameModRow"
+msgid "Open: {0}"
+msgstr "Ouvrir : {0}"
+
+msgctxt "gameModRow"
+msgid "Open Folder: {0}"
+msgstr "Ouvrir le dossier : {0}"
