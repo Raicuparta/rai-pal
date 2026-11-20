@@ -19,7 +19,6 @@ use crate::{
 	mods::{
 		installed_mod::InstalledMod,
 		manifest::{InstalledModManifest, Mod, ModDependency},
-		mod_config::ModConfig,
 		mod_tag::ModTag,
 	},
 	operating_system::OperatingSystem,
@@ -261,7 +260,7 @@ impl ModDatabase for Db {
 					game_os: row.get_json(10)?,
 					host_os: row.get_json(11)?,
 					deprecated: row.get(12)?,
-					config: row.get_json(13)?,
+					config_path: row.get_json(13)?,
 					optional_dependencies: row.get_json(14)?,
 					required_dependencies: row.get_json(15)?,
 					install: row.get_json(16)?,
@@ -446,7 +445,7 @@ impl ModDatabase for Db {
 					game_os: row.get_json(10)?,
 					host_os: row.get_json(11)?,
 					deprecated: row.get(12)?,
-					config: row.get_json(13)?,
+					config_path: row.get_json(13)?,
 					optional_dependencies: row.get_json(14)?,
 					required_dependencies: row.get_json(15)?,
 					install: row.get_json(16)?,
@@ -849,17 +848,6 @@ fn serialize_json_option<T: Serialize>(value: Option<&T>) -> Result<String> {
 	serde_json::to_string(&value).map_err(Into::into)
 }
 
-// Config database ids are external to Rai Pal and unaware of provider scopes,
-// so the pre-scope id is recorded here to keep config lookups scope-independent.
-fn canonicalize_config(config: Option<&ModConfig>, mod_id: &str) -> Option<ModConfig> {
-	config.cloned().map(|mut config| {
-		config
-			.mod_id_override
-			.get_or_insert_with(|| mod_id.to_string());
-		config
-	})
-}
-
 fn scope_dependencies(deps: &[ModDependency], scope: &str) -> Vec<ModDependency> {
 	deps.iter()
 		.map(|dep| match dep {
@@ -933,7 +921,6 @@ fn try_insert_mod(
 		.required_dependencies
 		.as_ref()
 		.map(|deps| scope_dependencies(deps, &scope));
-	let stored_config = canonicalize_config(game_mod.config.as_ref(), &game_mod.id);
 
 	let mut connection = connection_mutex.write_db()?;
 	let transaction = connection.transaction()?;
@@ -985,7 +972,7 @@ fn try_insert_mod(
 			serialize_json_option(game_mod.game_os.as_ref())?,
 			serialize_json_option(game_mod.host_os.as_ref())?,
 			game_mod.deprecated,
-			serialize_json_option(stored_config.as_ref())?,
+			serialize_json_option(game_mod.config_path.as_ref())?,
 			serialize_json_option(scoped_optional_deps.as_ref())?,
 			serialize_json_option(scoped_required_deps.as_ref())?,
 			serialize_json_option(game_mod.install.as_ref())?,

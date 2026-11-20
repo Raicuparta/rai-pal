@@ -5,7 +5,6 @@ use std::{
 };
 
 use fs_err::PathExt as FsErrPathExt;
-use rai_pal_proc_macros::serde_enum;
 
 use crate::{
 	app_paths,
@@ -19,11 +18,10 @@ use crate::{
 	game_launch::{GameLaunch, spawn_game},
 	game_providers::game_provider,
 	http::{self},
-	mods::{mod_config::ModConfig, replacement_token::replace_tokens},
+	mods::replacement_token::replace_tokens,
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
-	remote_config::RemoteConfig,
 	result::{Error, LogErrExt, Result},
 };
 
@@ -51,7 +49,7 @@ pub struct Mod {
 	pub game_os: Option<OperatingSystem>,
 	pub host_os: Option<OperatingSystem>,
 	pub deprecated: Option<bool>,
-	pub config: Option<ModConfig>,
+	pub config_path: Option<String>,
 	pub optional_dependencies: Option<Vec<ModDependency>>,
 	pub required_dependencies: Option<Vec<ModDependency>>,
 	pub install: Option<ModInstall>,
@@ -77,9 +75,16 @@ pub struct ModInstallWrite {
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct ModInstallCopy {
+	pub destination: String,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct ModInstall {
 	pub manifest_path: String,
 	pub extract: Option<Vec<ModInstallExtract>>,
+	pub copy: Option<Vec<ModInstallCopy>>,
 	pub write: Option<Vec<ModInstallWrite>>,
 	pub wine_dll_overrides: Option<Vec<String>>,
 	pub main_installed_folder_path: Option<String>,
@@ -132,12 +137,6 @@ impl InstalledModManifest {
 	}
 }
 
-#[serde_enum]
-pub enum ModConfigDestinationType {
-	File,
-	Folder,
-}
-
 impl Mod {
 	pub const FILE_NAME: &'static str = "rai-pal-manifest.json";
 
@@ -165,32 +164,6 @@ impl Mod {
 			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))
 	}
 
-	pub fn get_config_db_id(&self) -> &str {
-		self.config
-			.as_ref()
-			.and_then(|config| config.mod_id_override.as_deref())
-			.unwrap_or(&self.id)
-	}
-
-	pub async fn get_remote_config(&self, game: &Game) -> Result<Option<RemoteConfig>> {
-		Ok(game
-			.get_remote_configs()
-			.await?
-			.and_then(|configs| configs.get_for_mod(self).cloned()))
-	}
-
-	pub async fn download_remote_config(&self, game: &Game, overwrite: bool) -> Result {
-		let Some(config) = self.config.as_ref() else {
-			return Ok(());
-		};
-
-		let Some(remote_config) = self.get_remote_config(game).await? else {
-			return Ok(());
-		};
-
-		config.download(game, self, &remote_config, overwrite).await
-	}
-
 	pub async fn install(
 		&self,
 		game_option: Option<&Game>,
@@ -207,7 +180,7 @@ impl Mod {
 				.as_ref()
 				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "download".to_string()))?;
 
-			let source_dir = download.download(&self.id, &on_progress).await?;
+			let source_dir = download.download(&self.id, true, &on_progress).await?;
 
 			for extract_action in extract_actions {
 				let source_path = source_dir.join(&extract_action.source);
@@ -223,6 +196,23 @@ impl Mod {
 					fs_err::tokio::create_dir_all(destination_path.try_parent()?).await?;
 					fs_err::tokio::copy(&source_path, &destination_path).await?;
 				}
+			}
+		}
+
+		if let Some(copy_actions) = install.copy.as_ref() {
+			let download = self
+				.download
+				.as_ref()
+				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "download".to_string()))?;
+
+			let source_path = download.download(&self.id, false, &on_progress).await?;
+
+			for copy_action in copy_actions {
+				let destination_path =
+					PathBuf::from(replace_tokens(&copy_action.destination, game_option, self));
+
+				fs_err::tokio::create_dir_all(destination_path.try_parent()?).await?;
+				fs_err::tokio::copy(&source_path, &destination_path).await?;
 			}
 		}
 
@@ -405,16 +395,11 @@ impl ModDownload {
 	async fn download(
 		&self,
 		mod_id: &str,
+		extract: bool,
 		on_progress: &(impl Fn(ProgressStatus) + Send + Sync),
 	) -> Result<PathBuf> {
 		if let Some(local_path) = self.url.strip_prefix("file://") {
-			let source_path = PathBuf::from(local_path);
-
-			if source_path.is_dir() {
-				return Ok(source_path);
-			}
-
-			return Ok(source_path);
+			return Ok(PathBuf::from(local_path));
 		}
 
 		let mut hasher = DefaultHasher::new();
@@ -423,26 +408,31 @@ impl ModDownload {
 
 		let temp_dir = app_paths::temp_dir(&url_hash)?;
 		let extracted_folder = temp_dir.join("extracted");
+		let download_path = temp_dir.join(if extract { "download.zip" } else { "download" });
+		let part_path = temp_dir.join("download.part");
 
 		let mut attempts = 0;
 		loop {
-			fs_err::tokio::create_dir_all(&extracted_folder).await?;
+			if extract {
+				fs_err::tokio::create_dir_all(&extracted_folder).await?;
+			}
 
-			let part_path = temp_dir.join("download.zip.part");
-			let zip_path = temp_dir.join("download.zip");
-
-			if !zip_path.is_file() {
+			if !download_path.is_file() {
 				let download_step = InstallStep {
 					mod_id: mod_id.to_string(),
 					kind: InstallStepKind::Download,
 				};
 
 				http::download(&self.url, &part_path, &download_step, on_progress).await?;
-				fs_err::tokio::rename(&part_path, &zip_path).await?;
+				fs_err::tokio::rename(&part_path, &download_path).await?;
+			}
+
+			if !extract {
+				return Ok(download_path);
 			}
 
 			let extract_result = files::extract(
-				&zip_path,
+				&download_path,
 				&extracted_folder,
 				&|extracted_bytes, total_uncompressed| {
 					#[expect(

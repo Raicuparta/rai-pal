@@ -282,10 +282,6 @@ msgid "Open Mod Folder"
 msgstr "打开模组文件夹"
 
 msgctxt "gameModRow"
-msgid "Download Recommended Config"
-msgstr "下载推荐配置"
-
-msgctxt "gameModRow"
 msgid "Reinstall"
 msgstr "重新安装"
 
@@ -308,14 +304,6 @@ msgstr "运行"
 msgctxt "gameModRow"
 msgid "Mod actions"
 msgstr "模组操作"
-
-msgctxt "gameModRow"
-msgid "Recommended config"
-msgstr "推荐配置"
-
-msgctxt "gameModRow"
-msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
-msgstr "推荐配置可用。如果你还没有配置，将会下载。你也可以从三点菜单强制下载。"
 
 msgctxt "gameModRow"
 msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
@@ -540,10 +528,6 @@ msgstr "打开日志文件夹失败"
 msgctxt "messages"
 msgid "Failed to install mod {0}"
 msgstr "安装模组 {0} 失败"
-
-msgctxt "messages"
-msgid "Failed to download config for mod {0}"
-msgstr "下载模组 {0} 的配置失败"
 
 msgctxt "messages"
 msgid "Failed to uninstall mod {0}"

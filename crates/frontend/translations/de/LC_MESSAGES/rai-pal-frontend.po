@@ -282,10 +282,6 @@ msgid "Open Mod Folder"
 msgstr "Mod-Ordner öffnen"
 
 msgctxt "gameModRow"
-msgid "Download Recommended Config"
-msgstr "Empfohlene Konfiguration herunterladen"
-
-msgctxt "gameModRow"
 msgid "Reinstall"
 msgstr "Neu installieren"
 
@@ -308,14 +304,6 @@ msgstr "Ausführen"
 msgctxt "gameModRow"
 msgid "Mod actions"
 msgstr "Mod-Aktionen"
-
-msgctxt "gameModRow"
-msgid "Recommended config"
-msgstr "Empfohlene Konfiguration"
-
-msgctxt "gameModRow"
-msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
-msgstr "Empfohlene Konfiguration verfügbar. Wird heruntergeladen, falls du noch keine hast. Du kannst auch über das Drei-Punkte-Menü den Download erzwingen."
 
 msgctxt "gameModRow"
 msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
@@ -540,10 +528,6 @@ msgstr "Log-Ordner konnte nicht geöffnet werden"
 msgctxt "messages"
 msgid "Failed to install mod {0}"
 msgstr "Mod {0} konnte nicht installiert werden"
-
-msgctxt "messages"
-msgid "Failed to download config for mod {0}"
-msgstr "Konfiguration für Mod {0} konnte nicht heruntergeladen werden"
 
 msgctxt "messages"
 msgid "Failed to uninstall mod {0}"

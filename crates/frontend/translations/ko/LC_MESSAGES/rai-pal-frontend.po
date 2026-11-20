@@ -282,10 +282,6 @@ msgid "Open Mod Folder"
 msgstr "모드 폴더 열기"
 
 msgctxt "gameModRow"
-msgid "Download Recommended Config"
-msgstr "권장 설정 다운로드"
-
-msgctxt "gameModRow"
 msgid "Reinstall"
 msgstr "재설치"
 
@@ -308,14 +304,6 @@ msgstr "실행"
 msgctxt "gameModRow"
 msgid "Mod actions"
 msgstr "모드 작업"
-
-msgctxt "gameModRow"
-msgid "Recommended config"
-msgstr "권장 설정"
-
-msgctxt "gameModRow"
-msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
-msgstr "권장 설정이 있어요. 아직 설정이 없으면 자동으로 받고, 세 점 메뉴에서 강제로 받을 수도 있어요."
 
 msgctxt "gameModRow"
 msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
@@ -540,10 +528,6 @@ msgstr "로그 폴더를 열지 못했습니다"
 msgctxt "messages"
 msgid "Failed to install mod {0}"
 msgstr "모드 {0}을(를) 설치하지 못했습니다"
-
-msgctxt "messages"
-msgid "Failed to download config for mod {0}"
-msgstr "모드 {0}의 설정을 다운로드하지 못했습니다"
 
 msgctxt "messages"
 msgid "Failed to uninstall mod {0}"

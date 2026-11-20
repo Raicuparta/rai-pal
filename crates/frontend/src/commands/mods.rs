@@ -1,16 +1,9 @@
-use std::{
-	cell::RefCell,
-	collections::{HashMap, HashSet},
-	rc::Rc,
-	sync::Arc,
-	thread,
-};
+use std::{collections::HashSet, rc::Rc, sync::Arc};
 
 use rai_pal_backend::{
 	analytics::Event,
 	game::Game,
 	game_engines::game_engine::{EngineVersionNumbers, EngineVersionRange},
-	game_providers::game_provider::GameProviderId,
 	local_database::{
 		app_database::Db,
 		mod_database::{ModDatabase, ModInfo},
@@ -29,35 +22,6 @@ use crate::{
 };
 
 use super::{CommandHandler, on_command};
-
-thread_local! {
-	static REMOTE_CONFIG_IDS: RefCell<HashMap<(GameProviderId, String), HashSet<String>>> =
-		RefCell::new(HashMap::new());
-}
-
-fn game_key(game: &Game) -> (GameProviderId, String) {
-	(game.provider_id, game.game_id.clone())
-}
-
-fn cached_remote_config_ids(game: &Game) -> HashSet<String> {
-	if game.exe_path.is_none() {
-		return HashSet::new();
-	}
-
-	REMOTE_CONFIG_IDS.with(|cache| {
-		cache
-			.borrow()
-			.get(&game_key(game))
-			.cloned()
-			.unwrap_or_default()
-	})
-}
-
-fn store_remote_config_ids(game: &Game, ids: HashSet<String>) {
-	REMOTE_CONFIG_IDS.with(|cache| {
-		cache.borrow_mut().insert(game_key(game), ids);
-	});
-}
 
 #[derive(Default)]
 struct LoadedMods {
@@ -146,31 +110,6 @@ impl CommandHandler {
 				}));
 
 				let result = install_mods(&database, &game, &outdated_ids, &downloads);
-
-				if result.is_ok() {
-					refresh_after_action(&window, &database, &game);
-				}
-
-				result
-			},
-		);
-	}
-
-	pub fn download_mod_config(&self, game: Game, mod_id: String) {
-		let database = Arc::clone(&self.database);
-		let window = self.window();
-
-		self.spawn_action(
-			action_state::key(ActionKind::GameModDownloadConfig, mod_id.clone()),
-			MessageContext::DownloadModConfig,
-			move || {
-				let result = runtime::block_on(async {
-					database
-						.get_mod(&mod_id)?
-						.download_remote_config(&game, true)
-						.await?;
-					database.refresh_installed_mods()
-				});
 
 				if result.is_ok() {
 					refresh_after_action(&window, &database, &game);
@@ -303,56 +242,11 @@ impl CommandHandler {
 }
 
 fn refresh_mods_ui(window: &MainWindow, database: &Arc<Db>, game: &Game) {
-	let remote_config_ids = cached_remote_config_ids(game);
-	apply_mods(window, database, game, &remote_config_ids);
-	refresh_remote_configs(window.as_weak(), Arc::clone(database), game.clone());
+	apply_mods(window, database, game);
 }
 
-fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<Db>, game: Game) {
-	if game.exe_path.is_none() {
-		return;
-	}
-
-	thread::spawn(move || {
-		let configs = match runtime::block_on(game.get_remote_configs()) {
-			Ok(configs) => configs,
-			Err(err) => {
-				log::error!("Failed to load remote configs: {err}");
-				return;
-			}
-		};
-
-		let Some(mods) = database.get_mod_map().ok_or_log("Failed to load mod map") else {
-			return;
-		};
-
-		let remote_config_ids = mods
-			.into_values()
-			.filter(|game_mod| {
-				configs
-					.as_ref()
-					.is_some_and(|configs| configs.get_for_mod(game_mod).is_some())
-			})
-			.map(|game_mod| game_mod.id)
-			.collect::<HashSet<_>>();
-
-		let database = Arc::clone(&database);
-		let game = game.clone();
-
-		crate::runtime::with_ui_window(&window, move |window| {
-			store_remote_config_ids(&game, remote_config_ids.clone());
-			apply_mods(&window, &database, &game, &remote_config_ids);
-		});
-	});
-}
-
-fn apply_mods(
-	window: &MainWindow,
-	database: &Db,
-	game: &Game,
-	remote_config_ids: &HashSet<String>,
-) {
-	let loaded = match load_mods(database, game, remote_config_ids) {
+fn apply_mods(window: &MainWindow, database: &Db, game: &Game) {
+	let loaded = match load_mods(database, game) {
 		Ok(loaded) => loaded,
 		Err(err) => {
 			log::error!("Failed to load mods: {err}");
@@ -385,12 +279,8 @@ fn apply_mods(
 		.set_incompatible(Rc::new(slint::VecModel::from(loaded.incompatible)).into());
 }
 
-fn load_mods(
-	database: &Db,
-	game: &Game,
-	remote_config_ids: &HashSet<String>,
-) -> Result<LoadedMods> {
-	let list = GameModGroups::load(database, game, remote_config_ids)?;
+fn load_mods(database: &Db, game: &Game) -> Result<LoadedMods> {
+	let list = GameModGroups::load(database, game)?;
 
 	let installed = list
 		.installed
@@ -427,11 +317,7 @@ fn load_mods(
 }
 
 fn row_data(entry: GameMod, game: &Game) -> GameModData {
-	let GameMod {
-		manifest,
-		info,
-		has_remote_config,
-	} = entry;
+	let GameMod { manifest, info } = entry;
 	let installed = info.installed_hash.is_some();
 	let is_incompatible = !info.compatible;
 	let version_text = version_text(&info, &manifest);
@@ -450,12 +336,11 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		outdated: info.is_outdated,
 		incompatible: is_incompatible,
 		deprecated: manifest.deprecated == Some(true),
-		has_remote_config,
 		website: manifest.website.unwrap_or_default().into(),
 		has_exe_path: game.exe_path.is_some(),
 		has_install: manifest.install.is_some(),
 		has_run: manifest.run_for_game.is_some(),
-		has_config: manifest.config.is_some(),
+		has_config: manifest.config_path.is_some(),
 		has_installed_dependants: info.has_installed_dependants,
 	}
 }
@@ -723,9 +608,6 @@ pub fn register(window: &crate::MainWindow) {
 	});
 	on_command!(window, ModActions, on_open_folder, |mod_id| handler => {
 		handler.with_selected_mod(mod_id.as_str(), CommandHandler::open_mod_folder);
-	});
-	on_command!(window, ModActions, on_download_config, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), CommandHandler::download_mod_config);
 	});
 	on_command!(window, ModActions, on_configure, |mod_id| handler => {
 		handler.with_selected_mod(mod_id.as_str(), |handler, game, mod_id| {

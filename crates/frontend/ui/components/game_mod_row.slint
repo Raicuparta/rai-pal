@@ -17,14 +17,13 @@ export component GameModRow inherits VerticalLayout {
     private property <bool> can-install: root.can-show-actions && !game-mod.installed && !game-mod.outdated && game-mod.has-install;
     private property <bool> can-update: root.can-show-actions && game-mod.outdated;
     private property <bool> can-run: root.can-show-actions && game-mod.has-run && (!game-mod.has-install || game-mod.installed);
-    private property <bool> can-edit-config: root.can-show-actions && game-mod.installed && (game-mod.has-config || game-mod.has-remote-config);
+    private property <bool> can-edit-config: root.can-show-actions && game-mod.installed && game-mod.has-config;
     private property <bool> can-open-mod-folder: root.can-show-actions && game-mod.installed;
     private property <bool> can-open-website: game-mod.website != "";
     private property <bool> can-open-website-primary: root.can-open-website && root.is-link-only;
-    private property <bool> can-download-config: root.can-show-actions && game-mod.installed && game-mod.has-remote-config;
     private property <bool> can-reinstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
     private property <bool> can-uninstall: root.can-show-actions && game-mod.installed && game-mod.has-install;
-    private property <bool> has-mod-actions: root.can-edit-config || root.can-open-mod-folder || root.can-download-config || root.can-reinstall || root.can-uninstall;
+    private property <bool> has-mod-actions: root.can-edit-config || root.can-open-mod-folder || root.can-reinstall || root.can-uninstall;
 
     private property <length> menu-x: 0;
     private property <length> menu-y: 0;
@@ -67,18 +66,6 @@ export component GameModRow inherits VerticalLayout {
                 menu.close();
             }
         }
-
-        if root.can-download-config: PopupMenuItem {
-            text: @tr("gameModRow" => "Download Recommended Config");
-            icon: Icon.download;
-
-            clicked => {
-                ModActions.download-config(game-mod.mod-id);
-                menu.close();
-            }
-        }
-
-        if root.can-download-config: PopupMenuSeparator { }
 
         if root.can-reinstall: PopupMenuItem {
             text: @tr("gameModRow" => "Reinstall");
@@ -151,7 +138,6 @@ export component GameModRow inherits VerticalLayout {
                 author: game-mod.author;
                 engine-text: game-mod.engine-text;
                 deprecated: game-mod.deprecated;
-                has-remote-config: game-mod.has-remote-config;
                 show-status: true;
                 installed: game-mod.installed;
                 outdated: game-mod.outdated;

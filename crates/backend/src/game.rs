@@ -18,7 +18,6 @@ use crate::{
 	game_title::{get_normalized_titles, is_probably_demo},
 	operating_system::{self, OperatingSystem},
 	path_extensions::PathExt,
-	remote_config::{self, RemoteConfigs},
 	result::{ContextResult, Error, Result},
 };
 
@@ -238,13 +237,6 @@ impl Game {
 			return Err(Error::GameNotInstalled(self.display_title.clone()));
 		}
 		Ok(self)
-	}
-
-	pub async fn get_remote_configs(&self) -> Result<Option<RemoteConfigs>> {
-		match self.exe_path.as_ref() {
-			Some(exe_path) => remote_config::get_remote_configs(exe_path).await,
-			None => Ok(None),
-		}
 	}
 
 	pub fn open_data_folder(&self) -> Result {

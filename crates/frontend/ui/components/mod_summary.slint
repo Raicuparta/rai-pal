@@ -36,13 +36,12 @@ export component ModSummaryView inherits HorizontalLayout {
     in property <string> author;
     in property <string> engine-text;
     in property <bool> deprecated: false;
-    in property <bool> has-remote-config: false;
     in property <bool> show-status: false;
     in property <bool> installed: false;
     in property <bool> outdated: false;
     in property <bool> link-only: false;
 
-    property <bool> has-details: version-text != "" || release-date != "" || author != "" || engine-text != "" || has-remote-config;
+    property <bool> has-details: version-text != "" || release-date != "" || author != "" || engine-text != "";
 
     private property <string> deprecated-tooltip: @tr("modsPage" => "This mod is deprecated. You should uninstall it and install a newer alternative.");
 
@@ -131,12 +130,6 @@ export component ModSummaryView inherits HorizontalLayout {
             if root.engine-text != "": MetaItem {
                 icon: Icon.engine;
                 text: root.engine-text;
-            }
-
-            if root.has-remote-config: MetaItem {
-                icon: Icon.settings;
-                text: @tr("gameModRow" => "Recommended config");
-                tooltip: @tr("gameModRow" => "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu.");
             }
         }
 

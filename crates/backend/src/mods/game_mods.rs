@@ -11,7 +11,6 @@ use crate::{
 pub struct GameMod {
 	pub manifest: Mod,
 	pub info: ModInfo,
-	pub has_remote_config: bool,
 }
 
 impl GameMod {
@@ -34,11 +33,7 @@ pub struct GameModGroups {
 }
 
 impl GameModGroups {
-	pub fn load<D: ModDatabase>(
-		database: &D,
-		game: &Game,
-		remote_config_ids: &HashSet<String>,
-	) -> Result<Self> {
+	pub fn load<D: ModDatabase>(database: &D, game: &Game) -> Result<Self> {
 		let mod_infos = database.get_game_mods(&game.provider_id, &game.game_id)?;
 		let mods = database.get_mod_map()?;
 
@@ -51,11 +46,7 @@ impl GameModGroups {
 				continue;
 			};
 
-			let entry = GameMod {
-				has_remote_config: remote_config_ids.contains(&manifest.id),
-				manifest,
-				info,
-			};
+			let entry = GameMod { manifest, info };
 
 			if entry.info.compatible {
 				if entry.manifest.hide_from_game_mods_list == Some(true) {

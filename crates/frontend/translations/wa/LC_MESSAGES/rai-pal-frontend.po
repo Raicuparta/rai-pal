@@ -282,10 +282,6 @@ msgid "Open Mod Folder"
 msgstr "Waah wah waaaah!"
 
 msgctxt "gameModRow"
-msgid "Download Recommended Config"
-msgstr "Waaaaaah waaaaaaaaah waaaah!"
-
-msgctxt "gameModRow"
 msgid "Reinstall"
 msgstr "Waaaaaaah!"
 
@@ -308,14 +304,6 @@ msgstr "Wah!"
 msgctxt "gameModRow"
 msgid "Mod actions"
 msgstr "Wah waaaaah!"
-
-msgctxt "gameModRow"
-msgid "Recommended config"
-msgstr "Waaaaaaaaah waaaah!"
-
-msgctxt "gameModRow"
-msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
-msgstr "Waaaaaaaaah waaaah waaaaaaaah waah be waaaaaaaah if wah waaah waaaaah waah a waaaaah wah wah waah waaah it to waaaaaah waah wah waaah wah waaah!"
 
 msgctxt "gameModRow"
 msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
@@ -540,10 +528,6 @@ msgstr "Waaaah to waah waah waaaah!"
 msgctxt "messages"
 msgid "Failed to install mod {0}"
 msgstr "Waaaah to waaaaah wah {0}"
-
-msgctxt "messages"
-msgid "Failed to download config for mod {0}"
-msgstr "Waaaah to waaaaaah waaaah wah wah {0}"
 
 msgctxt "messages"
 msgid "Failed to uninstall mod {0}"

@@ -8,6 +8,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do later
 
+- "Manual" rename to "Executable" i think?
+
 ## Notes, questions, decisions, etc
 
 - Mod families were replaced with mod tags. A mod can have multiple tags. In the mods tab a mod matches if any of its tags is enabled; in the games tab a game matches if it has a compatible mod with any enabled tag. Incompatible mods are only hidden from game details when all of their tags also belong to compatible mods.
@@ -15,6 +17,11 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - Old `family` fields in custom URL mod sources and local mod manifests are ignored, so those sources lose their tags. This is intentional.
 - Analytics mod events now send a `tags` array instead of `family`.
 - Old settings that contain `modFamilies` filters or collapsed-filter keys are still read through serde aliases, so upgrading should not reset settings.
+- Configs are now mods. The client no longer reads `config-db`; `config-db/0` stays as the source of truth for the DB generator, which turns each `configs.json` entry into a hidden game-specific mod tagged `<tag>-config` (e.g. `uuvr-config`). Parent mods list that tag as an optional dependency. Old `loaderId` is ignored, and `modIdOverride` was removed.
+- Config mods get all matching game IDs from the game DB, plus the normalized config folder name, plus a small Steam-ID alias table in `scripts/mod-db/configs.ts` for folders named after executables rather than titles (e.g. `dew`, `ksp_x64`). Extend that table when adding configs for games whose exe name doesn't normalize to the title.
+- Added `install.copy` for non-zip downloads. `ModDownload::download` now decides whether to extract based on the install action. Config download URLs include config version and content hash in the query string, so cached temp downloads are busted when a config file changes.
+- The "Download Recommended Config" action and `has_remote_config` UI were removed. Existing users keep already-downloaded config files, but the new config mod only installs when the parent mod is installed or updated. That first install will overwrite the current config file once, including manual edits.
+- Mod DB 4 was regenerated in place again because it still isn't released.
 
 - Games now have an `external_ids` map instead of a single `external_id`. `Manual` is a local-only ID derived from the executable file stem, present whenever a game has an executable. `NormalizedTitle` IDs are generated from the game title for provider-discovered games. When matching against game/mod databases, `Manual` and `NormalizedTitle` are treated as the same provider.
 - The local database schema is now version 12. External IDs live in `game_external_ids`; the old `normalized_titles` table is gone. Existing local databases are recreated, which keeps mod files because installed mod paths are based on the executable hash.
@@ -52,3 +59,5 @@ Options:
 Changing the remote mod DB alone won’t eliminate the expensive part; the local game-ID mapping is what needs materializing. If you want, I can implement option 1 next.
 
 ## Done
+
+- Configs as mods: removed the runtime config DB from Rai Pal, added config mods to the mod DB with `<tag>-config` tags and optional dependencies, added non-zip mod installs, and removed the download-config UI.

@@ -241,9 +241,6 @@ export global Tr {
         if data.context == MessageContext.install-mod {
             return @tr("messages" => "Failed to install mod {0}", data.subject);
         }
-        if data.context == MessageContext.download-mod-config {
-            return @tr("messages" => "Failed to download config for mod {0}", data.subject);
-        }
         if data.context == MessageContext.uninstall-mod {
             return @tr("messages" => "Failed to uninstall mod {0}", data.subject);
         }

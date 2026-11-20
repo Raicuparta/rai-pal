@@ -282,10 +282,6 @@ msgid "Open Mod Folder"
 msgstr "Modフォルダーを開く"
 
 msgctxt "gameModRow"
-msgid "Download Recommended Config"
-msgstr "推奨設定をダウンロード"
-
-msgctxt "gameModRow"
 msgid "Reinstall"
 msgstr "再インストール"
 
@@ -308,14 +304,6 @@ msgstr "実行"
 msgctxt "gameModRow"
 msgid "Mod actions"
 msgstr "Modの操作"
-
-msgctxt "gameModRow"
-msgid "Recommended config"
-msgstr "推奨設定"
-
-msgctxt "gameModRow"
-msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
-msgstr "推奨設定あり。まだ設定がなければ自動でダウンロードされるよ。三点メニューから手動でもダウンロードできる。"
 
 msgctxt "gameModRow"
 msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
@@ -540,10 +528,6 @@ msgstr "ログフォルダを開けませんでした"
 msgctxt "messages"
 msgid "Failed to install mod {0}"
 msgstr "Mod {0}をインストールできませんでした"
-
-msgctxt "messages"
-msgid "Failed to download config for mod {0}"
-msgstr "Mod {0}の設定をダウンロードできませんでした"
 
 msgctxt "messages"
 msgid "Failed to uninstall mod {0}"

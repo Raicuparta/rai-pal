@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::{
 	game::Game,
-	mods::{manifest::Mod, mod_config::ModConfig, replacement_token::replace_tokens},
+	mods::{manifest::Mod, replacement_token::replace_tokens},
 	open_better::open_detached_better,
 	path_extensions::PathExt,
 	result::{Error, Result},
@@ -59,6 +59,20 @@ impl InstalledMod {
 			}
 		}
 
+		if let Some(copy_actions) = install.copy.as_ref() {
+			for copy_action in copy_actions {
+				let destination_path = PathBuf::from(replace_tokens(
+					&copy_action.destination,
+					self.game.as_ref(),
+					&self.game_mod,
+				));
+
+				if destination_path.exists() {
+					fs_err::tokio::remove_file(&destination_path).await?;
+				}
+			}
+		}
+
 		if let Some(write_actions) = install.write.as_ref() {
 			for write_action in write_actions {
 				let destination_path = PathBuf::from(replace_tokens(
@@ -81,17 +95,14 @@ impl InstalledMod {
 		Ok(())
 	}
 
-	fn get_config_path(&self, config: &ModConfig) -> PathBuf {
-		PathBuf::from(&replace_tokens(
-			&config.destination_path,
-			self.game.as_ref(),
-			&self.game_mod,
-		))
-	}
-
 	pub fn configure(&self, open_folder: bool) -> Result {
-		if let Some(config) = self.game_mod.config.as_ref() {
-			let config_path = self.get_config_path(config);
+		if let Some(config_path) = self.game_mod.config_path.as_ref() {
+			let config_path = PathBuf::from(replace_tokens(
+				config_path,
+				self.game.as_ref(),
+				&self.game_mod,
+			));
+
 			if open_folder {
 				config_path.open_folder_or_parent()?;
 			} else {
