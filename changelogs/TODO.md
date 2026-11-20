@@ -16,4 +16,33 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - Provider commands were audited. They already store fully built commands, but provider-specific helpers that need the provider's external ID now read it from `external_ids`.
 - Recommended configs were left untouched; they did not block the external ID refactor.
 
+### Copy of report about filtering stuff, to clean up, ignore for now:
+
+Bigger filtering refactor
+
+Yes — the current query is much better (~0.3s instead of ~2.6s), but it still derives the game-to-family mapping on every filter query. The bigger win is to materialize that mapping.
+
+Options:
+
+1.  Materialize game_mod_families — recommended
+    - Store (provider_id, game_id, family) for every compatible mod family.
+    - Rebuild when games, mods, or remote game metadata changes, or lazily when marked dirty.
+    - The filter becomes a simple indexed EXISTS/NOT EXISTS; should be ~1ms.
+    - Main cost: cache invalidation and rebuild timing. This is the cleanest architectural fix.
+
+2.  Materialize full compatible mods per game
+    - Store (provider_id, game_id, mod_id) for every compatible mod.
+    - Filtering by family and loading game details both become simple joins.
+    - Even better for game details performance, but more disk and a bigger rebuild.
+
+3.  Normalize the mod database further
+    - E.g. explicit game-ID/family relation in the remote DB instead of gameIds JSON.
+    - Removes JSON work, but still requires mapping external IDs to the local library, so it has less impact than local materialization.
+
+4.  Build an in-memory family index in Rust
+    - Load a compact (provider, game_id) -> family bitmask mapping and filter in Rust.
+    - Fast, but moves filtering out of SQL, which complicates sorting, search, and pagination. Not ideal.
+
+Changing the remote mod DB alone won’t eliminate the expensive part; the local game-ID mapping is what needs materializing. If you want, I can implement option 1 next.
+
 ## Done
