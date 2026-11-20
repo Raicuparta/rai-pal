@@ -3,8 +3,9 @@ use std::{cell::RefCell, fmt::Display, rc::Rc, sync::Arc};
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
 	game::Game,
+	game_providers::game_provider::GameProviderId,
 	games_query::GamesQuery,
-	local_database::{app_database::Db, mod_database::ModDatabase},
+	local_database::{app_database::Db, game_database::GameId, mod_database::ModDatabase},
 	result::LogErrExt,
 };
 
@@ -83,6 +84,7 @@ pub struct CommandHandler {
 
 	window: slint::Weak<MainWindow>,
 	selected_game: RefCell<Option<(usize, Game)>>,
+	pending_selection: RefCell<Option<(GameProviderId, String)>>,
 	pending_confirmation: PendingState,
 	detected_locale: Option<AppLocale>,
 	updater: Updater,
@@ -104,6 +106,7 @@ impl CommandHandler {
 			downloads: Tracker::new(window.clone()),
 			window,
 			selected_game: RefCell::default(),
+			pending_selection: RefCell::default(),
 			pending_confirmation: PendingState::default(),
 			detected_locale,
 			updater,
@@ -136,6 +139,20 @@ impl CommandHandler {
 
 	pub fn clear_selected_game(&self) {
 		*self.selected_game.borrow_mut() = None;
+	}
+
+	pub fn select_when_listed(&self, provider_id: GameProviderId, game_id: String) {
+		*self.pending_selection.borrow_mut() = Some((provider_id, game_id));
+	}
+
+	pub fn take_pending_selection(&self, game_ids: &[GameId]) -> Option<usize> {
+		let mut pending = self.pending_selection.borrow_mut();
+		let (provider_id, game_id) = pending.as_ref()?;
+		let index = game_ids
+			.iter()
+			.position(|game| game.provider_id == *provider_id && game.game_id == *game_id)?;
+		*pending = None;
+		Some(index)
 	}
 
 	pub fn query(&self) -> GamesQuery {

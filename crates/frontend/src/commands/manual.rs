@@ -316,25 +316,33 @@ impl CommandHandler {
 
 		thread::spawn(move || {
 			let result = runtime::block_on(async {
+				let mut last_added = None;
+
 				for path in &paths {
 					let path = path.normalize();
 
 					if path.is_dir() {
 						for game in manual_provider::add_directory(&path).await? {
 							database.insert_game(&game);
+							last_added = Some(game);
 						}
 					} else {
 						let game = manual_provider::add_game(&path).await?;
 						database.insert_game(&game);
+						last_added = Some(game);
 					}
 				}
 
-				Ok::<(), rai_pal_backend::result::Error>(())
+				Ok::<_, rai_pal_backend::result::Error>(last_added)
 			});
 
 			crate::runtime::with_ui_window(&window_weak, move |window| match result {
-				Ok(()) => {
+				Ok(last_added) => {
 					if let Some(handler) = Self::current() {
+						if let Some(game) = last_added {
+							handler.select_when_listed(game.provider_id, game.game_id);
+						}
+
 						handler.refresh_after_change();
 					}
 				}
