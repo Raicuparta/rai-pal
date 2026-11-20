@@ -18,7 +18,7 @@ use rai_pal_backend::{
 use crate::{
 	FilterGroupId, MessageContext, ModsTabModData,
 	filters::{build_mods_groups, load_all_mod_tags},
-	notifications,
+	model, notifications,
 };
 
 use super::{
@@ -40,8 +40,7 @@ impl CommandHandler {
 			Err(err) => {
 				notifications::error(&window, notifications::data(MessageContext::LoadMods, &err));
 				let state = window.global::<crate::ModsState>();
-				state
-					.set_items(Rc::new(slint::VecModel::from(Vec::<ModsTabModData>::new())).into());
+				self.models.mods_tab.clear();
 				state.set_total_count(0);
 				return;
 			}
@@ -88,7 +87,7 @@ impl CommandHandler {
 		let items = mods.into_iter().map(mod_data).collect::<Vec<_>>();
 
 		let state = window.global::<crate::ModsState>();
-		state.set_items(Rc::new(slint::VecModel::from(items)).into());
+		model::sync_vec_model(&self.models.mods_tab, items);
 		state.set_total_count(i32::try_from(total_count).unwrap_or_else(|err| {
 			log::warn!("Mods count exceeds i32: {err}");
 			i32::MAX

@@ -20,7 +20,7 @@ use rai_pal_backend::{
 };
 use slint::ComponentHandle;
 
-use crate::{AddGamePhase, MainWindow, MessageContext, notifications, runtime, selected};
+use crate::{AddGamePhase, MainWindow, MessageContext, notifications, runtime};
 
 use super::query::ScrollBehavior;
 use super::{CommandHandler, on_command};
@@ -298,8 +298,7 @@ impl CommandHandler {
 			crate::runtime::with_ui_window(&window_weak, move |window| match result {
 				Ok(()) => {
 					if let Some(handler) = Self::current() {
-						handler.clear_selected_game();
-						selected::hide(&window);
+						handler.hide_game_details();
 						handler.refresh_after_change();
 					}
 				}

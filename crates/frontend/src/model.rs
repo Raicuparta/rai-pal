@@ -117,17 +117,22 @@ pub fn sync_rows(model: &slint::VecModel<GameRowData>, game_ids: &[GameId]) {
 		})
 		.collect::<Vec<_>>();
 
-	let row_count = model.row_count();
+	sync_vec_model(model, rows);
+}
 
-	for (index, row) in rows.iter().enumerate() {
+pub fn sync_vec_model<T: Clone + 'static>(model: &slint::VecModel<T>, items: Vec<T>) {
+	let row_count = model.row_count();
+	let item_count = items.len();
+
+	for (index, item) in items.into_iter().enumerate() {
 		if index < row_count {
-			model.set_row_data(index, row.clone());
+			model.set_row_data(index, item);
 		} else {
-			model.push(row.clone());
+			model.push(item);
 		}
 	}
 
-	while model.row_count() > rows.len() {
+	while model.row_count() > item_count {
 		model.remove(model.row_count() - 1);
 	}
 }

@@ -16,7 +16,7 @@ use slint::{ComponentHandle, Model as _};
 
 use crate::{
 	AppColorScheme, AppTab, MainWindow, filters::build_groups, i18n, languages,
-	model::apply_game_to_row, selected,
+	model::apply_game_to_row,
 };
 
 use super::query::ScrollBehavior;
@@ -210,7 +210,7 @@ impl CommandHandler {
 		};
 
 		self.set_selected_game(index, game.clone());
-		selected::show(&window, &game, row);
+		self.show_game_details(&game, row);
 		self.refresh_mods(&game);
 
 		if game.exe_path.is_some() {
@@ -219,11 +219,7 @@ impl CommandHandler {
 	}
 
 	pub fn deselect_game(&self) {
-		self.clear_selected_game();
-
-		if let Some(window) = self.ui() {
-			selected::hide(&window);
-		}
+		self.hide_game_details();
 	}
 
 	pub fn refresh_selected_row(&self, index: usize, game: &Game) {
@@ -235,7 +231,7 @@ impl CommandHandler {
 		let mut row = rows.row_data(index).unwrap_or_default();
 		apply_game_to_row(&mut row, game);
 		rows.set_row_data(index, row.clone());
-		selected::show(&window, game, row);
+		self.show_game_details(game, row);
 	}
 }
 

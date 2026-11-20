@@ -19,7 +19,7 @@ use slint::{ComponentHandle, ModelRc, SharedString};
 
 use crate::{
 	ActionKind, MainWindow, MessageContext, RefreshTaskData, RefreshTaskKind, action_state,
-	model::apply_game_to_row, notifications, runtime, selected,
+	model::apply_game_to_row, notifications, runtime,
 };
 
 use super::query::ScrollBehavior;
@@ -255,7 +255,7 @@ impl CommandHandler {
 
 		let mut row = window.get_selected_game_row();
 		apply_game_to_row(&mut row, &updated_game);
-		selected::show(&window, &updated_game, row);
+		self.show_game_details(&updated_game, row);
 		self.refresh_mods(&updated_game);
 	}
 }

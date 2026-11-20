@@ -11,7 +11,7 @@ use rai_pal_backend::{
 
 use crate::{
 	ActionKey, MainWindow, MessageContext, action_state, downloads::Tracker,
-	scheduler::FetchScheduler,
+	scheduler::FetchScheduler, ui_models::UiModels,
 };
 
 use self::{confirmation::PendingState, updater::Updater};
@@ -82,6 +82,7 @@ pub struct CommandHandler {
 	pub settings: Rc<RefCell<AppSettings>>,
 	pub scheduler: Arc<FetchScheduler>,
 	pub downloads: Tracker,
+	pub models: UiModels,
 
 	window: slint::Weak<MainWindow>,
 	selected_game: RefCell<Option<(usize, Game)>>,
@@ -98,6 +99,7 @@ impl CommandHandler {
 		settings: Rc<RefCell<AppSettings>>,
 		scheduler: Arc<FetchScheduler>,
 		detected_locale: Option<AppLocale>,
+		models: UiModels,
 	) -> Rc<Self> {
 		let updater = Updater::start(window.clone());
 		let handler = Rc::new(Self {
@@ -105,6 +107,7 @@ impl CommandHandler {
 			settings,
 			scheduler,
 			downloads: Tracker::new(window.clone()),
+			models,
 			window,
 			selected_game: RefCell::default(),
 			pending_selection: RefCell::default(),

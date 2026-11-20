@@ -25,7 +25,7 @@ use slint::ComponentHandle;
 
 use crate::{
 	ActionKind, GameModData, MainWindow, MessageContext, action_state, analytics,
-	downloads::Tracker, notifications, runtime,
+	downloads::Tracker, model, notifications, runtime, ui_models::GameDetailsModels,
 };
 
 use super::{CommandHandler, on_command};
@@ -70,11 +70,16 @@ fn store_path_states(game: &Game, states: PathStateMap) {
 
 impl CommandHandler {
 	pub fn refresh_mods(&self, game: &Game) {
+		self.apply_mods(game);
+		refresh_path_states(self.window(), Arc::clone(&self.database), game.clone());
+	}
+
+	fn apply_mods(&self, game: &Game) {
 		let Some(window) = self.ui() else {
 			return;
 		};
 
-		refresh_mods_ui(&window, &self.database, game);
+		apply_mods(&window, &self.models.game_details, &self.database, game);
 	}
 
 	pub fn install_mod(&self, game: Game, mod_id: String) {
@@ -107,7 +112,7 @@ impl CommandHandler {
 				let result = install_mods(&database, &game, &[mod_id], &downloads);
 
 				if result.is_ok() {
-					refresh_after_action(&window, &database, &game);
+					refresh_after_action(&window, &game);
 				}
 
 				result
@@ -148,7 +153,7 @@ impl CommandHandler {
 				let result = install_mods(&database, &game, &outdated_ids, &downloads);
 
 				if result.is_ok() {
-					refresh_after_action(&window, &database, &game);
+					refresh_after_action(&window, &game);
 				}
 
 				result
@@ -179,7 +184,7 @@ impl CommandHandler {
 				});
 
 				if result.is_ok() {
-					refresh_after_action(&window, &database, &game);
+					refresh_after_action(&window, &game);
 				}
 
 				result
@@ -215,7 +220,7 @@ impl CommandHandler {
 				});
 
 				if result.is_ok() {
-					refresh_after_action(&window, &database, &game);
+					refresh_after_action(&window, &game);
 				}
 
 				result
@@ -258,11 +263,6 @@ impl CommandHandler {
 	}
 }
 
-fn refresh_mods_ui(window: &MainWindow, database: &Arc<Db>, game: &Game) {
-	apply_mods(window, database, game);
-	refresh_path_states(window.as_weak(), Arc::clone(database), game.clone());
-}
-
 fn refresh_path_states(window: slint::Weak<MainWindow>, database: Arc<Db>, game: Game) {
 	thread::spawn(move || {
 		let Ok(mod_infos) = database.get_game_mods(&game.provider_id, &game.game_id) else {
@@ -297,17 +297,19 @@ fn refresh_path_states(window: slint::Weak<MainWindow>, database: Arc<Db>, game:
 			}
 		}
 
-		let database = Arc::clone(&database);
 		let game = game.clone();
 
-		crate::runtime::with_ui_window(&window, move |window| {
+		crate::runtime::with_ui_window(&window, move |_window| {
 			store_path_states(&game, states);
-			apply_mods(&window, &database, &game);
+
+			if let Some(handler) = CommandHandler::current() {
+				handler.apply_mods(&game);
+			}
 		});
 	});
 }
 
-fn apply_mods(window: &MainWindow, database: &Db, game: &Game) {
+fn apply_mods(window: &MainWindow, models: &GameDetailsModels, database: &Db, game: &Game) {
 	let loaded = match load_mods(database, game) {
 		Ok(loaded) => loaded,
 		Err(err) => {
@@ -321,24 +323,20 @@ fn apply_mods(window: &MainWindow, database: &Db, game: &Game) {
 		.iter()
 		.chain(loaded.hidden.iter())
 		.any(|mod_data| mod_data.outdated);
-	window
-		.global::<crate::GameDetailsState>()
-		.set_has_outdated_mods(has_outdated_mods);
-	window
-		.global::<crate::GameDetailsState>()
-		.set_installed(Rc::new(slint::VecModel::from(loaded.installed)).into());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_game_specific(Rc::new(slint::VecModel::from(loaded.game_specific)).into());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_available(Rc::new(slint::VecModel::from(loaded.available)).into());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_hidden(Rc::new(slint::VecModel::from(loaded.hidden)).into());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_incompatible(Rc::new(slint::VecModel::from(loaded.incompatible)).into());
+	let LoadedMods {
+		installed,
+		game_specific,
+		available,
+		hidden,
+		incompatible,
+	} = loaded;
+	let state = window.global::<crate::GameDetailsState>();
+	state.set_has_outdated_mods(has_outdated_mods);
+	model::sync_vec_model(&models.installed, installed);
+	model::sync_vec_model(&models.game_specific, game_specific);
+	model::sync_vec_model(&models.available, available);
+	model::sync_vec_model(&models.hidden, hidden);
+	model::sync_vec_model(&models.incompatible, incompatible);
 }
 
 fn load_mods(database: &Db, game: &Game) -> Result<LoadedMods> {
@@ -676,13 +674,14 @@ fn collect_deps_to_install(
 	}
 }
 
-fn refresh_after_action(window: &slint::Weak<MainWindow>, database: &Arc<Db>, game: &Game) {
+fn refresh_after_action(window: &slint::Weak<MainWindow>, game: &Game) {
 	let window = window.clone();
-	let database = Arc::clone(database);
 	let game = game.clone();
 
-	crate::runtime::with_ui_window(&window, move |window| {
-		refresh_mods_ui(&window, &database, &game);
+	crate::runtime::with_ui_window(&window, move |_window| {
+		if let Some(handler) = CommandHandler::current() {
+			handler.refresh_mods(&game);
+		}
 	});
 }
 

@@ -19,7 +19,9 @@ use crate::{
 	filters::{load_mod_tags, load_providers_with_games},
 	i18n, logging,
 	model::make_rows,
-	single_instance, window_state,
+	single_instance,
+	ui_models::UiModels,
+	window_state,
 };
 
 pub fn run() -> Result<(), slint::PlatformError> {
@@ -149,12 +151,14 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		.global::<crate::GamesList>()
 		.set_rows(rows.into());
 
+	let models = UiModels::new(&main_window);
 	let ctx = CommandHandler::create(
 		window_weak,
 		Arc::clone(&app_database),
 		Rc::clone(&app_settings),
 		Arc::clone(&scheduler),
 		detected_locale,
+		models,
 	);
 	ctx.load_mods_tab();
 	ctx.load_user();

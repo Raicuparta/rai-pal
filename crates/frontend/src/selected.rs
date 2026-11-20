@@ -1,61 +1,50 @@
 use slint::ComponentHandle as _;
-use std::rc::Rc;
 
 use rai_pal_backend::game::Game;
-use slint::ModelRc;
 
-use crate::{GameRowData, MainWindow, ProviderActionData, model::apply_game_to_row};
+use crate::{
+	GameRowData, ProviderActionData,
+	commands::CommandHandler,
+	model::{self, apply_game_to_row},
+};
 
-pub fn show(window: &MainWindow, game: &Game, mut row: GameRowData) {
-	apply_game_to_row(&mut row, game);
+impl CommandHandler {
+	pub fn show_game_details(&self, game: &Game, mut row: GameRowData) {
+		let Some(window) = self.ui() else {
+			return;
+		};
 
-	let provider_actions: Vec<ProviderActionData> = game
-		.provider_commands
-		.iter()
-		.map(|provider_command| ProviderActionData {
-			action: provider_command.action.into(),
-			action_id: provider_command.action.to_string().into(),
-		})
-		.collect();
+		apply_game_to_row(&mut row, game);
 
-	window.set_selected_game_row(row);
-	window
-		.global::<crate::GameDetailsState>()
-		.set_provider_name(game.provider_id.display_name().into());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_show_wine_folders(cfg!(target_os = "linux"));
-	window
-		.global::<crate::GameDetailsState>()
-		.set_provider_actions(Rc::new(slint::VecModel::from(provider_actions)).into());
-	window.set_game_selected(true);
-}
+		let provider_actions = game
+			.provider_commands
+			.iter()
+			.map(|provider_command| ProviderActionData {
+				action: provider_command.action.into(),
+				action_id: provider_command.action.to_string().into(),
+			})
+			.collect();
 
-pub fn hide(window: &MainWindow) {
-	window.set_game_selected(false);
-	window.set_selected_game_row(GameRowData::default());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_provider_name("".into());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_show_wine_folders(false);
-	window
-		.global::<crate::GameDetailsState>()
-		.set_provider_actions(ModelRc::default());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_installed(ModelRc::default());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_game_specific(ModelRc::default());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_available(ModelRc::default());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_hidden(ModelRc::default());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_incompatible(ModelRc::default());
+		window.set_selected_game_row(row);
+		let state = window.global::<crate::GameDetailsState>();
+		state.set_provider_name(game.provider_id.display_name().into());
+		state.set_show_wine_folders(cfg!(target_os = "linux"));
+		model::sync_vec_model(&self.models.game_details.provider_actions, provider_actions);
+		window.set_game_selected(true);
+	}
+
+	pub fn hide_game_details(&self) {
+		self.clear_selected_game();
+		self.models.game_details.clear();
+
+		let Some(window) = self.ui() else {
+			return;
+		};
+
+		window.set_game_selected(false);
+		window.set_selected_game_row(GameRowData::default());
+		let state = window.global::<crate::GameDetailsState>();
+		state.set_provider_name("".into());
+		state.set_show_wine_folders(false);
+	}
 }

@@ -9,8 +9,10 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 ## Do later
 
 - "Manual" rename to "Executable" i think?
-- Suddenly refresh individual game way way slower?
+- Suddenly refresh individual game way way slower? oh because of big mod db.
 - Refreshing game resets component state, so that sucks. For instance, if a dropdown menu or popup is open, and refresh happens (which always happens after selecting game), it closes again.
+- merge game db with mod db for one mega big db and maybe fetch only needed bits?
+- --live should rebuild rust in case of broken rust and slint file changed, because slint can cause have compilation errors too. currently gets stuck waiting for rust changes. but if only slint file changed and rust not errorring, shouldnt rebuild rust, so that part is fine.
 
 ## Notes, questions, decisions, etc
 
