@@ -81,79 +81,130 @@ fn os_from_launch_option(launch_option: &SteamLaunchOption) -> Option<OperatingS
 }
 
 pub struct SteamAppInfoReader {
+	files: Vec<SteamAppInfoFile>,
+	file_index: usize,
+}
+
+struct SteamAppInfoFile {
 	mmap: memmap2::Mmap,
 	pos: usize,
 	keys: Option<Vec<String>>,
 	path: PathBuf,
+	format: AppInfoFormat,
+}
+
+#[derive(Clone, Copy)]
+enum AppInfoFormat {
+	Legacy,
+	Indexed,
+	Sharded { data_end: usize },
 }
 
 const OLD_APPINFO_MAX_VERSION: u32 = 0x07_56_44_28;
+const SHARDED_APPINFO_VERSION: u32 = 0x07_56_44_2a;
+const SHARDED_KEY_TABLE_HEADER_SIZE: usize = 44;
 
 impl SteamAppInfoReader {
-	pub fn new(appinfo_path: &Path) -> Result<Self> {
-		if !appinfo_path.exists() {
-			return Err(Error::SteamAppInfoNotFound(appinfo_path.to_owned()));
+	pub fn new(appinfo_paths: &[PathBuf]) -> Result<Self> {
+		let mut files = Vec::with_capacity(appinfo_paths.len());
+
+		for path in appinfo_paths {
+			files.push(SteamAppInfoFile::new(path)?);
 		}
 
-		let file = fs::File::open(appinfo_path)?;
-		let mmap = unsafe { memmap2::Mmap::map(&file) }
-			.with_context(|| format!("failed to memory-map `{}`", appinfo_path.display()))?;
-
-		let mut reader = Self::from_mmap(mmap).with_context(|| {
-			format!("failed to parse Steam appinfo `{}`", appinfo_path.display())
-		})?;
-		reader.path = appinfo_path.to_path_buf();
-		Ok(reader)
+		Ok(Self {
+			files,
+			file_index: 0,
+		})
 	}
 
-	fn from_mmap(mmap: memmap2::Mmap) -> Result<Self> {
+	pub fn try_next(&mut self) -> Result<Option<SteamAppInfo>> {
+		while let Some(file) = self.files.get_mut(self.file_index) {
+			match file.try_next() {
+				Ok(Some(app_info)) => return Ok(Some(app_info)),
+				Ok(None) => self.file_index += 1,
+				Err(error) => {
+					self.file_index += 1;
+					return Err(error);
+				}
+			}
+		}
+
+		Ok(None)
+	}
+}
+
+impl SteamAppInfoFile {
+	fn new(path: &Path) -> Result<Self> {
+		if !path.exists() {
+			return Err(Error::SteamAppInfoNotFound(path.to_owned()));
+		}
+
+		let file = fs::File::open(path)?;
+		let mmap = unsafe { memmap2::Mmap::map(&file) }
+			.with_context(|| format!("failed to memory-map `{}`", path.display()))?;
+
+		Self::from_mmap(mmap, path)
+			.with_context(|| format!("failed to parse Steam appinfo `{}`", path.display()))
+	}
+
+	fn from_mmap(mmap: memmap2::Mmap, path: &Path) -> Result<Self> {
 		let mut pos = 0;
 
 		let version = super::vdf::read_u32_le(&mmap, &mut pos)?;
 		let _universe = super::vdf::read_u32_le(&mmap, &mut pos)?;
 
-		let is_new_version = version > OLD_APPINFO_MAX_VERSION;
+		let (keys, format) = match version {
+			SHARDED_APPINFO_VERSION => {
+				let _shard_index = super::vdf::read_u32_le(&mmap, &mut pos)?;
+				let _shard_count = super::vdf::read_u32_le(&mmap, &mut pos)?;
+				let _app_count = super::vdf::read_u32_le(&mmap, &mut pos)?;
+				let key_table_offset = usize::try_from(super::vdf::read_u32_le(&mmap, &mut pos)?)?;
+				let key_count = super::vdf::read_u32_le(&mmap, &mut pos)?;
+				let key_bytes = usize::try_from(super::vdf::read_u32_le(&mmap, &mut pos)?)?;
+				let data_size = usize::try_from(super::vdf::read_u32_le(&mmap, &mut pos)?)?;
 
-		let keys = if is_new_version {
-			let key_list_address = super::vdf::read_u64_le(&mmap, &mut pos)?;
-			let position_before_jump = pos;
+				let key_start = key_table_offset + SHARDED_KEY_TABLE_HEADER_SIZE;
+				pos = key_start;
+				let keys = read_keys(&mmap, &mut pos, key_count)?;
+				let data_end = key_start + key_bytes + data_size;
 
-			pos = usize::try_from(key_list_address)?;
-
-			let key_count = super::vdf::read_u32_le(&mmap, &mut pos)?;
-			let mut keys_vec: Vec<String> = Vec::with_capacity(usize::try_from(key_count)?);
-			for _ in 0..key_count {
-				if let Some(key) = super::vdf::read_cstring(&mmap, &mut pos)
-					.ok_or_log("Failed to read Steam app info key")
-				{
-					keys_vec.push(key);
-				}
+				(Some(keys), AppInfoFormat::Sharded { data_end })
 			}
+			version if version > OLD_APPINFO_MAX_VERSION => {
+				let key_list_address = super::vdf::read_u64_le(&mmap, &mut pos)?;
+				let position_before_jump = pos;
 
-			pos = position_before_jump;
+				pos = usize::try_from(key_list_address)?;
+				let key_count = super::vdf::read_u32_le(&mmap, &mut pos)?;
+				let keys = read_keys(&mmap, &mut pos, key_count)?;
 
-			Some(keys_vec)
-		} else {
-			None
+				pos = position_before_jump;
+
+				(Some(keys), AppInfoFormat::Indexed)
+			}
+			_ => (None, AppInfoFormat::Legacy),
 		};
 
 		Ok(Self {
 			mmap,
 			pos,
 			keys,
-			path: PathBuf::new(),
+			path: path.to_path_buf(),
+			format,
 		})
 	}
 
-	pub fn try_next(&mut self) -> Result<Option<SteamAppInfo>> {
+	fn try_next(&mut self) -> Result<Option<SteamAppInfo>> {
 		let result = self
 			.try_next_inner()
 			.with_context(|| format!("failed to parse Steam appinfo `{}`", self.path.display()));
 
 		if result.is_err() {
-			// A parse error can leave `pos` mid-entry. Advance to the end so the
-			// iterator doesn't repeat the same failing record forever.
-			self.pos = self.mmap.len();
+			self.pos = match self.format {
+				AppInfoFormat::Sharded { data_end } => data_end,
+				AppInfoFormat::Legacy | AppInfoFormat::Indexed => self.mmap.len(),
+			};
 		}
 
 		result
@@ -161,22 +212,36 @@ impl SteamAppInfoReader {
 
 	fn try_next_inner(&mut self) -> Result<Option<SteamAppInfo>> {
 		loop {
-			if self.pos + 8 > self.mmap.len() {
-				return Ok(None);
-			}
+			let record_app_id = match self.format {
+				AppInfoFormat::Sharded { data_end } => {
+					if self.pos + 20 > data_end {
+						return Ok(None);
+					}
 
-			let app_id = super::vdf::read_u32_le(&self.mmap, &mut self.pos)?;
-			if app_id == 0 {
-				return Ok(None);
-			}
+					self.pos += 20;
+					None
+				}
+				AppInfoFormat::Legacy | AppInfoFormat::Indexed => {
+					if self.pos + 8 > self.mmap.len() {
+						return Ok(None);
+					}
 
-			self.pos += 4; // size: u32
-			self.pos += 4; // state: u32
-			self.pos += 4; // last_update: u32
-			self.pos += 8; // access_token: u64
-			self.pos += 20; // checksum_txt: [u8; 20]
-			self.pos += 4; // change_number: u32
-			self.pos += 20; // checksum_bin: [u8; 20]
+					let app_id = super::vdf::read_u32_le(&self.mmap, &mut self.pos)?;
+					if app_id == 0 {
+						return Ok(None);
+					}
+
+					self.pos += 4; // size: u32
+					self.pos += 4; // state: u32
+					self.pos += 4; // last_update: u32
+					self.pos += 8; // access_token: u64
+					self.pos += 20; // checksum_txt: [u8; 20]
+					self.pos += 4; // change_number: u32
+					self.pos += 20; // checksum_bin: [u8; 20]
+
+					Some(app_id)
+				}
+			};
 
 			let keys_ref = self.keys.as_deref();
 			let vdf_start = self.pos;
@@ -198,6 +263,12 @@ impl SteamAppInfoReader {
 			let key_values = super::vdf::read_kv_mmap(&self.mmap, &mut self.pos, keys_ref, false)?;
 
 			let app = App { key_values };
+			let Some(app_id) = record_app_id.or_else(|| {
+				value_to_i32(app.get(&["appinfo", "appid"]))
+					.and_then(|app_id| u32::try_from(app_id).ok())
+			}) else {
+				continue;
+			};
 
 			let app_launch =
 				value_to_kv(app.get(&["appinfo", "config", "launch"])).and_then(|app_launch_kv| {
@@ -294,6 +365,18 @@ impl Iterator for SteamAppInfoReader {
 	fn next(&mut self) -> Option<Self::Item> {
 		self.try_next().transpose()
 	}
+}
+
+fn read_keys(mmap: &[u8], pos: &mut usize, key_count: u32) -> Result<Vec<String>> {
+	let mut keys = Vec::with_capacity(usize::try_from(key_count)?);
+	for _ in 0..key_count {
+		if let Some(key) =
+			super::vdf::read_cstring(mmap, pos).ok_or_log("Failed to read Steam app info key")
+		{
+			keys.push(key);
+		}
+	}
+	Ok(keys)
 }
 
 impl App {

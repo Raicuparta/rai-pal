@@ -11,6 +11,54 @@ pub fn get_appinfo_path(steam_path: &Path) -> PathBuf {
 	steam_path.join("appcache/appinfo.vdf")
 }
 
+pub fn get_appinfo_dir(steam_path: &Path) -> PathBuf {
+	steam_path.join("appcache/appinfo")
+}
+
+pub fn get_appinfo_paths(steam_path: &Path) -> Result<Vec<PathBuf>> {
+	let appinfo_dir = get_appinfo_dir(steam_path);
+
+	if appinfo_dir.is_dir() {
+		let mut paths = Vec::new();
+
+		for entry in fs_err::read_dir(appinfo_dir)? {
+			let path = entry?.path();
+			let Some(file_name) = path.file_name().and_then(|file_name| file_name.to_str()) else {
+				continue;
+			};
+
+			if file_name.starts_with("appinfo_") && file_name.ends_with(".vdf") {
+				paths.push(path);
+			}
+		}
+
+		if !paths.is_empty() {
+			paths.sort();
+			return Ok(paths);
+		}
+	}
+
+	let appinfo_path = get_appinfo_path(steam_path);
+	if appinfo_path.is_file() {
+		Ok(vec![appinfo_path])
+	} else {
+		Ok(Vec::new())
+	}
+}
+
+fn has_appinfo(steam_path: &Path) -> bool {
+	get_appinfo_dir(steam_path).is_dir() || get_appinfo_path(steam_path).is_file()
+}
+
+fn get_appinfo_cache_path(steam_path: &Path) -> PathBuf {
+	let appinfo_dir = get_appinfo_dir(steam_path);
+	if appinfo_dir.is_dir() {
+		appinfo_dir
+	} else {
+		get_appinfo_path(steam_path)
+	}
+}
+
 fn get_modified_time(path: &Path) -> SystemTime {
 	fs_err::metadata(path)
 		.and_then(|metadata| metadata.modified())
@@ -28,24 +76,24 @@ pub fn find_steam_dir() -> Result<SteamDir> {
 
 	let prefer_appinfo = steam_dirs
 		.iter()
-		.any(|steam_dir| get_appinfo_path(steam_dir.path()).is_file());
+		.any(|steam_dir| has_appinfo(steam_dir.path()));
 
 	let mut best: Option<((SystemTime, SystemTime, SystemTime, u64), SteamDir)> = None;
 
 	for steam_dir in steam_dirs {
 		let steam_path = steam_dir.path();
-		let appinfo_path = get_appinfo_path(steam_path);
-
-		if prefer_appinfo && !appinfo_path.is_file() {
+		if prefer_appinfo && !has_appinfo(steam_path) {
 			continue;
 		}
 
-		let appinfo_size = fs_err::metadata(&appinfo_path).map_or(0, |metadata| metadata.len());
+		let appinfo_cache_path = get_appinfo_cache_path(steam_path);
+		let appinfo_size =
+			fs_err::metadata(&appinfo_cache_path).map_or(0, |metadata| metadata.len());
 
 		let score = (
 			get_modified_time(&steam_path.join("config/config.vdf")),
 			get_modified_time(&steam_path.join("config/loginusers.vdf")),
-			get_modified_time(&appinfo_path),
+			get_modified_time(&appinfo_cache_path),
 			appinfo_size,
 		);
 
