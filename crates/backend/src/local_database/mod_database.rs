@@ -18,7 +18,7 @@ use crate::{
 	mod_providers::mod_provider::ModProviderId,
 	mods::{
 		installed_mod::InstalledMod,
-		manifest::{Mod, ModDependency},
+		manifest::{InstalledModManifest, Mod, ModDependency},
 		mod_config::ModConfig,
 		mod_tag::ModTag,
 	},
@@ -520,7 +520,7 @@ impl ModDatabase for Db {
 					continue;
 				}
 
-				let Some(manifest) = Mod::from_file(&manifest_path) else {
+				let Some(manifest) = InstalledModManifest::from_file(&manifest_path) else {
 					continue;
 				};
 

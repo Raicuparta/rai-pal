@@ -118,6 +118,20 @@ pub enum ModDependency {
 	Tag { tag: String },
 }
 
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InstalledModManifest {
+	pub id: String,
+	pub download: Option<ModDownload>,
+	pub hash: Option<String>,
+}
+
+impl InstalledModManifest {
+	pub fn from_file(path: &Path) -> Option<Self> {
+		read_manifest(path)
+	}
+}
+
 #[serde_enum]
 pub enum ModConfigDestinationType {
 	File,
@@ -142,19 +156,7 @@ impl Mod {
 	}
 
 	pub fn from_file(path: &Path) -> Option<Self> {
-		match fs_err::read_to_string(path)
-			.and_then(|manifest_bytes| Ok(serde_json::from_str::<Self>(&manifest_bytes)?))
-		{
-			Ok(manifest) => Some(manifest),
-			Err(error) => {
-				log::error!(
-					"Error getting manifest in path '{}': {}",
-					path.display(),
-					error
-				);
-				None
-			}
-		}
+		read_manifest(path)
 	}
 
 	pub fn get_install(&self) -> Result<&ModInstall> {
@@ -356,6 +358,22 @@ impl Mod {
 		fs_err::tokio::write(manifest_path, manifest_contents).await?;
 
 		Ok(())
+	}
+}
+
+fn read_manifest<T: serde::de::DeserializeOwned>(path: &Path) -> Option<T> {
+	match fs_err::read_to_string(path)
+		.and_then(|manifest_bytes| Ok(serde_json::from_str::<T>(&manifest_bytes)?))
+	{
+		Ok(manifest) => Some(manifest),
+		Err(error) => {
+			log::error!(
+				"Error getting manifest in path '{}': {}",
+				path.display(),
+				error
+			);
+			None
+		}
 	}
 }
 
