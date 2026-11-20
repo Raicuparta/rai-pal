@@ -1,7 +1,7 @@
 import { GameModData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { GameModRow } from "game_mod_row.slint";
-import { SectionHeader } from "section_header.slint";
+import { LabeledDivider } from "labeled_divider.slint";
 
 export component ModsSection inherits VerticalLayout {
     in property <string> label;
@@ -10,12 +10,29 @@ export component ModsSection inherits VerticalLayout {
 
     vertical-stretch: 0;
     alignment: start;
-    spacing: Theme.space-2xs;
+    padding-top: Theme.space-md;
 
-    SectionHeader {
-        label: root.label;
-        description: root.description;
-    }
+
+      LabeledDivider {
+          label: root.label;
+          padding-left: Theme.space-sm;
+          padding-right: Theme.space-sm;
+          strong: true;
+      }
+
+      if root.description != "" : HorizontalLayout {
+          height: self.preferred-height;
+          padding-left: Theme.space-sm;
+          padding-right: Theme.space-sm;
+
+          Text {
+              text: root.description;
+              opacity: 0.5;
+              font-size: Theme.font-sm;
+              wrap: word-wrap;
+              horizontal-stretch: 1;
+          }
+      }
 
     for mod-row in root.mods : GameModRow {
         game-mod: mod-row;
