@@ -25,6 +25,7 @@ use crate::{
 pub fn run() -> Result<(), slint::PlatformError> {
 	window_state::fix_gamescope_scale_factor();
 	logging::init();
+	log_startup_info();
 
 	if !single_instance::acquire() {
 		return Ok(());
@@ -112,6 +113,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				log::warn!("Unexpected graphics API: {graphics_api:?}");
 				crate::Renderer::Unknown
 			};
+			log::info!("Renderer: {renderer:?} ({graphics_api:?})");
 			if let Some(window) = window_weak.upgrade() {
 				window.global::<crate::AppInfo>().set_renderer(renderer);
 			}
@@ -124,6 +126,9 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			crate::Renderer::Unknown
 		}
 	};
+	if !matches!(renderer, crate::Renderer::Unknown) {
+		log::info!("Renderer: {renderer:?}");
+	}
 	main_window
 		.global::<crate::AppInfo>()
 		.set_renderer(renderer);
@@ -193,6 +198,15 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 	ctx.refresh_all();
 	main_window.run()
+}
+
+fn log_startup_info() {
+	log::info!(
+		"Rai Pal {} (variant: {:?}, platform: {:?})",
+		env!("CARGO_PKG_VERSION"),
+		AppVariant::get_current(),
+		Platform::get_current(),
+	);
 }
 
 fn apply_initial_state(
