@@ -2,11 +2,11 @@ use slint::ComponentHandle as _;
 use std::rc::Rc;
 
 use rai_pal_backend::{
-	local_database::app_database::Db,
-	mods::{manifest::Mod, mod_groups},
+	local_database::{app_database::Db, mod_database::ModDatabase},
+	mods::manifest::Mod,
 };
 
-use crate::{MainWindow, MessageContext, ModsTabItemData, ModsTabModData, notifications};
+use crate::{MainWindow, MessageContext, ModsTabModData, notifications};
 
 use super::{
 	CommandHandler,
@@ -24,50 +24,26 @@ impl CommandHandler {
 }
 
 fn load(window: &MainWindow, database: &Db) {
-	let groups = match mod_groups::get_mod_groups(database) {
-		Ok(groups) => groups,
+	let mods = match database.get_mod_map() {
+		Ok(mods) => mods,
 		Err(err) => {
 			notifications::error(window, notifications::data(MessageContext::LoadMods, &err));
 			let state = window.global::<crate::ModsState>();
-			state.set_items(Rc::new(slint::VecModel::from(Vec::<ModsTabItemData>::new())).into());
+			state.set_items(Rc::new(slint::VecModel::from(Vec::<ModsTabModData>::new())).into());
 			state.set_total_count(0);
 			return;
 		}
 	};
 
-	let total_count = groups.iter().map(|group| group.mods.len()).sum::<usize>();
+	let mut mods = mods.into_values().collect::<Vec<_>>();
+	mods.sort_by(|a, b| {
+		b.release_date()
+			.unwrap_or_default()
+			.cmp(a.release_date().unwrap_or_default())
+	});
 
-	let items = groups
-		.into_iter()
-		.map(|group| {
-			let family = group.family;
-			let mods = group.mods;
-
-			if let Some(family) = family {
-				ModsTabItemData {
-					is_family: true,
-					family_title: family.title.into(),
-					family_description: family.description.into(),
-					mods: Rc::new(slint::VecModel::from(
-						mods.into_iter().map(mod_data).collect::<Vec<_>>(),
-					))
-					.into(),
-					single_mod: ModsTabModData::default(),
-				}
-			} else {
-				ModsTabItemData {
-					is_family: false,
-					family_title: "".into(),
-					family_description: "".into(),
-					mods: slint::ModelRc::default(),
-					single_mod: mods
-						.into_iter()
-						.next()
-						.map_or_else(ModsTabModData::default, mod_data),
-				}
-			}
-		})
-		.collect::<Vec<_>>();
+	let total_count = mods.len();
+	let items = mods.into_iter().map(mod_data).collect::<Vec<_>>();
 
 	let state = window.global::<crate::ModsState>();
 	state.set_items(Rc::new(slint::VecModel::from(items)).into());

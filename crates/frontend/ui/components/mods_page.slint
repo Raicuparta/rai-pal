@@ -3,17 +3,16 @@ import { ScrollView } from "std-widgets.slint";
 import { DialogActions, ModActions } from "../actions.slint";
 import { UrlModSourcesPopup } from "url_mod_sources_popup.slint";
 import { ConfirmModSourcePopup } from "confirm_mod_source_popup.slint";
-import { ModsTabItemData } from "../app_types.slint";
+import { ModsTabModData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { ModsTabRow } from "mods_tab_row.slint";
-import { ModsTabFamilyRow } from "mods_tab_family_row.slint";
 import { RefreshButton } from "refresh_button.slint";
 import { Sidebar, SidebarScroll } from "sidebar.slint";
 import { ActionButton } from "action_button.slint";
 import { Icon } from "svg_icon.slint";
 
 export global ModsState {
-    in property <[ModsTabItemData]> items;
+    in property <[ModsTabModData]> items;
     in property <int> total-count: 0;
 }
 
@@ -71,17 +70,8 @@ export component ModsPage inherits Rectangle {
                 VerticalLayout {
                     alignment: start;
 
-                    for item in ModsState.items: VerticalLayout {
-                        alignment: start;
-                        vertical-stretch: 0;
-
-                        if item.is-family: ModsTabFamilyRow {
-                            item: item;
-                        }
-
-                        if !item.is-family: ModsTabRow {
-                            mod-data: item.single-mod;
-                        }
+                    for mod-row in ModsState.items: ModsTabRow {
+                        mod-data: mod-row;
                     }
                 }
             }

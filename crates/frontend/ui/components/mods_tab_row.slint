@@ -9,7 +9,6 @@ import { Icon } from "svg_icon.slint";
 
 export component ModsTabRow inherits VerticalLayout {
     in property <ModsTabModData> mod-data;
-    in property <bool> indented: false;
 
     private property <bool> has-mod-actions: mod-data.can-run || mod-data.can-install;
 
@@ -70,10 +69,6 @@ export component ModsTabRow inherits VerticalLayout {
             padding: Theme.space-sm;
             spacing: Theme.space-sm;
             cross-axis-alignment: center;
-
-            if root.indented: Rectangle {
-                width: Theme.space-xl;
-            }
 
             ModSummaryView {
                 horizontal-stretch: 1;
