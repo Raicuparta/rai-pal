@@ -214,6 +214,11 @@ fn get_game_from_path(exe_path: &Path) -> Result<Game> {
 		},
 	);
 	game.set_executable(exe_path);
+
+	if game.exe_path.is_none() {
+		return Err(Error::NoExecutableFound(exe_path.to_owned()));
+	}
+
 	game.add_provider_command(ProviderCommandAction::Delete, ProviderCommandKind::Delete);
 	Ok(game)
 }
@@ -277,10 +282,6 @@ fn compute_title_discriminators(games: &mut [Game]) {
 
 pub async fn add_game(path: &Path) -> Result<Game> {
 	let game = get_game_from_path(path)?;
-
-	if game.exe_path.is_none() {
-		return Err(Error::NoExecutableFound(path.to_owned()));
-	}
 
 	let config_path = games_config_path()?;
 
