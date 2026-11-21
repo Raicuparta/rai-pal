@@ -32,7 +32,6 @@ export global GameDetailsState {
 
 export component GameDetailsPage inherits HorizontalLayout {
     in property <GameRowData> game-row;
-    in property <bool> show-thumbnail: true;
 
     pure function provider-command-icon(action: ProviderAction) -> Icon {
         if action == ProviderAction.start-via-provider {
@@ -243,7 +242,6 @@ export component GameDetailsPage inherits HorizontalLayout {
             GameRow {
                 vertical-stretch: 0;
                 game-row: root.game-row;
-                show-thumbnail: root.show-thumbnail;
 
                 selected(index) => {
                     GamesActions.back();

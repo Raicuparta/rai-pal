@@ -227,7 +227,7 @@ impl CommandHandler {
 
 		let rows = window.global::<crate::GamesList>().get_rows();
 		let provider = provider_id.into();
-		let mut row = rows
+		let row = rows
 			.iter()
 			.position(|row| row.provider == provider && row.game_id == game_id)
 			.and_then(|index| rows.row_data(index))
@@ -237,7 +237,6 @@ impl CommandHandler {
 					game_id: game_id.to_string(),
 				})
 			});
-		model::apply_cached_thumbnail(&mut row);
 
 		self.show_selected_game(game, row);
 	}

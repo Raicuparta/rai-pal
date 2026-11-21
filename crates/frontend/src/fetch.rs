@@ -73,6 +73,66 @@ pub async fn fetch_image(url: &str, max_width: u32, max_height: u32) -> Option<F
 	}
 }
 
+pub fn fetch_selected_thumbnail(window: slint::Weak<MainWindow>, url: String) {
+	if url.is_empty() {
+		return;
+	}
+
+	if let Some(image) = image_cache::load_memory(&url) {
+		set_selected_thumbnail(&window, &url, image);
+		return;
+	}
+
+	let width = image_cache::THUMBNAIL_WIDTH;
+	let height = image_cache::THUMBNAIL_HEIGHT;
+
+	thread::spawn(move || {
+		let (bytes, from_cache) = match image_cache::load(&url, width, height) {
+			Some(bytes) => (bytes, true),
+			None => match fetch_image_bytes_cancellable(&url, || true) {
+				ImageBytesOutcome::Fetched(bytes) => (bytes, false),
+				ImageBytesOutcome::Cancelled | ImageBytesOutcome::Failed => return,
+			},
+		};
+
+		let Some(image) = decode_image(&bytes, width, height) else {
+			if from_cache {
+				image_cache::remove(&url, width, height);
+			}
+
+			return;
+		};
+
+		if !from_cache {
+			image_cache::store(&url, width, height, &bytes);
+		}
+
+		let ui_window = window.clone();
+
+		let _ = slint::invoke_from_event_loop(move || {
+			let image = image.into_slint_image();
+			image_cache::store_memory(&url, image.clone());
+			set_selected_thumbnail(&ui_window, &url, image);
+		});
+	});
+}
+
+fn set_selected_thumbnail(window: &slint::Weak<MainWindow>, url: &str, image: slint::Image) {
+	let Some(window) = window.upgrade() else {
+		return;
+	};
+
+	let mut row = window.get_selected_game_row();
+
+	if row.thumbnail_url.as_str() != url || row.has_thumbnail {
+		return;
+	}
+
+	row.thumbnail = image;
+	row.has_thumbnail = true;
+	window.set_selected_game_row(row);
+}
+
 fn fetch_image_bytes_cancellable<F>(url: &str, should_continue: F) -> ImageBytesOutcome
 where
 	F: FnMut() -> bool,
