@@ -47,9 +47,7 @@ component ModMenuItem inherits VerticalLayout {
     vertical-stretch: 0;
     alignment: start;
 
-    PopupMenuSeparator {
-        visible: root.action.separator-before;
-    }
+    if root.action.separator-before: PopupMenuSeparator { }
 
     PopupMenuItem {
         text: Tr.mod-action-label(root.action.kind, root.action.subject, root.action.open-folder);

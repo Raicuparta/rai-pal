@@ -6,6 +6,7 @@ pub enum ActionGroup {
 	Primary,
 	Manage,
 	Link,
+	Games,
 	Debug,
 }
 

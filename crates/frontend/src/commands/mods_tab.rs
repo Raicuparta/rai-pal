@@ -226,7 +226,7 @@ fn mod_data(game_mod: Mod, games: &[ModGame]) -> ModsTabModData {
 		let mut action = actions.action(ModActionKind::ShowGame, ActionKind::None, &game.game_id);
 		action.subject = game.title.as_str().into();
 		action.provider = game.provider_id.into();
-		actions.push(ActionGroup::Link, action);
+		actions.push(ActionGroup::Games, action);
 	}
 
 	actions.push(
