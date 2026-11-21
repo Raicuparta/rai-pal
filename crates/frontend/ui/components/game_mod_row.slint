@@ -32,7 +32,10 @@ export component GameModRow inherits VerticalLayout {
             mouse-cursor: pointer;
 
             clicked => {
-                root.open-menu(root.width - Theme.menu-width, root.height);
+                root.open-menu(
+                    max(0px, min(row-touch.pressed-x, root.width - Theme.menu-width)),
+                    row-touch.pressed-y,
+                );
             }
 
             pointer-event(event) => {

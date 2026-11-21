@@ -14,6 +14,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - merge game db with mod db for one mega big db and maybe fetch only needed bits? (see investigation notes below)
 - look into what happens when a mod disappears from remote db but is already installed. seemed to disappear from rai pal ui even though we have an installed manifest? should show something so it gets uninstalled.
 - i installed firewatch, refreshed, and i was in a weird stale state where the list showed it as not installed for a bit until refreshing a few times. look into.
+- new way of loading the thumbnail to allow for selecting a game from any window seems super messy, might warrant a refactor.
 
 ## Notes, questions, decisions, etc
 
