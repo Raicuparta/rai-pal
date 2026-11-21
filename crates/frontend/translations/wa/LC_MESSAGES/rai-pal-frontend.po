@@ -832,3 +832,15 @@ msgstr "Waaah folder: {0}"
 msgctxt "modsTabRow"
 msgid "Show {0} game: \"{1}\""
 msgstr "Mostrer djeu {0}: \"{1}\""
+
+msgctxt "filterProperty"
+msgid "Mod Type"
+msgstr "Sôre di mod"
+
+msgctxt "filterValue"
+msgid "Installable"
+msgstr "Astallåve"
+
+msgctxt "filterValue"
+msgid "Link Only"
+msgstr "Seulmint loyén"

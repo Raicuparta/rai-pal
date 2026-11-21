@@ -832,3 +832,15 @@ msgstr "폴더 열기: {0}"
 msgctxt "modsTabRow"
 msgid "Show {0} game: \"{1}\""
 msgstr "{0} 게임 \"{1}\" 표시"
+
+msgctxt "filterProperty"
+msgid "Mod Type"
+msgstr "모드 유형"
+
+msgctxt "filterValue"
+msgid "Installable"
+msgstr "설치 가능"
+
+msgctxt "filterValue"
+msgid "Link Only"
+msgstr "링크 전용"

@@ -65,6 +65,7 @@ slint_enum_conversions!(FilterGroupKey => FilterGroupId {
 	Installed,
 	Engines,
 	ModTags,
+	ModTypes,
 	Tags,
 	Providers,
 	UnityBackends,
@@ -83,6 +84,8 @@ slint_optional_enum_conversions!(FilterValueLabel => UiFilterValueLabel {
 	StatusInstalled,
 	StatusNotInstalled,
 	ProviderManual,
+	ModTypeInstallable,
+	ModTypeLinkOnly,
 });
 
 slint_enum_conversions!(FilterValueNote => UiFilterValueNote {

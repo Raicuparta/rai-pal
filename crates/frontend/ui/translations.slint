@@ -107,6 +107,9 @@ export global Tr {
         if group == FilterGroupId.installed {
             return @tr("filterProperty" => "Install status");
         }
+        if group == FilterGroupId.mod-types {
+            return @tr("filterProperty" => "Mod Type");
+        }
         return @tr("filterProperty" => "Mod Tag");
     }
 
@@ -134,6 +137,12 @@ export global Tr {
         }
         if label == FilterValueLabel.status-not-installed {
             return @tr("filterValue" => "Not installed");
+        }
+        if label == FilterValueLabel.mod-type-installable {
+            return @tr("filterValue" => "Installable");
+        }
+        if label == FilterValueLabel.mod-type-link-only {
+            return @tr("filterValue" => "Link Only");
         }
         return @tr("filterValue" => "Manual");
     }

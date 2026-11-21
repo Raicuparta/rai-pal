@@ -46,6 +46,7 @@ pub enum FilterGroupKey {
 	Installed,
 	Engines,
 	ModTags,
+	ModTypes,
 	Tags,
 	Providers,
 	UnityBackends,

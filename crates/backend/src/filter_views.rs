@@ -13,7 +13,7 @@ use crate::{
 	game_providers::game_provider::GameProviderId,
 	game_tag::GameTag,
 	games_query::{FilterAction, FilterGroup, FilterGroupKey, GamesFilter, InstallState},
-	mods_query::ModsFilter,
+	mods_query::{ModType, ModsFilter},
 	operating_system::OperatingSystem,
 	result::LogErrExt,
 };
@@ -29,6 +29,8 @@ pub enum FilterValueLabel {
 	StatusInstalled,
 	StatusNotInstalled,
 	ProviderManual,
+	ModTypeInstallable,
+	ModTypeLinkOnly,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -165,6 +167,25 @@ impl FilterValue for UnityBackend {
 impl FilterValue for OperatingSystem {
 	const VALUES: &'static [Self] = &Self::ALL;
 	const HAS_UNKNOWN: bool = true;
+}
+
+impl FilterValue for ModType {
+	const VALUES: &'static [Self] = &Self::ALL;
+
+	fn label(&self) -> Option<FilterValueLabel> {
+		Some(match self {
+			Self::Installable => FilterValueLabel::ModTypeInstallable,
+			Self::LinkOnly => FilterValueLabel::ModTypeLinkOnly,
+		})
+	}
+
+	fn display_text(&self) -> String {
+		match self {
+			Self::Installable => "Installable",
+			Self::LinkOnly => "Link Only",
+		}
+		.to_string()
+	}
 }
 
 impl FilterValue for Architecture {
@@ -334,12 +355,15 @@ pub fn build_mods_filter_views(
 ) -> Vec<FilterGroupView> {
 	let unknown_label = has_untagged_mods.then_some(FilterValueLabel::TagUntagged);
 
-	vec![tag_group_view(
-		&filter.mod_tags,
-		mod_tags,
-		unknown_label,
-		collapsed_filters,
-	)]
+	vec![
+		build_group(
+			FilterGroupKey::ModTypes,
+			&filter.mod_types,
+			known_values(&filter.mod_types),
+			collapsed_filters,
+		),
+		tag_group_view(&filter.mod_tags, mod_tags, unknown_label, collapsed_filters),
+	]
 }
 
 fn group_view(
@@ -348,8 +372,9 @@ fn group_view(
 	mod_tags: &BTreeMap<String, String>,
 	collapsed_filters: &HashSet<FilterGroupKey>,
 	providers_with_games: &HashSet<GameProviderId>,
-) -> FilterGroupView {
-	match key {
+) -> Option<FilterGroupView> {
+	Some(match key {
+		FilterGroupKey::ModTypes => return None,
 		FilterGroupKey::Installed => build_group(
 			key,
 			&filter.installed,
@@ -401,7 +426,7 @@ fn group_view(
 			known_values(&filter.architectures),
 			collapsed_filters,
 		),
-	}
+	})
 }
 
 pub fn build_filter_views(
@@ -411,7 +436,7 @@ pub fn build_filter_views(
 	providers_with_games: &HashSet<GameProviderId>,
 ) -> Vec<FilterGroupView> {
 	FilterGroupKey::iter()
-		.map(|key| {
+		.filter_map(|key| {
 			group_view(
 				filter,
 				key,
@@ -472,6 +497,7 @@ pub fn apply_filter_action(
 			let tag_ids = mod_tags.keys().cloned().collect::<Vec<_>>();
 			apply_string_value(&mut filter.mod_tags, value, &tag_ids, true, action)
 		}
+		FilterGroupKey::ModTypes => false,
 		FilterGroupKey::Tags => {
 			apply_string_value(&mut filter.tags, value, &GameTag::ALL, true, action)
 		}
@@ -525,6 +551,9 @@ pub fn apply_mods_filter_action(
 			let tag_ids = mod_tags.keys().cloned().collect::<Vec<_>>();
 			apply_string_value(&mut filter.mod_tags, value, &tag_ids, true, action)
 		}
+		FilterGroupKey::ModTypes => {
+			apply_string_value(&mut filter.mod_types, value, &ModType::ALL, false, action)
+		}
 		_ => false,
 	}
 }
@@ -563,17 +592,21 @@ pub fn sync_mods_filter_availability(
 }
 
 pub fn reset_mods_filter_group(filter: &mut ModsFilter, group_key: FilterGroupKey) {
-	if group_key == FilterGroupKey::ModTags {
-		filter.mod_tags.keep_only_locked();
+	match group_key {
+		FilterGroupKey::ModTags => filter.mod_tags.keep_only_locked(),
+		FilterGroupKey::ModTypes => filter.mod_types.keep_only_locked(),
+		_ => {}
 	}
 }
 
 pub fn collapse_mods_filters(collapsed_filters: &mut HashSet<FilterGroupKey>) {
 	collapsed_filters.insert(FilterGroupKey::ModTags);
+	collapsed_filters.insert(FilterGroupKey::ModTypes);
 }
 
 pub fn reset_all_mods_filters(filter: &mut ModsFilter) {
 	filter.mod_tags.keep_only_locked();
+	filter.mod_types.keep_only_locked();
 }
 
 pub fn reset_filter_group(filter: &mut GamesFilter, group_key: FilterGroupKey) {
@@ -581,6 +614,7 @@ pub fn reset_filter_group(filter: &mut GamesFilter, group_key: FilterGroupKey) {
 		FilterGroupKey::Installed => filter.installed.keep_only_locked(),
 		FilterGroupKey::Engines => filter.engines.keep_only_locked(),
 		FilterGroupKey::ModTags => filter.mod_tags.keep_only_locked(),
+		FilterGroupKey::ModTypes => {}
 		FilterGroupKey::Tags => filter.tags.keep_only_locked(),
 		FilterGroupKey::Providers => filter.providers.keep_only_locked(),
 		FilterGroupKey::UnityBackends => filter.unity_backends.keep_only_locked(),

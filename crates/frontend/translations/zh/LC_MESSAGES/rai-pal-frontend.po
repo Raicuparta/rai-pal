@@ -832,3 +832,15 @@ msgstr "打开文件夹：{0}"
 msgctxt "modsTabRow"
 msgid "Show {0} game: \"{1}\""
 msgstr "显示 {0} 游戏：\"{1}\""
+
+msgctxt "filterProperty"
+msgid "Mod Type"
+msgstr "Mod 类型"
+
+msgctxt "filterValue"
+msgid "Installable"
+msgstr "可安装"
+
+msgctxt "filterValue"
+msgid "Link Only"
+msgstr "仅链接"

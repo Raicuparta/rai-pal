@@ -832,3 +832,15 @@ msgstr "Abrir carpeta: {0}"
 msgctxt "modsTabRow"
 msgid "Show {0} game: \"{1}\""
 msgstr "Mostrar juego de {0}: \"{1}\""
+
+msgctxt "filterProperty"
+msgid "Mod Type"
+msgstr "Tipo de mod"
+
+msgctxt "filterValue"
+msgid "Installable"
+msgstr "Instalable"
+
+msgctxt "filterValue"
+msgid "Link Only"
+msgstr "Solo enlace"

@@ -832,3 +832,15 @@ msgstr "フォルダーを開く: {0}"
 msgctxt "modsTabRow"
 msgid "Show {0} game: \"{1}\""
 msgstr "{0}のゲーム「{1}」を表示"
+
+msgctxt "filterProperty"
+msgid "Mod Type"
+msgstr "Modの種類"
+
+msgctxt "filterValue"
+msgid "Installable"
+msgstr "インストール可能"
+
+msgctxt "filterValue"
+msgid "Link Only"
+msgstr "リンクのみ"
