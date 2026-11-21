@@ -8,7 +8,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do later
 
-- Make mods in mods tab show games that they can mod.
 - Make prereleases use a different domain for dbs.
 - "Manual" rename to "Executable" i think?
 - Suddenly refresh individual game way way slower? oh because of big mod db. maybe rethink.
@@ -174,3 +173,4 @@ A Discover tab changes the earlier recommendation: the client will need access t
 ## Done
 
 - Configs as mods: removed the runtime config DB from Rai Pal, added config mods to the mod DB with `<tag>-config` tags and optional dependencies, added non-zip mod installs, and removed the download-config UI.
+- Mod rows in the mods tab and game details are clickable (with hover) and open the same menu as the three-dot button. Mod actions are now one ordered list per mod, shared by the menu and the buttons shown outside it (game details keeps its old outside buttons; the mods tab only has the menu). Mods with game IDs get a "Show {game}" menu item per matching game, which opens that game's details.

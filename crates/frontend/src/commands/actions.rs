@@ -28,7 +28,7 @@ impl CommandHandler {
 		};
 		let action_id = action.to_string();
 
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 
@@ -123,7 +123,7 @@ impl CommandHandler {
 		context: MessageContext,
 		open: impl FnOnce(&Game) -> Result + Send + 'static,
 	) {
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 

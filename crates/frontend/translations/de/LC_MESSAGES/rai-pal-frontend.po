@@ -828,3 +828,7 @@ msgstr "Öffnen: {0}"
 msgctxt "gameModRow"
 msgid "Open Folder: {0}"
 msgstr "Ordner öffnen: {0}"
+
+msgctxt "modsTabRow"
+msgid "Show {0}"
+msgstr "{0} anzeigen"

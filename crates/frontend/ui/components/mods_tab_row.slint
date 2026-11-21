@@ -1,8 +1,7 @@
-import { ModActions, GamesActions } from "../actions.slint";
 import { ModsTabModData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { IconButton } from "icon_button.slint";
-import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
+import { ModActionsMenu, ModSpecialActionButton } from "mod_actions.slint";
 import { ModSummaryView } from "mod_summary.slint";
 import { RowDivider } from "row_divider.slint";
 import { Icon } from "svg_icon.slint";
@@ -10,60 +9,41 @@ import { Icon } from "svg_icon.slint";
 export component ModsTabRow inherits VerticalLayout {
     in property <ModsTabModData> mod-data;
 
-    private property <bool> has-mod-actions: mod-data.can-run || mod-data.can-install;
+    private property <length> menu-x: root.width - Theme.menu-width;
+    private property <length> menu-y: root.height;
 
     vertical-stretch: 0;
     alignment: start;
+    accessible-role: list-item;
+    accessible-label: root.mod-data.title;
 
-    menu := PopupMenu {
-        x: root.width - Theme.menu-width;
-        y: root.height;
-
-        if mod-data.can-run: PopupMenuItem {
-            text: @tr("modModal" => "Run");
-            icon: Icon.play;
-
-            clicked => {
-                ModActions.run-standalone(mod-data.id);
-                menu.close();
-            }
-        }
-
-        if mod-data.can-install: PopupMenuItem {
-            text: @tr("modModal" => "Download");
-            icon: Icon.download;
-
-            clicked => {
-                ModActions.install-standalone(mod-data.id);
-                menu.close();
-            }
-        }
-
-        if root.has-mod-actions: PopupMenuSeparator { }
-
-        if mod-data.website != "": PopupMenuItem {
-            text: @tr("modModal" => "Website");
-            icon: Icon.external-link;
-
-            clicked => {
-                ModActions.open-url(mod-data.website);
-                menu.close();
-            }
-        }
-
-        PopupMenuItem {
-            text: @tr("debugData" => "Debug data");
-            icon: Icon.bug;
-
-            clicked => {
-                GamesActions.request-mod-debug-data(mod-data.id);
-                menu.close();
-            }
-        }
+    menu := ModActionsMenu {
+        x: root.menu-x;
+        y: root.menu-y;
+        actions: root.mod-data.actions;
     }
 
     Rectangle {
         height: row-layout.preferred-height;
+        background: row-touch.has-hover ? Theme.hover-background : transparent;
+
+        row-touch := TouchArea {
+            mouse-cursor: pointer;
+
+            clicked => {
+                root.open-menu(root.width - Theme.menu-width, root.height);
+            }
+
+            pointer-event(event) => {
+                if event.kind == PointerEventKind.down
+                    && event.button == PointerEventButton.right {
+                    root.open-menu(
+                        max(0px, min(row-touch.pressed-x, root.width - Theme.menu-width)),
+                        row-touch.pressed-y,
+                    );
+                }
+            }
+        }
 
         row-layout := HorizontalLayout {
             padding: Theme.space-sm;
@@ -81,18 +61,34 @@ export component ModsTabRow inherits VerticalLayout {
                 deprecated: mod-data.deprecated;
             }
 
-            IconButton {
+            HorizontalLayout {
                 horizontal-stretch: 0;
-                icon: Icon.more;
-                icon-size: 22px;
-                tooltip: @tr("gameModRow" => "Mod actions");
+                alignment: end;
+                spacing: Theme.space-xs;
+                min-width: self.preferred-width;
 
-                clicked => {
-                    menu.show();
+                for action in root.mod-data.special-actions: ModSpecialActionButton {
+                    action: action;
+                }
+
+                IconButton {
+                    icon: Icon.more;
+                    icon-size: 22px;
+                    tooltip: @tr("gameModRow" => "Mod actions");
+
+                    clicked => {
+                        root.open-menu(root.width - Theme.menu-width, root.height);
+                    }
                 }
             }
         }
     }
 
     RowDivider { }
+
+    function open-menu(x: length, y: length) {
+        root.menu-x = x;
+        root.menu-y = y;
+        menu.show();
+    }
 }

@@ -37,6 +37,13 @@ pub struct ModInfo {
 	pub tags: Vec<String>,
 }
 
+#[derive(Clone, Debug)]
+pub struct ModGame {
+	pub provider_id: GameProviderId,
+	pub game_id: String,
+	pub title: String,
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct GameEnvironment {
 	pub variables: BTreeMap<String, String>,
@@ -63,6 +70,7 @@ pub trait ModDatabase {
 	fn get_mod_map(&self) -> Result<BTreeMap<String, Mod>>;
 	fn refresh_installed_mods(&self) -> Result;
 	fn get_game_mods(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Vec<ModInfo>>;
+	fn get_mod_games(&self) -> Result<BTreeMap<String, Vec<ModGame>>>;
 	fn get_mod_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>>;
 	fn remove_mods_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result;
 	fn insert_mod_tags(
@@ -748,6 +756,66 @@ impl ModDatabase for Db {
 		apply_required_dependency_compatibility(&mut mod_infos, &mod_map);
 
 		Ok(mod_infos)
+	}
+
+	fn get_mod_games(&self) -> Result<BTreeMap<String, Vec<ModGame>>> {
+		let rows = self
+			.read_db()?
+			.prepare_cached(
+				r"
+			SELECT
+				mod_game_id.mod_id,
+				g.provider_id,
+				g.game_id,
+				g.display_title,
+				g.title_discriminator
+			FROM main.mod_game_ids mod_game_id
+			INNER JOIN main.game_external_ids game_external_id
+				ON mod_game_id.external_id_provider = CASE game_external_id.external_id_provider
+					WHEN 'Manual' THEN 'NormalizedTitle'
+					ELSE game_external_id.external_id_provider
+				END
+				AND game_external_id.external_id = mod_game_id.external_id
+			INNER JOIN main.games g
+				ON g.provider_id = game_external_id.provider_id
+				AND g.game_id = game_external_id.game_id
+			ORDER BY mod_game_id.mod_id, g.display_title;
+		",
+			)?
+			.query_map([], |row| {
+				let display_title = row.get::<_, String>(3)?;
+				let discriminator = row.get::<_, Option<String>>(4)?;
+				let title = if let Some(discriminator) = discriminator {
+					format!("{display_title} ({discriminator})")
+				} else {
+					display_title
+				};
+
+				Ok((
+					row.get::<_, String>(0)?,
+					ModGame {
+						provider_id: row.get(1)?,
+						game_id: row.get(2)?,
+						title,
+					},
+				))
+			})?
+			.collect::<rusqlite::Result<Vec<_>>>()?;
+
+		let mut games: BTreeMap<String, Vec<ModGame>> = BTreeMap::new();
+
+		for (mod_id, game) in rows {
+			let entries = games.entry(mod_id).or_default();
+
+			if !entries
+				.iter()
+				.any(|entry| entry.provider_id == game.provider_id && entry.game_id == game.game_id)
+			{
+				entries.push(game);
+			}
+		}
+
+		Ok(games)
 	}
 
 	fn get_mod_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>> {

@@ -85,7 +85,7 @@ pub struct CommandHandler {
 	pub models: UiModels,
 
 	window: slint::Weak<MainWindow>,
-	selected_game: RefCell<Option<(usize, Game)>>,
+	selected_game: RefCell<Option<Game>>,
 	pending_selection: RefCell<Option<(GameProviderId, String)>>,
 	pending_confirmation: PendingState,
 	detected_locale: Option<AppLocale>,
@@ -133,12 +133,12 @@ impl CommandHandler {
 		self.window.upgrade()
 	}
 
-	pub fn selected_game(&self) -> Option<(usize, Game)> {
+	pub fn selected_game(&self) -> Option<Game> {
 		self.selected_game.borrow().clone()
 	}
 
-	pub fn set_selected_game(&self, index: usize, game: Game) {
-		*self.selected_game.borrow_mut() = Some((index, game));
+	pub fn set_selected_game(&self, game: Game) {
+		*self.selected_game.borrow_mut() = Some(game);
 	}
 
 	pub fn clear_selected_game(&self) {

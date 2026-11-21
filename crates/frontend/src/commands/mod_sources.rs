@@ -182,7 +182,7 @@ impl CommandHandler {
 			super::query::ScrollBehavior::Reset,
 		);
 
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 

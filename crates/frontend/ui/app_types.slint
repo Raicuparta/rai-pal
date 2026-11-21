@@ -1,3 +1,5 @@
+import { ActionKey } from "action_state.slint";
+
 export enum AppTab {
     games,
     mods,
@@ -38,6 +40,32 @@ export enum EngineId {
 export enum SkipConfirmation {
     none,
     install-mod,
+}
+
+export enum ModActionKind {
+    install,
+    download,
+    update,
+    run,
+    run-standalone,
+    open-path,
+    reinstall,
+    uninstall,
+    website,
+    show-game,
+    debug-data,
+}
+
+export struct ModActionData {
+    kind: ModActionKind,
+    action-key: ActionKey,
+    mod-id: string,
+    subject: string,
+    target: string,
+    provider: ProviderId,
+    enabled: bool,
+    separator-before: bool,
+    open-folder: bool,
 }
 
 export enum ProviderAction {
@@ -188,16 +216,7 @@ export struct FilterGroupData {
     expanded: bool,
 }
 
-export struct ModPathData {
-    id: string,
-    title: string,
-    is-folder: bool,
-    open-folder: bool,
-    exists: bool,
-}
-
 export struct GameModData {
-    mod-id: string,
     title: string,
     description: string,
     version-text: string,
@@ -206,14 +225,11 @@ export struct GameModData {
     engine-text: string,
     installed: bool,
     outdated: bool,
-    incompatible: bool,
     deprecated: bool,
-    website: string,
-    has-exe-path: bool,
     has-install: bool,
     has-run: bool,
-    paths: [ModPathData],
-    has-installed-dependants: bool,
+    actions: [ModActionData],
+    special-actions: [ModActionData],
 }
 
 export struct GameRowData {
@@ -236,7 +252,6 @@ export struct GameRowData {
 }
 
 export struct ModsTabModData {
-    id: string,
     title: string,
     description: string,
     version-text: string,
@@ -244,9 +259,8 @@ export struct ModsTabModData {
     author: string,
     engine-text: string,
     deprecated: bool,
-    website: string,
-    can-run: bool,
-    can-install: bool,
+    actions: [ModActionData],
+    special-actions: [ModActionData],
 }
 
 export struct NotificationData {

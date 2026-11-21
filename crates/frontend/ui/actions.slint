@@ -1,4 +1,4 @@
-import { AppColorScheme, AppTab, FilterGroupId, ProviderAction, SkipConfirmation } from "app_types.slint";
+import { AppColorScheme, AppTab, FilterGroupId, ModActionData, ProviderAction, SkipConfirmation } from "app_types.slint";
 
 export global AppActions {
     callback reset-settings;
@@ -87,4 +87,8 @@ export global ModActions {
     callback install-standalone(mod-id: string);
     callback open-url(url: string);
     callback open-local-mods-folder;
+}
+
+export global ModMenuActions {
+    callback activate(action: ModActionData);
 }

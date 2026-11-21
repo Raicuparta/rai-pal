@@ -23,7 +23,7 @@ pub struct PendingState(RefCell<Option<PendingConfirmation>>);
 
 impl CommandHandler {
 	pub fn prompt_install_mod(&self, mod_id: String, skip: crate::SkipConfirmation) {
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 
@@ -35,7 +35,7 @@ impl CommandHandler {
 	}
 
 	pub fn prompt_uninstall_all_mods(&self) {
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 
@@ -47,7 +47,7 @@ impl CommandHandler {
 	}
 
 	pub fn prompt_remove_game(&self) {
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 
@@ -130,7 +130,7 @@ pub fn register(window: &crate::MainWindow) {
 		handler.prompt_uninstall_all_mods();
 	});
 	on_command!(window, ModActions, on_request_update_all, || handler => {
-		if let Some((_, game)) = handler.selected_game() {
+		if let Some(game) = handler.selected_game() {
 			handler.update_all_mods(game);
 		}
 	});

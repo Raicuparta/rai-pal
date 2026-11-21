@@ -828,3 +828,7 @@ msgstr "開く: {0}"
 msgctxt "gameModRow"
 msgid "Open Folder: {0}"
 msgstr "フォルダーを開く: {0}"
+
+msgctxt "modsTabRow"
+msgid "Show {0}"
+msgstr "{0}を表示"

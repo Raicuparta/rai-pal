@@ -9,13 +9,13 @@ use rai_pal_backend::{
 	game::Game,
 	game_providers::game_provider::GameProviderId,
 	games_query::GamesSortBy,
-	local_database::game_database::GameDatabase,
+	local_database::game_database::{GameDatabase, GameId},
 	result::LogErrExt,
 };
 use slint::{ComponentHandle, Model as _};
 
 use crate::{
-	AppColorScheme, AppTab, MainWindow, filters::build_groups, i18n, languages,
+	AppColorScheme, AppTab, GameRowData, MainWindow, filters::build_groups, i18n, languages, model,
 	model::apply_game_to_row,
 };
 
@@ -209,7 +209,41 @@ impl CommandHandler {
 			return;
 		};
 
-		self.set_selected_game(index, game.clone());
+		self.show_selected_game(game, row);
+	}
+
+	pub fn select_game_by_id(&self, provider_id: GameProviderId, game_id: &str) {
+		let Some(game) = self
+			.database
+			.get_game(&provider_id, game_id)
+			.ok_or_log("Failed to load game")
+		else {
+			return;
+		};
+
+		let Some(window) = self.ui() else {
+			return;
+		};
+
+		let rows = window.global::<crate::GamesList>().get_rows();
+		let provider = provider_id.into();
+		let mut row = rows
+			.iter()
+			.position(|row| row.provider == provider && row.game_id == game_id)
+			.and_then(|index| rows.row_data(index))
+			.unwrap_or_else(|| {
+				model::make_row(&GameId {
+					provider_id,
+					game_id: game_id.to_string(),
+				})
+			});
+		model::apply_cached_thumbnail(&mut row);
+
+		self.show_selected_game(game, row);
+	}
+
+	fn show_selected_game(&self, game: Game, row: GameRowData) {
+		self.set_selected_game(game.clone());
 		self.show_game_details(&game, row);
 		self.refresh_mods(&game);
 
@@ -222,12 +256,20 @@ impl CommandHandler {
 		self.hide_game_details();
 	}
 
-	pub fn refresh_selected_row(&self, index: usize, game: &Game) {
+	pub fn refresh_selected_row(&self, game: &Game) {
 		let Some(window) = self.ui() else {
 			return;
 		};
 
 		let rows = window.global::<crate::GamesList>().get_rows();
+		let provider = game.provider_id.into();
+		let Some(index) = rows
+			.iter()
+			.position(|row| row.provider == provider && row.game_id == game.game_id)
+		else {
+			return;
+		};
+
 		let mut row = rows.row_data(index).unwrap_or_default();
 		apply_game_to_row(&mut row, game);
 		rows.set_row_data(index, row.clone());

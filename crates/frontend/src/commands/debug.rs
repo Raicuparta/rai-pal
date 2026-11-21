@@ -10,7 +10,7 @@ impl CommandHandler {
 		let Some(window) = self.ui() else {
 			return;
 		};
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 

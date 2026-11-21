@@ -24,8 +24,12 @@ use rai_pal_backend::{
 use slint::ComponentHandle;
 
 use crate::{
-	ActionKind, GameModData, MainWindow, MessageContext, action_state, analytics,
-	downloads::Tracker, model, notifications, runtime, ui_models::GameDetailsModels,
+	ActionKind, AppTab, GameModData, MainWindow, MessageContext, ModActionData, ModActionKind,
+	ProviderId, action_state, analytics,
+	downloads::Tracker,
+	mod_actions::{ActionGroup, ModActionList, select_actions},
+	model, notifications, runtime,
+	ui_models::GameDetailsModels,
 };
 
 use super::{CommandHandler, on_command};
@@ -379,54 +383,94 @@ fn load_mods(database: &Db, game: &Game) -> Result<LoadedMods> {
 fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	let GameMod { manifest, info } = entry;
 	let installed = info.installed_hash.is_some();
-	let is_incompatible = !info.compatible;
+	let can_show_actions = info.compatible && game.exe_path.is_some();
+	let has_install = manifest.install.is_some();
+	let has_run = manifest.run_for_game.is_some();
 	let version_text = version_text(&info, &manifest);
 	let release_date = release_date_display(&manifest);
 	let engine_text = engine_text(&manifest);
 	let mod_id = manifest.id.as_str();
-	let paths = manifest
-		.paths
-		.as_deref()
-		.unwrap_or_default()
-		.iter()
-		.flat_map(|path| {
-			let is_folder = matches!(&path.path_type, ModPathType::Folder);
-			let id: slint::SharedString = path.id.as_str().into();
-			let title: slint::SharedString = path.title.as_str().into();
-			let file_exists = cached_path_exists(game, mod_id, &path.id, false);
-			let folder_exists = cached_path_exists(game, mod_id, &path.id, true);
+	let mut actions = ModActionList::new(mod_id);
 
-			if is_folder {
-				vec![crate::ModPathData {
-					id,
-					title,
-					is_folder,
-					open_folder: true,
-					exists: folder_exists,
-				}]
-			} else {
-				vec![
-					crate::ModPathData {
-						id: id.clone(),
-						title: title.clone(),
-						is_folder: false,
-						open_folder: false,
-						exists: file_exists,
-					},
-					crate::ModPathData {
-						id,
-						title,
-						is_folder: true,
-						open_folder: true,
-						exists: folder_exists,
-					},
-				]
-			}
-		})
-		.collect::<Vec<_>>();
+	for path in manifest.paths.as_deref().unwrap_or_default() {
+		let file_exists = cached_path_exists(game, mod_id, &path.id, false);
+		let folder_exists = cached_path_exists(game, mod_id, &path.id, true);
+		let variants = if matches!(&path.path_type, ModPathType::Folder) {
+			vec![(true, folder_exists)]
+		} else {
+			vec![(false, file_exists), (true, folder_exists)]
+		};
+
+		for (open_folder, exists) in variants {
+			let mut action = actions.action(
+				ModActionKind::OpenPath,
+				ActionKind::GameModOpenPath,
+				&path.id,
+			);
+			action.subject = path.title.as_str().into();
+			action.open_folder = open_folder;
+			action.enabled = exists;
+			actions.push(ActionGroup::Path, action);
+		}
+	}
+
+	if can_show_actions && has_install && !installed && !info.is_outdated {
+		actions.push(
+			ActionGroup::Primary,
+			actions.action(ModActionKind::Install, ActionKind::GameModInstall, ""),
+		);
+	}
+
+	if can_show_actions && info.is_outdated {
+		actions.push(
+			ActionGroup::Primary,
+			actions.action(ModActionKind::Update, ActionKind::GameModInstall, ""),
+		);
+	}
+
+	if can_show_actions && has_run && (!has_install || installed) {
+		actions.push(
+			ActionGroup::Primary,
+			actions.action(ModActionKind::Run, ActionKind::GameModRun, ""),
+		);
+	}
+
+	if can_show_actions && installed && has_install {
+		actions.push(
+			ActionGroup::Manage,
+			actions.action(ModActionKind::Reinstall, ActionKind::GameModInstall, ""),
+		);
+
+		let mut uninstall =
+			actions.action(ModActionKind::Uninstall, ActionKind::GameModUninstall, "");
+		uninstall.enabled = !info.has_installed_dependants;
+		actions.push(ActionGroup::Manage, uninstall);
+	}
+
+	if let Some(website) = &manifest.website {
+		actions.push(
+			ActionGroup::Link,
+			actions.action(ModActionKind::Website, ActionKind::None, website),
+		);
+	}
+
+	actions.push(
+		ActionGroup::Debug,
+		actions.action(ModActionKind::DebugData, ActionKind::None, ""),
+	);
+
+	let actions = actions.finish();
+	let mut special_kinds = vec![
+		ModActionKind::Install,
+		ModActionKind::Update,
+		ModActionKind::Run,
+	];
+	if !installed && !has_install && !has_run && manifest.website.is_some() {
+		special_kinds.push(ModActionKind::Website);
+	}
+	let special_actions = select_actions(&actions, &special_kinds);
 
 	GameModData {
-		mod_id: manifest.id.into(),
 		title: manifest.title.into(),
 		description: manifest.description.into(),
 		version_text: version_text.into(),
@@ -435,14 +479,11 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		engine_text: engine_text.into(),
 		installed,
 		outdated: info.is_outdated,
-		incompatible: is_incompatible,
 		deprecated: manifest.deprecated == Some(true),
-		website: manifest.website.unwrap_or_default().into(),
-		has_exe_path: game.exe_path.is_some(),
-		has_install: manifest.install.is_some(),
-		has_run: manifest.run_for_game.is_some(),
-		paths: Rc::new(slint::VecModel::from(paths)).into(),
-		has_installed_dependants: info.has_installed_dependants,
+		has_install,
+		has_run,
+		actions: Rc::new(slint::VecModel::from(actions)).into(),
+		special_actions: Rc::new(slint::VecModel::from(special_actions)).into(),
 	}
 }
 
@@ -687,15 +728,65 @@ fn refresh_after_action(window: &slint::Weak<MainWindow>, game: &Game) {
 
 impl CommandHandler {
 	fn with_selected_mod(&self, mod_id: &str, action: impl FnOnce(&Self, Game, String)) {
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 
 		action(self, game, mod_id.to_string());
 	}
+
+	pub fn activate_mod_action(&self, action: ModActionData) {
+		let mod_id = action.mod_id.to_string();
+
+		match action.kind {
+			ModActionKind::Install => {
+				self.prompt_install_mod(mod_id, crate::SkipConfirmation::InstallMod);
+			}
+			ModActionKind::Update => self.with_selected_mod(&mod_id, CommandHandler::update_mod),
+			ModActionKind::Run => self.with_selected_mod(&mod_id, CommandHandler::run_mod),
+			ModActionKind::Reinstall => {
+				self.with_selected_mod(&mod_id, CommandHandler::install_mod);
+			}
+			ModActionKind::Uninstall => {
+				self.with_selected_mod(&mod_id, CommandHandler::uninstall_mod);
+			}
+			ModActionKind::OpenPath => {
+				self.with_selected_mod(&mod_id, |handler, game, mod_id| {
+					handler.open_mod_path(
+						game,
+						mod_id,
+						action.target.to_string(),
+						action.open_folder,
+					);
+				});
+			}
+			ModActionKind::Website => super::actions::open_url(action.target.to_string()),
+			ModActionKind::Download => self.install_standalone_mod(mod_id),
+			ModActionKind::RunStandalone => self.run_standalone_mod(mod_id),
+			ModActionKind::ShowGame => self.show_mod_game(action.provider, &action.target),
+			ModActionKind::DebugData => self.show_mod_debug_data(&mod_id),
+		}
+	}
+
+	fn show_mod_game(&self, provider: ProviderId, game_id: &str) {
+		let Some(provider_id) = Option::<GameProviderId>::from(provider) else {
+			return;
+		};
+
+		let Some(window) = self.ui() else {
+			return;
+		};
+
+		window.set_current_tab(AppTab::Games);
+		self.set_tab(AppTab::Games);
+		self.select_game_by_id(provider_id, game_id);
+	}
 }
 
 pub fn register(window: &crate::MainWindow) {
+	on_command!(window, ModMenuActions, on_activate, |action| handler => {
+		handler.activate_mod_action(action);
+	});
 	on_command!(window, ModActions, on_update, |mod_id| handler => {
 		handler.with_selected_mod(mod_id.as_str(), CommandHandler::update_mod);
 	});

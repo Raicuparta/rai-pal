@@ -1,5 +1,6 @@
 use slint::ComponentHandle as _;
 use std::{
+	collections::BTreeMap,
 	rc::Rc,
 	sync::atomic::{AtomicU64, Ordering},
 	time::Duration,
@@ -11,13 +12,14 @@ use rai_pal_backend::{
 		reset_all_mods_filters, reset_mods_filter_group, sync_mods_filter_availability,
 	},
 	games_query::{FilterAction, FilterGroupKey},
-	local_database::mod_database::ModDatabase,
+	local_database::mod_database::{ModDatabase, ModGame},
 	mods::manifest::Mod,
 };
 
 use crate::{
-	FilterGroupId, MessageContext, ModsTabModData,
+	ActionKind, FilterGroupId, MessageContext, ModActionKind, ModsTabModData,
 	filters::{build_mods_groups, load_all_mod_tags},
+	mod_actions::{ActionGroup, ModActionList},
 	model, notifications,
 };
 
@@ -74,6 +76,13 @@ impl CommandHandler {
 		query_ui.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
 
 		let total_count = mods.len();
+		let mod_games = match self.database.get_mod_games() {
+			Ok(mod_games) => mod_games,
+			Err(err) => {
+				log::error!("Failed to load games for mods: {err}");
+				BTreeMap::new()
+			}
+		};
 		let mut mods = mods
 			.into_values()
 			.filter(|game_mod| query.matches(game_mod))
@@ -84,7 +93,13 @@ impl CommandHandler {
 				.cmp(a.release_date().unwrap_or_default())
 		});
 
-		let items = mods.into_iter().map(mod_data).collect::<Vec<_>>();
+		let items = mods
+			.into_iter()
+			.map(|game_mod| {
+				let games = mod_games.get(&game_mod.id).cloned().unwrap_or_default();
+				mod_data(game_mod, &games)
+			})
+			.collect::<Vec<_>>();
 
 		let state = window.global::<crate::ModsState>();
 		model::sync_vec_model(&self.models.mods_tab, items);
@@ -178,13 +193,48 @@ impl CommandHandler {
 	}
 }
 
-fn mod_data(game_mod: Mod) -> ModsTabModData {
+fn mod_data(game_mod: Mod, games: &[ModGame]) -> ModsTabModData {
 	let version_text = download_version(&game_mod);
 	let release_date = release_date_display(&game_mod);
 	let engine_text = engine_text(&game_mod);
+	let can_run = game_mod.run_standalone.is_some();
+	let can_install = can_run && game_mod.install.is_some();
+	let mut actions = ModActionList::new(&game_mod.id);
+
+	if can_install {
+		actions.push(
+			ActionGroup::Primary,
+			actions.action(ModActionKind::Download, ActionKind::StandaloneInstall, ""),
+		);
+	}
+
+	if can_run {
+		actions.push(
+			ActionGroup::Primary,
+			actions.action(ModActionKind::RunStandalone, ActionKind::StandaloneRun, ""),
+		);
+	}
+
+	if let Some(website) = &game_mod.website {
+		actions.push(
+			ActionGroup::Link,
+			actions.action(ModActionKind::Website, ActionKind::None, website),
+		);
+	}
+
+	for game in games {
+		let mut action = actions.action(ModActionKind::ShowGame, ActionKind::None, &game.game_id);
+		action.subject = game.title.as_str().into();
+		action.provider = game.provider_id.into();
+		actions.push(ActionGroup::Link, action);
+	}
+
+	actions.push(
+		ActionGroup::Debug,
+		actions.action(ModActionKind::DebugData, ActionKind::None, ""),
+	);
 
 	ModsTabModData {
-		id: game_mod.id.into(),
 		title: game_mod.title.into(),
 		description: game_mod.description.into(),
 		version_text: version_text.into(),
@@ -192,9 +242,8 @@ fn mod_data(game_mod: Mod) -> ModsTabModData {
 		author: game_mod.author.into(),
 		engine_text: engine_text.into(),
 		deprecated: game_mod.deprecated == Some(true),
-		website: game_mod.website.unwrap_or_default().into(),
-		can_run: game_mod.run_standalone.is_some(),
-		can_install: game_mod.run_standalone.is_some() && game_mod.install.is_some(),
+		actions: Rc::new(slint::VecModel::from(actions.finish())).into(),
+		special_actions: Default::default(),
 	}
 }
 

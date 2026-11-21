@@ -8,6 +8,7 @@ import {
     FilterValueNote,
     MessageContext,
     MessageData,
+    ModActionKind,
     ProviderAction,
     RefreshTaskData,
     RefreshTaskKind,
@@ -147,6 +148,43 @@ export global Tr {
             return @tr("filterValueNote" => "GameMaker games are not fully supported yet.");
         }
         return "";
+    }
+
+    public pure function mod-action-label(kind: ModActionKind, subject: string, open-folder: bool) -> string {
+        if kind == ModActionKind.install {
+            return @tr("gameModRow" => "Install");
+        }
+        if kind == ModActionKind.download {
+            return @tr("modModal" => "Download");
+        }
+        if kind == ModActionKind.update {
+            return @tr("gameModRow" => "Update");
+        }
+        if kind == ModActionKind.run {
+            return @tr("gameModRow" => "Run");
+        }
+        if kind == ModActionKind.run-standalone {
+            return @tr("modModal" => "Run");
+        }
+        if kind == ModActionKind.open-path {
+            if open-folder {
+                return @tr("gameModRow" => "Open Folder: {0}", subject);
+            }
+            return @tr("gameModRow" => "Open: {0}", subject);
+        }
+        if kind == ModActionKind.reinstall {
+            return @tr("gameModRow" => "Reinstall");
+        }
+        if kind == ModActionKind.uninstall {
+            return @tr("gameModRow" => "Uninstall");
+        }
+        if kind == ModActionKind.website {
+            return @tr("modModal" => "Website");
+        }
+        if kind == ModActionKind.show-game {
+            return @tr("modsTabRow" => "Show {0}", subject);
+        }
+        return @tr("debugData" => "Debug data");
     }
 
     public pure function provider-command(action: ProviderAction) -> string {

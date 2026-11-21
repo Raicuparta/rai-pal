@@ -828,3 +828,7 @@ msgstr "Waah: {0}"
 msgctxt "gameModRow"
 msgid "Open Folder: {0}"
 msgstr "Waaah folder: {0}"
+
+msgctxt "modsTabRow"
+msgid "Show {0}"
+msgstr "Mostrer {0}"

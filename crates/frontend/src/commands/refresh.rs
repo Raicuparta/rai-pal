@@ -145,7 +145,7 @@ impl CommandHandler {
 	}
 
 	fn refresh_game_with_state(&self, show_state: bool) {
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 
@@ -191,7 +191,7 @@ impl CommandHandler {
 
 				// The refresh runs in the background; don't apply it if the user
 				// selected another game in the meantime.
-				let Some((index, selected_game)) = handler.selected_game() else {
+				let Some(selected_game) = handler.selected_game() else {
 					return;
 				};
 
@@ -201,8 +201,8 @@ impl CommandHandler {
 					return;
 				}
 
-				handler.set_selected_game(index, updated_game.clone());
-				handler.refresh_selected_row(index, &updated_game);
+				handler.set_selected_game(updated_game.clone());
+				handler.refresh_selected_row(&updated_game);
 				handler.refresh_mods(&updated_game);
 			});
 
@@ -218,7 +218,7 @@ impl CommandHandler {
 	}
 
 	pub fn refresh_selected_game_on_focus(&self) {
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 
@@ -237,7 +237,7 @@ impl CommandHandler {
 	}
 
 	pub fn reload_selected_game(&self) {
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 
