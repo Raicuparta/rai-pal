@@ -50,7 +50,12 @@ component ModMenuItem inherits VerticalLayout {
     if root.action.separator-before: PopupMenuSeparator { }
 
     PopupMenuItem {
-        text: Tr.mod-action-label(root.action.kind, root.action.subject, root.action.open-folder);
+        text: Tr.mod-action-label(
+            root.action.kind,
+            root.action.subject,
+            root.action.open-folder,
+            root.action.provider,
+        );
         icon: ModActionIcons.icon(root.action.kind, root.action.open-folder);
         enabled: root.action.enabled;
 
@@ -76,7 +81,12 @@ export component ModActionsMenu inherits PopupMenu {
 export component ModSpecialActionButton inherits ActionButton {
     in property <ModActionData> action;
 
-    text: Tr.mod-action-label(root.action.kind, root.action.subject, root.action.open-folder);
+    text: Tr.mod-action-label(
+        root.action.kind,
+        root.action.subject,
+        root.action.open-folder,
+        root.action.provider,
+    );
     icon: ModActionIcons.icon(root.action.kind, root.action.open-folder);
     action-key: root.action.action-key;
     enabled: root.action.enabled;

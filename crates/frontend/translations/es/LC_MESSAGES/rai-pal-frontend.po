@@ -830,5 +830,5 @@ msgid "Open Folder: {0}"
 msgstr "Abrir carpeta: {0}"
 
 msgctxt "modsTabRow"
-msgid "Show {0}"
-msgstr "Mostrar {0}"
+msgid "Show {0} game: \"{1}\""
+msgstr "Mostrar juego de {0}: \"{1}\""

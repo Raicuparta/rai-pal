@@ -830,5 +830,5 @@ msgid "Open Folder: {0}"
 msgstr "폴더 열기: {0}"
 
 msgctxt "modsTabRow"
-msgid "Show {0}"
-msgstr "{0} 표시"
+msgid "Show {0} game: \"{1}\""
+msgstr "{0} 게임 \"{1}\" 표시"

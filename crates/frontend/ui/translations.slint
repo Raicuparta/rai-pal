@@ -10,6 +10,7 @@ import {
     MessageData,
     ModActionKind,
     ProviderAction,
+    ProviderId,
     RefreshTaskData,
     RefreshTaskKind,
     Renderer,
@@ -150,7 +151,37 @@ export global Tr {
         return "";
     }
 
-    public pure function mod-action-label(kind: ModActionKind, subject: string, open-folder: bool) -> string {
+    public pure function provider-name(provider: ProviderId) -> string {
+        if provider == ProviderId.amazon {
+            return "Amazon";
+        }
+        if provider == ProviderId.epic {
+            return "Epic";
+        }
+        if provider == ProviderId.gog {
+            return "GOG";
+        }
+        if provider == ProviderId.itch {
+            return "itch.io";
+        }
+        if provider == ProviderId.manual {
+            return "Manual";
+        }
+        if provider == ProviderId.steam {
+            return "Steam";
+        }
+        if provider == ProviderId.xbox {
+            return "Xbox";
+        }
+        return "";
+    }
+
+    public pure function mod-action-label(
+        kind: ModActionKind,
+        subject: string,
+        open-folder: bool,
+        provider: ProviderId,
+    ) -> string {
         if kind == ModActionKind.install {
             return @tr("gameModRow" => "Install");
         }
@@ -182,7 +213,7 @@ export global Tr {
             return @tr("modModal" => "Website");
         }
         if kind == ModActionKind.show-game {
-            return @tr("modsTabRow" => "Show {0}", subject);
+            return @tr("modsTabRow" => "Show {0} game: \"{1}\"", provider-name(provider), subject);
         }
         return @tr("debugData" => "Debug data");
     }
