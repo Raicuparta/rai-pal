@@ -191,6 +191,12 @@ fn register_linux() {
 	use std::path::PathBuf;
 
 	use fs_err as fs;
+	use rai_pal_backend::app_variant::AppVariant;
+
+	if AppVariant::get_current() != AppVariant::LinuxAppImage {
+		log::info!("Skipping Linux desktop entry registration outside of the AppImage build");
+		return;
+	}
 
 	let Some(dirs) = app_paths::base_dirs().ok_or_log("Failed to get base dirs for OS integration")
 	else {
