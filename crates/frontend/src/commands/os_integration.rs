@@ -83,7 +83,7 @@ impl CommandHandler {
 
 pub fn register() {
 	#[cfg(target_os = "linux")]
-	register_linux();
+	std::thread::spawn(register_linux);
 	#[cfg(target_os = "windows")]
 	register_windows();
 	#[cfg(target_os = "macos")]

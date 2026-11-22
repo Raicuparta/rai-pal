@@ -14,6 +14,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - i installed firewatch, refreshed, and i was in a weird stale state where the list showed it as not installed for a bit until refreshing a few times. look into.
 - new way of loading the thumbnail to allow for selecting a game from any window seems super messy, might warrant a refactor.
 - "show game" action for mods, maybe super messy? could refactor.
+- Move the remote DB attach off the startup critical path. It blocks the window for ~150ms; show cached local rows first and attach/fetch the remote DB in the background.
 
 ## Notes, questions, decisions, etc
 
@@ -171,6 +172,8 @@ A Discover tab changes the earlier recommendation: the client will need access t
 6. Revisit HTTP VFS only after the full catalog is large enough that the sharded whole-file approach is no longer good enough.
 
 ## Done
+
+- Linux desktop entry / deep link registration now runs in a background thread instead of blocking the UI thread before the window is shown. `xdg-mime` plus `update-desktop-database` (and the shell forks `xdg-mime` does) were taking ~250ms of the launch.
 
 - Fixed slow installs/uninstalls. The cost was `get_game_mods`, which took ~95ms per call because `REMOTE_GAME_JOIN` re-ran its correlated `remote_games` lookup once per mod (394x) inside the candidate mods CTE. The game-level metadata (installed + remote) is now built once in a `MATERIALIZED game_info` CTE, bringing the call to ~29ms on the same data. Also stopped `install_mods` from re-running `get_game_mods` once per mod when updating several mods at once. It was never the manifest scan: 45 installed games x 394 mods of `Path::exists` costs under 10ms, and `get_mod_map` is ~3ms.
 - Mods that disappear from the mod DB (or whose source is offline/disabled) are no longer deleted from the local mod DB while they have an entry in `installed_mods`, so installed mods stay visible in game details with their last known data and can still be uninstalled. `remove_mods_except` keeps installed mods, same as it already did for deprecated ones.
