@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
-- Installing and uninstalling mods seems a lot slower than before suddenly. What changed compared to the main branch? Is it because of the huge mod list? Are we doing redundant work?
 
 ## Do later
 
@@ -173,6 +172,7 @@ A Discover tab changes the earlier recommendation: the client will need access t
 
 ## Done
 
+- Fixed slow installs/uninstalls. The cost was `get_game_mods`, which took ~95ms per call because `REMOTE_GAME_JOIN` re-ran its correlated `remote_games` lookup once per mod (394x) inside the candidate mods CTE. The game-level metadata (installed + remote) is now built once in a `MATERIALIZED game_info` CTE, bringing the call to ~29ms on the same data. Also stopped `install_mods` from re-running `get_game_mods` once per mod when updating several mods at once. It was never the manifest scan: 45 installed games x 394 mods of `Path::exists` costs under 10ms, and `get_mod_map` is ~3ms.
 - Mods that disappear from the mod DB (or whose source is offline/disabled) are no longer deleted from the local mod DB while they have an entry in `installed_mods`, so installed mods stay visible in game details with their last known data and can still be uninstalled. `remove_mods_except` keeps installed mods, same as it already did for deprecated ones.
 - Game and mod DB downloads now use `rai-pal-db.raicuparta.com`, or `rai-pal-db-pre.raicuparta.com` when the app version contains `-pre` (new `rai-pal-backend::database_url`). The Patreon DB is not fetched by this repo (the auth server serves patron data), so there was nothing to change for it here.
 - Renamed the "Manual" provider to "Local Files" in the UI and in all non-data code (provider module/struct, commands module, icon file, filter label). The stored provider ID is still `Manual`; that data rename is in "Do later".

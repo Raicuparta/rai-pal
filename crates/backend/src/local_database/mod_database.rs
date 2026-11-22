@@ -592,7 +592,25 @@ impl ModDatabase for Db {
 			.read_db()?
 			.prepare_cached(&format!(
 				r"
-			WITH candidate_mods AS (
+			WITH
+			game_info AS MATERIALIZED (
+				SELECT
+					g.provider_id AS provider_id,
+					g.game_id AS game_id,
+					g.exe_path_hash AS exe_path_hash,
+					COALESCE(ig.engine_brand, rg.engine_brand) AS engine_brand,
+					ig.unity_backend AS unity_backend,
+					ig.architecture AS architecture,
+					ig.executable_os AS executable_os,
+					COALESCE(ig.engine_version_major, rg.engine_version_major) AS game_major,
+					COALESCE(ig.engine_version_minor, rg.engine_version_minor) AS game_minor,
+					COALESCE(ig.engine_version_patch, rg.engine_version_patch) AS game_patch
+				FROM main.games g
+				LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
+				{REMOTE_GAME_JOIN}
+				WHERE g.provider_id = $1 AND g.game_id = $2
+			),
+			candidate_mods AS (
 				SELECT DISTINCT
 					m.id AS mod_id,
 					im.installed_version AS installed_version,
@@ -610,25 +628,21 @@ impl ModDatabase for Db {
 						WHEN m.hash IS NOT im.installed_hash THEN 1
 						ELSE 0
 					END AS is_outdated,
-					COALESCE(ig.engine_version_major, rg.engine_version_major) AS game_major,
-					COALESCE(ig.engine_version_minor, rg.engine_version_minor) AS game_minor,
-					COALESCE(ig.engine_version_patch, rg.engine_version_patch) AS game_patch,
+					g.game_major AS game_major,
+					g.game_minor AS game_minor,
+					g.game_patch AS game_patch,
 					json_extract(m.engine_version_range, '$.minimum.major') AS min_major,
 					json_extract(m.engine_version_range, '$.minimum.minor') AS min_minor,
 					json_extract(m.engine_version_range, '$.minimum.patch') AS min_patch,
 					json_extract(m.engine_version_range, '$.maximum.major') AS max_major,
 					json_extract(m.engine_version_range, '$.maximum.minor') AS max_minor,
 					json_extract(m.engine_version_range, '$.maximum.patch') AS max_patch
-				FROM main.games g
-				LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
-				{REMOTE_GAME_JOIN}
+				FROM game_info g
 				INNER JOIN main.mods m ON 1=1
 				LEFT JOIN main.installed_mods im ON
 					g.exe_path_hash = im.exe_path_hash
 					AND m.id = im.mod_id
-				WHERE g.provider_id = $1
-					AND g.game_id = $2
-					AND {GAME_IDS_COMPATIBILITY_FILTER}
+				WHERE {GAME_IDS_COMPATIBILITY_FILTER}
 					AND (
 						m.deprecated IS NULL
 						OR m.deprecated = 0
@@ -636,22 +650,22 @@ impl ModDatabase for Db {
 					)
 					AND (
 						json_extract(m.engine, '$') IS NULL
-						OR json_extract(m.engine, '$') = COALESCE(ig.engine_brand, rg.engine_brand)
+						OR json_extract(m.engine, '$') = g.engine_brand
 					)
 					AND (
 						json_extract(m.unity_backend, '$') IS NULL
-						OR ig.unity_backend IS NULL
-						OR json_extract(m.unity_backend, '$') = ig.unity_backend
+						OR g.unity_backend IS NULL
+						OR json_extract(m.unity_backend, '$') = g.unity_backend
 					)
 					AND (
 						json_extract(m.architecture, '$') IS NULL
-						OR ig.architecture IS NULL
-						OR json_extract(m.architecture, '$') = ig.architecture
+						OR g.architecture IS NULL
+						OR json_extract(m.architecture, '$') = g.architecture
 					)
 					AND (
 						json_extract(m.game_os, '$') IS NULL
-						OR ig.executable_os IS NULL
-						OR json_extract(m.game_os, '$') = ig.executable_os
+						OR g.executable_os IS NULL
+						OR json_extract(m.game_os, '$') = g.executable_os
 					)
 					AND (
 						json_extract(m.host_os, '$') IS NULL

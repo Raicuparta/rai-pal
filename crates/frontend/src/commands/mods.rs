@@ -575,15 +575,18 @@ fn version_numbers(version: &EngineVersionNumbers) -> String {
 	parts.join(".")
 }
 
-fn collect_install_mods(database: &Db, game: &Game, mod_id: &str) -> Result<(Mod, Vec<Mod>)> {
+fn collect_install_mods(
+	database: &Db,
+	mod_id: &str,
+	relevant_mods: &[ModInfo],
+) -> Result<(Mod, Vec<Mod>)> {
 	let game_mod = database.get_mod(mod_id)?;
-	let relevant_mods = database.get_game_mods(&game.provider_id, &game.game_id)?;
 	let mut deps_to_install = Vec::new();
 
 	collect_deps_to_install(
 		mod_id,
 		database,
-		&relevant_mods,
+		relevant_mods,
 		&mut HashSet::new(),
 		&mut deps_to_install,
 	);
@@ -597,9 +600,17 @@ fn install_mods(
 	mod_ids: &[String],
 	downloads: &Tracker,
 ) -> std::result::Result<(), String> {
+	if mod_ids.is_empty() {
+		return Ok(());
+	}
+
+	let relevant_mods = database
+		.get_game_mods(&game.provider_id, &game.game_id)
+		.map_err(|err| err.to_string())?;
+
 	for mod_id in mod_ids {
-		let (game_mod, deps_to_install) =
-			collect_install_mods(database, game, mod_id).map_err(|err| err.to_string())?;
+		let (game_mod, deps_to_install) = collect_install_mods(database, mod_id, &relevant_mods)
+			.map_err(|err| err.to_string())?;
 
 		let all_owned = deps_to_install
 			.iter()
