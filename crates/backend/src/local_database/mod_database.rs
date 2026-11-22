@@ -837,12 +837,12 @@ impl ModDatabase for Db {
 		let transaction = connection.transaction()?;
 
 		transaction.prepare_cached(
-			"DELETE FROM main.mod_game_ids WHERE mod_id IN (SELECT id FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?)));",
+			"DELETE FROM main.mod_game_ids WHERE mod_id IN (SELECT id FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?)) AND id NOT IN (SELECT mod_id FROM main.installed_mods));",
 		)?
 		.execute(rusqlite::params![provider_id, keep_json])?;
 		transaction
 			.prepare_cached(
-				"DELETE FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?));",
+				"DELETE FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?)) AND id NOT IN (SELECT mod_id FROM main.installed_mods);",
 			)?
 			.execute(rusqlite::params![provider_id, keep_json])?;
 

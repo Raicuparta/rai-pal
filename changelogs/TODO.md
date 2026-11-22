@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
-- Need to look into, and potentially fix, what happens when a mod disappears from the mod database but is already installed (we already have the installed manifest). Which is probably the same that would happen if we're currenty offline but already have some installed mods. The installed mod should still be visible in the game mods in game details page. I'm thinking that recently we did something related to making it so installed manifests aren't fully read, so maybe that could affect it. I wouldn't want to make that messier though, it's ok if when we're offline we just dont show all the information and only show the bits we usually read from the installed manifest. Gotta keep it simple and avoid making it more fragile.
 - Installing and uninstalling mods seems a lot slower than before suddenly. What changed compared to the main branch? Is it because of the huge mod list? Are we doing redundant work?
 
 ## Do later
@@ -174,6 +173,7 @@ A Discover tab changes the earlier recommendation: the client will need access t
 
 ## Done
 
+- Mods that disappear from the mod DB (or whose source is offline/disabled) are no longer deleted from the local mod DB while they have an entry in `installed_mods`, so installed mods stay visible in game details with their last known data and can still be uninstalled. `remove_mods_except` keeps installed mods, same as it already did for deprecated ones.
 - Game and mod DB downloads now use `rai-pal-db.raicuparta.com`, or `rai-pal-db-pre.raicuparta.com` when the app version contains `-pre` (new `rai-pal-backend::database_url`). The Patreon DB is not fetched by this repo (the auth server serves patron data), so there was nothing to change for it here.
 - Renamed the "Manual" provider to "Local Files" in the UI and in all non-data code (provider module/struct, commands module, icon file, filter label). The stored provider ID is still `Manual`; that data rename is in "Do later".
 - Configs as mods: removed the runtime config DB from Rai Pal, added config mods to the mod DB with `<tag>-config` tags and optional dependencies, added non-zip mod installs, and removed the download-config UI.
