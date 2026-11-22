@@ -6,9 +6,9 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
-
 ## Do later
 
+- Use the real domains for database urls.
 - "Manual" data rename to "Local Files".
 - Suddenly refresh individual game way way slower? oh because of big mod db. maybe rethink.
 - i installed firewatch, refreshed, and i was in a weird stale state where the list showed it as not installed for a bit until refreshing a few times. look into.
