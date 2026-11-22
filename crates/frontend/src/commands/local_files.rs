@@ -13,7 +13,8 @@ use std::{
 use rai_pal_backend::{
 	game::Game,
 	game_providers::{
-		game_provider::GameProviderId, manual_provider, provider_command::ProviderCommandAction,
+		game_provider::GameProviderId, local_files_provider,
+		provider_command::ProviderCommandAction,
 	},
 	local_database::{game_database::GameDatabase, mod_database::ModDatabase},
 	path_extensions::PathExt,
@@ -65,7 +66,7 @@ impl CommandHandler {
 			let path = path.normalize();
 
 			let result = runtime::block_on(async {
-				let game = manual_provider::add_game(&path).await?;
+				let game = local_files_provider::add_game(&path).await?;
 				database.insert_game(&game);
 				Ok::<(), rai_pal_backend::result::Error>(())
 			});
@@ -125,7 +126,7 @@ impl CommandHandler {
 				}
 			});
 
-			let result = manual_provider::scan_directory(&path, move |progress| {
+			let result = local_files_provider::scan_directory(&path, move |progress| {
 				if SCAN_GENERATION.load(Ordering::SeqCst) != generation {
 					return;
 				}
@@ -217,7 +218,7 @@ impl CommandHandler {
 
 		thread::spawn(move || {
 			let result = runtime::block_on(async {
-				let games = manual_provider::add_directory(&path).await?;
+				let games = local_files_provider::add_directory(&path).await?;
 
 				for game in &games {
 					database.insert_game(game);
@@ -256,7 +257,7 @@ impl CommandHandler {
 			let path = PathBuf::from(path);
 
 			let result = runtime::block_on(async {
-				manual_provider::remove_directory(&path).await?;
+				local_files_provider::remove_directory(&path).await?;
 				GameProviderId::Manual.insert_games(&database)?;
 				database.refresh_installed_mods()?;
 				Ok::<(), rai_pal_backend::result::Error>(())
@@ -321,12 +322,12 @@ impl CommandHandler {
 					let path = path.normalize();
 
 					if path.is_dir() {
-						for game in manual_provider::add_directory(&path).await? {
+						for game in local_files_provider::add_directory(&path).await? {
 							database.insert_game(&game);
 							last_added = Some(game);
 						}
 					} else {
-						let game = manual_provider::add_game(&path).await?;
+						let game = local_files_provider::add_game(&path).await?;
 						database.insert_game(&game);
 						last_added = Some(game);
 					}
@@ -395,7 +396,7 @@ fn reset_scan(window: &MainWindow) {
 }
 
 fn reload_directories(window: &MainWindow) {
-	let directories = match manual_provider::get_directories() {
+	let directories = match local_files_provider::get_directories() {
 		Ok(directories) => directories
 			.into_iter()
 			.map(|path| path.display().to_string().into())
@@ -408,7 +409,7 @@ fn reload_directories(window: &MainWindow) {
 
 	window
 		.global::<crate::AddGameState>()
-		.set_manual_directories(Rc::new(slint::VecModel::from(directories)).into());
+		.set_local_files_directories(Rc::new(slint::VecModel::from(directories)).into());
 }
 
 pub fn register(window: &crate::MainWindow) {

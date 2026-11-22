@@ -15,7 +15,7 @@ export global AddGameState {
     in property <int> games-count: 0;
     in property <float> duration-secs: 0;
     in-out property <string> directory: "";
-    in property <[string]> manual-directories;
+    in property <[string]> local-files-directories;
 }
 
 component SavedDirectoryRow inherits Rectangle {
@@ -168,7 +168,7 @@ export component AddGamePopup inherits Modal {
         }
     }
 
-    if AddGameState.phase == AddGamePhase.idle && AddGameState.manual-directories.length > 0: VerticalLayout {
+    if AddGameState.phase == AddGamePhase.idle && AddGameState.local-files-directories.length > 0: VerticalLayout {
         spacing: Theme.space-sm;
 
         Rectangle {
@@ -183,7 +183,7 @@ export component AddGamePopup inherits Modal {
             wrap: word-wrap;
         }
 
-        for directory in AddGameState.manual-directories: SavedDirectoryRow {
+        for directory in AddGameState.local-files-directories: SavedDirectoryRow {
             path: directory;
 
             removed => {

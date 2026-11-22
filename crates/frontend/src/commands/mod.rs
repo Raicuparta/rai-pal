@@ -20,7 +20,7 @@ pub mod actions;
 pub mod confirmation;
 pub mod debug;
 pub mod filters;
-pub mod manual;
+pub mod local_files;
 pub mod mod_sources;
 pub mod mods;
 pub mod mods_tab;
@@ -59,7 +59,7 @@ pub fn register(window: &MainWindow) {
 	confirmation::register(window);
 	debug::register(window);
 	filters::register(window);
-	manual::register(window);
+	local_files::register(window);
 	mod_sources::register(window);
 	mods::register(window);
 	mods_tab::register(window);

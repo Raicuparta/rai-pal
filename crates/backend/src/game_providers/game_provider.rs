@@ -22,7 +22,9 @@ use crate::{
 	game::Game,
 	game_engines::pe_utils,
 	game_launch::{GameLaunch, spawn_game},
-	game_providers::{itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam},
+	game_providers::{
+		itch_provider::Itch, local_files_provider::LocalFiles, steam::steam_provider::Steam,
+	},
 	local_database::{app_database::Db, game_database::GameDatabase},
 	result::{Error, Result},
 };
@@ -147,7 +149,7 @@ pub fn get_provider(provider_id: GameProviderId) -> Result<Box<dyn GameProvider>
 	match provider_id {
 		GameProviderId::Steam => Ok(Box::new(Steam {})),
 
-		GameProviderId::Manual => Ok(Box::new(Manual {})),
+		GameProviderId::Manual => Ok(Box::new(LocalFiles {})),
 
 		GameProviderId::Itch => Ok(Box::new(Itch {})),
 

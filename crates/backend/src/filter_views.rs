@@ -28,7 +28,7 @@ pub enum FilterValueLabel {
 	TagUntagged,
 	StatusInstalled,
 	StatusNotInstalled,
-	ProviderManual,
+	ProviderLocalFiles,
 	ModTypeInstallable,
 	ModTypeLinkOnly,
 }
@@ -134,7 +134,7 @@ impl FilterValue for GameProviderId {
 
 	fn label(&self) -> Option<FilterValueLabel> {
 		match self {
-			Self::Manual => Some(FilterValueLabel::ProviderManual),
+			Self::Manual => Some(FilterValueLabel::ProviderLocalFiles),
 			_ => None,
 		}
 	}

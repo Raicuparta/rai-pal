@@ -83,7 +83,7 @@ slint_optional_enum_conversions!(FilterValueLabel => UiFilterValueLabel {
 	TagUntagged,
 	StatusInstalled,
 	StatusNotInstalled,
-	ProviderManual,
+	ProviderLocalFiles,
 	ModTypeInstallable,
 	ModTypeLinkOnly,
 });

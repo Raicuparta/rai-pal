@@ -56,7 +56,7 @@ impl Game {
 		game
 	}
 
-	pub fn new_manual(game_id: String, title: String) -> Self {
+	pub fn new_local_files(game_id: String, title: String) -> Self {
 		Self::new_internal(GameProviderId::Manual, game_id, title)
 	}
 
@@ -207,7 +207,7 @@ impl Game {
 
 			self.exe_path = Some(exe_path.normalize());
 
-			if let Some(manual_id) = exe_path
+			if let Some(local_files_id) = exe_path
 				.file_stem()
 				.and_then(|file_stem| file_stem.to_str())
 				.and_then(|file_stem| get_normalized_titles(file_stem).into_iter().next())
@@ -215,7 +215,8 @@ impl Game {
 				self.external_ids
 					.map
 					.remove(&ExternalIdProvider::GameProvider(GameProviderId::Manual));
-				self.external_ids.insert(GameProviderId::Manual, manual_id);
+				self.external_ids
+					.insert(GameProviderId::Manual, local_files_id);
 			}
 
 			self.executable_os = operating_system::get_os_from_path(exe_path);
