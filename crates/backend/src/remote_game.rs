@@ -3,14 +3,12 @@ use std::path::PathBuf;
 use lazy_regex::regex;
 
 use crate::{
-	app_paths,
+	app_paths, database_url,
 	game_engines::game_engine::{EngineVersion, EngineVersionNumbers},
 	http,
 	path_extensions::PathExt,
 	result::{ContextResult, LogErrExt, Result},
 };
-
-const URL_BASE: &str = "https://dev.rai-pal.pages.dev/game-db";
 
 // The repository over at github.com/Raicuparta/rai-pal-db can have multiple versions of the database.
 // This way we prevent old versions of Rai Pal from breaking unless we want them to.
@@ -52,7 +50,10 @@ pub fn get_database_file_path() -> Result<PathBuf> {
 }
 
 pub async fn download_database() -> Result<PathBuf> {
-	let url = format!("{URL_BASE}/{DATABASE_VERSION}/games.db");
+	let url = format!(
+		"{}/game-db/{DATABASE_VERSION}/games.db",
+		database_url::base_url()
+	);
 
 	let response = http::CLIENT.get(&url).send().await?.error_for_status()?;
 

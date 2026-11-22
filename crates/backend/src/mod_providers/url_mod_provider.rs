@@ -7,7 +7,7 @@ use std::{
 
 use super::mod_provider::ModProvider;
 use crate::{
-	app_paths, http,
+	app_paths, database_url, http,
 	local_database::{
 		app_database::Db,
 		mod_database::{ModDatabase, compute_scope, scope_id},
@@ -25,8 +25,6 @@ pub struct UrlModDatabase {
 	pub mods: Vec<Mod>,
 }
 
-const URL_BASE: &str = "https://dev.rai-pal.pages.dev/mod-db";
-
 // The database can serve multiple versions.
 // This way we prevent old versions of Rai Pal from breaking unless we want them to.
 // So when you need to change the database in a backwards-incompatible way,
@@ -34,7 +32,10 @@ const URL_BASE: &str = "https://dev.rai-pal.pages.dev/mod-db";
 const DATABASE_VERSION: i32 = 4;
 
 fn default_url() -> String {
-	format!("{URL_BASE}/{DATABASE_VERSION}/mods.json")
+	format!(
+		"{}/mod-db/{DATABASE_VERSION}/mods.json",
+		database_url::base_url()
+	)
 }
 
 fn compute_source_hash(url: &str) -> String {

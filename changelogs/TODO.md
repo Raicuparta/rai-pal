@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
-- Let's have two base domains for all the databases depending on wether this is a prerelease or a normal release. These subdomains aren't live yet, but just use them for now and i'll set them up later. For non-prerelease, use rai-pal-db.raicuparta.com . For prerelease and dev mode, use rai-pal-db-pre.raicuparta.com. this replaces the domain for game db, mod db, and patreon db. To detect whether we're currently in a prerelease, just check the current app version. If it contains -pre, that's a prerelease.
 - Need to look into, and potentially fix, what happens when a mod disappears from the mod database but is already installed (we already have the installed manifest). Which is probably the same that would happen if we're currenty offline but already have some installed mods. The installed mod should still be visible in the game mods in game details page. I'm thinking that recently we did something related to making it so installed manifests aren't fully read, so maybe that could affect it. I wouldn't want to make that messier though, it's ok if when we're offline we just dont show all the information and only show the bits we usually read from the installed manifest. Gotta keep it simple and avoid making it more fragile.
 - Installing and uninstalling mods seems a lot slower than before suddenly. What changed compared to the main branch? Is it because of the huge mod list? Are we doing redundant work?
 
@@ -175,6 +174,7 @@ A Discover tab changes the earlier recommendation: the client will need access t
 
 ## Done
 
+- Game and mod DB downloads now use `rai-pal-db.raicuparta.com`, or `rai-pal-db-pre.raicuparta.com` when the app version contains `-pre` (new `rai-pal-backend::database_url`). The Patreon DB is not fetched by this repo (the auth server serves patron data), so there was nothing to change for it here.
 - Renamed the "Manual" provider to "Local Files" in the UI and in all non-data code (provider module/struct, commands module, icon file, filter label). The stored provider ID is still `Manual`; that data rename is in "Do later".
 - Configs as mods: removed the runtime config DB from Rai Pal, added config mods to the mod DB with `<tag>-config` tags and optional dependencies, added non-zip mod installs, and removed the download-config UI.
 - Mod rows in the mods tab and game details are clickable (with hover) and open the same menu as the three-dot button. Mod actions are now one ordered list per mod, shared by the menu and the buttons shown outside it (game details keeps its old outside buttons; the mods tab only has the menu). Mods with game IDs get a `Show {provider} game: "{game}"` menu item per matching game, which opens that game's details. Game details now also fetches the selected game's thumbnail itself, so it shows up for games that were never scrolled into view in the games list. The hide-thumbnails setting now only affects the games list, not the details page.

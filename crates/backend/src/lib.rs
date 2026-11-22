@@ -5,6 +5,7 @@ pub mod app_paths;
 pub mod app_settings;
 pub mod app_variant;
 pub mod architecture;
+pub mod database_url;
 pub mod debug;
 pub mod files;
 pub mod filter_views;
