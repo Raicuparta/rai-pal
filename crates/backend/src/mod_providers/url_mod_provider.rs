@@ -27,7 +27,7 @@ pub struct UrlModDatabase {
 
 const URL_BASE: &str = "https://dev.rai-pal.pages.dev/mod-db";
 
-// The repository over at github.com/Raicuparta/rai-pal-db can have multiple versions of the database.
+// The database can serve multiple versions.
 // This way we prevent old versions of Rai Pal from breaking unless we want them to.
 // So when you need to change the database in a backwards-incompatible way,
 // you would create a new folder in the database repository and change this number to match the folder.

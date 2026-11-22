@@ -6,13 +6,15 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
+- Let's rename the "Manual" provider to "Local Files". First commit should be just renaming the user-facing parts, second commit should be renaming all non-data files (file names etc that have the provider name in them), third commit will be for renaming the data, but we will split that into a future commit (in "do later" for now).
+- Let's have two base domains for all the databases depending on wether this is a prerelease or a normal release. These subdomains aren't live yet, but just use them for now and i'll set them up later. For non-prerelease, use rai-pal-db.raicuparta.com . For prerelease and dev mode, use rai-pal-db-pre.raicuparta.com. this replaces the domain for game db, mod db, and patreon db. To detect whether we're currently in a prerelease, just check the current app version. If it contains -pre, that's a prerelease.
+- Need to look into, and potentially fix, what happens when a mod disappears from the mod database but is already installed (we already have the installed manifest). Which is probably the same that would happen if we're currenty offline but already have some installed mods. The installed mod should still be visible in the game mods in game details page. I'm thinking that recently we did something related to making it so installed manifests aren't fully read, so maybe that could affect it. I wouldn't want to make that messier though, it's ok if when we're offline we just dont show all the information and only show the bits we usually read from the installed manifest. Gotta keep it simple and avoid making it more fragile.
+- Installing and uninstalling mods seems a lot slower than before suddenly. What changed compared to the main branch? Is it because of the huge mod list? Are we doing redundant work?
+
 ## Do later
 
-- Make prereleases use a different domain for dbs.
-- "Manual" rename to "Executable" i think?
+- "Manual" data rename to "Local Files".
 - Suddenly refresh individual game way way slower? oh because of big mod db. maybe rethink.
-- merge game db with mod db for one mega big db and maybe fetch only needed bits? (see investigation notes below)
-- look into what happens when a mod disappears from remote db but is already installed. seemed to disappear from rai pal ui even though we have an installed manifest? should show something so it gets uninstalled.
 - i installed firewatch, refreshed, and i was in a weird stale state where the list showed it as not installed for a bit until refreshing a few times. look into.
 - new way of loading the thumbnail to allow for selecting a game from any window seems super messy, might warrant a refactor.
 - "show game" action for mods, maybe super messy? could refactor.
