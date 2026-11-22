@@ -47,7 +47,7 @@ impl GameProviderId {
 			Self::Epic => "Epic",
 			Self::Gog => "GOG",
 			Self::Itch => "itch.io",
-			Self::Manual => "Manual",
+			Self::Manual => "Local Files",
 			Self::Steam => "Steam",
 			Self::Xbox => "Xbox",
 		}

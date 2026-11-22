@@ -144,7 +144,7 @@ export global Tr {
         if label == FilterValueLabel.mod-type-link-only {
             return @tr("filterValue" => "Link Only");
         }
-        return @tr("filterValue" => "Manual");
+        return @tr("filterValue" => "Local Files");
     }
 
     public pure function filter-value-note(note: FilterValueNote) -> string {
@@ -174,7 +174,7 @@ export global Tr {
             return "itch.io";
         }
         if provider == ProviderId.manual {
-            return "Manual";
+            return "Local Files";
         }
         if provider == ProviderId.steam {
             return "Steam";

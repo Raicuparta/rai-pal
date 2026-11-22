@@ -254,8 +254,8 @@ msgid "Not installed"
 msgstr "설치되지 않음"
 
 msgctxt "filterValue"
-msgid "Manual"
-msgstr "수동"
+msgid "Local Files"
+msgstr "로컬 파일"
 
 msgctxt "filterValueNote"
 msgid "Only shows PC Xbox games if they're installed."

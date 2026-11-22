@@ -254,7 +254,7 @@ msgid "Not installed"
 msgstr "Wah waaaaaaah!"
 
 msgctxt "filterValue"
-msgid "Manual"
+msgid "Local Files"
 msgstr "Waaaah!"
 
 msgctxt "filterValueNote"
