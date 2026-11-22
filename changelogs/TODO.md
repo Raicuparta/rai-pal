@@ -15,6 +15,7 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - new way of loading the thumbnail to allow for selecting a game from any window seems super messy, might warrant a refactor.
 - "show game" action for mods, maybe super messy? could refactor.
 - Move the remote DB attach off the startup critical path. It blocks the window for ~150ms; show cached local rows first and attach/fetch the remote DB in the background.
+- Appimage still doesnt seem to register itself properly, the shortcut can't open it.
 
 ## Notes, questions, decisions, etc
 
