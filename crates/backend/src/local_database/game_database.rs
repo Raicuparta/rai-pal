@@ -390,6 +390,7 @@ impl GameDatabase for Db {
 		let mut connection = self.write_db()?;
 		let transaction = connection.transaction()?;
 
+		delete_provider_slice(&transaction, *provider_id)?;
 		insert_games_in_transaction(&transaction, games)?;
 		remove_stale_games(&transaction, *provider_id, max_time)?;
 
@@ -730,6 +731,29 @@ impl GameDatabase for Db {
 
 		Ok(providers)
 	}
+}
+
+fn delete_provider_slice(
+	transaction: &rusqlite::Transaction,
+	provider_id: GameProviderId,
+) -> Result {
+	transaction
+		.prepare_cached("DELETE FROM main.game_mod_tags WHERE provider_id = $1")?
+		.execute([provider_id])?;
+	transaction
+		.prepare_cached("DELETE FROM main.game_remote_metadata WHERE provider_id = $1")?
+		.execute([provider_id])?;
+	transaction
+		.prepare_cached("DELETE FROM main.installed_games WHERE provider_id = $1")?
+		.execute([provider_id])?;
+	transaction
+		.prepare_cached("DELETE FROM main.game_external_ids WHERE provider_id = $1")?
+		.execute([provider_id])?;
+	transaction
+		.prepare_cached("DELETE FROM main.games WHERE provider_id = $1")?
+		.execute([provider_id])?;
+
+	Ok(())
 }
 
 fn remove_stale_games(
