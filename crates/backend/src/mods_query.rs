@@ -21,7 +21,6 @@ impl ModType {
 #[derive(serde::Serialize, serde::Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ModsFilter {
-	#[serde(alias = "modFamilies")]
 	pub mod_tags: FilterGroup<String>,
 	#[serde(default)]
 	pub mod_types: FilterGroup<ModType>,

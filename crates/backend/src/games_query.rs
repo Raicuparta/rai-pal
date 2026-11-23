@@ -63,15 +63,9 @@ impl serde::Serialize for FilterGroupKey {
 
 impl<'de> serde::Deserialize<'de> for FilterGroupKey {
 	fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-		let value = String::deserialize(deserializer)?;
-
-		let value = if value == "modFamilies" {
-			Self::ModTags.to_string()
-		} else {
-			value
-		};
-
-		value.parse::<Self>().map_err(serde::de::Error::custom)
+		String::deserialize(deserializer)?
+			.parse::<Self>()
+			.map_err(serde::de::Error::custom)
 	}
 }
 
@@ -255,7 +249,6 @@ pub struct GamesFilter {
 	pub executable_os: FilterGroup<OperatingSystem>,
 	pub supported_os: FilterGroup<OperatingSystem>,
 	pub installed: FilterGroup<InstallState>,
-	#[serde(alias = "modFamilies")]
 	pub mod_tags: FilterGroup<String>,
 }
 

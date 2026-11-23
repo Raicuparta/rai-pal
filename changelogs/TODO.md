@@ -14,16 +14,13 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - i installed firewatch, refreshed, and i was in a weird stale state where the list showed it as not installed for a bit until refreshing a few times. look into.
 - new way of loading the thumbnail to allow for selecting a game from any window seems super messy, might warrant a refactor.
 - "show game" action for mods, maybe super messy? could refactor.
-- Move the remote DB attach off the startup critical path. It blocks the window for ~150ms; show cached local rows first and attach/fetch the remote DB in the background.
 - Appimage still doesnt seem to register itself properly, the shortcut can't open it.
 
 ## Notes, questions, decisions, etc
 
-- Mod families were replaced with mod tags. A mod can have multiple tags. In the mods tab a mod matches if any of its tags is enabled; in the games tab a game matches if it has a compatible mod with any enabled tag. Incompatible mods are only hidden from game details when all of their tags also belong to compatible mods.
 - Mod tags are stored as JSON arrays, consistent with game tags. The local database schema is now version 15. Mod DB 4 was regenerated in place because it was not released yet.
 - Old `family` fields in custom URL mod sources and local mod manifests are ignored, so those sources lose their tags. This is intentional.
 - Analytics mod events now send a `tags` array instead of `family`.
-- Old settings that contain `modFamilies` filters or collapsed-filter keys are still read through serde aliases, so upgrading should not reset settings.
 - Configs are now mods. The client no longer reads `config-db`; `config-db/0` stays as the source of truth for the DB generator, which turns each `configs.json` entry into a hidden game-specific mod tagged `<tag>-config` (e.g. `uuvr-config`). Parent mods list that tag as an optional dependency. Old `loaderId` is ignored, and `modIdOverride` was removed.
 - Config mods get all matching game IDs from the game DB, plus the normalized config folder name, plus a small Steam-ID alias table in `scripts/mod-db/configs.ts` for folders named after executables rather than titles (e.g. `dew`, `ksp_x64`). Extend that table when adding configs for games whose exe name doesn't normalize to the title.
 - Added `install.copy` for non-zip downloads. `ModDownload::download` now decides whether to extract based on the install action. Config download URLs include config version and content hash in the query string, so cached temp downloads are busted when a config file changes.
