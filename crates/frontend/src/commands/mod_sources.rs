@@ -207,10 +207,14 @@ fn run_mod_source_change(
 	thread::spawn(move || {
 		let result = action();
 
-		if result.is_ok()
-			&& let Err(err) = refresh::refresh_mods(&database)
-		{
-			log::warn!("Failed to refresh mods after changing URL mod sources: {err}");
+		if result.is_ok() {
+			if let Err(err) = refresh::refresh_mods(&database) {
+				log::warn!("Failed to refresh mods after changing URL mod sources: {err}");
+			}
+
+			if let Err(err) = database.refresh_game_mod_tags() {
+				log::warn!("Failed to refresh game mod tags after changing URL mod sources: {err}");
+			}
 		}
 
 		crate::runtime::with_ui_window(&window, move |window| {

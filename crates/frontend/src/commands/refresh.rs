@@ -118,6 +118,10 @@ impl CommandHandler {
 				);
 			}
 
+			if let Err(err) = database.refresh_game_mod_tags() {
+				log::error!("Failed to refresh game mod tags: {err}");
+			}
+
 			crate::runtime::invoke_on_ui(move || {
 				let Some(handler) = Self::current() else {
 					return;

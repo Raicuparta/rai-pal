@@ -29,6 +29,9 @@ use crate::{
 pub trait GameDatabase {
 	fn insert_game(&self, game: &Game);
 	fn refresh_games(&self, provider_id: &GameProviderId, games: &[Game], max_time: u64) -> Result;
+	fn refresh_game_mod_tags(&self) -> Result;
+	fn refresh_game_mod_tags_for_game(&self, provider_id: &GameProviderId, game_id: &str)
+	-> Result;
 	fn get_game(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Game>;
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse>;
 	fn get_providers_with_games(&self) -> Result<HashSet<GameProviderId>>;
@@ -244,7 +247,7 @@ fn build_mod_tag_inclusion_filter(
 		branches.push(format!(
 			"EXISTS (
 				SELECT 1
-				FROM game_mod_tags game_mod_tag
+				FROM main.game_mod_tags game_mod_tag
 				WHERE game_mod_tag.provider_id = g.provider_id
 					AND game_mod_tag.game_id = g.game_id
 					AND game_mod_tag.tag IN ({})
@@ -257,7 +260,7 @@ fn build_mod_tag_inclusion_filter(
 		branches.push(
 			"NOT EXISTS (
 				SELECT 1
-				FROM game_mod_tags game_mod_tag
+				FROM main.game_mod_tags game_mod_tag
 				WHERE game_mod_tag.provider_id = g.provider_id
 					AND game_mod_tag.game_id = g.game_id
 			)"
@@ -275,20 +278,34 @@ fn build_mod_tag_inclusion_filter(
 fn build_game_mod_tags_cte(
 	filterable_tags: &[String],
 	params: &mut Vec<Box<dyn rusqlite::types::ToSql>>,
+	game_filter: Option<(&GameProviderId, &str)>,
 ) -> String {
 	let tags_json = serde_json::to_string(filterable_tags).unwrap_or_else(|_| "[]".to_string());
 	params.push(Box::new(tags_json));
 
 	let current_os = OperatingSystem::get_current().to_string();
-	params.push(Box::new(current_os.clone()));
-	params.push(Box::new(current_os));
+
+	for _ in 0..2 {
+		params.push(Box::new(current_os.clone()));
+
+		if let Some((provider_id, game_id)) = game_filter {
+			params.push(Box::new(provider_id.to_string()));
+			params.push(Box::new(game_id.to_string()));
+		}
+	}
+
+	let game_filter_sql = if game_filter.is_some() {
+		"AND g.provider_id = ? AND g.game_id = ?"
+	} else {
+		""
+	};
 
 	format!(
 		r"
 		WITH filterable_tags AS MATERIALIZED (
 			SELECT value AS tag_id FROM json_each(?)
 		),
-		game_mod_tags AS MATERIALIZED (
+		computed_game_mod_tags AS MATERIALIZED (
 			SELECT DISTINCT g.provider_id, g.game_id, mod_tag.value AS tag
 			FROM main.games g
 			LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
@@ -307,6 +324,7 @@ fn build_game_mod_tags_cte(
 			INNER JOIN filterable_tags ON filterable_tags.tag_id = mod_tag.value
 			WHERE COALESCE(m.hide_from_game_mods_list, 0) = 0
 				AND {MOD_COMPATIBILITY_FILTER}
+				{game_filter_sql}
 			UNION
 			SELECT DISTINCT g.provider_id, g.game_id, mod_tag.value AS tag
 			FROM main.games g
@@ -317,9 +335,49 @@ fn build_game_mod_tags_cte(
 			INNER JOIN filterable_tags ON filterable_tags.tag_id = mod_tag.value
 			WHERE COALESCE(m.hide_from_game_mods_list, 0) = 0
 				AND {MOD_COMPATIBILITY_FILTER}
+				{game_filter_sql}
 		)
 		"
 	)
+}
+
+fn try_refresh_game_mod_tags(
+	connection_mutex: &Db,
+	game_filter: Option<(&GameProviderId, &str)>,
+) -> Result {
+	let filterable_tags = connection_mutex
+		.get_mod_tags()?
+		.into_iter()
+		.filter(|(_, tag)| tag.filterable == Some(true))
+		.map(|(tag_id, _)| tag_id)
+		.collect::<Vec<_>>();
+
+	let mut params = Vec::<Box<dyn rusqlite::types::ToSql>>::new();
+	let cte = build_game_mod_tags_cte(&filterable_tags, &mut params, game_filter);
+
+	let mut connection = connection_mutex.write_db()?;
+	let transaction = connection.transaction()?;
+
+	if let Some((provider_id, game_id)) = game_filter {
+		transaction
+			.prepare_cached("DELETE FROM main.game_mod_tags WHERE provider_id = ? AND game_id = ?")?
+			.execute(rusqlite::params![provider_id, game_id])?;
+	} else {
+		transaction.execute("DELETE FROM main.game_mod_tags", [])?;
+	}
+
+	let sql = format!(
+		"{cte} INSERT INTO main.game_mod_tags (provider_id, game_id, tag) SELECT provider_id, game_id, tag FROM computed_game_mod_tags"
+	);
+
+	let param_refs: Vec<&dyn rusqlite::types::ToSql> =
+		params.iter().map(|param| &**param).collect();
+
+	transaction.execute(&sql, param_refs.as_slice())?;
+	transaction.commit()?;
+	drop(connection);
+
+	Ok(())
 }
 
 impl GameDatabase for Db {
@@ -327,6 +385,16 @@ impl GameDatabase for Db {
 		if let Err(err) = try_insert_games(self, std::slice::from_ref(game)) {
 			log::error!(
 				"Failed to insert game ({}/{}) into local database: {}",
+				game.provider_id,
+				game.game_id,
+				err
+			);
+			return;
+		}
+
+		if let Err(err) = self.refresh_game_mod_tags_for_game(&game.provider_id, &game.game_id) {
+			log::error!(
+				"Failed to refresh mod tags for game ({}/{}): {}",
 				game.provider_id,
 				game.game_id,
 				err
@@ -345,6 +413,18 @@ impl GameDatabase for Db {
 		drop(connection);
 
 		Ok(())
+	}
+
+	fn refresh_game_mod_tags(&self) -> Result {
+		try_refresh_game_mod_tags(self, None)
+	}
+
+	fn refresh_game_mod_tags_for_game(
+		&self,
+		provider_id: &GameProviderId,
+		game_id: &str,
+	) -> Result {
+		try_refresh_game_mod_tags(self, Some((provider_id, game_id)))
 	}
 
 	fn get_game(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Game> {
@@ -451,8 +531,6 @@ impl GameDatabase for Db {
 		// Build filtering logic dynamically with parameterized queries
 		let mut filters = Vec::<String>::new();
 		let mut params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
-		let mut mod_tag_cte = String::new();
-		let mut mod_tag_params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
 
 		if let Some(filter) = query.as_ref().map(|q| &q.filter) {
 			// Installed filter
@@ -569,7 +647,6 @@ impl GameDatabase for Db {
 			if let Some(cond) =
 				build_mod_tag_inclusion_filter(&filter.mod_tags, &filterable_mod_tags, &mut params)
 			{
-				mod_tag_cte = build_game_mod_tags_cte(&filterable_mod_tags, &mut mod_tag_params);
 				filters.push(cond);
 			}
 		}
@@ -598,7 +675,6 @@ impl GameDatabase for Db {
 
 		let sql_query = format!(
 			r"
-			{mod_tag_cte}
 			SELECT DISTINCT
 					g.provider_id as provider_id,
 					g.game_id as game_id
@@ -610,10 +686,7 @@ impl GameDatabase for Db {
 			",
 		);
 
-		let mut all_params = mod_tag_params;
-		all_params.extend(params);
-		let param_refs: Vec<&dyn rusqlite::types::ToSql> =
-			all_params.iter().map(|p| &**p).collect();
+		let param_refs: Vec<&dyn rusqlite::types::ToSql> = params.iter().map(|p| &**p).collect();
 		let game_ids = self
 			.read_db()?
 			.prepare(&sql_query)?
@@ -1044,6 +1117,13 @@ fn create_tables(connection: &rusqlite::Connection) -> Result {
 		);
 
 		CREATE INDEX IF NOT EXISTS idx_game_external_ids_lookup ON game_external_ids(external_id_provider, external_id);
+
+		CREATE TABLE IF NOT EXISTS game_mod_tags (
+			provider_id TEXT NOT NULL,
+			game_id TEXT NOT NULL,
+			tag TEXT NOT NULL,
+			PRIMARY KEY (provider_id, game_id, tag)
+		) WITHOUT ROWID;
 
 		CREATE TABLE IF NOT EXISTS installed_games (
 			provider_id TEXT NOT NULL,

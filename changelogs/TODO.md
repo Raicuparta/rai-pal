@@ -16,7 +16,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - "show game" action for mods, maybe super messy? could refactor.
 - Appimage still doesnt seem to register itself properly, the shortcut can't open it.
 - for mod database, need to store normalized exe name ids too. do we already support that kind of id? this is mostly for configs but can generally be for any game-specific mod. get rid of that steam-id alias table thing and do it properly. maybe mod database needs to be normalized a bit, flat list with one ts per mod.
-- look into how mod tags are stored locally. could materialize or whatever to be better?
 - this probably needs to change: "When matching against game/mod databases, `Manual` and `NormalizedTitle` are treated as the same provider.". mod database probably only has NormalizedTitle, we need "Manual" too which should be NormalizedExe or something like that for clarity. Make sure that Provider and external id source are two different enums that may or may not map.
 - why query string? "Config download URLs include config version and content hash in the query string, so cached temp downloads are busted when a config file changes."
 - this looks important, should fix: "The copy is also stale by design: `INSERT OR IGNORE` never updates changed engine/release data, and rows for old games are never removed."
@@ -31,13 +30,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - Local DB: query speed first, bulk build/write speed second. Duplicate data where it clearly helps queries; avoid materializations that mostly add write cost.
 - Remote: game DB optimized for download size and cheap merge; mod DB stays JSON so default and custom sources share one format.
 - Only cache remote metadata for games in the local library.
-
-### Mod tag filtering
-
-- Tags are set-valued, so the mapping is `game_mod_tags(provider_id, game_id, tag)`.
-- Materialize it in the local DB and rebuild it once after refresh; filtering becomes `EXISTS`, sorting and pagination stay in SQL.
-- Measured on `local-15.db` (2,429 games, 394 mods, 4 filterable tags, warm cache): current per-query tag CTE ~277 ms; materialized `game_mod_tags` rebuild ~278 ms, filter ~2.2 ms. Full compatible-mod table (approx. build, required-dependency propagation not included): build ~3.0 s for 12k rows, filter ~9 ms, and a single game-details candidate lookup drops from ~24 ms to ~0.1 ms. In-memory JS load + filter ~5 ms for 758 mapping entries.
-- Decision: materialize `game_mod_tags` only. Full compatible mods costs too much refresh time for a per-selected-game gain; in-memory filtering does not beat SQL after load and complicates sorting/pagination.
 
 ### Remote game DB
 
@@ -62,6 +54,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - Option if in-place writes are still too slow: build a fresh local DB in a temp file and atomically swap. Only worth it if measured; in-place slice replacement keeps the UI responsive.
 
 ## Done
+
+- Game mod tag filtering now uses a materialized `game_mod_tags` table, rebuilt once after full refresh and per-game on single-game/local-file inserts. Local DB schema bumped to 16. Measured: per-query tag CTE ~277 ms vs ~2.2 ms filter, with ~278 ms rebuild per full refresh. Rejected full compatible-mod materialization (~3 s rebuild, ~9 ms filter, only helps selected-game details) and in-memory bitmasks (no faster after load, complicates SQL sorting/pagination).
 
 - Linux desktop entry / deep link registration now runs in a background thread instead of blocking the UI thread before the window is shown. `xdg-mime` plus `update-desktop-database` (and the shell forks `xdg-mime` does) were taking ~250ms of the launch.
 
