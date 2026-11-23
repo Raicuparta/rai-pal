@@ -738,12 +738,6 @@ fn delete_provider_slice(
 	provider_id: GameProviderId,
 ) -> Result {
 	transaction
-		.prepare_cached("DELETE FROM main.game_mod_tags WHERE provider_id = $1")?
-		.execute([provider_id])?;
-	transaction
-		.prepare_cached("DELETE FROM main.game_remote_metadata WHERE provider_id = $1")?
-		.execute([provider_id])?;
-	transaction
 		.prepare_cached("DELETE FROM main.installed_games WHERE provider_id = $1")?
 		.execute([provider_id])?;
 	transaction
