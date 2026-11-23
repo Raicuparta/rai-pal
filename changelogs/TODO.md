@@ -18,8 +18,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - for mod database, need to store normalized exe name ids too. do we already support that kind of id? this is mostly for configs but can generally be for any game-specific mod. get rid of that steam-id alias table thing and do it properly. maybe mod database needs to be normalized a bit, flat list with one ts per mod.
 - this probably needs to change: "When matching against game/mod databases, `Manual` and `NormalizedTitle` are treated as the same provider.". mod database probably only has NormalizedTitle, we need "Manual" too which should be NormalizedExe or something like that for clarity. Make sure that Provider and external id source are two different enums that may or may not map.
 - why query string? "Config download URLs include config version and content hash in the query string, so cached temp downloads are busted when a config file changes."
-- this looks important, should fix: "The copy is also stale by design: `INSERT OR IGNORE` never updates changed engine/release data, and rows for old games are never removed."
-- should make local copy of remote db only have what it needs.
 
 ## Notes, questions, decisions, etc
 
@@ -31,30 +29,22 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - Remote: game DB optimized for download size and cheap merge; mod DB stays JSON so default and custom sources share one format.
 - Only cache remote metadata for games in the local library.
 
-### Remote game DB
-
-- Compact SQLite table keyed by external ID: integer provider/engine IDs, numeric versions, epoch-day dates, no unused fields or JSON, `WITHOUT ROWID`.
-- Only include games that have engine data.
-- Generator must detect and report duplicate `(provider, external_id)` pairs.
-- If provider/engine are stored as integers, include tiny provider/engine name tables in the DB so the client does not need a hardcoded ID mapping.
-
 ### Remote mod DB
 
 - Keep JSON, shared by default and custom URL mod sources. Shape: `{ tags, mods }` with tag definitions stored once.
 - Mod game IDs stay external IDs, so the mod DB does not depend on game DB generation.
-- Parse once per refresh and bulk-insert normalized local tag/game-ID tables.
 - Keep complex fields (`install`, `paths`, `dependencies`, `download`) as JSON locally.
 
 ### Local refresh / build
 
-- Prefer replacing each provider/source slice (delete slice, bulk insert) over per-row upserts and child deletes.
-- Store resolved remote game metadata only for local games; drop the full remote row copy and the remote-game join.
-- Rebuild derived tables (`game_mod_tags`, indexes) in one bulk pass after refresh.
 - Hot queries use integer columns or normalized tables, not `json_extract` over every mod. Get candidate mods from `mod_game_ids`/`game_mod_tags`.
 - Option if in-place writes are still too slow: build a fresh local DB in a temp file and atomically swap. Only worth it if measured; in-place slice replacement keeps the UI responsive.
 
 ## Done
 
+- Remote game DB is now compact SQLite: integer provider/engine IDs with name dictionaries, numeric engine versions, epoch-day release dates, `WITHOUT ROWID`, and duplicate `(provider, external_id)` resolution that keeps the latest-looking engine and release date. Client resolves metadata only for local games into `game_remote_metadata`, dropping the full remote row copy and `REMOTE_GAME_JOIN` subquery.
+- Mod tags are normalized locally in `mod_tag_links`. Mod refresh now bulk-inserts all mods in one transaction, and game mod tag materialization plus `get_game_mods` use normalized tags and generated columns instead of expanding tag JSON. Local DB schema bumped to 18.
+- Game provider refresh replaces the provider's whole slice (delete + bulk insert) instead of per-row upserts and child deletes. Other providers and mod/remote refresh tasks remain independent.
 - Game mod tag filtering now uses a materialized `game_mod_tags` table, rebuilt once after full refresh and per-game on single-game/local-file inserts. Local DB schema bumped to 16. Measured: per-query tag CTE ~277 ms vs ~2.2 ms filter, with ~278 ms rebuild per full refresh. Rejected full compatible-mod materialization (~3 s rebuild, ~9 ms filter, only helps selected-game details) and in-memory bitmasks (no faster after load, complicates SQL sorting/pagination).
 
 - Linux desktop entry / deep link registration now runs in a background thread instead of blocking the UI thread before the window is shown. `xdg-mime` plus `update-desktop-database` (and the shell forks `xdg-mime` does) were taking ~250ms of the launch.
