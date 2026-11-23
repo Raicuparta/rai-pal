@@ -1104,7 +1104,11 @@ fn try_insert_mods(
 					let provider = normalize_external_id_provider(provider);
 
 					for id in ids {
-						insert_game_id.execute(rusqlite::params![scoped_id.as_ref(), provider, id])?;
+						insert_game_id.execute(rusqlite::params![
+							scoped_id.as_ref(),
+							provider,
+							id
+						])?;
 					}
 				}
 			}
