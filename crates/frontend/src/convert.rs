@@ -130,7 +130,7 @@ slint_optional_enum_conversions!(GameProviderId => ProviderId {
 	Epic,
 	Gog,
 	Itch,
-	Manual,
+	LocalFiles,
 	Steam,
 	Xbox,
 });

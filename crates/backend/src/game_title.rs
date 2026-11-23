@@ -34,6 +34,10 @@ pub fn get_normalized_titles(title: &str) -> Vec<String> {
 	normalized_titles
 }
 
+pub fn normalize_executable_name(name: &str) -> String {
+	normalize_title(name)
+}
+
 fn normalize_title(title: &str) -> String {
 	let normalized = title
 		.nfd()

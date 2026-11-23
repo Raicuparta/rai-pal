@@ -9,13 +9,13 @@ use crate::{
 		unity::{self, UnityBackend},
 		unreal,
 	},
-	game_external_id::{ExternalIdProvider, ExternalIds},
+	game_external_id::{ExternalIds, GameIdKind},
 	game_providers::{
 		game_provider::GameProviderId,
 		provider_command::{ProviderCommand, ProviderCommandAction, ProviderCommandKind},
 	},
 	game_tag::GameTag,
-	game_title::{get_normalized_titles, is_probably_demo},
+	game_title::{get_normalized_titles, is_probably_demo, normalize_executable_name},
 	operating_system::{self, OperatingSystem},
 	path_extensions::PathExt,
 	result::{ContextResult, Error, Result},
@@ -51,13 +51,13 @@ impl Game {
 
 		game.external_ids.insert(provider_id, game.game_id.clone());
 		game.external_ids
-			.insert_all(ExternalIdProvider::NormalizedTitle, normalized_titles);
+			.insert_all(GameIdKind::NormalizedTitle, normalized_titles);
 
 		game
 	}
 
 	pub fn new_local_files(game_id: String, title: String) -> Self {
-		Self::new_internal(GameProviderId::Manual, game_id, title)
+		Self::new_internal(GameProviderId::LocalFiles, game_id, title)
 	}
 
 	fn new_internal(provider_id: GameProviderId, game_id: String, title: String) -> Self {
@@ -207,16 +207,16 @@ impl Game {
 
 			self.exe_path = Some(exe_path.normalize());
 
-			if let Some(local_files_id) = exe_path
+			if let Some(normalized_executable_name) = exe_path
 				.file_stem()
 				.and_then(|file_stem| file_stem.to_str())
-				.and_then(|file_stem| get_normalized_titles(file_stem).into_iter().next())
+				.map(normalize_executable_name)
 			{
 				self.external_ids
 					.map
-					.remove(&ExternalIdProvider::GameProvider(GameProviderId::Manual));
+					.remove(&GameIdKind::NormalizedExecutable);
 				self.external_ids
-					.insert(GameProviderId::Manual, local_files_id);
+					.insert(GameIdKind::NormalizedExecutable, normalized_executable_name);
 			}
 
 			self.executable_os = operating_system::get_os_from_path(exe_path);

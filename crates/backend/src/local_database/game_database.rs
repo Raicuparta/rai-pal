@@ -12,7 +12,7 @@ use crate::{
 	app_paths,
 	debug::LoggableInstant,
 	game::Game,
-	game_external_id::{ExternalIdProvider, ExternalIds},
+	game_external_id::{ExternalIds, GameIdKind},
 	game_providers::game_provider::GameProviderId,
 	games_query::{FilterGroup, GamesQuery, GamesSortBy, InstallState},
 	local_database::{
@@ -298,10 +298,7 @@ fn build_game_mod_tags_cte(
 				ON game_external_id.provider_id = g.provider_id
 				AND game_external_id.game_id = g.game_id
 			INNER JOIN main.mod_game_ids mod_game_id
-				ON mod_game_id.external_id_provider = CASE game_external_id.external_id_provider
-					WHEN 'Manual' THEN 'NormalizedTitle'
-					ELSE game_external_id.external_id_provider
-				END
+				ON mod_game_id.external_id_provider = game_external_id.external_id_provider
 				AND mod_game_id.external_id = game_external_id.external_id
 			INNER JOIN main.mods m ON m.id = mod_game_id.mod_id
 			INNER JOIN main.mod_tag_links mod_tag ON mod_tag.mod_id = m.id
@@ -478,7 +475,7 @@ impl GameDatabase for Db {
 				rusqlite::params![game.provider_id, game.game_id],
 				|row| {
 					Ok((
-						row.get::<_, ExternalIdProvider>(0)?,
+						row.get::<_, GameIdKind>(0)?,
 						row.get::<_, String>(1)?,
 					))
 				},
@@ -641,7 +638,7 @@ impl GameDatabase for Db {
 			params.push(Box::new(format!("%{trimmed_search}%")));
 			params.push(Box::new(format!("%{trimmed_search}%")));
 			filters.push(
-				"(g.display_title LIKE ? OR EXISTS (SELECT 1 FROM main.game_external_ids game_external_id WHERE game_external_id.provider_id = g.provider_id AND game_external_id.game_id = g.game_id AND game_external_id.external_id_provider IN ('NormalizedTitle', 'Manual') AND game_external_id.external_id LIKE ?))"
+				"(g.display_title LIKE ? OR EXISTS (SELECT 1 FROM main.game_external_ids game_external_id WHERE game_external_id.provider_id = g.provider_id AND game_external_id.game_id = g.game_id AND game_external_id.external_id_provider IN ('NormalizedTitle', 'NormalizedExecutable') AND game_external_id.external_id LIKE ?))"
 					.to_string(),
 			);
 		}
@@ -997,16 +994,13 @@ fn attach_remote_to_connection(connection: &mut rusqlite::Connection, path: &Pat
 							rg.engine_brand IS NULL,
 							rg.release_date IS NULL,
 							rg.release_date DESC,
-							rg.provider_id
+							rg.game_id_kind_id
 					) AS row_number
 				FROM main.game_external_ids ge
-				INNER JOIN remote_db.providers remote_provider
-					ON remote_provider.name = CASE ge.external_id_provider
-						WHEN 'Manual' THEN 'NormalizedTitle'
-						ELSE ge.external_id_provider
-					END
+				INNER JOIN remote_db.game_id_kinds remote_provider
+					ON remote_provider.name = ge.external_id_provider
 				INNER JOIN remote_db.games rg
-					ON rg.provider_id = remote_provider.id
+					ON rg.game_id_kind_id = remote_provider.id
 					AND rg.external_id = ge.external_id
 				LEFT JOIN remote_db.engines e ON e.id = rg.engine_brand
 			)

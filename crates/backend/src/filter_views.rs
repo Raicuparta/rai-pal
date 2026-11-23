@@ -134,7 +134,7 @@ impl FilterValue for GameProviderId {
 
 	fn label(&self) -> Option<FilterValueLabel> {
 		match self {
-			Self::Manual => Some(FilterValueLabel::ProviderLocalFiles),
+			Self::LocalFiles => Some(FilterValueLabel::ProviderLocalFiles),
 			_ => None,
 		}
 	}

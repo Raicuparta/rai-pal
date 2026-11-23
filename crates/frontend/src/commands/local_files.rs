@@ -258,7 +258,7 @@ impl CommandHandler {
 
 			let result = runtime::block_on(async {
 				local_files_provider::remove_directory(&path).await?;
-				GameProviderId::Manual.insert_games(&database)?;
+				GameProviderId::LocalFiles.insert_games(&database)?;
 				database.refresh_installed_mods()?;
 				Ok::<(), rai_pal_backend::result::Error>(())
 			});

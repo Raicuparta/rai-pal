@@ -386,7 +386,8 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	let can_show_actions = info.compatible && game.exe_path.is_some();
 	let has_install = manifest.install.is_some();
 	let has_run = manifest.run_for_game.is_some();
-	let installable = manifest.hide_from_game_mods_list != Some(true) || info.has_installed_dependants;
+	let installable =
+		manifest.hide_from_game_mods_list != Some(true) || info.has_installed_dependants;
 	let version_text = version_text(&info, &manifest);
 	let release_date = release_date_display(&manifest);
 	let engine_text = engine_text(&manifest);

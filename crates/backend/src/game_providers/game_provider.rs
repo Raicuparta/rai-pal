@@ -37,7 +37,7 @@ pub enum GameProviderId {
 	Epic,
 	Gog,
 	Itch,
-	Manual,
+	LocalFiles,
 	Steam,
 	Xbox,
 }
@@ -49,7 +49,7 @@ impl GameProviderId {
 			Self::Epic => "Epic",
 			Self::Gog => "GOG",
 			Self::Itch => "itch.io",
-			Self::Manual => "Local Files",
+			Self::LocalFiles => "Local Files",
 			Self::Steam => "Steam",
 			Self::Xbox => "Xbox",
 		}
@@ -149,7 +149,7 @@ pub fn get_provider(provider_id: GameProviderId) -> Result<Box<dyn GameProvider>
 	match provider_id {
 		GameProviderId::Steam => Ok(Box::new(Steam {})),
 
-		GameProviderId::Manual => Ok(Box::new(LocalFiles {})),
+		GameProviderId::LocalFiles => Ok(Box::new(LocalFiles {})),
 
 		GameProviderId::Itch => Ok(Box::new(Itch {})),
 

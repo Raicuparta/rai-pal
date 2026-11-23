@@ -106,24 +106,13 @@ pub(crate) const GAME_IDS_COMPATIBILITY_FILTER: &str = r"(
 		SELECT 1
 		FROM main.mod_game_ids mod_game_id
 		INNER JOIN main.game_external_ids game_external_id
-			ON mod_game_id.external_id_provider = CASE game_external_id.external_id_provider
-				WHEN 'Manual' THEN 'NormalizedTitle'
-				ELSE game_external_id.external_id_provider
-			END
+			ON mod_game_id.external_id_provider = game_external_id.external_id_provider
 			AND game_external_id.external_id = mod_game_id.external_id
 		WHERE mod_game_id.mod_id = m.id
 			AND game_external_id.provider_id = g.provider_id
 			AND game_external_id.game_id = g.game_id
 	)
 )";
-
-fn normalize_external_id_provider(provider: &str) -> &str {
-	if provider == "Manual" {
-		"NormalizedTitle"
-	} else {
-		provider
-	}
-}
 
 pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 	connection.execute_batch(
@@ -791,10 +780,7 @@ impl ModDatabase for Db {
 				g.title_discriminator
 			FROM main.mod_game_ids mod_game_id
 			INNER JOIN main.game_external_ids game_external_id
-				ON mod_game_id.external_id_provider = CASE game_external_id.external_id_provider
-					WHEN 'Manual' THEN 'NormalizedTitle'
-					ELSE game_external_id.external_id_provider
-				END
+				ON mod_game_id.external_id_provider = game_external_id.external_id_provider
 				AND game_external_id.external_id = mod_game_id.external_id
 			INNER JOIN main.games g
 				ON g.provider_id = game_external_id.provider_id
@@ -1101,8 +1087,6 @@ fn try_insert_mods(
 
 			if let Some(game_ids) = &game_mod.game_ids {
 				for (provider, ids) in &game_ids.0 {
-					let provider = normalize_external_id_provider(provider);
-
 					for id in ids {
 						insert_game_id.execute(rusqlite::params![
 							scoped_id.as_ref(),
