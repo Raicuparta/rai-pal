@@ -48,23 +48,7 @@ pub struct GameIdsResponse {
 }
 
 pub(crate) const REMOTE_GAME_JOIN: &str = r"
-	LEFT JOIN main.remote_games rg ON rg.rowid = (
-		SELECT matching_remote.rowid
-		FROM main.game_external_ids game_external_id
-		INNER JOIN main.remote_games matching_remote
-			ON matching_remote.external_id = game_external_id.external_id
-			AND CASE matching_remote.provider_id
-				WHEN 'Manual' THEN 'NormalizedTitle'
-				ELSE matching_remote.provider_id
-			END = CASE game_external_id.external_id_provider
-				WHEN 'Manual' THEN 'NormalizedTitle'
-				ELSE game_external_id.external_id_provider
-			END
-		WHERE game_external_id.provider_id = g.provider_id
-			AND game_external_id.game_id = g.game_id
-		ORDER BY matching_remote.provider_id = game_external_id.external_id_provider DESC
-		LIMIT 1
-	)
+	LEFT JOIN main.game_remote_metadata rg ON rg.provider_id = g.provider_id AND rg.game_id = g.game_id
 ";
 
 fn build_nullable_exclusion_filter<T: std::fmt::Display + std::hash::Hash + std::cmp::Eq>(
@@ -947,72 +931,71 @@ fn attach_remote_to_connection(connection: &mut rusqlite::Connection, path: &Pat
 
 		let transaction = connection.transaction()?;
 
+		transaction.execute("DELETE FROM main.game_remote_metadata", [])?;
+
 		transaction.execute(
 			r"
-			INSERT OR IGNORE INTO main.remote_games (
-				provider_id, external_id, engine_brand, engine_version_major,
-				engine_version_minor, engine_version_patch, engine_version_display,
+			INSERT OR REPLACE INTO main.game_remote_metadata (
+				provider_id,
+				game_id,
+				engine_brand,
+				engine_version_major,
+				engine_version_minor,
+				engine_version_patch,
+				engine_version_display,
 				release_date
 			)
 			SELECT
 				provider_id,
-				external_id,
+				game_id,
 				engine_brand,
-				NULL,
-				NULL,
-				NULL,
-				engine_version,
+				engine_version_major,
+				engine_version_minor,
+				engine_version_patch,
+				engine_version_display,
 				release_date
-			FROM remote_db.games;
+			FROM (
+				SELECT
+					ge.provider_id AS provider_id,
+					ge.game_id AS game_id,
+					e.name AS engine_brand,
+					rg.engine_version_major AS engine_version_major,
+					rg.engine_version_minor AS engine_version_minor,
+					rg.engine_version_patch AS engine_version_patch,
+					CASE
+						WHEN rg.engine_version_major IS NULL THEN NULL
+						WHEN rg.engine_version_minor IS NULL THEN CAST(rg.engine_version_major AS TEXT)
+						WHEN rg.engine_version_patch IS NULL THEN CAST(rg.engine_version_major AS TEXT) || '.' || CAST(rg.engine_version_minor AS TEXT)
+						ELSE CAST(rg.engine_version_major AS TEXT) || '.' || CAST(rg.engine_version_minor AS TEXT) || '.' || CAST(rg.engine_version_patch AS TEXT)
+					END AS engine_version_display,
+					CASE
+						WHEN rg.release_date IS NULL THEN NULL
+						ELSE strftime('%Y-%m-%dT%H:%M:%SZ', rg.release_date * 86400, 'unixepoch')
+					END AS release_date,
+					ROW_NUMBER() OVER (
+						PARTITION BY ge.provider_id, ge.game_id
+						ORDER BY
+							CASE WHEN remote_provider.name = ge.external_id_provider THEN 0 ELSE 1 END,
+							rg.engine_brand IS NULL,
+							rg.release_date IS NULL,
+							rg.release_date DESC,
+							rg.provider_id
+					) AS row_number
+				FROM main.game_external_ids ge
+				INNER JOIN remote_db.providers remote_provider
+					ON remote_provider.name = CASE ge.external_id_provider
+						WHEN 'Manual' THEN 'NormalizedTitle'
+						ELSE ge.external_id_provider
+					END
+				INNER JOIN remote_db.games rg
+					ON rg.provider_id = remote_provider.id
+					AND rg.external_id = ge.external_id
+				LEFT JOIN remote_db.engines e ON e.id = rg.engine_brand
+			)
+			WHERE row_number = 1
 			",
 			[],
 		)?;
-
-		{
-			let mut update_statement = transaction.prepare_cached(
-				"UPDATE main.remote_games SET engine_version_major = ?, engine_version_minor = ?, engine_version_patch = ?
-				 WHERE provider_id = ? AND external_id = ? AND engine_version_display = ?"
-			)?;
-
-			let mut select_statement = transaction.prepare_cached(
-				"SELECT
-					provider_id,
-					external_id,
-					engine_version
-				FROM
-					remote_db.games
-				WHERE
-					engine_version IS NOT NULL AND engine_version != ''",
-			)?;
-
-			let rows = select_statement.query_map([], |row| {
-				let provider_id: String = row.get(0)?;
-				let external_id: String = row.get(1)?;
-				let engine_version: String = row.get(2)?;
-				Ok((provider_id, external_id, engine_version))
-			})?;
-
-			for row_result in rows {
-				match row_result {
-					Ok((provider_id, external_id, engine_version)) => {
-						if let Some(parsed) = remote_game::parse_version(&engine_version) {
-							update_statement.execute(rusqlite::params![
-								parsed.numbers.major,
-								parsed.numbers.minor,
-								parsed.numbers.patch,
-								provider_id,
-								external_id,
-								engine_version
-							])?;
-						}
-					}
-					Err(err) => {
-						log::warn!("Failed to read remote game row: {err}");
-					}
-				}
-			}
-		}
-
 		transaction.commit()?;
 		Ok(())
 	})();
@@ -1141,17 +1124,17 @@ fn create_tables(connection: &rusqlite::Connection) -> Result {
 			PRIMARY KEY (provider_id, game_id)
 		);
 
-		CREATE TABLE IF NOT EXISTS remote_games (
+		CREATE TABLE IF NOT EXISTS game_remote_metadata (
 			provider_id TEXT NOT NULL,
-			external_id TEXT NOT NULL,
+			game_id TEXT NOT NULL,
 			engine_brand TEXT,
 			engine_version_major INTEGER,
 			engine_version_minor INTEGER,
 			engine_version_patch INTEGER,
 			engine_version_display TEXT,
 			release_date TEXT,
-			PRIMARY KEY (provider_id, external_id)
-		);
+			PRIMARY KEY (provider_id, game_id)
+		) WITHOUT ROWID;
 	",
 	)?;
 

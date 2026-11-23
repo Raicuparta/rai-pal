@@ -1,13 +1,9 @@
 use std::path::PathBuf;
 
-use lazy_regex::regex;
-
 use crate::{
-	app_paths, database_url,
-	game_engines::game_engine::{EngineVersion, EngineVersionNumbers},
-	http,
+	app_paths, database_url, http,
 	path_extensions::PathExt,
-	result::{ContextResult, LogErrExt, Result},
+	result::{ContextResult, Result},
 };
 
 // The repository over at github.com/Raicuparta/rai-pal-db can have multiple versions of the database.
@@ -15,35 +11,6 @@ use crate::{
 // So when you need to change the database in a backwards-incompatible way,
 // you would create a new folder in the database repository and change this number to match the folder.
 const DATABASE_VERSION: i32 = 3;
-
-// Version strings in PCGamingWiki can be all weird, so parsing is pretty lax here.
-// We just find some numbers in the string separated by something (usually periods).
-pub fn parse_version(version: &str) -> Option<EngineVersion> {
-	let version_numbers = regex!(r"\d+")
-		.find_iter(version)
-		.filter_map(|capture| {
-			let capture_str = capture.as_str();
-			capture_str.parse::<u32>().ok_or_log(&format!(
-				"Failed to parse version number from capture `{capture_str}` in version string `{version}`",
-			))
-		})
-		.take(3)
-		.collect::<Vec<_>>();
-
-	version_numbers.first().map(|major| EngineVersion {
-		display: version_numbers
-			.iter()
-			.map(u32::to_string)
-			.collect::<Vec<_>>()
-			.join("."),
-		numbers: EngineVersionNumbers {
-			major: *major,
-			minor: version_numbers.get(1).copied(),
-			patch: version_numbers.get(2).copied(),
-		},
-		suffix: None,
-	})
-}
 
 pub fn get_database_file_path() -> Result<PathBuf> {
 	app_paths::database_path("remote")

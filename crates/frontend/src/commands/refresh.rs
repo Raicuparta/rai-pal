@@ -118,6 +118,15 @@ impl CommandHandler {
 				);
 			}
 
+			match remote_game::get_database_file_path() {
+				Ok(path) => {
+					if let Err(err) = attach_remote(&database, &path) {
+						log::error!("Failed to reattach remote game database: {err}");
+					}
+				}
+				Err(err) => log::error!("Failed to get remote game database path: {err}"),
+			}
+
 			if let Err(err) = database.refresh_game_mod_tags() {
 				log::error!("Failed to refresh game mod tags: {err}");
 			}
