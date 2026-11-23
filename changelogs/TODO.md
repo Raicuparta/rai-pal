@@ -17,10 +17,12 @@ Database over at ~/Repos/rai-pal-db. Feel free to change and commit there if nee
 - Appimage still doesnt seem to register itself properly, the shortcut can't open it. or maybe it does? weird.
 - maybe mod database needs to be normalized a bit, flat list with one ts per mod.
 - why query string? "Config download URLs include config version and content hash in the query string, so cached temp downloads are busted when a config file changes."
+- recent changes in database made it messier, lots of repeated definitions between ts and json schemas for instance. need to make sure things aren't repeated unnecessarily.
 
 ## Notes, questions, decisions, etc
 
 - Remote games only get `NormalizedExecutable` ids from config mod definitions, so Local Files games only resolve remote metadata and config mods for those games. Other game-specific mods only have provider ids and normalized titles, so they do not match Local Files games unless they explicitly add `NormalizedExecutable` ids. Adding a config mod is now manual: define it in `scripts/mod-db/config-mods.ts` with all its game ids.
+
 ## Done
 
 - Separated game providers from game id kinds in both repos. `GameProviderId` is now Amazon/Epic/Gog/Itch/LocalFiles/Steam/Xbox and `GameIdKind` is a provider id, `NormalizedTitle`, or `NormalizedExecutable`. Removed the `Manual`/`NormalizedTitle` cross-matching hacks, config mods now use `NormalizedExecutable` folder ids, and the game DB carries `NormalizedExecutable` ids derived from config mod definitions so Local Files games resolve remote metadata. Local DB bumped to 19; remote DB versions were left unchanged. Config mod ids and paths are unchanged, so installed configs keep working.
