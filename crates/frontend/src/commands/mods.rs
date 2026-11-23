@@ -386,6 +386,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	let can_show_actions = info.compatible && game.exe_path.is_some();
 	let has_install = manifest.install.is_some();
 	let has_run = manifest.run_for_game.is_some();
+	let installable = manifest.hide_from_game_mods_list != Some(true) || info.has_installed_dependants;
 	let version_text = version_text(&info, &manifest);
 	let release_date = release_date_display(&manifest);
 	let engine_text = engine_text(&manifest);
@@ -414,7 +415,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		}
 	}
 
-	if can_show_actions && has_install && !installed && !info.is_outdated {
+	if can_show_actions && has_install && installable && !installed && !info.is_outdated {
 		actions.push(
 			ActionGroup::Primary,
 			actions.action(ModActionKind::Install, ActionKind::GameModInstall, ""),

@@ -15,23 +15,14 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 - new way of loading the thumbnail to allow for selecting a game from any window seems super messy, might warrant a refactor.
 - "show game" action for mods, maybe super messy? could refactor.
 - Appimage still doesnt seem to register itself properly, the shortcut can't open it.
+- for mod database, need to store normalized exe name ids too. do we already support that kind of id? this is mostly for configs but can generally be for any game-specific mod. get rid of that steam-id alias table thing and do it properly. maybe mod database needs to be normalized a bit, flat list with one ts per mod.
+- look into how mod tags are stored locally. could materialize or whatever to be better?
+- this probably needs to change: "When matching against game/mod databases, `Manual` and `NormalizedTitle` are treated as the same provider.". mod database probably only has NormalizedTitle, we need "Manual" too which should be NormalizedExe or something like that for clarity. Make sure that Provider and external id source are two different enums that may or may not map.
+- why query string? "Config download URLs include config version and content hash in the query string, so cached temp downloads are busted when a config file changes."
+- this looks important, should fix: "The copy is also stale by design: `INSERT OR IGNORE` never updates changed engine/release data, and rows for old games are never removed."
+- should make local copy of remote db only have what it needs.
 
 ## Notes, questions, decisions, etc
-
-- Mod tags are stored as JSON arrays, consistent with game tags. The local database schema is now version 15. Mod DB 4 was regenerated in place because it was not released yet.
-- Old `family` fields in custom URL mod sources and local mod manifests are ignored, so those sources lose their tags. This is intentional.
-- Analytics mod events now send a `tags` array instead of `family`.
-- Configs are now mods. The client no longer reads `config-db`; `config-db/0` stays as the source of truth for the DB generator, which turns each `configs.json` entry into a hidden game-specific mod tagged `<tag>-config` (e.g. `uuvr-config`). Parent mods list that tag as an optional dependency. Old `loaderId` is ignored, and `modIdOverride` was removed.
-- Config mods get all matching game IDs from the game DB, plus the normalized config folder name, plus a small Steam-ID alias table in `scripts/mod-db/configs.ts` for folders named after executables rather than titles (e.g. `dew`, `ksp_x64`). Extend that table when adding configs for games whose exe name doesn't normalize to the title.
-- Added `install.copy` for non-zip downloads. `ModDownload::download` now decides whether to extract based on the install action. Config download URLs include config version and content hash in the query string, so cached temp downloads are busted when a config file changes.
-- The "Download Recommended Config" action and `has_remote_config` UI were removed. Existing users keep already-downloaded config files, but the new config mod only installs when the parent mod is installed or updated. That first install will overwrite the current config file once, including manual edits.
-- Mod DB 4 was regenerated in place again because it still isn't released.
-
-- Games now have an `external_ids` map instead of a single `external_id`. `Manual` is a local-only ID derived from the executable file stem, present whenever a game has an executable. `NormalizedTitle` IDs are generated from the game title for provider-discovered games. When matching against game/mod databases, `Manual` and `NormalizedTitle` are treated as the same provider.
-- The local database schema is now version 12. External IDs live in `game_external_ids`; the old `normalized_titles` table is gone. Existing local databases are recreated, which keeps mod files because installed mod paths are based on the executable hash.
-- Database repo changes are needed and are expected to be published as game-db 3 and mod-db 4. Game-db 3 renames the old `Manual` ID provider to `NormalizedTitle`; mod-db 4 uses `NormalizedTitle` in `gameIds`.
-- Provider commands were audited. They already store fully built commands, but provider-specific helpers that need the provider's external ID now read it from `external_ids`.
-- Recommended configs were left untouched; they did not block the external ID refactor.
 
 ### Copy of report about filtering stuff, to clean up, ignore for now:
 
@@ -175,7 +166,3 @@ A Discover tab changes the earlier recommendation: the client will need access t
 
 - Fixed slow installs/uninstalls. The cost was `get_game_mods`, which took ~95ms per call because `REMOTE_GAME_JOIN` re-ran its correlated `remote_games` lookup once per mod (394x) inside the candidate mods CTE. The game-level metadata (installed + remote) is now built once in a `MATERIALIZED game_info` CTE, bringing the call to ~29ms on the same data. Also stopped `install_mods` from re-running `get_game_mods` once per mod when updating several mods at once. It was never the manifest scan: 45 installed games x 394 mods of `Path::exists` costs under 10ms, and `get_mod_map` is ~3ms.
 - Mods that disappear from the mod DB (or whose source is offline/disabled) are no longer deleted from the local mod DB while they have an entry in `installed_mods`, so installed mods stay visible in game details with their last known data and can still be uninstalled. `remove_mods_except` keeps installed mods, same as it already did for deprecated ones.
-- Game and mod DB downloads now use `rai-pal-db.raicuparta.com`, or `rai-pal-db-pre.raicuparta.com` when the app version contains `-pre` (new `rai-pal-backend::database_url`). The Patreon DB is not fetched by this repo (the auth server serves patron data), so there was nothing to change for it here.
-- Renamed the "Manual" provider to "Local Files" in the UI and in all non-data code (provider module/struct, commands module, icon file, filter label). The stored provider ID is still `Manual`; that data rename is in "Do later".
-- Configs as mods: removed the runtime config DB from Rai Pal, added config mods to the mod DB with `<tag>-config` tags and optional dependencies, added non-zip mod installs, and removed the download-config UI.
-- Mod rows in the mods tab and game details are clickable (with hover) and open the same menu as the three-dot button. Mod actions are now one ordered list per mod, shared by the menu and the buttons shown outside it (game details keeps its old outside buttons; the mods tab only has the menu). Mods with game IDs get a `Show {provider} game: "{game}"` menu item per matching game, which opens that game's details. Game details now also fetches the selected game's thumbnail itself, so it shows up for games that were never scrolled into view in the games list. The hide-thumbnails setting now only affects the games list, not the details page.
