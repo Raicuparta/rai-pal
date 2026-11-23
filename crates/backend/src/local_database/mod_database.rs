@@ -51,7 +51,7 @@ pub struct GameEnvironment {
 }
 
 pub trait ModDatabase {
-	fn insert_mod(&self, game_mod: &Mod, provider_id: ModProviderId, source_hash: &str);
+	fn insert_mods(&self, mods: &[Mod], provider_id: ModProviderId, source_hash: &str);
 	fn get_mod(&self, mod_id: &str) -> Result<Mod>;
 	fn get_installed_mod(
 		&self,
@@ -191,6 +191,12 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 				data TEXT NOT NULL
 			);
 
+			CREATE TABLE IF NOT EXISTS mod_tag_links (
+				mod_id TEXT NOT NULL,
+				tag TEXT NOT NULL,
+				PRIMARY KEY (mod_id, tag)
+			) WITHOUT ROWID;
+
 			CREATE TABLE IF NOT EXISTS installed_mods (
 				exe_path_hash TEXT NOT NULL,
 				mod_id TEXT NOT NULL,
@@ -208,11 +214,11 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 }
 
 impl ModDatabase for Db {
-	fn insert_mod(&self, game_mod: &Mod, provider_id: ModProviderId, source_hash: &str) {
-		if let Err(err) = try_insert_mod(self, game_mod, provider_id, source_hash) {
+	fn insert_mods(&self, mods: &[Mod], provider_id: ModProviderId, source_hash: &str) {
+		if let Err(err) = try_insert_mods(self, mods, provider_id, source_hash) {
 			log::error!(
-				"Failed to insert mod ({}) into local database: {}",
-				game_mod.id,
+				"Failed to insert {} mods into local database: {}",
+				mods.len(),
 				err
 			);
 		}
@@ -631,12 +637,12 @@ impl ModDatabase for Db {
 					g.game_major AS game_major,
 					g.game_minor AS game_minor,
 					g.game_patch AS game_patch,
-					json_extract(m.engine_version_range, '$.minimum.major') AS min_major,
-					json_extract(m.engine_version_range, '$.minimum.minor') AS min_minor,
-					json_extract(m.engine_version_range, '$.minimum.patch') AS min_patch,
-					json_extract(m.engine_version_range, '$.maximum.major') AS max_major,
-					json_extract(m.engine_version_range, '$.maximum.minor') AS max_minor,
-					json_extract(m.engine_version_range, '$.maximum.patch') AS max_patch
+					m.engine_min_major AS min_major,
+					m.engine_min_minor AS min_minor,
+					m.engine_min_patch AS min_patch,
+					m.engine_max_major AS max_major,
+					m.engine_max_minor AS max_minor,
+					m.engine_max_patch AS max_patch
 				FROM game_info g
 				INNER JOIN main.mods m ON 1=1
 				LEFT JOIN main.installed_mods im ON
@@ -649,27 +655,27 @@ impl ModDatabase for Db {
 						OR im.mod_id IS NOT NULL
 					)
 					AND (
-						json_extract(m.engine, '$') IS NULL
-						OR json_extract(m.engine, '$') = g.engine_brand
+						m.engine_key IS NULL
+						OR m.engine_key = g.engine_brand
 					)
 					AND (
-						json_extract(m.unity_backend, '$') IS NULL
+						m.unity_backend_key IS NULL
 						OR g.unity_backend IS NULL
-						OR json_extract(m.unity_backend, '$') = g.unity_backend
+						OR m.unity_backend_key = g.unity_backend
 					)
 					AND (
-						json_extract(m.architecture, '$') IS NULL
+						m.architecture_key IS NULL
 						OR g.architecture IS NULL
-						OR json_extract(m.architecture, '$') = g.architecture
+						OR m.architecture_key = g.architecture
 					)
 					AND (
-						json_extract(m.game_os, '$') IS NULL
+						m.game_os_key IS NULL
 						OR g.executable_os IS NULL
-						OR json_extract(m.game_os, '$') = g.executable_os
+						OR m.game_os_key = g.executable_os
 					)
 					AND (
-						json_extract(m.host_os, '$') IS NULL
-						OR json_extract(m.host_os, '$') = $3
+						m.host_os_key IS NULL
+						OR m.host_os_key = $3
 					)
 			)
 			SELECT
@@ -686,7 +692,7 @@ impl ModDatabase for Db {
 							AND dependant.is_installed = 1
 							AND (
 								json_extract(dep.value, '$.modId') = cm.mod_id
-								OR json_extract(dep.value, '$.tag') IN (SELECT value FROM json_each(cm.tags))
+								OR EXISTS (SELECT 1 FROM main.mod_tag_links mod_tag_link WHERE mod_tag_link.mod_id = cm.mod_id AND mod_tag_link.tag = json_extract(dep.value, '$.tag'))
 							)
 					) THEN 1
 					WHEN EXISTS (
@@ -697,7 +703,7 @@ impl ModDatabase for Db {
 							AND dependant.is_installed = 1
 							AND (
 								json_extract(dep.value, '$.modId') = cm.mod_id
-								OR json_extract(dep.value, '$.tag') IN (SELECT value FROM json_each(cm.tags))
+								OR EXISTS (SELECT 1 FROM main.mod_tag_links mod_tag_link WHERE mod_tag_link.mod_id = cm.mod_id AND mod_tag_link.tag = json_extract(dep.value, '$.tag'))
 							)
 					) THEN 1
 					ELSE 0
@@ -854,6 +860,10 @@ impl ModDatabase for Db {
 			"DELETE FROM main.mod_game_ids WHERE mod_id IN (SELECT id FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?)) AND id NOT IN (SELECT mod_id FROM main.installed_mods));",
 		)?
 		.execute(rusqlite::params![provider_id, keep_json])?;
+		transaction.prepare_cached(
+			"DELETE FROM main.mod_tag_links WHERE mod_id IN (SELECT id FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?)) AND id NOT IN (SELECT mod_id FROM main.installed_mods));",
+		)?
+		.execute(rusqlite::params![provider_id, keep_json])?;
 		transaction
 			.prepare_cached(
 				"DELETE FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?)) AND id NOT IN (SELECT mod_id FROM main.installed_mods);",
@@ -986,29 +996,23 @@ fn dependency_matches(dep: &ModDependency, info: &ModInfo) -> bool {
 	}
 }
 
-fn try_insert_mod(
+fn try_insert_mods(
 	connection_mutex: &Db,
-	game_mod: &Mod,
+	mods: &[Mod],
 	provider_id: ModProviderId,
 	source_hash: &str,
 ) -> Result {
 	let scope = compute_scope(provider_id, source_hash);
-	let scoped_id = scope_id(&scope, &game_mod.id);
-
-	let scoped_optional_deps = game_mod
-		.optional_dependencies
-		.as_ref()
-		.map(|deps| scope_dependencies(deps, &scope));
-	let scoped_required_deps = game_mod
-		.required_dependencies
-		.as_ref()
-		.map(|deps| scope_dependencies(deps, &scope));
+	let created_at = SystemTime::now()
+		.duration_since(UNIX_EPOCH)?
+		.as_secs()
+		.cast_signed();
 
 	let mut connection = connection_mutex.write_db()?;
 	let transaction = connection.transaction()?;
 
-	transaction
-		.prepare_cached(
+	{
+		let mut insert_mod = transaction.prepare_cached(
 			"INSERT OR REPLACE INTO mods (
 				id,
 				provider_id,
@@ -1038,58 +1042,83 @@ fn try_insert_mod(
 				scope,
 				game_ids
 			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)",
-		)?
-		.execute(rusqlite::params![
-			scoped_id.as_ref(),
-			provider_id,
-			game_mod.title,
-			game_mod.author,
-			game_mod.website,
-			game_mod.description,
-			serialize_json_option(game_mod.download.as_ref())?,
-			serialize_json_option(game_mod.engine.as_ref())?,
-			serialize_json_option(game_mod.engine_version_range.as_ref())?,
-			serialize_json_option(game_mod.unity_backend.as_ref())?,
-			serialize_json_option(game_mod.architecture.as_ref())?,
-			serialize_json_option(game_mod.game_os.as_ref())?,
-			serialize_json_option(game_mod.host_os.as_ref())?,
-			game_mod.deprecated,
-			serialize_json_option(game_mod.paths.as_ref())?,
-			serialize_json_option(scoped_optional_deps.as_ref())?,
-			serialize_json_option(scoped_required_deps.as_ref())?,
-			serialize_json_option(game_mod.install.as_ref())?,
-			serialize_json_option(game_mod.run_for_game.as_ref())?,
-			serialize_json_option(game_mod.run_standalone.as_ref())?,
-			serialize_json_option(game_mod.game_environment.as_ref())?,
-			game_mod.hide_from_game_mods_list,
-			game_mod.hash,
-			serde_json::to_string(&game_mod.tags.clone().unwrap_or_default())?,
-			SystemTime::now()
-				.duration_since(UNIX_EPOCH)?
-				.as_secs()
-				.cast_signed(),
-			scope,
-			serialize_json_option(game_mod.game_ids.as_ref())?,
-		])?;
+		)?;
+		let mut delete_game_ids =
+			transaction.prepare_cached("DELETE FROM main.mod_game_ids WHERE mod_id = $1;")?;
+		let mut insert_game_id = transaction.prepare_cached(
+			"INSERT OR IGNORE INTO main.mod_game_ids (mod_id, external_id_provider, external_id) VALUES ($1, $2, $3);",
+		)?;
+		let mut delete_tag_links =
+			transaction.prepare_cached("DELETE FROM main.mod_tag_links WHERE mod_id = $1;")?;
+		let mut insert_tag_link = transaction.prepare_cached(
+			"INSERT OR IGNORE INTO main.mod_tag_links (mod_id, tag) VALUES ($1, $2);",
+		)?;
 
-	transaction
-		.prepare_cached("DELETE FROM main.mod_game_ids WHERE mod_id = $1;")?
-		.execute([scoped_id.as_ref()])?;
+		for game_mod in mods {
+			let scoped_id = scope_id(&scope, &game_mod.id);
 
-	if let Some(game_ids) = &game_mod.game_ids {
-		let mut statement = transaction
-			.prepare_cached("INSERT OR IGNORE INTO main.mod_game_ids (mod_id, external_id_provider, external_id) VALUES ($1, $2, $3);")?;
+			let scoped_optional_deps = game_mod
+				.optional_dependencies
+				.as_ref()
+				.map(|deps| scope_dependencies(deps, &scope));
+			let scoped_required_deps = game_mod
+				.required_dependencies
+				.as_ref()
+				.map(|deps| scope_dependencies(deps, &scope));
 
-		for (provider, ids) in &game_ids.0 {
-			let provider = normalize_external_id_provider(provider);
+			insert_mod.execute(rusqlite::params![
+				scoped_id.as_ref(),
+				provider_id,
+				game_mod.title,
+				game_mod.author,
+				game_mod.website,
+				game_mod.description,
+				serialize_json_option(game_mod.download.as_ref())?,
+				serialize_json_option(game_mod.engine.as_ref())?,
+				serialize_json_option(game_mod.engine_version_range.as_ref())?,
+				serialize_json_option(game_mod.unity_backend.as_ref())?,
+				serialize_json_option(game_mod.architecture.as_ref())?,
+				serialize_json_option(game_mod.game_os.as_ref())?,
+				serialize_json_option(game_mod.host_os.as_ref())?,
+				game_mod.deprecated,
+				serialize_json_option(game_mod.paths.as_ref())?,
+				serialize_json_option(scoped_optional_deps.as_ref())?,
+				serialize_json_option(scoped_required_deps.as_ref())?,
+				serialize_json_option(game_mod.install.as_ref())?,
+				serialize_json_option(game_mod.run_for_game.as_ref())?,
+				serialize_json_option(game_mod.run_standalone.as_ref())?,
+				serialize_json_option(game_mod.game_environment.as_ref())?,
+				game_mod.hide_from_game_mods_list,
+				game_mod.hash,
+				serde_json::to_string(&game_mod.tags.clone().unwrap_or_default())?,
+				created_at,
+				scope,
+				serialize_json_option(game_mod.game_ids.as_ref())?,
+			])?;
 
-			for id in ids {
-				statement.execute(rusqlite::params![scoped_id.as_ref(), provider, id])?;
+			delete_game_ids.execute([scoped_id.as_ref()])?;
+			delete_tag_links.execute([scoped_id.as_ref()])?;
+
+			if let Some(game_ids) = &game_mod.game_ids {
+				for (provider, ids) in &game_ids.0 {
+					let provider = normalize_external_id_provider(provider);
+
+					for id in ids {
+						insert_game_id.execute(rusqlite::params![scoped_id.as_ref(), provider, id])?;
+					}
+				}
+			}
+
+			if let Some(tags) = &game_mod.tags {
+				for tag in tags {
+					insert_tag_link.execute(rusqlite::params![scoped_id.as_ref(), tag])?;
+				}
 			}
 		}
 	}
 
 	transaction.commit()?;
+	drop(connection);
 
 	Ok(())
 }

@@ -247,12 +247,13 @@ async fn fetch_and_insert(
 
 	db.insert_mod_tags(&database.tags, ModProviderId::Url, source_hash);
 
-	let mut ids = Vec::with_capacity(database.mods.len());
+	db.insert_mods(&database.mods, ModProviderId::Url, source_hash);
 
-	for game_mod in &database.mods {
-		db.insert_mod(game_mod, ModProviderId::Url, source_hash);
-		ids.push(scope_id(scope, &game_mod.id).into_owned());
-	}
+	let ids = database
+		.mods
+		.iter()
+		.map(|game_mod| scope_id(scope, &game_mod.id).into_owned())
+		.collect::<Vec<_>>();
 
 	let tag_ids = database
 		.tags

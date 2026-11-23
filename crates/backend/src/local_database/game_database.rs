@@ -290,7 +290,7 @@ fn build_game_mod_tags_cte(
 			SELECT value AS tag_id FROM json_each(?)
 		),
 		computed_game_mod_tags AS MATERIALIZED (
-			SELECT DISTINCT g.provider_id, g.game_id, mod_tag.value AS tag
+			SELECT DISTINCT g.provider_id, g.game_id, mod_tag.tag AS tag
 			FROM main.games g
 			LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
 			{REMOTE_GAME_JOIN}
@@ -304,19 +304,19 @@ fn build_game_mod_tags_cte(
 				END
 				AND mod_game_id.external_id = game_external_id.external_id
 			INNER JOIN main.mods m ON m.id = mod_game_id.mod_id
-			INNER JOIN json_each(m.tags) mod_tag ON 1=1
-			INNER JOIN filterable_tags ON filterable_tags.tag_id = mod_tag.value
+			INNER JOIN main.mod_tag_links mod_tag ON mod_tag.mod_id = m.id
+			INNER JOIN filterable_tags ON filterable_tags.tag_id = mod_tag.tag
 			WHERE COALESCE(m.hide_from_game_mods_list, 0) = 0
 				AND {MOD_COMPATIBILITY_FILTER}
 				{game_filter_sql}
 			UNION
-			SELECT DISTINCT g.provider_id, g.game_id, mod_tag.value AS tag
+			SELECT DISTINCT g.provider_id, g.game_id, mod_tag.tag AS tag
 			FROM main.games g
 			LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
 			{REMOTE_GAME_JOIN}
 			INNER JOIN main.mods m ON m.has_game_ids = 0
-			INNER JOIN json_each(m.tags) mod_tag ON 1=1
-			INNER JOIN filterable_tags ON filterable_tags.tag_id = mod_tag.value
+			INNER JOIN main.mod_tag_links mod_tag ON mod_tag.mod_id = m.id
+			INNER JOIN filterable_tags ON filterable_tags.tag_id = mod_tag.tag
 			WHERE COALESCE(m.hide_from_game_mods_list, 0) = 0
 				AND {MOD_COMPATIBILITY_FILTER}
 				{game_filter_sql}
