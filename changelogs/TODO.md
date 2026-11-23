@@ -6,39 +6,22 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
+Database over at ~/Repos/rai-pal-db. Feel free to change and commit there if needed, with the expectation that things won't be live until i push.
+
+- Up until recently. rai-pal-db treated game provider ids and game id sources as the same thing. we need to refactor that a bit and do whatever clean up comes from that refactor if things can be simplified as a consequence of that. The goal is to separate the concept of a game provider (a thing that can give games), and a game id source (a thing that can give us game ids). as far as rai pal and the mod database are concerned, game providers are either the branded ones (Steam, Itch, etc) or the "Manual" provider, which we're now renaming to "Local Files" in the Rai Pal client. The game id sources, that is, the ways we have for identifying a game, can be the IDs of a provider, or two other extra sources, which are the normalized game titles, and the normalized executable names. Confusingly, on the remote database (rai-pal-db), the "Manual" provider was hackily being used as a placeholder for the "normalized game title" kind of ids, just so i didn't have to make a separate enum, but that was stupid. Even more confusingly, Rai Pal has kind of considered the "normalized game title" and "normalized executable name" to be the same thing, and matched them against each other, even though that makes no sense. So what we need is a refactor on both sides (rai pal db and rai pal itself), that makes this separation clearer. the Provider enum needs to be sepaerate from the game id kind enum. The "Local Files" provider is a concept that should only need to exist in the Rai Pal client, never in the database, since that would make no sense. Rai Pal can match local games in multiple ways with the remote database, via all the available ids from branded providers, plus normalized title, plus normalized exe name (just so happens that for the "Local Files" provider, normalized exe name is the only Game Id Kind that is available, so it uses that one to match to the db games). Currently, we're doing some hacky thing with the configs that are distributed in rai-pal-db (mod configs in the database used to be a special thing, but now they are distributed as mods, but we still have a mapping from old type to new type, which we'll change in the next point of this todo). Those configs were all in folders, and those folder names were actually normalized executable names. I'm pretty sure when you did the migration you used those normalized exe names as normalized titles, since that was the only way to do it before, and if that's the case we need to fix it to use normalized executables. This part will need another restructuring after the next item in this todo. In case that wasn't obvious, this means normalized title and normalized executable name no longer get matched with each other, and we're renaming things in the data (in rai pal client "Manual" becomes something like "LocalFiles", in the db it becomes either NormalizedTitle or NormalizedExecutable etc). As usual, no worries about backwards compatibility, but leave any notes about things to be careful about here. If it messes with existing mod files or paths you gotta warn me about it.
+- Still in rai-pal-db, we need to change how the config db is working. Currently every time the mod db is updated, the configs part is generated based on the old config db. We need to change that and actually write the configs as mods in the mod db scripts part individually, with all the needed game ids there, instead of relying on that separate id map.
+
 ## Do later
 
 - Use the real domains for database urls.
-- "Manual" data rename to "Local Files".
-- Suddenly refresh individual game way way slower? oh because of big mod db. maybe rethink.
 - i installed firewatch, refreshed, and i was in a weird stale state where the list showed it as not installed for a bit until refreshing a few times. look into.
 - new way of loading the thumbnail to allow for selecting a game from any window seems super messy, might warrant a refactor.
 - "show game" action for mods, maybe super messy? could refactor.
-- Appimage still doesnt seem to register itself properly, the shortcut can't open it.
-- for mod database, need to store normalized exe name ids too. do we already support that kind of id? this is mostly for configs but can generally be for any game-specific mod. get rid of that steam-id alias table thing and do it properly. maybe mod database needs to be normalized a bit, flat list with one ts per mod.
-- this probably needs to change: "When matching against game/mod databases, `Manual` and `NormalizedTitle` are treated as the same provider.". mod database probably only has NormalizedTitle, we need "Manual" too which should be NormalizedExe or something like that for clarity. Make sure that Provider and external id source are two different enums that may or may not map.
+- Appimage still doesnt seem to register itself properly, the shortcut can't open it. or maybe it does? weird.
+- maybe mod database needs to be normalized a bit, flat list with one ts per mod.
 - why query string? "Config download URLs include config version and content hash in the query string, so cached temp downloads are busted when a config file changes."
 
 ## Notes, questions, decisions, etc
-
-### Core assumptions
-
-- Local DB is one disposable SQLite cache. Source of truth is provider cache files, mod manifests and remote DBs; schema changes bump the file version instead of migrating.
-- A refresh rewrites or removes almost every game/mod row, so building from scratch and refreshing have effectively the same write cost. Optimize the bulk rewrite path.
-- Local DB: query speed first, bulk build/write speed second. Duplicate data where it clearly helps queries; avoid materializations that mostly add write cost.
-- Remote: game DB optimized for download size and cheap merge; mod DB stays JSON so default and custom sources share one format.
-- Only cache remote metadata for games in the local library.
-
-### Remote mod DB
-
-- Keep JSON, shared by default and custom URL mod sources. Shape: `{ tags, mods }` with tag definitions stored once.
-- Mod game IDs stay external IDs, so the mod DB does not depend on game DB generation.
-- Keep complex fields (`install`, `paths`, `dependencies`, `download`) as JSON locally.
-
-### Local refresh / build
-
-- Hot queries use integer columns or normalized tables, not `json_extract` over every mod. Get candidate mods from `mod_game_ids`/`game_mod_tags`.
-- Option if in-place writes are still too slow: build a fresh local DB in a temp file and atomically swap. Only worth it if measured; in-place slice replacement keeps the UI responsive.
 
 ## Done
 
