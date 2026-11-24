@@ -1,10 +1,6 @@
 use std::path::PathBuf;
 
-use crate::{
-	app_paths, database_url, http,
-	path_extensions::PathExt,
-	result::Result,
-};
+use crate::{app_paths, database_url, http, path_extensions::PathExt, result::Result};
 
 // The repository over at github.com/Raicuparta/rai-pal-db can have multiple versions of the database.
 // This way we prevent old versions of Rai Pal from breaking unless we want them to.

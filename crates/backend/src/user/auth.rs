@@ -248,9 +248,7 @@ fn get_avatar_path() -> Result<PathBuf> {
 async fn save_avatar(url: &str) -> Result<Option<String>> {
 	let avatar_path = get_avatar_path()?;
 
-	let response = http::CLIENT.get(url).send().await?;
-
-	fs_err::tokio::write(&avatar_path, response.bytes().await?).await?;
+	http::download_to_file(url, &avatar_path).await?;
 
 	Ok(Some(avatar_path.try_to_str()?.to_string()))
 }
