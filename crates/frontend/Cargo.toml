@@ -34,7 +34,6 @@ image = { version = "0.25", default-features = false, features = [
   "gif",
   "webp",
 ] }
-single-instance = "0.3.3"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winreg.workspace = true

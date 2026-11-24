@@ -1,4 +1,5 @@
 use std::{
+	fs::TryLockError,
 	io::{Read, Write},
 	net::{TcpListener, TcpStream},
 	sync::Mutex,
@@ -6,35 +7,52 @@ use std::{
 	time::Duration,
 };
 
-use rai_pal_backend::result::LogErrExt;
-use single_instance::SingleInstance;
+use fs_err::{File, OpenOptions};
+use rai_pal_backend::{app_paths, result::LogErrExt};
 
-const INSTANCE_NAME: &str = "rai-pal-single-instance";
+const LOCK_FILE_NAME: &str = "single-instance.lock";
 const FORWARD_PORT: u16 = 48391;
 
-static GUARD: Mutex<Option<SingleInstance>> = Mutex::new(None);
+static GUARD: Mutex<Option<File>> = Mutex::new(None);
 
 pub fn acquire() -> bool {
-	let instance = match SingleInstance::new(INSTANCE_NAME) {
-		Ok(instance) => instance,
-		Err(err) => {
-			log::warn!("Failed to initialize single instance check: {err}");
-			return true;
-		}
+	let Some(lock_file) = open_lock_file() else {
+		return true;
 	};
 
-	if instance.is_single() {
-		if let Some(mut guard) = GUARD
-			.lock()
-			.ok_or_log("Failed to lock single instance guard")
-		{
-			*guard = Some(instance);
+	match lock_file.try_lock() {
+		Ok(()) => {}
+		Err(TryLockError::WouldBlock) => {
+			forward_arguments();
+			return false;
 		}
-		return true;
+		Err(TryLockError::Error(err)) => {
+			log::warn!("Failed to lock single instance file: {err}");
+			return true;
+		}
 	}
 
-	forward_arguments();
-	false
+	if let Some(mut guard) = GUARD
+		.lock()
+		.ok_or_log("Failed to lock single instance guard")
+	{
+		*guard = Some(lock_file);
+	}
+
+	true
+}
+
+fn open_lock_file() -> Option<File> {
+	let path = app_paths::app_data_file(LOCK_FILE_NAME)
+		.ok_or_log("Failed to get single instance lock file path")?;
+
+	OpenOptions::new()
+		.read(true)
+		.write(true)
+		.create(true)
+		.truncate(false)
+		.open(path)
+		.ok_or_log("Failed to open single instance lock file")
 }
 
 pub fn release() {
