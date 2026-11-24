@@ -269,12 +269,16 @@ fn desktop_exec_arg(path: &std::path::Path) -> String {
 fn set_linux_default_url_handler(desktop_file_name: &str) {
 	use std::process::Command;
 
-	match Command::new("xdg-mime")
-		.args(["default", desktop_file_name, "x-scheme-handler/rai-pal"])
-		.status()
-	{
-		Ok(status) if status.success() => {}
-		Ok(status) => log::warn!("xdg-mime exited with {status} while registering deep links"),
+	match run_fast_command(Command::new("xdg-mime").args([
+		"default",
+		desktop_file_name,
+		"x-scheme-handler/rai-pal",
+	])) {
+		Ok(Some(status)) if status.success() => {}
+		Ok(Some(status)) => {
+			log::warn!("xdg-mime exited with {status} while registering deep links")
+		}
+		Ok(None) => log::warn!("xdg-mime timed out while registering deep links"),
 		Err(err) => log::warn!("Failed to run xdg-mime for deep link registration: {err}"),
 	}
 }
@@ -283,13 +287,36 @@ fn set_linux_default_url_handler(desktop_file_name: &str) {
 fn update_linux_desktop_database(applications_dir: &std::path::Path) {
 	use std::process::Command;
 
-	match Command::new("update-desktop-database")
-		.arg(applications_dir)
-		.status()
-	{
-		Ok(status) if status.success() => {}
-		Ok(status) => log::warn!("update-desktop-database exited with {status}"),
+	match run_fast_command(Command::new("update-desktop-database").arg(applications_dir)) {
+		Ok(Some(status)) if status.success() => {}
+		Ok(Some(status)) => log::warn!("update-desktop-database exited with {status}"),
+		Ok(None) => log::warn!("update-desktop-database timed out"),
 		Err(err) => log::debug!("Failed to run update-desktop-database: {err}"),
+	}
+}
+
+#[cfg(target_os = "linux")]
+fn run_fast_command(
+	command: &mut std::process::Command,
+) -> std::io::Result<Option<std::process::ExitStatus>> {
+	const TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
+	const POLL_INTERVAL: std::time::Duration = std::time::Duration::from_millis(10);
+
+	let mut child = command.spawn()?;
+	let deadline = std::time::Instant::now() + TIMEOUT;
+
+	loop {
+		if let Some(status) = child.try_wait()? {
+			return Ok(Some(status));
+		}
+
+		if std::time::Instant::now() >= deadline {
+			child.kill()?;
+			child.wait()?;
+			return Ok(None);
+		}
+
+		std::thread::sleep(POLL_INTERVAL);
 	}
 }
 
