@@ -17,7 +17,7 @@ use rai_pal_backend::{
 	},
 	mods::{
 		game_mods::{GameMod, GameModGroups},
-		manifest::{Mod, ModDependency, ModPathType, install_steps},
+		manifest::{Mod, ModDependency, ModPathState, ModPathType, install_steps},
 	},
 	result::{LogErrExt, Result},
 };
@@ -43,7 +43,7 @@ struct LoadedMods {
 	incompatible: Vec<GameModData>,
 }
 
-type PathStateMap = HashMap<(String, String, bool), bool>;
+type PathStateMap = HashMap<(String, String), ModPathState>;
 
 thread_local! {
 	static PATH_STATES: RefCell<HashMap<(GameProviderId, String), PathStateMap>> =
@@ -55,15 +55,18 @@ fn game_key(game: &Game) -> (GameProviderId, String) {
 }
 
 fn cached_path_exists(game: &Game, mod_id: &str, path_id: &str, open_folder: bool) -> bool {
-	let exists = PATH_STATES.with(|cache| {
+	let state = PATH_STATES.with(|cache| {
 		cache.borrow().get(&game_key(game)).and_then(|states| {
 			states
-				.get(&(mod_id.to_string(), path_id.to_string(), open_folder))
+				.get(&(mod_id.to_string(), path_id.to_string()))
 				.copied()
 		})
 	});
 
-	exists.unwrap_or(game.exe_path.is_some())
+	state.map_or_else(
+		|| game.exe_path.is_some(),
+		|state| state.get_exists(open_folder),
+	)
 }
 
 fn store_path_states(game: &Game, states: PathStateMap) {
@@ -286,17 +289,8 @@ fn refresh_path_states(window: slint::Weak<MainWindow>, database: Arc<Db>, game:
 			};
 
 			for path in paths {
-				if matches!(&path.path_type, ModPathType::Folder) {
-					if let Ok(exists) = manifest.path_exists(&path.id, Some(&game), true) {
-						states.insert((manifest.id.clone(), path.id.clone(), true), exists);
-					}
-				} else {
-					if let Ok(exists) = manifest.path_exists(&path.id, Some(&game), false) {
-						states.insert((manifest.id.clone(), path.id.clone(), false), exists);
-					}
-					if let Ok(exists) = manifest.path_exists(&path.id, Some(&game), true) {
-						states.insert((manifest.id.clone(), path.id.clone(), true), exists);
-					}
+				if let Ok(state) = manifest.get_path_state(&path.id, Some(&game)) {
+					states.insert((manifest.id.clone(), path.id.clone()), state);
 				}
 			}
 		}

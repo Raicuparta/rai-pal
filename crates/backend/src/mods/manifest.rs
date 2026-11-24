@@ -33,6 +33,30 @@ pub enum ModPathType {
 	Folder,
 }
 
+#[derive(Clone, Copy)]
+pub enum ModPathState {
+	File { exists: bool, folder_exists: bool },
+	Folder { exists: bool },
+}
+
+impl ModPathState {
+	pub const fn get_exists(&self, open_folder: bool) -> bool {
+		match self {
+			Self::File {
+				exists,
+				folder_exists,
+			} => {
+				if open_folder {
+					*folder_exists
+				} else {
+					*exists
+				}
+			}
+			Self::Folder { exists } => *exists,
+		}
+	}
+}
+
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ModPath {
@@ -270,21 +294,18 @@ impl Mod {
 		Ok(())
 	}
 
-	pub fn path_exists(
-		&self,
-		path_id: &str,
-		game: Option<&Game>,
-		open_folder: bool,
-	) -> Result<bool> {
+	pub fn get_path_state(&self, path_id: &str, game: Option<&Game>) -> Result<ModPathState> {
 		let path = self.get_path(path_id)?;
 		let resolved_path = PathBuf::from(replace_tokens(&path.path, game, self));
 
-		Ok(if matches!(&path.path_type, ModPathType::Folder) {
-			resolved_path.is_dir()
-		} else if open_folder {
-			resolved_path.parent().is_some_and(|parent| parent.is_dir())
-		} else {
-			resolved_path.is_file()
+		Ok(match &path.path_type {
+			ModPathType::File => ModPathState::File {
+				exists: resolved_path.is_file(),
+				folder_exists: resolved_path.parent().is_some_and(|parent| parent.is_dir()),
+			},
+			ModPathType::Folder => ModPathState::Folder {
+				exists: resolved_path.is_dir(),
+			},
 		})
 	}
 
