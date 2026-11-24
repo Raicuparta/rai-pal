@@ -5,7 +5,7 @@ use rai_pal_backend::game::Game;
 use crate::{
 	GameRowData, ProviderActionData,
 	commands::CommandHandler,
-	fetch, image_cache,
+	fetch,
 	model::{self, apply_game_to_row},
 };
 
@@ -27,7 +27,7 @@ impl CommandHandler {
 			.collect();
 
 		let thumbnail_url = row.thumbnail_url.to_string();
-		let needs_thumbnail = !row.has_thumbnail && !thumbnail_url.is_empty();
+		let needs_thumbnail = !model::apply_cached_thumbnail(&mut row) && !thumbnail_url.is_empty();
 
 		window.set_selected_game_row(row);
 		let state = window.global::<crate::GameDetailsState>();
@@ -37,14 +37,7 @@ impl CommandHandler {
 		window.set_game_selected(true);
 
 		if needs_thumbnail {
-			if let Some(image) = image_cache::load_memory(&thumbnail_url) {
-				let mut row = window.get_selected_game_row();
-				row.thumbnail = image;
-				row.has_thumbnail = true;
-				window.set_selected_game_row(row);
-			} else {
-				fetch::fetch_selected_thumbnail(self.window(), thumbnail_url);
-			}
+			fetch::fetch_selected_thumbnail(self.window(), thumbnail_url);
 		}
 	}
 

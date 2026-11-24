@@ -52,8 +52,7 @@ struct FetchResult {
 
 struct DecodeJob {
 	job: ThumbnailJob,
-	bytes: Vec<u8>,
-	from_cache: bool,
+	thumbnail: ThumbnailBytes,
 }
 
 enum ImageBytesOutcome {
@@ -73,6 +72,60 @@ pub async fn fetch_image(url: &str, max_width: u32, max_height: u32) -> Option<F
 	}
 }
 
+struct ThumbnailBytes {
+	bytes: Vec<u8>,
+	from_cache: bool,
+}
+
+enum ThumbnailBytesOutcome {
+	Loaded(ThumbnailBytes),
+	Cancelled,
+	Failed,
+}
+
+fn load_thumbnail_bytes<F>(url: &str, should_continue: F) -> ThumbnailBytesOutcome
+where
+	F: FnMut() -> bool,
+{
+	let width = image_cache::THUMBNAIL_WIDTH;
+	let height = image_cache::THUMBNAIL_HEIGHT;
+
+	if let Some(bytes) = image_cache::load(url, width, height) {
+		return ThumbnailBytesOutcome::Loaded(ThumbnailBytes {
+			bytes,
+			from_cache: true,
+		});
+	}
+
+	match fetch_image_bytes_cancellable(url, should_continue) {
+		ImageBytesOutcome::Fetched(bytes) => ThumbnailBytesOutcome::Loaded(ThumbnailBytes {
+			bytes,
+			from_cache: false,
+		}),
+		ImageBytesOutcome::Cancelled => ThumbnailBytesOutcome::Cancelled,
+		ImageBytesOutcome::Failed => ThumbnailBytesOutcome::Failed,
+	}
+}
+
+fn decode_and_cache_thumbnail(url: &str, thumbnail: ThumbnailBytes) -> Option<FetchedImage> {
+	let width = image_cache::THUMBNAIL_WIDTH;
+	let height = image_cache::THUMBNAIL_HEIGHT;
+
+	let Some(image) = decode_image(&thumbnail.bytes, width, height) else {
+		if thumbnail.from_cache {
+			image_cache::remove(url, width, height);
+		}
+
+		return None;
+	};
+
+	if !thumbnail.from_cache {
+		image_cache::store(url, width, height, &thumbnail.bytes);
+	}
+
+	Some(image)
+}
+
 pub fn fetch_selected_thumbnail(window: slint::Weak<MainWindow>, url: String) {
 	if url.is_empty() {
 		return;
@@ -83,29 +136,14 @@ pub fn fetch_selected_thumbnail(window: slint::Weak<MainWindow>, url: String) {
 		return;
 	}
 
-	let width = image_cache::THUMBNAIL_WIDTH;
-	let height = image_cache::THUMBNAIL_HEIGHT;
-
 	thread::spawn(move || {
-		let (bytes, from_cache) = match image_cache::load(&url, width, height) {
-			Some(bytes) => (bytes, true),
-			None => match fetch_image_bytes_cancellable(&url, || true) {
-				ImageBytesOutcome::Fetched(bytes) => (bytes, false),
-				ImageBytesOutcome::Cancelled | ImageBytesOutcome::Failed => return,
-			},
-		};
-
-		let Some(image) = decode_image(&bytes, width, height) else {
-			if from_cache {
-				image_cache::remove(&url, width, height);
-			}
-
+		let ThumbnailBytesOutcome::Loaded(bytes) = load_thumbnail_bytes(&url, || true) else {
 			return;
 		};
 
-		if !from_cache {
-			image_cache::store(&url, width, height, &bytes);
-		}
+		let Some(image) = decode_and_cache_thumbnail(&url, bytes) else {
+			return;
+		};
 
 		let ui_window = window.clone();
 
@@ -280,35 +318,24 @@ fn spawn_download_worker(scheduler: Arc<FetchScheduler>, decode_tx: mpsc::Sender
 		while let Some(job) = scheduler.take_next_thumbnail() {
 			let cancel_scheduler = Arc::clone(&scheduler);
 			let cancel_job = job.clone();
-			let mut should_continue = move || cancel_scheduler.thumbnail_wanted(&cancel_job);
 
-			let width = image_cache::THUMBNAIL_WIDTH;
-			let height = image_cache::THUMBNAIL_HEIGHT;
+			let thumbnail = load_thumbnail_bytes(&job.url, move || {
+				cancel_scheduler.thumbnail_wanted(&cancel_job)
+			});
 
-			let (bytes, from_cache) =
-				if let Some(bytes) = image_cache::load(&job.url, width, height) {
-					(bytes, true)
-				} else {
-					match fetch_image_bytes_cancellable(&job.url, &mut should_continue) {
-						ImageBytesOutcome::Fetched(bytes) => (bytes, false),
-						ImageBytesOutcome::Cancelled => {
-							scheduler.finish_thumbnail(&job, ThumbnailOutcome::Cancelled);
-							continue;
-						}
-						ImageBytesOutcome::Failed => {
-							scheduler.finish_thumbnail(&job, ThumbnailOutcome::Failed);
-							continue;
-						}
-					}
-				};
-
-			let decode_job = DecodeJob {
-				job,
-				bytes,
-				from_cache,
+			let thumbnail = match thumbnail {
+				ThumbnailBytesOutcome::Loaded(thumbnail) => thumbnail,
+				ThumbnailBytesOutcome::Cancelled => {
+					scheduler.finish_thumbnail(&job, ThumbnailOutcome::Cancelled);
+					continue;
+				}
+				ThumbnailBytesOutcome::Failed => {
+					scheduler.finish_thumbnail(&job, ThumbnailOutcome::Failed);
+					continue;
+				}
 			};
 
-			if let Err(err) = decode_tx.send(decode_job) {
+			if let Err(err) = decode_tx.send(DecodeJob { job, thumbnail }) {
 				log::warn!("Failed to send thumbnail bytes to decode workers: {err}");
 				scheduler.finish_thumbnail(&err.0.job, ThumbnailOutcome::Failed);
 			}
@@ -335,12 +362,7 @@ fn spawn_decode_worker(
 				receiver.recv()
 			};
 
-			let Ok(DecodeJob {
-				job,
-				bytes,
-				from_cache,
-			}) = decode_job
-			else {
+			let Ok(DecodeJob { job, thumbnail }) = decode_job else {
 				return;
 			};
 
@@ -349,21 +371,10 @@ fn spawn_decode_worker(
 				continue;
 			}
 
-			let width = image_cache::THUMBNAIL_WIDTH;
-			let height = image_cache::THUMBNAIL_HEIGHT;
-
-			let Some(image) = decode_image(&bytes, width, height) else {
-				if from_cache {
-					image_cache::remove(&job.url, width, height);
-				}
-
+			let Some(image) = decode_and_cache_thumbnail(&job.url, thumbnail) else {
 				scheduler.finish_thumbnail(&job, ThumbnailOutcome::Failed);
 				continue;
 			};
-
-			if !from_cache {
-				image_cache::store(&job.url, width, height, &bytes);
-			}
 
 			let window = window.clone();
 			let ui_scheduler = Arc::clone(&scheduler);
