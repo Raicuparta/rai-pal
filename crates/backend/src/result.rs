@@ -167,6 +167,11 @@ pub enum Error {
 	#[error("Wine prefix not initialized at `{0}`. Please start the game at least once first.")]
 	WinePrefixNotInitialized(PathBuf),
 
+	#[error(
+		"Couldn't find the Wine user's AppData folder in the prefix at `{0}`. Please start the game at least once first."
+	)]
+	WineRoamingAppDataNotFound(PathBuf),
+
 	#[error("{message}: {source}")]
 	Context {
 		message: String,

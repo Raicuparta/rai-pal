@@ -18,7 +18,7 @@ use crate::{
 	game_title::{get_normalized_titles, is_probably_demo, normalize_executable_name},
 	operating_system::{self, OperatingSystem},
 	path_extensions::PathExt,
-	result::{ContextResult, Error, Result},
+	result::{Error, Result},
 };
 
 #[derive(serde::Serialize, Clone, Debug)]
@@ -258,44 +258,18 @@ impl Game {
 		))
 	}
 
-	/// Marked slow because potentially runs slow wine command to get inner path,
-	/// don't call while processing games or any other performance-sensitive places.
-	pub fn get_roaming_app_data_slow(&self) -> Result<PathBuf> {
+	pub fn get_roaming_app_data(&self) -> Result<PathBuf> {
 		#[cfg(target_os = "linux")]
 		{
-			use std::path::PathBuf;
-
-			use crate::{game_providers::game_provider, path_extensions::AsValidStr};
+			use crate::{game_providers::game_provider, wine};
 
 			let provider = game_provider::get_provider(self.provider_id)?;
 			let prefix_path = provider.get_wine_prefix_path(self)?;
-			let mut launch = provider.get_run_with_wine_command(self)?;
-			launch.arg("cmd").arg("/C").arg("echo %APPDATA%");
 
-			let output = launch
-				.to_command()
-				.output()
-				.context("failed to run `cmd /C echo %APPDATA%` in the Wine prefix")?;
-
-			let win_path = str::from_utf8(&output.stdout)?.trim();
-
-			// 2. Convert Windows path to Linux path manually
-			// The format is always C:\users\username\AppData\Roaming
-			// We replace 'C:\' with the actual path to drive_c
-			let drive_c_path = PathBuf::from(format!("{}/drive_c", prefix_path.try_to_str()?));
-
-			// Remove the 'C:\' prefix and replace backslashes with slashes
-			let relative_path = win_path.replace("C:\\", "").replace('\\', "/");
-
-			Ok(drive_c_path.join(relative_path))
+			wine::get_roaming_app_data(&prefix_path)
 		}
 
-		#[cfg(target_os = "windows")]
-		{
-			Ok(app_paths::base_dirs()?.config_dir().to_owned())
-		}
-
-		#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+		#[cfg(not(target_os = "linux"))]
 		{
 			Ok(app_paths::base_dirs()?.config_dir().to_owned())
 		}

@@ -134,8 +134,8 @@ pub fn process_game(game: &mut Game) -> bool {
 }
 
 pub fn open_data_folder(game: &Game) -> Result {
-	let app_data = game.get_roaming_app_data_slow()?;
-	let default_godot_data = game.get_roaming_app_data_slow()?.join("Godot/app_userdata");
+	let app_data = game.get_roaming_app_data()?;
+	let default_godot_data = app_data.join("Godot/app_userdata");
 
 	let target = if default_godot_data.exists() {
 		let potential_game_folder =
