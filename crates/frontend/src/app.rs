@@ -8,7 +8,10 @@ use rai_pal_backend::{
 	local_database::game_database::try_create,
 	operating_system::Platform,
 };
-use slint::{ComponentHandle, winit_030::WinitWindowAccessor};
+use slint::{
+	ComponentHandle,
+	winit_030::{WinitWindowAccessor, winit::window::UserAttentionType},
+};
 
 use crate::{
 	AppTab, MainWindow, action_state, analytics,
@@ -192,6 +195,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			window.window().set_minimized(false);
 			window.window().with_winit_window(|winit_window| {
 				winit_window.focus_window();
+				winit_window.request_user_attention(Some(UserAttentionType::Critical));
 			});
 
 			for argument in arguments {
