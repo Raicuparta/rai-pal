@@ -10,7 +10,6 @@ Database over at ~/Repos/rai-pal-db. Feel free to change and commit there if nee
 
 ## Do later
 
-- i installed firewatch, refreshed, and i was in a weird stale state where the list showed it as not installed for a bit until refreshing a few times. look into.
 - new way of loading the thumbnail to allow for selecting a game from any window seems super messy, might warrant a refactor.
 - "show game" action for mods, maybe super messy? could refactor.
 - Appimage still doesnt seem to register itself properly, the shortcut can't open it. or maybe it does? weird.
