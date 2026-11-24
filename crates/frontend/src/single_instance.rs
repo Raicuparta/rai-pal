@@ -1,7 +1,7 @@
 use std::{
 	fs::TryLockError,
-	io::{Read, Write},
-	net::{TcpListener, TcpStream},
+	io::{self, Read, Write},
+	net::{Shutdown, TcpListener, TcpStream},
 	sync::Mutex,
 	thread,
 	time::Duration,
@@ -12,6 +12,10 @@ use rai_pal_backend::{app_paths, result::LogErrExt};
 
 const LOCK_FILE_NAME: &str = "single-instance.lock";
 const FORWARD_PORT: u16 = 48391;
+const FORWARD_GREETING: &[u8] = b"rai-pal";
+const FORWARD_TIMEOUT: Duration = Duration::from_secs(2);
+const FORWARD_ATTEMPTS: u8 = 50;
+const FORWARD_RETRY_DELAY: Duration = Duration::from_millis(100);
 
 static GUARD: Mutex<Option<File>> = Mutex::new(None);
 
@@ -21,25 +25,32 @@ pub fn acquire() -> bool {
 	};
 
 	match lock_file.try_lock() {
-		Ok(()) => {}
+		Ok(()) => {
+			if let Some(mut guard) = GUARD
+				.lock()
+				.ok_or_log("Failed to lock single instance guard")
+			{
+				*guard = Some(lock_file);
+			}
+
+			true
+		}
 		Err(TryLockError::WouldBlock) => {
-			forward_arguments();
-			return false;
+			if forward_arguments() {
+				return false;
+			}
+
+			log::warn!(
+				"Starting anyway: another instance holds the lock but did not accept forwarded arguments"
+			);
+
+			true
 		}
 		Err(TryLockError::Error(err)) => {
 			log::warn!("Failed to lock single instance file: {err}");
-			return true;
+			true
 		}
 	}
-
-	if let Some(mut guard) = GUARD
-		.lock()
-		.ok_or_log("Failed to lock single instance guard")
-	{
-		*guard = Some(lock_file);
-	}
-
-	true
 }
 
 fn open_lock_file() -> Option<File> {
@@ -64,37 +75,44 @@ pub fn release() {
 	}
 }
 
-fn forward_arguments() {
+fn forward_arguments() -> bool {
 	let arguments = std::env::args().skip(1).collect::<Vec<_>>();
+	let Some(encoded) = serde_json::to_vec(&arguments)
+		.ok_or_log("Failed to serialize arguments for running instance")
+	else {
+		return false;
+	};
 
-	for _ in 0..50 {
-		match TcpStream::connect(("127.0.0.1", FORWARD_PORT)) {
-			Ok(mut stream) => {
-				let Some(encoded) = serde_json::to_vec(&arguments)
-					.ok_or_log("Failed to serialize arguments for running instance")
-				else {
-					return;
-				};
-
-				match stream.write_all(&encoded) {
-					Ok(()) => return,
-					Err(err) => {
-						log::debug!("Failed to forward arguments to running instance: {err}");
-					}
-				}
-			}
-			Err(err) => log::debug!("Failed to connect to running instance: {err}"),
+	for _ in 0..FORWARD_ATTEMPTS {
+		match try_forward(&encoded) {
+			Ok(()) => return true,
+			Err(err) => log::debug!("Failed to forward arguments to running instance: {err}"),
 		}
 
-		thread::sleep(Duration::from_millis(100));
+		thread::sleep(FORWARD_RETRY_DELAY);
 	}
 
-	log::warn!("Failed to forward arguments to the running instance");
+	false
+}
+
+fn try_forward(encoded: &[u8]) -> io::Result<()> {
+	let mut stream = TcpStream::connect(("127.0.0.1", FORWARD_PORT))?;
+	stream.set_read_timeout(Some(FORWARD_TIMEOUT))?;
+	stream.set_write_timeout(Some(FORWARD_TIMEOUT))?;
+
+	let mut greeting = [0; FORWARD_GREETING.len()];
+	stream.read_exact(&mut greeting)?;
+	if greeting != FORWARD_GREETING {
+		return Err(io::Error::other(
+			"another program is occupying the forwarding port",
+		));
+	}
+
+	stream.write_all(encoded)?;
+	stream.shutdown(Shutdown::Write)
 }
 
 pub fn listen(callback: impl Fn(Vec<String>) + Send + Sync + 'static) {
-	let callback = std::sync::Arc::new(callback);
-
 	thread::spawn(move || {
 		let listener = match TcpListener::bind(("127.0.0.1", FORWARD_PORT)) {
 			Ok(listener) => listener,
@@ -113,19 +131,30 @@ pub fn listen(callback: impl Fn(Vec<String>) + Send + Sync + 'static) {
 				}
 			};
 
-			let mut data = String::new();
-			if let Err(err) = stream.read_to_string(&mut data) {
-				log::warn!("Failed to read second instance arguments: {err}");
-				continue;
+			if let Err(err) = read_forwarded_arguments(&mut stream, &callback) {
+				log::debug!("Failed to read forwarded arguments: {err}");
 			}
-
-			let Some(arguments) = serde_json::from_str::<Vec<String>>(&data)
-				.ok_or_log("Failed to parse second instance arguments")
-			else {
-				continue;
-			};
-
-			callback(arguments);
 		}
 	});
+}
+
+fn read_forwarded_arguments(
+	stream: &mut TcpStream,
+	callback: &impl Fn(Vec<String>),
+) -> io::Result<()> {
+	stream.set_read_timeout(Some(FORWARD_TIMEOUT))?;
+	stream.set_write_timeout(Some(FORWARD_TIMEOUT))?;
+	stream.write_all(FORWARD_GREETING)?;
+
+	let mut data = String::new();
+	stream.read_to_string(&mut data)?;
+
+	let Some(arguments) = serde_json::from_str::<Vec<String>>(&data)
+		.ok_or_log("Failed to parse second instance arguments")
+	else {
+		return Ok(());
+	};
+
+	callback(arguments);
+	Ok(())
 }
