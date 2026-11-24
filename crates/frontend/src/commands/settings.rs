@@ -169,6 +169,14 @@ impl CommandHandler {
 		}
 	}
 
+	pub fn switch_tab(&self, tab: AppTab) {
+		if let Some(window) = self.ui() {
+			window.set_current_tab(tab);
+		}
+
+		self.set_tab(tab);
+	}
+
 	pub fn set_search_text(&self, text: &str) {
 		self.settings.borrow_mut().games_query.search = text.to_string();
 		self.start_query(Duration::from_millis(200), ScrollBehavior::Reset);

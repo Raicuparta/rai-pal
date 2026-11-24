@@ -780,12 +780,7 @@ impl CommandHandler {
 			return;
 		};
 
-		let Some(window) = self.ui() else {
-			return;
-		};
-
-		window.set_current_tab(AppTab::Games);
-		self.set_tab(AppTab::Games);
+		self.switch_tab(AppTab::Games);
 		self.select_game_by_id(provider_id, game_id);
 	}
 }

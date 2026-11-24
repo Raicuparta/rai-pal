@@ -1,3 +1,5 @@
+use rai_pal_backend::local_database::mod_database::ModGame;
+
 use crate::{ActionKey, ActionKind, ModActionData, ModActionKind, ProviderId};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -45,6 +47,13 @@ impl ModActionList {
 			separator_before: false,
 			open_folder: false,
 		}
+	}
+
+	pub fn game(&self, game: &ModGame) -> ModActionData {
+		let mut action = self.action(ModActionKind::ShowGame, ActionKind::None, &game.game_id);
+		action.subject = game.title.as_str().into();
+		action.provider = game.provider_id.into();
+		action
 	}
 
 	pub fn push(&mut self, group: ActionGroup, mut action: ModActionData) {

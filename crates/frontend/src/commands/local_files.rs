@@ -30,14 +30,12 @@ static SCAN_GENERATION: AtomicU64 = AtomicU64::new(0);
 
 impl CommandHandler {
 	pub fn show_add_game(&self) {
+		self.switch_tab(crate::AppTab::Games);
+
 		let Some(window) = self.ui() else {
 			return;
 		};
 
-		window.set_current_tab(crate::AppTab::Games);
-		window
-			.global::<crate::AppActions>()
-			.invoke_tab_changed(crate::AppTab::Games);
 		window.global::<crate::AddGameState>().set_open(true);
 		reset_scan(&window);
 		reload_directories(&window);
