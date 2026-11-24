@@ -12,8 +12,6 @@ Database over at ~/Repos/rai-pal-db. Feel free to change and commit there if nee
 
 - new way of loading the thumbnail to allow for selecting a game from any window seems super messy, might warrant a refactor.
 - "show game" action for mods, maybe super messy? could refactor.
-- maybe mod database needs to be normalized a bit, flat list with one ts per mod.
-- why query string? "Config download URLs include config version and content hash in the query string, so cached temp downloads are busted when a config file changes."
 - recent changes in database made it messier, lots of repeated definitions between ts and json schemas for instance. need to make sure things aren't repeated unnecessarily.
 
 ## Notes, questions, decisions, etc

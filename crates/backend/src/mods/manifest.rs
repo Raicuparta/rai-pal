@@ -482,6 +482,7 @@ impl ModDownload {
 
 		let mut hasher = DefaultHasher::new();
 		self.url.hash(&mut hasher);
+		self.id.hash(&mut hasher);
 		let url_hash = hasher.finish().to_string();
 
 		let temp_dir = app_paths::temp_dir(&url_hash)?;
