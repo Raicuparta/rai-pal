@@ -41,6 +41,36 @@ pub async fn download(
 	step: &InstallStep,
 	status_callback: &(impl Fn(ProgressStatus) + Send + Sync),
 ) -> Result {
+	stream_to_file(url, target_path, |downloaded_bytes, total_bytes| {
+		#[expect(
+			clippy::cast_precision_loss,
+			reason = "Precision loss is irrelevant for progress display"
+		)]
+		let percentage = total_bytes.map_or(0.0, |total| {
+			if total == 0 {
+				0.0
+			} else {
+				downloaded_bytes as f64 / total as f64
+			}
+		});
+
+		status_callback(ProgressStatus {
+			step: step.clone(),
+			progress: percentage,
+		});
+	})
+	.await
+}
+
+pub async fn download_to_file(url: &str, target_path: &Path) -> Result {
+	stream_to_file(url, target_path, |_, _| {}).await
+}
+
+async fn stream_to_file(
+	url: &str,
+	target_path: &Path,
+	on_progress: impl Fn(usize, Option<u64>),
+) -> Result {
 	let response = CLIENT
 		.get(url)
 		.send()
@@ -64,22 +94,7 @@ pub async fn download(
 
 		downloaded_bytes += chunk.len();
 
-		#[expect(
-			clippy::cast_precision_loss,
-			reason = "Precision loss is irrelevant for progress display"
-		)]
-		let percentage = total_bytes.map_or(0.0, |total| {
-			if total == 0 {
-				0.0
-			} else {
-				downloaded_bytes as f64 / total as f64
-			}
-		});
-
-		status_callback(ProgressStatus {
-			step: step.clone(),
-			progress: percentage,
-		});
+		on_progress(downloaded_bytes, total_bytes);
 	}
 
 	file.flush().await?;

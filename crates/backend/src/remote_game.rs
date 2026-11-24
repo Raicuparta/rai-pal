@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use crate::{
 	app_paths, database_url, http,
 	path_extensions::PathExt,
-	result::{ContextResult, Result},
+	result::Result,
 };
 
 // The repository over at github.com/Raicuparta/rai-pal-db can have multiple versions of the database.
@@ -22,20 +22,11 @@ pub async fn download_database() -> Result<PathBuf> {
 		database_url::base_url()
 	);
 
-	let response = http::CLIENT.get(&url).send().await?.error_for_status()?;
-
 	let file_path = get_database_file_path()?;
 
 	fs_err::tokio::create_dir_all(file_path.try_parent()?).await?;
 
-	fs_err::tokio::write(
-		&file_path,
-		response
-			.bytes()
-			.await
-			.with_context(|| format!("failed to download remote game database from `{url}`"))?,
-	)
-	.await?;
+	http::download_to_file(&url, &file_path).await?;
 
 	Ok(file_path)
 }
