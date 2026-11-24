@@ -43,17 +43,12 @@ impl<T: DeserializeOwned> FromSql for FromJson<T> {
 
 pub trait RowExt {
 	fn get_json<I: RowIndex, T: DeserializeOwned>(&self, index: I) -> rusqlite::Result<T>;
-	fn get_optional<I: RowIndex, T: FromSql>(&self, index: I) -> rusqlite::Result<Option<T>>;
 	fn get_path<I: RowIndex>(&self, index: I) -> rusqlite::Result<Option<PathBuf>>;
 }
 
 impl RowExt for Row<'_> {
 	fn get_json<I: RowIndex, T: DeserializeOwned>(&self, index: I) -> rusqlite::Result<T> {
 		self.get::<I, FromJson<T>>(index).map(|wrapper| wrapper.0)
-	}
-
-	fn get_optional<I: RowIndex, T: FromSql>(&self, index: I) -> rusqlite::Result<Option<T>> {
-		self.get(index)
 	}
 
 	fn get_path<I: RowIndex>(&self, index: I) -> rusqlite::Result<Option<PathBuf>> {

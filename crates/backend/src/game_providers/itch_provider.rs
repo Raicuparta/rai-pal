@@ -14,7 +14,6 @@ use crate::{
 	game_providers::game_provider::{
 		GameProviderId, ProviderActions, ProviderParser, WineProviderActions,
 	},
-	local_database::rusqlite_extensions::RowExt,
 	result::{ContextResult, LogErrExt, Result},
 };
 
@@ -253,7 +252,7 @@ fn get_database(db_path: &Path) -> Result<Option<ItchDatabase>> {
 	let cave_rows = caves_statement.query_map([], |row| {
 		Ok(ItchDatabaseCave {
 			id: row.get("game_id")?,
-			verdict: parse_verdict(row.get_optional::<_, String>("verdict")?.as_ref()),
+			verdict: parse_verdict(row.get::<_, Option<String>>("verdict")?.as_ref()),
 		})
 	})?;
 
@@ -270,8 +269,8 @@ fn get_database(db_path: &Path) -> Result<Option<ItchDatabase>> {
 		Ok(ItchDatabaseGame {
 			id: row.get(0)?,
 			title: row.get(1)?,
-			published_at: row.get_optional(2)?,
-			cover_url: row.get_optional(3)?,
+			published_at: row.get(2)?,
+			cover_url: row.get(3)?,
 		})
 	})?;
 

@@ -100,6 +100,64 @@ pub(crate) fn scope_id<'a>(scope: &'a str, original_id: &'a str) -> Cow<'a, str>
 	}
 }
 
+const MOD_COLUMNS: &str = r"
+	id,
+	title,
+	author,
+	website,
+	description,
+	download,
+	engine,
+	engine_version_range,
+	unity_backend,
+	architecture,
+	game_os,
+	host_os,
+	deprecated,
+	paths,
+	optional_dependencies,
+	required_dependencies,
+	install,
+	run_for_game,
+	run_standalone,
+	hash,
+	hide_from_game_mods_list,
+	tags,
+	scope,
+	game_environment,
+	game_ids
+";
+
+fn read_mod(row: &rusqlite::Row<'_>) -> rusqlite::Result<Mod> {
+	Ok(Mod {
+		id: row.get(0)?,
+		title: row.get(1)?,
+		author: row.get(2)?,
+		website: row.get(3)?,
+		description: row.get(4)?,
+		download: row.get_json(5)?,
+		engine: row.get_json(6)?,
+		engine_version_range: row.get_json(7)?,
+		unity_backend: row.get_json(8)?,
+		architecture: row.get_json(9)?,
+		game_os: row.get_json(10)?,
+		host_os: row.get_json(11)?,
+		deprecated: row.get(12)?,
+		paths: row.get_json(13)?,
+		optional_dependencies: row.get_json(14)?,
+		required_dependencies: row.get_json(15)?,
+		install: row.get_json(16)?,
+		run_for_game: row.get_json(17)?,
+		run_standalone: row.get_json(18)?,
+		hash: row.get(19)?,
+		hide_from_game_mods_list: row.get(20)?,
+		tags: row.get_json(21)?,
+		scope: row.get(22)?,
+		game_environment: row.get_json(23)?,
+		game_ids: row.get_json(24)?,
+	})
+}
+
 pub(crate) const GAME_IDS_COMPATIBILITY_FILTER: &str = r"(
 	m.has_game_ids = 0
 	OR EXISTS (
@@ -134,7 +192,7 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 				host_os TEXT,
 				deprecated INTEGER,
 				hide_from_game_mods_list INTEGER,
-				config TEXT,
+				paths TEXT,
 				optional_dependencies TEXT,
 				required_dependencies TEXT,
 				install TEXT,
@@ -215,68 +273,10 @@ impl ModDatabase for Db {
 
 	fn get_mod(&self, mod_id: &str) -> Result<Mod> {
 		self.read_db()?
-			.prepare_cached(
-				r"
-			SELECT
-				id,
-				title,
-				author,
-				website,
-				description,
-				download,
-				engine,
-				engine_version_range,
-				unity_backend,
-				architecture,
-				game_os,
-				host_os,
-				deprecated,
-				config,
-				optional_dependencies,
-				required_dependencies,
-				install,
-				run_for_game,
-				run_standalone,
-				hash,
-				hide_from_game_mods_list,
-				tags,
-				scope,
-				game_environment,
-				game_ids
-			FROM main.mods
-			WHERE id = $1
-			LIMIT 1
-		",
-			)?
-			.query_row([mod_id], |row| {
-				Ok(Mod {
-					id: row.get(0)?,
-					title: row.get(1)?,
-					author: row.get(2)?,
-					website: row.get(3)?,
-					description: row.get(4)?,
-					download: row.get_json(5)?,
-					engine: row.get_json(6)?,
-					engine_version_range: row.get_json(7)?,
-					unity_backend: row.get_json(8)?,
-					architecture: row.get_json(9)?,
-					game_os: row.get_json(10)?,
-					host_os: row.get_json(11)?,
-					deprecated: row.get(12)?,
-					paths: row.get_json(13)?,
-					optional_dependencies: row.get_json(14)?,
-					required_dependencies: row.get_json(15)?,
-					install: row.get_json(16)?,
-					run_for_game: row.get_json(17)?,
-					run_standalone: row.get_json(18)?,
-					hash: row.get(19)?,
-					hide_from_game_mods_list: row.get(20)?,
-					tags: row.get_json(21)?,
-					scope: row.get(22)?,
-					game_environment: row.get_json(23)?,
-					game_ids: row.get_json(24)?,
-				})
-			})
+			.prepare_cached(&format!(
+				"SELECT {MOD_COLUMNS} FROM main.mods WHERE id = $1 LIMIT 1"
+			))?
+			.query_row([mod_id], read_mod)
 			.optional()?
 			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))
 	}
@@ -402,66 +402,8 @@ impl ModDatabase for Db {
 	fn get_mod_map(&self) -> Result<BTreeMap<String, Mod>> {
 		Ok(self
 			.read_db()?
-			.prepare_cached(
-				r"
-			SELECT
-				id,
-				title,
-				author,
-				website,
-				description,
-				download,
-				engine,
-				engine_version_range,
-				unity_backend,
-				architecture,
-				game_os,
-				host_os,
-				deprecated,
-				config,
-				optional_dependencies,
-				required_dependencies,
-				install,
-				run_for_game,
-				run_standalone,
-				hash,
-				hide_from_game_mods_list,
-				tags,
-				scope,
-				game_environment,
-				game_ids
-			FROM main.mods
-		",
-			)?
-			.query_map([], |row| {
-				Ok(Mod {
-					id: row.get(0)?,
-					title: row.get(1)?,
-					author: row.get(2)?,
-					website: row.get(3)?,
-					description: row.get(4)?,
-					download: row.get_json(5)?,
-					engine: row.get_json(6)?,
-					engine_version_range: row.get_json(7)?,
-					unity_backend: row.get_json(8)?,
-					architecture: row.get_json(9)?,
-					game_os: row.get_json(10)?,
-					host_os: row.get_json(11)?,
-					deprecated: row.get(12)?,
-					paths: row.get_json(13)?,
-					optional_dependencies: row.get_json(14)?,
-					required_dependencies: row.get_json(15)?,
-					install: row.get_json(16)?,
-					run_for_game: row.get_json(17)?,
-					run_standalone: row.get_json(18)?,
-					hash: row.get(19)?,
-					hide_from_game_mods_list: row.get(20)?,
-					tags: row.get_json(21)?,
-					scope: row.get(22)?,
-					game_environment: row.get_json(23)?,
-					game_ids: row.get_json(24)?,
-				})
-			})?
+			.prepare_cached(&format!("SELECT {MOD_COLUMNS} FROM main.mods"))?
+			.query_map([], read_mod)?
 			.filter_map(|game_mod| match game_mod {
 				Ok(parsed) => Some((parsed.id.clone(), parsed)),
 				Err(err) => {
@@ -573,9 +515,6 @@ impl ModDatabase for Db {
 			}
 
 			transaction.commit()?;
-
-			// tbh only here due to a clippy warning,
-			// Clippy does't seem to realize connection is needed as long as transaction.
 			drop(connection);
 		}
 
@@ -842,21 +781,26 @@ impl ModDatabase for Db {
 		let mut connection = self.write_db()?;
 		let transaction = connection.transaction()?;
 
-		transaction.prepare_cached(
-			"DELETE FROM main.mod_game_ids WHERE mod_id IN (SELECT id FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?)) AND id NOT IN (SELECT mod_id FROM main.installed_mods));",
-		)?
-		.execute(rusqlite::params![provider_id, keep_json])?;
-		transaction.prepare_cached(
-			"DELETE FROM main.mod_tag_links WHERE mod_id IN (SELECT id FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?)) AND id NOT IN (SELECT mod_id FROM main.installed_mods));",
-		)?
-		.execute(rusqlite::params![provider_id, keep_json])?;
+		let doomed_mod_ids = "SELECT id FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?)) AND id NOT IN (SELECT mod_id FROM main.installed_mods)";
+
 		transaction
-			.prepare_cached(
-				"DELETE FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?)) AND id NOT IN (SELECT mod_id FROM main.installed_mods);",
-			)?
+			.prepare_cached(&format!(
+				"DELETE FROM main.mod_game_ids WHERE mod_id IN ({doomed_mod_ids});"
+			))?
+			.execute(rusqlite::params![provider_id, keep_json])?;
+		transaction
+			.prepare_cached(&format!(
+				"DELETE FROM main.mod_tag_links WHERE mod_id IN ({doomed_mod_ids});"
+			))?
+			.execute(rusqlite::params![provider_id, keep_json])?;
+		transaction
+			.prepare_cached(&format!(
+				"DELETE FROM main.mods WHERE id IN ({doomed_mod_ids});"
+			))?
 			.execute(rusqlite::params![provider_id, keep_json])?;
 
 		transaction.commit()?;
+		drop(connection);
 
 		Ok(())
 	}
@@ -1014,7 +958,7 @@ fn try_insert_mods(
 				game_os,
 				host_os,
 				deprecated,
-				config,
+				paths,
 				optional_dependencies,
 				required_dependencies,
 				install,
