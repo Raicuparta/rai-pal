@@ -29,7 +29,7 @@ pub struct UrlModDatabase {
 // This way we prevent old versions of Rai Pal from breaking unless we want them to.
 // So when you need to change the database in a backwards-incompatible way,
 // you would create a new folder in the database repository and change this number to match the folder.
-const DATABASE_VERSION: i32 = 5;
+const DATABASE_VERSION: i32 = 4;
 
 fn default_url() -> String {
 	format!(
