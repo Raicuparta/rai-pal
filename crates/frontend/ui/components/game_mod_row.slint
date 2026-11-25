@@ -31,17 +31,14 @@ export component GameModRow inherits VerticalLayout {
             mouse-cursor: pointer;
 
             clicked => {
-                if !(root.game-mod.status == ModStatus.broken) {
-                    root.open-menu(
-                        max(0px, min(row-touch.pressed-x, root.width - Theme.menu-width)),
-                        row-touch.pressed-y,
-                    );
-                }
+                root.open-menu(
+                    max(0px, min(row-touch.pressed-x, root.width - Theme.menu-width)),
+                    row-touch.pressed-y,
+                );
             }
 
             pointer-event(event) => {
-                if !(root.game-mod.status == ModStatus.broken)
-                    && event.kind == PointerEventKind.down
+                if event.kind == PointerEventKind.down
                     && event.button == PointerEventButton.right {
                     root.open-menu(
                         max(0px, min(row-touch.pressed-x, root.width - Theme.menu-width)),
@@ -79,7 +76,7 @@ export component GameModRow inherits VerticalLayout {
                     action: action;
                 }
 
-                if !(root.game-mod.status == ModStatus.broken): IconButton {
+                IconButton {
                     icon: Icon.more;
                     icon-size: 22px;
                     tooltip: @tr("gameModRow" => "Mod actions");

@@ -404,8 +404,8 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 			deprecated: false,
 			has_install: false,
 			has_run: false,
-			actions: Rc::new(slint::VecModel::from(actions.clone())).into(),
-			special_actions: Rc::new(slint::VecModel::from(actions)).into(),
+			actions: Rc::new(slint::VecModel::from(actions)).into(),
+			special_actions: Rc::new(slint::VecModel::from(Vec::<ModActionData>::new())).into(),
 		};
 	}
 
