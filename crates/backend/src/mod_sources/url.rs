@@ -112,10 +112,6 @@ pub async fn fetch_mod_database(url: &str) -> Result<UrlModDatabase> {
 	Ok(database)
 }
 
-pub async fn get_mods_from_url_mod_source(url: &str) -> Result<Vec<Mod>> {
-	Ok(fetch_mod_database(url).await?.mods)
-}
-
 pub fn enabled_sources() -> Vec<String> {
 	let sources = read_url_mod_sources();
 	let mut urls = Vec::new();

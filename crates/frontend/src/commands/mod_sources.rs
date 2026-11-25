@@ -56,7 +56,8 @@ impl CommandHandler {
 		let window = window.as_weak();
 
 		thread::spawn(move || {
-			let result = get_mods(&url);
+			let result =
+				runtime::block_on(url::fetch_mod_database(&url)).map(|database| database.mods);
 
 			crate::runtime::with_ui_window(&window, move |window| match result {
 				Ok(mods) => {
@@ -254,10 +255,6 @@ fn load_sources(window: &MainWindow) {
 	window
 		.global::<crate::ModSourcesState>()
 		.set_sources(Rc::new(slint::VecModel::from(sources)).into());
-}
-
-fn get_mods(url: &str) -> Result<Vec<rai_pal_backend::mods::manifest::Mod>, String> {
-	runtime::block_on(url::get_mods_from_url_mod_source(url))
 }
 
 pub fn register(window: &crate::MainWindow) {
