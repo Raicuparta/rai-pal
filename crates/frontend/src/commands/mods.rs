@@ -402,7 +402,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 			engine_text: "".into(),
 			installed: true,
 			outdated: false,
-			deprecated: true,
+			deprecated: false,
 			broken: true,
 			has_install: false,
 			has_run: false,

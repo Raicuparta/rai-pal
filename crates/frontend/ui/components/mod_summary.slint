@@ -5,6 +5,7 @@ component MetaItem inherits HorizontalLayout {
     in property <Icon> icon: Icon.none;
     in property <string> text;
     in property <string> tooltip: "";
+    in property <brush> color: Theme.foreground;
 
     spacing: Theme.space-2xs;
     horizontal-stretch: 0;
@@ -13,13 +14,13 @@ component MetaItem inherits HorizontalLayout {
     SvgIcon {
         icon: root.icon;
         size: Theme.font-xs;
-        color: Theme.foreground;
+        color: root.color;
     }
 
     Text {
         text: root.text;
         font-size: Theme.font-xs;
-        color: Theme.foreground;
+        color: root.color;
         overflow: elide;
 
         if root.tooltip != "": Tooltip {
@@ -41,7 +42,7 @@ export component ModSummaryView inherits HorizontalLayout {
     in property <bool> outdated: false;
     in property <bool> link-only: false;
 
-    property <bool> has-details: version-text != "" || release-date != "" || author != "" || engine-text != "";
+    property <bool> has-details: deprecated || version-text != "" || release-date != "" || author != "" || engine-text != "";
 
     private property <string> deprecated-tooltip: @tr("modsPage" => "This mod is deprecated. You should uninstall it and install a newer alternative.");
 
@@ -69,50 +70,26 @@ export component ModSummaryView inherits HorizontalLayout {
                 overflow: elide;
                 horizontal-stretch: 1;
             }
-
-            if root.deprecated: Rectangle {
-                width: deprecated-content.preferred-width + Theme.space-sm;
-                height: 18px;
-                border-radius: Theme.radius-sm;
-                background: Theme.deprecated-background;
-
-                Tooltip {
-                    text: @markdown("\{root.deprecated-tooltip}");
-                }
-
-                deprecated-content := HorizontalLayout {
-                    padding-left: Theme.space-xs;
-                    padding-right: Theme.space-xs;
-                    spacing: Theme.space-2xs;
-                    alignment: center;
-
-                    SvgIcon {
-                        icon: Icon.deprecated;
-                        size: Theme.font-xs;
-                        color: Theme.deprecated-foreground;
-                    }
-
-                    Text {
-                        text: @tr("modsPage" => "Deprecated");
-                        font-size: Theme.font-xs;
-                        font-weight: Theme.weight-bold;
-                        color: Theme.deprecated-foreground;
-                    }
-                }
-            }
         }
 
         if root.has-details: FlexboxLayout {
             height: self.preferred-height;
-            opacity: 0.4;
             spacing-horizontal: Theme.space-md;
             spacing-vertical: Theme.space-2xs;
             cross-axis-alignment: center;
+
+            if root.deprecated: MetaItem {
+                icon: Icon.deprecated;
+                text: @tr("modsPage" => "Deprecated");
+                tooltip: root.deprecated-tooltip;
+                color: Theme.deprecated-foreground;
+            }
 
             if root.version-text != "": Text {
                 text: root.version-text;
                 font-size: Theme.font-xs;
                 color: Theme.foreground;
+                opacity: 0.4;
                 horizontal-stretch: 0;
                 overflow: elide;
             }
@@ -120,16 +97,19 @@ export component ModSummaryView inherits HorizontalLayout {
             if root.release-date != "": MetaItem {
                 icon: Icon.calendar;
                 text: root.release-date;
+                opacity: 0.4;
             }
 
             if root.author != "": MetaItem {
                 icon: Icon.user;
                 text: root.author;
+                opacity: 0.4;
             }
 
             if root.engine-text != "": MetaItem {
                 icon: Icon.engine;
                 text: root.engine-text;
+                opacity: 0.4;
             }
         }
 
