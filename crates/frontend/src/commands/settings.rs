@@ -5,7 +5,7 @@ use std::{
 };
 
 use rai_pal_backend::{
-	app_settings::{AppLocale, AppSettings, SelectedGame},
+	app_settings::{AppLocale, AppSettings},
 	game::Game,
 	game_providers::game_provider::GameProviderId,
 	games_query::GamesSortBy,
@@ -258,7 +258,7 @@ impl CommandHandler {
 			self.refresh_game_with_state(false);
 		}
 
-		self.settings.borrow_mut().selected_game = Some(SelectedGame {
+		self.settings.borrow_mut().selected_game = Some(GameId {
 			provider_id: game.provider_id,
 			game_id: game.game_id,
 		});

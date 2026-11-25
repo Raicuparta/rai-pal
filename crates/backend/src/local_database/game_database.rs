@@ -38,6 +38,8 @@ pub trait GameDatabase {
 	fn get_providers_with_games(&self) -> Result<HashSet<GameProviderId>>;
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct GameId {
 	pub provider_id: GameProviderId,
 	pub game_id: String,
