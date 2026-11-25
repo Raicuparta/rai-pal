@@ -4,7 +4,7 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use crate::{
 	local_database::{app_database::Db, mod_database::ModDatabase},
-	mod_providers::{folder_mod_provider, url_mod_provider},
+	mod_sources::{folder, url},
 	result::Result,
 };
 
@@ -31,8 +31,8 @@ pub async fn refresh_all_mods(db: &Db) -> Result {
 	let mut mods = BTreeMap::new();
 	let mut tags = BTreeMap::new();
 
-	for url in url_mod_provider::enabled_sources() {
-		match url_mod_provider::fetch_mod_database(&url).await {
+	for source_url in url::enabled_sources() {
+		match url::fetch_mod_database(&source_url).await {
 			Ok(database) => {
 				tags.extend(database.tags);
 				mods.extend(
@@ -43,12 +43,12 @@ pub async fn refresh_all_mods(db: &Db) -> Result {
 				);
 			}
 			Err(error) => {
-				log::warn!("Failed to refresh mod source `{url}`, skipping it: {error}");
+				log::warn!("Failed to refresh mod source `{source_url}`, skipping it: {error}");
 			}
 		}
 	}
 
-	match folder_mod_provider::fetch_mods() {
+	match folder::fetch_mods() {
 		Ok(folder_mods) => {
 			mods.extend(
 				folder_mods

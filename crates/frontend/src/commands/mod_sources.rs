@@ -2,7 +2,7 @@ use std::{rc::Rc, sync::Arc, thread};
 
 use rai_pal_backend::{
 	local_database::{app_database::Db, game_database::GameDatabase},
-	mod_providers::url_mod_provider,
+	mod_sources::url,
 	result::{Error, LogErrExt},
 };
 use slint::ComponentHandle;
@@ -112,7 +112,7 @@ impl CommandHandler {
 		run_mod_source_change(
 			window.as_weak(),
 			Arc::clone(&self.database),
-			move || url_mod_provider::add_url_mod_source(url),
+			move || url::add_url_mod_source(url),
 			|window, result| {
 				let confirm_state = window.global::<crate::ConfirmModSourceState>();
 
@@ -133,17 +133,15 @@ impl CommandHandler {
 	}
 
 	pub fn set_mod_source_enabled(&self, url: String, enabled: bool) {
-		self.change_mod_sources(move || {
-			url_mod_provider::set_url_mod_source_enabled(&url, enabled)
-		});
+		self.change_mod_sources(move || url::set_url_mod_source_enabled(&url, enabled));
 	}
 
 	pub fn remove_mod_source(&self, url: String) {
-		self.change_mod_sources(move || url_mod_provider::remove_url_mod_source(&url));
+		self.change_mod_sources(move || url::remove_url_mod_source(&url));
 	}
 
 	pub fn move_mod_source(&self, url: String, up: bool) {
-		self.change_mod_sources(move || url_mod_provider::move_url_mod_source(&url, up));
+		self.change_mod_sources(move || url::move_url_mod_source(&url, up));
 	}
 
 	fn change_mod_sources(&self, action: impl FnOnce() -> Result<(), Error> + Send + 'static) {
@@ -233,7 +231,7 @@ fn run_mod_source_change(
 }
 
 fn load_sources(window: &MainWindow) {
-	let response = url_mod_provider::get_url_mod_sources();
+	let response = url::get_url_mod_sources();
 
 	window
 		.global::<crate::ModSourcesState>()
@@ -259,7 +257,7 @@ fn load_sources(window: &MainWindow) {
 }
 
 fn get_mods(url: &str) -> Result<Vec<rai_pal_backend::mods::manifest::Mod>, String> {
-	runtime::block_on(url_mod_provider::get_mods_from_url_mod_source(url))
+	runtime::block_on(url::get_mods_from_url_mod_source(url))
 }
 
 pub fn register(window: &crate::MainWindow) {

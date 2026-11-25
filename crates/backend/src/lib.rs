@@ -19,7 +19,7 @@ pub mod game_title;
 pub mod games_query;
 pub mod http;
 pub mod local_database;
-pub mod mod_providers;
+pub mod mod_sources;
 pub mod mods;
 pub mod mods_query;
 pub mod open_better;

@@ -11,7 +11,7 @@ use rai_pal_backend::{
 		game_database::{GameDatabase, attach_remote, recreate_if_missing},
 		mod_database::ModDatabase,
 	},
-	mod_providers::mod_provider,
+	mod_sources::refresh,
 	remote_game,
 	result::LogErrExt,
 };
@@ -274,7 +274,7 @@ impl CommandHandler {
 }
 
 pub fn refresh_mods(database: &Db) -> Result<(), String> {
-	runtime::block_on(mod_provider::refresh_all_mods(database))
+	runtime::block_on(refresh::refresh_all_mods(database))
 }
 
 fn refresh_remote_database(database: &Db) -> Result<(), String> {
