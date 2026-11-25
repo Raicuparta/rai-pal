@@ -144,7 +144,6 @@ struct PathTarget<'a> {
 	key: &'a str,
 	target: PathBuf,
 	open_folder: bool,
-	enabled: bool,
 }
 
 impl CommandHandler {
@@ -349,6 +348,10 @@ impl CommandHandler {
 }
 
 fn refresh_path_states(window: slint::Weak<MainWindow>, database: Arc<Db>, game: Game) {
+	if game.exe_path.is_none() {
+		return;
+	}
+
 	thread::spawn(move || {
 		let Ok(groups) = GameModGroups::load(database.as_ref(), &game) else {
 			return;
@@ -507,7 +510,8 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 
 			variants
 				.into_iter()
-				.map(|(open_folder, enabled)| {
+				.filter(|(_, enabled)| *enabled)
+				.map(|(open_folder, _)| {
 					let target = if is_file && open_folder {
 						display_path.parent().unwrap_or(display_path)
 					} else {
@@ -518,7 +522,6 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 						key: &path.path,
 						target: target.to_path_buf(),
 						open_folder,
-						enabled,
 					}
 				})
 				.collect::<Vec<_>>()
@@ -539,7 +542,6 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		);
 		action.subject = label.into();
 		action.open_folder = target.open_folder;
-		action.enabled = target.enabled;
 		actions.push(ActionGroup::Path, action);
 	}
 
