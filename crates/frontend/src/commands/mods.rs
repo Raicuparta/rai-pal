@@ -510,7 +510,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		ModActionKind::Update,
 		ModActionKind::Run,
 	];
-	if !installed && !has_install && !has_run && manifest.website.is_some() {
+	if status == ModStatus::LinkOnly && manifest.website.is_some() {
 		special_kinds.push(ModActionKind::Website);
 	}
 	let special_actions = select_actions(&actions, &special_kinds);
@@ -710,7 +710,7 @@ async fn install_mod(
 	}
 
 	if let Some(installed_mod) =
-		database.get_installed_mod(&mod_id, Some(game.provider_id), Some(game.game_id.clone()))?
+		database.get_installed_mod(&game.provider_id, &game.game_id, &mod_id)?
 	{
 		installed_mod.uninstall().await?;
 	}
@@ -764,7 +764,7 @@ fn collect_deps_to_install(
 			};
 
 			for info in matching_mods {
-				let outdated = info.installed_version.is_none() || info.is_outdated;
+				let outdated = !info.is_installed || info.is_outdated;
 
 				if outdated
 					&& let Some(dep_mod) = database

@@ -8,7 +8,7 @@ use crate::{
 
 pub struct InstalledMod {
 	pub game_mod: Mod,
-	pub game: Option<Game>,
+	pub game: Game,
 }
 
 impl InstalledMod {
@@ -21,7 +21,7 @@ impl InstalledMod {
 			for extract_action in extract_actions {
 				let destination_path = PathBuf::from(replace_tokens(
 					&extract_action.destination,
-					self.game.as_ref(),
+					Some(&self.game),
 					&self.game_mod,
 				));
 
@@ -37,7 +37,7 @@ impl InstalledMod {
 			for copy_action in copy_actions {
 				let destination_path = PathBuf::from(replace_tokens(
 					&copy_action.destination,
-					self.game.as_ref(),
+					Some(&self.game),
 					&self.game_mod,
 				));
 
@@ -51,7 +51,7 @@ impl InstalledMod {
 			for write_action in write_actions {
 				let destination_path = PathBuf::from(replace_tokens(
 					&write_action.destination,
-					self.game.as_ref(),
+					Some(&self.game),
 					&self.game_mod,
 				));
 
@@ -61,7 +61,7 @@ impl InstalledMod {
 			}
 		}
 
-		let manifest_path = self.game_mod.get_manifest_target_path(self.game.as_ref())?;
+		let manifest_path = self.game_mod.get_manifest_target_path(Some(&self.game))?;
 		if manifest_path.exists() {
 			fs_err::tokio::remove_file(manifest_path).await?;
 		}

@@ -58,9 +58,9 @@ pub trait ModDatabase {
 	fn get_mod(&self, mod_id: &str) -> Result<Mod>;
 	fn get_installed_mod(
 		&self,
+		provider_id: &GameProviderId,
+		game_id: &str,
 		mod_id: &str,
-		provider_id_option: Option<GameProviderId>,
-		game_id_option: Option<String>,
 	) -> Result<Option<InstalledMod>>;
 	fn get_installed_mods_for_game(&self, game: &Game) -> Result<Vec<InstalledMod>>;
 	fn get_game_environment(&self, game: &Game) -> Result<GameEnvironment>;
@@ -248,9 +248,9 @@ impl ModDatabase for Db {
 
 	fn get_installed_mod(
 		&self,
+		provider_id: &GameProviderId,
+		game_id: &str,
 		mod_id: &str,
-		provider_id_option: Option<GameProviderId>,
-		game_id_option: Option<String>,
 	) -> Result<Option<InstalledMod>> {
 		let manifest = self
 			.read_db()?
@@ -258,22 +258,16 @@ impl ModDatabase for Db {
 				"SELECT manifest
 				FROM main.installed_mods im
 				WHERE im.mod_id = $1
-					AND (
-						$2 IS NULL OR $3 IS NULL OR im.exe_path_hash = (
-							SELECT g.exe_path_hash
-							FROM main.games g
-							WHERE g.provider_id = $2 AND g.game_id = $3
-							LIMIT 1
-						)
+					AND im.exe_path_hash = (
+						SELECT g.exe_path_hash
+						FROM main.games g
+						WHERE g.provider_id = $2 AND g.game_id = $3
+						LIMIT 1
 					)
 				LIMIT 1",
 			)?
 			.query_row(
-				rusqlite::params![
-					mod_id,
-					provider_id_option.map(|provider_id| { provider_id.to_string() }),
-					game_id_option.as_deref(),
-				],
+				rusqlite::params![mod_id, provider_id.to_string(), game_id],
 				|row| row.get::<_, Option<String>>(0),
 			)
 			.optional()
@@ -287,17 +281,9 @@ impl ModDatabase for Db {
 			return Ok(None);
 		};
 
-		let game_option = if let Some(game_id) = game_id_option
-			&& let Some(provider_id) = provider_id_option
-		{
-			Some(self.get_game(&provider_id, &game_id)?)
-		} else {
-			None
-		};
-
 		Ok(Some(InstalledMod {
 			game_mod,
-			game: game_option,
+			game: self.get_game(provider_id, game_id)?,
 		}))
 	}
 
@@ -307,7 +293,7 @@ impl ModDatabase for Db {
 		game_id: &str,
 		mod_id: &str,
 	) -> Result<InstalledMod> {
-		self.get_installed_mod(mod_id, Some(*provider_id), Some(game_id.to_string()))?
+		self.get_installed_mod(provider_id, game_id, mod_id)?
 			.ok_or(Error::ModNotInstalled(mod_id.to_string()))
 	}
 
@@ -350,7 +336,7 @@ impl ModDatabase for Db {
 
 			installed_mods.push(InstalledMod {
 				game_mod,
-				game: Some(game.clone()),
+				game: game.clone(),
 			});
 		}
 
