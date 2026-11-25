@@ -178,8 +178,6 @@ pub enum ModDependency {
 #[serde(rename_all = "camelCase")]
 pub struct InstalledManifest {
 	pub id: String,
-	pub installed_version: Option<String>,
-	pub installed_hash: Option<String>,
 	pub manifest: Option<Mod>,
 }
 
@@ -202,11 +200,6 @@ impl InstalledManifest {
 
 				Some(Self {
 					id: manifest.id.clone(),
-					installed_version: manifest
-						.download
-						.as_ref()
-						.map(|download| download.id.clone()),
-					installed_hash: manifest.hash.clone(),
 					manifest: Some(manifest),
 				})
 			}
@@ -230,8 +223,6 @@ impl InstalledManifest {
 
 				Some(Self {
 					id: file_name,
-					installed_version: None,
-					installed_hash: None,
 					manifest: None,
 				})
 			}

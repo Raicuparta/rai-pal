@@ -47,7 +47,6 @@ impl GameModGroups {
 				info: ModInfo {
 					mod_id: file_name,
 					installed_version: None,
-					installed_hash: None,
 					is_installed: true,
 					is_in_catalog: false,
 					broken: true,

@@ -31,7 +31,6 @@ use crate::{
 pub struct ModInfo {
 	pub mod_id: String,
 	pub installed_version: Option<String>,
-	pub installed_hash: Option<String>,
 	pub is_installed: bool,
 	pub is_in_catalog: bool,
 	pub broken: bool,
@@ -71,6 +70,12 @@ pub trait ModDatabase {
 		game_id: &str,
 		mod_id: &str,
 	) -> Result<InstalledMod>;
+	fn get_mod_or_installed(
+		&self,
+		provider_id: &GameProviderId,
+		game_id: &str,
+		mod_id: &str,
+	) -> Result<Mod>;
 	fn get_mod_map(&self) -> Result<BTreeMap<String, Mod>>;
 	fn get_catalog_mod_map(&self) -> Result<BTreeMap<String, Mod>>;
 	fn refresh_installed_mods(&self) -> Result;
@@ -215,8 +220,6 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 			CREATE TABLE IF NOT EXISTS installed_mods (
 				exe_path_hash TEXT NOT NULL,
 				mod_id TEXT NOT NULL,
-				installed_version TEXT,
-				installed_hash TEXT,
 				manifest TEXT,
 				PRIMARY KEY (exe_path_hash, mod_id)
 			);
@@ -252,7 +255,7 @@ impl ModDatabase for Db {
 		let manifest = self
 			.read_db()?
 			.prepare_cached(
-				"SELECT installed_version, installed_hash, manifest
+				"SELECT manifest
 				FROM main.installed_mods im
 				WHERE im.mod_id = $1
 					AND (
@@ -271,26 +274,17 @@ impl ModDatabase for Db {
 					provider_id_option.map(|provider_id| { provider_id.to_string() }),
 					game_id_option.as_deref(),
 				],
-				|row| {
-					Ok(InstalledModRow {
-						installed_version: row.get(0)?,
-						installed_hash: row.get(1)?,
-						manifest: row.get(2)?,
-					})
-				},
+				|row| row.get::<_, Option<String>>(0),
 			)
 			.optional()
 			.with_context(|| format!("checking whether mod `{mod_id}` is installed"))?;
 
-		let Some(row) = manifest else {
+		let Some(manifest) = manifest else {
 			return Ok(None);
 		};
 
-		let installed_version = row.installed_version.clone();
-		let installed_hash = row.installed_hash.clone();
-		let game_mod = match read_installed_mod(self, mod_id, row)? {
-			Some(game_mod) => game_mod,
-			None => return Ok(None),
+		let Some(game_mod) = read_installed_mod(self, mod_id, manifest)? else {
+			return Ok(None);
 		};
 
 		let game_option = if let Some(game_id) = game_id_option
@@ -301,12 +295,10 @@ impl ModDatabase for Db {
 			None
 		};
 
-		Ok(Some(InstalledMod::new(
+		Ok(Some(InstalledMod {
 			game_mod,
-			game_option,
-			installed_version,
-			installed_hash,
-		)))
+			game: game_option,
+		}))
 	}
 
 	fn try_get_installed_mod(
@@ -319,44 +311,47 @@ impl ModDatabase for Db {
 			.ok_or(Error::ModNotInstalled(mod_id.to_string()))
 	}
 
+	fn get_mod_or_installed(
+		&self,
+		provider_id: &GameProviderId,
+		game_id: &str,
+		mod_id: &str,
+	) -> Result<Mod> {
+		match self.get_mod(mod_id) {
+			Ok(game_mod) => Ok(game_mod),
+			Err(Error::ModNotFound(_)) => Ok(self
+				.try_get_installed_mod(provider_id, game_id, mod_id)?
+				.game_mod),
+			Err(error) => Err(error),
+		}
+	}
+
 	fn get_installed_mods_for_game(&self, game: &Game) -> Result<Vec<InstalledMod>> {
 		let exe_path_hash = game.try_get_exe_path()?.hash_string();
 
 		let rows = self
 			.read_db()?
 			.prepare_cached(
-				"SELECT mod_id, installed_version, installed_hash, manifest
+				"SELECT mod_id, manifest
 				FROM main.installed_mods
 				WHERE exe_path_hash = $1",
 			)?
 			.query_map([exe_path_hash], |row| {
-				Ok((
-					row.get::<_, String>(0)?,
-					InstalledModRow {
-						installed_version: row.get(1)?,
-						installed_hash: row.get(2)?,
-						manifest: row.get(3)?,
-					},
-				))
+				Ok((row.get::<_, String>(0)?, row.get::<_, Option<String>>(1)?))
 			})?
 			.collect::<rusqlite::Result<Vec<_>>>()?;
 
 		let mut installed_mods = Vec::new();
 
-		for (mod_id, row) in rows {
-			let installed_version = row.installed_version.clone();
-			let installed_hash = row.installed_hash.clone();
-
-			let Some(game_mod) = read_installed_mod(self, &mod_id, row)? else {
+		for (mod_id, manifest) in rows {
+			let Some(game_mod) = read_installed_mod(self, &mod_id, manifest)? else {
 				continue;
 			};
 
-			installed_mods.push(InstalledMod::new(
+			installed_mods.push(InstalledMod {
 				game_mod,
-				Some(game.clone()),
-				installed_version,
-				installed_hash,
-			));
+				game: Some(game.clone()),
+			});
 		}
 
 		Ok(installed_mods)
@@ -418,7 +413,7 @@ impl ModDatabase for Db {
 
 		let shared_mods_folder = app_paths::shared_mods_path()?;
 
-		for manifest in read_shared_installed_manifests(&shared_mods_folder) {
+		for manifest in read_installed_manifests(&shared_mods_folder, InstallKind::Shared) {
 			for exe_path_hash in &exe_path_hashes {
 				installed_mod_rows.push((exe_path_hash.clone(), manifest.clone()));
 			}
@@ -438,25 +433,19 @@ impl ModDatabase for Db {
 		transaction.execute("DELETE FROM main.mods WHERE in_catalog = 0;", [])?;
 
 		{
-			let catalog_ids = transaction
+			let mut known_ids = transaction
 				.prepare_cached("SELECT id FROM main.mods;")?
 				.query_map([], |row| row.get::<_, String>(0))?
 				.collect::<rusqlite::Result<HashSet<String>>>()?;
-
-			let mut installed_only_ids = HashSet::new();
 
 			for (_, installed_manifest) in &installed_mod_rows {
 				let Some(manifest) = installed_manifest.manifest.as_ref() else {
 					continue;
 				};
 
-				if catalog_ids.contains(&manifest.id)
-					|| !installed_only_ids.insert(manifest.id.clone())
-				{
-					continue;
+				if known_ids.insert(manifest.id.clone()) {
+					insert_mod_row(&transaction, manifest, false)?;
 				}
-
-				insert_mod_row(&transaction, manifest, false)?;
 			}
 		}
 
@@ -467,25 +456,19 @@ impl ModDatabase for Db {
 				"INSERT OR REPLACE INTO main.installed_mods (
 					exe_path_hash,
 					mod_id,
-					installed_version,
-					installed_hash,
 					manifest
-				) VALUES ($1, $2, $3, $4, $5)",
+				) VALUES ($1, $2, $3)",
 			)?;
 
 			for (exe_path_hash, installed_manifest) in installed_mod_rows {
-				let manifest = installed_manifest
-					.manifest
-					.as_ref()
-					.map(serde_json::to_string)
-					.transpose()?;
-
 				statement.execute(rusqlite::params![
 					exe_path_hash,
 					installed_manifest.id,
-					installed_manifest.installed_version,
-					installed_manifest.installed_hash,
-					manifest,
+					installed_manifest
+						.manifest
+						.as_ref()
+						.map(serde_json::to_string)
+						.transpose()?,
 				])?;
 			}
 		}
@@ -540,8 +523,7 @@ impl ModDatabase for Db {
 			candidate_mods AS (
 				SELECT DISTINCT
 					m.id AS mod_id,
-					im.installed_version AS installed_version,
-					im.installed_hash AS installed_hash,
+					json_extract(im.manifest, '$.download.id') AS installed_version,
 					m.optional_dependencies AS optional_dependencies,
 					m.required_dependencies AS required_dependencies,
 					m.tags AS tags,
@@ -552,8 +534,8 @@ impl ModDatabase for Db {
 					END AS is_installed,
 					CASE
 						WHEN im.mod_id IS NULL THEN 0
-						WHEN json_extract(m.download, '$.id') IS NOT im.installed_version THEN 1
-						WHEN m.hash IS NOT im.installed_hash THEN 1
+						WHEN json_extract(m.download, '$.id') IS NOT json_extract(im.manifest, '$.download.id') THEN 1
+						WHEN m.hash IS NOT json_extract(im.manifest, '$.hash') THEN 1
 						ELSE 0
 					END AS is_outdated,
 					g.game_major AS game_major,
@@ -614,7 +596,6 @@ impl ModDatabase for Db {
 			SELECT
 				cm.mod_id,
 				cm.installed_version,
-				cm.installed_hash,
 				cm.is_installed,
 				cm.in_catalog AS is_in_catalog,
 				cm.is_outdated,
@@ -645,14 +626,13 @@ impl ModDatabase for Db {
 					Ok(ModInfo {
 						mod_id: row.get(0)?,
 						installed_version: row.get(1)?,
-						installed_hash: row.get(2)?,
-						is_installed: row.get(3)?,
-						is_in_catalog: row.get(4)?,
+						is_installed: row.get(2)?,
+						is_in_catalog: row.get(3)?,
 						broken: false,
-						is_outdated: row.get(5)?,
-						has_installed_dependants: row.get(6)?,
-						compatible: row.get(7)?,
-						tags: row.get_json(8)?,
+						is_outdated: row.get(4)?,
+						has_installed_dependants: row.get(5)?,
+						compatible: row.get(6)?,
+						tags: row.get_json(7)?,
 					})
 				},
 			)?
@@ -766,14 +746,8 @@ impl ModDatabase for Db {
 	}
 }
 
-struct InstalledModRow {
-	installed_version: Option<String>,
-	installed_hash: Option<String>,
-	manifest: Option<String>,
-}
-
-fn read_installed_mod(db: &Db, mod_id: &str, row: InstalledModRow) -> Result<Option<Mod>> {
-	if let Some(manifest) = row.manifest {
+fn read_installed_mod(db: &Db, mod_id: &str, manifest: Option<String>) -> Result<Option<Mod>> {
+	if let Some(manifest) = manifest {
 		match serde_json::from_str::<Mod>(&manifest) {
 			Ok(manifest) => return Ok(Some(manifest)),
 			Err(error) => {
@@ -798,35 +772,19 @@ fn read_installed_manifests(folder: &Path, install_kind: InstallKind) -> Vec<Ins
 		.filter_map(|entry| {
 			let path = entry.ok()?.path();
 
-			if path.extension().is_none_or(|extension| extension != "json") {
+			let manifest_path = if install_kind == InstallKind::Shared {
+				path.join(Mod::FILE_NAME)
+			} else {
+				path
+			};
+
+			if !manifest_path.is_file() {
 				return None;
 			}
 
-			InstalledManifest::from_file(&path, install_kind)
+			InstalledManifest::from_file(&manifest_path, install_kind)
 		})
 		.collect()
-}
-
-fn read_shared_installed_manifests(folder: &Path) -> Vec<InstalledManifest> {
-	let Ok(entries) = fs::read_dir(folder) else {
-		return Vec::new();
-	};
-
-	let mut manifests = Vec::new();
-
-	for entry in entries.flatten() {
-		let manifest_path = entry.path().join(Mod::FILE_NAME);
-
-		if !manifest_path.is_file() {
-			continue;
-		}
-
-		if let Some(manifest) = InstalledManifest::from_file(&manifest_path, InstallKind::Shared) {
-			manifests.push(manifest);
-		}
-	}
-
-	manifests
 }
 
 fn read_mod_map(db: &Db, catalog_only: bool) -> Result<BTreeMap<String, Mod>> {
