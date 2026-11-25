@@ -696,7 +696,8 @@ impl ModDatabase for Db {
 				"SELECT mod_id FROM main.installed_mods
 				WHERE exe_path_hash = $1
 					AND manifest IS NULL
-					AND mod_id NOT IN (SELECT id FROM main.mods)",
+					AND mod_id NOT IN (SELECT id FROM main.mods)
+				ORDER BY mod_id",
 			)?
 			.query_map([exe_path_hash], |row| row.get::<_, String>(0))?
 			.collect::<rusqlite::Result<Vec<_>>>()?;
