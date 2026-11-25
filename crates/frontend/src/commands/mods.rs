@@ -380,6 +380,37 @@ fn load_mods(database: &Db, game: &Game) -> Result<LoadedMods> {
 
 fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	let GameMod { manifest, info } = entry;
+
+	if info.broken {
+		let mut action_list = ModActionList::new(&manifest.id);
+		action_list.push(
+			ActionGroup::Primary,
+			action_list.action(
+				ModActionKind::UninstallAll,
+				ActionKind::GameModUninstallAll,
+				"",
+			),
+		);
+		let actions = action_list.finish();
+
+		return GameModData {
+			title: manifest.title.into(),
+			description: "".into(),
+			version_text: "".into(),
+			release_date: "".into(),
+			author: "".into(),
+			engine_text: "".into(),
+			installed: true,
+			outdated: false,
+			deprecated: true,
+			broken: true,
+			has_install: false,
+			has_run: false,
+			actions: Rc::new(slint::VecModel::from(actions.clone())).into(),
+			special_actions: Rc::new(slint::VecModel::from(actions)).into(),
+		};
+	}
+
 	let installed = info.is_installed;
 	let can_show_actions = info.compatible && game.exe_path.is_some();
 	let has_install = manifest.install.is_some();
@@ -500,6 +531,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		installed,
 		outdated: info.is_outdated,
 		deprecated: manifest.deprecated == Some(true),
+		broken: false,
 		has_install,
 		has_run,
 		actions: Rc::new(slint::VecModel::from(actions)).into(),
@@ -781,6 +813,7 @@ impl CommandHandler {
 			ModActionKind::Uninstall => {
 				self.with_selected_mod(&mod_id, Self::uninstall_mod);
 			}
+			ModActionKind::UninstallAll => self.prompt_uninstall_all_mods(),
 			ModActionKind::OpenPath => {
 				self.with_selected_mod(&mod_id, |handler, game, mod_id| {
 					handler.open_mod_path(

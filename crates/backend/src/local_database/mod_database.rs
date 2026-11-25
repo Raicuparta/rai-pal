@@ -34,6 +34,7 @@ pub struct ModInfo {
 	pub installed_hash: Option<String>,
 	pub is_installed: bool,
 	pub is_in_catalog: bool,
+	pub broken: bool,
 	pub is_outdated: bool,
 	pub has_installed_dependants: bool,
 	pub compatible: bool,
@@ -75,6 +76,7 @@ pub trait ModDatabase {
 	fn refresh_installed_mods(&self) -> Result;
 	fn get_game_mods(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Vec<ModInfo>>;
 	fn get_mod_games(&self) -> Result<BTreeMap<String, Vec<ModGame>>>;
+	fn get_broken_installed_manifests(&self, game: &Game) -> Result<Vec<String>>;
 	fn get_mod_tags(&self) -> Result<BTreeMap<String, ModTag>>;
 }
 
@@ -649,6 +651,7 @@ impl ModDatabase for Db {
 						installed_hash: row.get(2)?,
 						is_installed: row.get(3)?,
 						is_in_catalog: row.get(4)?,
+						broken: false,
 						is_outdated: row.get(5)?,
 						has_installed_dependants: row.get(6)?,
 						compatible: row.get(7)?,
@@ -721,6 +724,23 @@ impl ModDatabase for Db {
 		}
 
 		Ok(games)
+	}
+
+	fn get_broken_installed_manifests(&self, game: &Game) -> Result<Vec<String>> {
+		let exe_path_hash = game.try_get_exe_path()?.hash_string();
+
+		let file_names = self
+			.read_db()?
+			.prepare_cached(
+				"SELECT mod_id FROM main.installed_mods
+				WHERE exe_path_hash = $1
+					AND manifest IS NULL
+					AND mod_id NOT IN (SELECT id FROM main.mods)",
+			)?
+			.query_map([exe_path_hash], |row| row.get::<_, String>(0))?
+			.collect::<rusqlite::Result<Vec<_>>>()?;
+
+		Ok(file_names)
 	}
 
 	fn get_mod_tags(&self) -> Result<BTreeMap<String, ModTag>> {

@@ -211,24 +211,26 @@ impl InstalledManifest {
 			}
 			Err(error) => {
 				log::warn!(
-					"Failed to parse installed mod manifest `{}`, reading just its id: {error}",
+					"Failed to parse installed mod manifest `{}`: {error}",
 					path.display()
 				);
 
-				let value = serde_json::from_str::<serde_json::Value>(&contents).ok()?;
-				let id = strip_scope_prefix(value.get("id")?.as_str()?);
+				let name_source = if install_kind == InstallKind::Shared {
+					path.parent()
+				} else {
+					Some(path)
+				};
+
+				let file_name = name_source
+					.and_then(Path::file_name)
+					.and_then(|file_name| file_name.to_str())
+					.unwrap_or_default()
+					.to_string();
 
 				Some(Self {
-					id: id.to_string(),
-					installed_version: value
-						.get("download")
-						.and_then(|download| download.get("id"))
-						.and_then(|id| id.as_str())
-						.map(std::string::ToString::to_string),
-					installed_hash: value
-						.get("hash")
-						.and_then(|hash| hash.as_str())
-						.map(std::string::ToString::to_string),
+					id: file_name,
+					installed_version: None,
+					installed_hash: None,
 					manifest: None,
 				})
 			}

@@ -26,7 +26,7 @@ export global ModActionIcons {
         if kind == ModActionKind.reinstall {
             return Icon.reinstall;
         }
-        if kind == ModActionKind.uninstall {
+        if kind == ModActionKind.uninstall || kind == ModActionKind.uninstall-all {
             return Icon.delete;
         }
         if kind == ModActionKind.website {

@@ -32,14 +32,17 @@ export component GameModRow inherits VerticalLayout {
             mouse-cursor: pointer;
 
             clicked => {
-                root.open-menu(
-                    max(0px, min(row-touch.pressed-x, root.width - Theme.menu-width)),
-                    row-touch.pressed-y,
-                );
+                if !root.game-mod.broken {
+                    root.open-menu(
+                        max(0px, min(row-touch.pressed-x, root.width - Theme.menu-width)),
+                        row-touch.pressed-y,
+                    );
+                }
             }
 
             pointer-event(event) => {
-                if event.kind == PointerEventKind.down
+                if !root.game-mod.broken
+                    && event.kind == PointerEventKind.down
                     && event.button == PointerEventButton.right {
                     root.open-menu(
                         max(0px, min(row-touch.pressed-x, root.width - Theme.menu-width)),
@@ -57,7 +60,7 @@ export component GameModRow inherits VerticalLayout {
             ModSummaryView {
                 horizontal-stretch: 1;
                 title: game-mod.title;
-                description: game-mod.description;
+                description: game-mod.broken ? @tr("gameModRow" => "Broken mod. Uninstall all mods before continuing.") : game-mod.description;
                 version-text: game-mod.version-text;
                 release-date: game-mod.release-date;
                 author: game-mod.author;
@@ -79,7 +82,7 @@ export component GameModRow inherits VerticalLayout {
                     action: action;
                 }
 
-                IconButton {
+                if !root.game-mod.broken: IconButton {
                     icon: Icon.more;
                     icon-size: 22px;
                     tooltip: @tr("gameModRow" => "Mod actions");

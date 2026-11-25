@@ -218,6 +218,9 @@ export global Tr {
         if kind == ModActionKind.uninstall {
             return @tr("gameModRow" => "Uninstall");
         }
+        if kind == ModActionKind.uninstall-all {
+            return @tr("gameModal" => "Uninstall all mods");
+        }
         if kind == ModActionKind.website {
             return @tr("modModal" => "Website");
         }
