@@ -166,8 +166,10 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	ctx.load_mods_tab();
 	ctx.load_user();
 
+	let selected_game = app_settings.borrow().selected_game.clone();
+
 	if initial_tab == AppTab::Games
-		&& let Some(selected_game) = app_settings.borrow().selected_game.clone()
+		&& let Some(selected_game) = selected_game
 	{
 		ctx.select_game_by_id(selected_game.provider_id, &selected_game.game_id);
 	}
