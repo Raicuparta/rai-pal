@@ -1,6 +1,7 @@
 use std::{
 	cell::RefCell,
 	collections::{HashMap, HashSet},
+	path::Path,
 	rc::Rc,
 	sync::Arc,
 	thread,
@@ -54,19 +55,13 @@ fn game_key(game: &Game) -> (GameProviderId, String) {
 	(game.provider_id, game.game_id.clone())
 }
 
-fn cached_path_exists(game: &Game, mod_id: &str, path_id: &str, open_folder: bool) -> bool {
-	let state = PATH_STATES.with(|cache| {
-		cache.borrow().get(&game_key(game)).and_then(|states| {
-			states
-				.get(&(mod_id.to_string(), path_id.to_string()))
-				.copied()
-		})
-	});
-
-	state.map_or_else(
-		|| game.exe_path.is_some(),
-		|state| state.get_exists(open_folder),
-	)
+fn cached_path_state(game: &Game, mod_id: &str, path: &str) -> Option<ModPathState> {
+	PATH_STATES.with(|cache| {
+		cache
+			.borrow()
+			.get(&game_key(game))
+			.and_then(|states| states.get(&(mod_id.to_string(), path.to_string())).cloned())
+	})
 }
 
 fn store_path_states(game: &Game, states: PathStateMap) {
@@ -289,8 +284,8 @@ fn refresh_path_states(window: slint::Weak<MainWindow>, database: Arc<Db>, game:
 			};
 
 			for path in paths {
-				if let Ok(state) = manifest.get_path_state(&path.id, Some(&game)) {
-					states.insert((manifest.id.clone(), path.id.clone()), state);
+				if let Ok(state) = manifest.get_path_state(&path.path, Some(&game)) {
+					states.insert((manifest.id.clone(), path.path.clone()), state);
 				}
 			}
 		}
@@ -389,21 +384,41 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	let mut actions = ModActionList::new(mod_id);
 
 	for path in manifest.paths.as_deref().unwrap_or_default() {
-		let file_exists = cached_path_exists(game, mod_id, &path.id, false);
-		let folder_exists = cached_path_exists(game, mod_id, &path.id, true);
+		let state = cached_path_state(game, mod_id, &path.path);
+		let display_path = match &state {
+			Some(state) => state.path.as_path(),
+			None => Path::new(&path.path),
+		};
+		let exists = |open_folder| {
+			state
+				.as_ref()
+				.map_or(game.exe_path.is_some(), |state| state.exists(open_folder))
+		};
+		let display_name = |open_folder| {
+			let target = if matches!(&path.path_type, ModPathType::File) && open_folder {
+				display_path.parent().unwrap_or(display_path)
+			} else {
+				display_path
+			};
+
+			target.file_name().map_or_else(
+				|| target.display().to_string(),
+				|name| name.to_string_lossy().into_owned(),
+			)
+		};
 		let variants = if matches!(&path.path_type, ModPathType::Folder) {
-			vec![(true, folder_exists)]
+			vec![(true, exists(true))]
 		} else {
-			vec![(false, file_exists), (true, folder_exists)]
+			vec![(false, exists(false)), (true, exists(true))]
 		};
 
 		for (open_folder, exists) in variants {
 			let mut action = actions.action(
 				ModActionKind::OpenPath,
 				ActionKind::GameModOpenPath,
-				&path.id,
+				&path.path,
 			);
-			action.subject = path.title.as_str().into();
+			action.subject = display_name(open_folder).into();
 			action.open_folder = open_folder;
 			action.enabled = exists;
 			actions.push(ActionGroup::Path, action);

@@ -822,11 +822,11 @@ msgid "Clear"
 msgstr "지우기"
 
 msgctxt "gameModRow"
-msgid "Open: {0}"
-msgstr "열기: {0}"
+msgid "Open file: {0}"
+msgstr "파일 열기: {0}"
 
 msgctxt "gameModRow"
-msgid "Open Folder: {0}"
+msgid "Open folder: {0}"
 msgstr "폴더 열기: {0}"
 
 msgctxt "modsTabRow"

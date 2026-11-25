@@ -822,11 +822,11 @@ msgid "Clear"
 msgstr "Borrar"
 
 msgctxt "gameModRow"
-msgid "Open: {0}"
-msgstr "Abrir: {0}"
+msgid "Open file: {0}"
+msgstr "Abrir archivo: {0}"
 
 msgctxt "gameModRow"
-msgid "Open Folder: {0}"
+msgid "Open folder: {0}"
 msgstr "Abrir carpeta: {0}"
 
 msgctxt "modsTabRow"

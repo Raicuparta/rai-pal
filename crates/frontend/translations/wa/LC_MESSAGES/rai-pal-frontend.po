@@ -822,11 +822,11 @@ msgid "Clear"
 msgstr "Wah"
 
 msgctxt "gameModRow"
-msgid "Open: {0}"
-msgstr "Waah: {0}"
+msgid "Open file: {0}"
+msgstr "Waah file: {0}"
 
 msgctxt "gameModRow"
-msgid "Open Folder: {0}"
+msgid "Open folder: {0}"
 msgstr "Waaah folder: {0}"
 
 msgctxt "modsTabRow"

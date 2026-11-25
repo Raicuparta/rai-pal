@@ -33,26 +33,32 @@ pub enum ModPathType {
 	Folder,
 }
 
-#[derive(Clone, Copy)]
-pub enum ModPathState {
+#[derive(Clone, Debug)]
+pub struct ModPathState {
+	pub path: PathBuf,
+	kind: ModPathKind,
+}
+
+#[derive(Clone, Copy, Debug)]
+enum ModPathKind {
 	File { exists: bool, folder_exists: bool },
 	Folder { exists: bool },
 }
 
 impl ModPathState {
-	pub const fn get_exists(&self, open_folder: bool) -> bool {
-		match self {
-			Self::File {
+	pub const fn exists(&self, open_folder: bool) -> bool {
+		match self.kind {
+			ModPathKind::File {
 				exists,
 				folder_exists,
 			} => {
 				if open_folder {
-					*folder_exists
+					folder_exists
 				} else {
-					*exists
+					exists
 				}
 			}
-			Self::Folder { exists } => *exists,
+			ModPathKind::Folder { exists } => exists,
 		}
 	}
 }
@@ -60,8 +66,6 @@ impl ModPathState {
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ModPath {
-	pub id: String,
-	pub title: String,
 	pub path: String,
 	#[serde(rename = "type")]
 	pub path_type: ModPathType,
@@ -279,11 +283,11 @@ impl Mod {
 		Ok(())
 	}
 
-	pub fn open_path(&self, path_id: &str, game: Option<&Game>, open_folder: bool) -> Result {
-		let path = self.get_path(path_id)?;
-		let resolved_path = PathBuf::from(replace_tokens(&path.path, game, self));
+	pub fn open_path(&self, path: &str, game: Option<&Game>, open_folder: bool) -> Result {
+		let mod_path = self.get_path(path)?;
+		let resolved_path = PathBuf::from(replace_tokens(&mod_path.path, game, self));
 
-		if open_folder || matches!(&path.path_type, ModPathType::Folder) {
+		if open_folder || matches!(&mod_path.path_type, ModPathType::Folder) {
 			resolved_path.open_folder_or_parent()?;
 		} else if resolved_path.is_file() {
 			open_detached_better(resolved_path)?;
@@ -294,26 +298,31 @@ impl Mod {
 		Ok(())
 	}
 
-	pub fn get_path_state(&self, path_id: &str, game: Option<&Game>) -> Result<ModPathState> {
-		let path = self.get_path(path_id)?;
-		let resolved_path = PathBuf::from(replace_tokens(&path.path, game, self));
+	pub fn get_path_state(&self, path: &str, game: Option<&Game>) -> Result<ModPathState> {
+		let mod_path = self.get_path(path)?;
+		let resolved_path = PathBuf::from(replace_tokens(&mod_path.path, game, self));
 
-		Ok(match &path.path_type {
-			ModPathType::File => ModPathState::File {
+		let kind = match &mod_path.path_type {
+			ModPathType::File => ModPathKind::File {
 				exists: resolved_path.is_file(),
 				folder_exists: resolved_path.parent().is_some_and(|parent| parent.is_dir()),
 			},
-			ModPathType::Folder => ModPathState::Folder {
+			ModPathType::Folder => ModPathKind::Folder {
 				exists: resolved_path.is_dir(),
 			},
+		};
+
+		Ok(ModPathState {
+			path: resolved_path,
+			kind,
 		})
 	}
 
-	fn get_path(&self, path_id: &str) -> Result<&ModPath> {
+	fn get_path(&self, path: &str) -> Result<&ModPath> {
 		self.paths
 			.as_ref()
-			.and_then(|paths| paths.iter().find(|path| path.id == path_id))
-			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), format!("path `{path_id}`")))
+			.and_then(|paths| paths.iter().find(|mod_path| mod_path.path == path))
+			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), format!("path `{path}`")))
 	}
 
 	pub fn get_run(&self, game_option: Option<&Game>) -> Result<&ModRun> {

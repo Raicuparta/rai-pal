@@ -822,11 +822,11 @@ msgid "Clear"
 msgstr "クリア"
 
 msgctxt "gameModRow"
-msgid "Open: {0}"
-msgstr "開く: {0}"
+msgid "Open file: {0}"
+msgstr "ファイルを開く: {0}"
 
 msgctxt "gameModRow"
-msgid "Open Folder: {0}"
+msgid "Open folder: {0}"
 msgstr "フォルダーを開く: {0}"
 
 msgctxt "modsTabRow"

@@ -208,9 +208,9 @@ export global Tr {
         }
         if kind == ModActionKind.open-path {
             if open-folder {
-                return @tr("gameModRow" => "Open Folder: {0}", subject);
+                return @tr("gameModRow" => "Open folder: {0}", subject);
             }
-            return @tr("gameModRow" => "Open: {0}", subject);
+            return @tr("gameModRow" => "Open file: {0}", subject);
         }
         if kind == ModActionKind.reinstall {
             return @tr("gameModRow" => "Reinstall");
