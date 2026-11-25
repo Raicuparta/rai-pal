@@ -1,4 +1,4 @@
-import { GameModData } from "../app_types.slint";
+import { GameModData, ModStatus } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { IconButton } from "icon_button.slint";
 import { ModActionsMenu, ModSpecialActionButton } from "mod_actions.slint";
@@ -9,7 +9,6 @@ import { Icon } from "svg_icon.slint";
 export component GameModRow inherits VerticalLayout {
     in property <GameModData> game-mod;
 
-    private property <bool> is-link-only: !game-mod.installed && !game-mod.has-install && !game-mod.has-run;
     private property <length> menu-x: root.width - Theme.menu-width;
     private property <length> menu-y: root.height;
 
@@ -32,7 +31,7 @@ export component GameModRow inherits VerticalLayout {
             mouse-cursor: pointer;
 
             clicked => {
-                if !root.game-mod.broken {
+                if !(root.game-mod.status == ModStatus.broken) {
                     root.open-menu(
                         max(0px, min(row-touch.pressed-x, root.width - Theme.menu-width)),
                         row-touch.pressed-y,
@@ -41,7 +40,7 @@ export component GameModRow inherits VerticalLayout {
             }
 
             pointer-event(event) => {
-                if !root.game-mod.broken
+                if !(root.game-mod.status == ModStatus.broken)
                     && event.kind == PointerEventKind.down
                     && event.button == PointerEventButton.right {
                     root.open-menu(
@@ -60,16 +59,14 @@ export component GameModRow inherits VerticalLayout {
             ModSummaryView {
                 horizontal-stretch: 1;
                 title: game-mod.title;
-                description: game-mod.broken ? @tr("gameModRow" => "Broken mod. Uninstall all mods before continuing.") : game-mod.description;
+                description: game-mod.status == ModStatus.broken ? @tr("gameModRow" => "Broken mod. Uninstall all mods before continuing.") : game-mod.description;
                 version-text: game-mod.version-text;
                 release-date: game-mod.release-date;
                 author: game-mod.author;
                 engine-text: game-mod.engine-text;
                 deprecated: game-mod.deprecated;
                 show-status: true;
-                installed: game-mod.installed;
-                outdated: game-mod.outdated;
-                link-only: root.is-link-only;
+                status: game-mod.status;
             }
 
             HorizontalLayout {
@@ -82,7 +79,7 @@ export component GameModRow inherits VerticalLayout {
                     action: action;
                 }
 
-                if !root.game-mod.broken: IconButton {
+                if !(root.game-mod.status == ModStatus.broken): IconButton {
                     icon: Icon.more;
                     icon-size: 22px;
                     tooltip: @tr("gameModRow" => "Mod actions");

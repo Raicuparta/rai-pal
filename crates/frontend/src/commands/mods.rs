@@ -26,7 +26,7 @@ use slint::ComponentHandle;
 
 use crate::{
 	ActionKind, AppTab, GameModData, MainWindow, MessageContext, ModActionData, ModActionKind,
-	ProviderId, action_state, analytics,
+	ModStatus, ProviderId, action_state, analytics,
 	downloads::Tracker,
 	mod_actions::{ActionGroup, ModActionList, select_actions},
 	model, notifications, runtime,
@@ -325,7 +325,7 @@ fn apply_mods(window: &MainWindow, models: &GameDetailsModels, database: &Db, ga
 		.installed
 		.iter()
 		.chain(loaded.hidden.iter())
-		.any(|mod_data| mod_data.outdated);
+		.any(|mod_data| mod_data.status == ModStatus::Outdated);
 	let LoadedMods {
 		installed,
 		game_specific,
@@ -400,10 +400,8 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 			release_date: "".into(),
 			author: "".into(),
 			engine_text: "".into(),
-			installed: true,
-			outdated: false,
+			status: ModStatus::Broken,
 			deprecated: false,
-			broken: true,
 			has_install: false,
 			has_run: false,
 			actions: Rc::new(slint::VecModel::from(actions.clone())).into(),
@@ -412,6 +410,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	}
 
 	let installed = info.is_installed;
+	let status = mod_status(&manifest, &info, installed);
 	let can_show_actions = info.compatible && game.exe_path.is_some();
 	let has_install = manifest.install.is_some();
 	let has_run = manifest.run_for_game.is_some();
@@ -528,14 +527,24 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		release_date: release_date.into(),
 		author: manifest.author.into(),
 		engine_text: engine_text.into(),
-		installed,
-		outdated: info.is_outdated,
+		status,
 		deprecated: manifest.deprecated == Some(true),
-		broken: false,
 		has_install,
 		has_run,
 		actions: Rc::new(slint::VecModel::from(actions)).into(),
 		special_actions: Rc::new(slint::VecModel::from(special_actions)).into(),
+	}
+}
+
+fn mod_status(manifest: &Mod, info: &ModInfo, installed: bool) -> ModStatus {
+	if !installed && manifest.install.is_none() && manifest.run_for_game.is_none() {
+		ModStatus::LinkOnly
+	} else if info.is_outdated {
+		ModStatus::Outdated
+	} else if installed {
+		ModStatus::Installed
+	} else {
+		ModStatus::NotInstalled
 	}
 }
 

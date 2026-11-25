@@ -1,4 +1,5 @@
 import { Theme } from "../theme.slint";
+import { ModStatus } from "../app_types.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 
 component MetaItem inherits HorizontalLayout {
@@ -38,9 +39,7 @@ export component ModSummaryView inherits HorizontalLayout {
     in property <string> engine-text;
     in property <bool> deprecated: false;
     in property <bool> show-status: false;
-    in property <bool> installed: false;
-    in property <bool> outdated: false;
-    in property <bool> link-only: false;
+    in property <ModStatus> status: ModStatus.not-installed;
 
     property <bool> has-details: deprecated || version-text != "" || release-date != "" || author != "" || engine-text != "";
 
@@ -50,9 +49,17 @@ export component ModSummaryView inherits HorizontalLayout {
     cross-axis-alignment: center;
 
     if show-status: SvgIcon {
-        icon: link-only ? Icon.external-link : outdated ? Icon.outdated : installed ? Icon.success : Icon.mod-not-installed;
+        icon: status == ModStatus.broken ? Icon.warning
+            : status == ModStatus.link-only ? Icon.external-link
+            : status == ModStatus.outdated ? Icon.outdated
+            : status == ModStatus.installed ? Icon.success
+            : Icon.mod-not-installed;
         size: 22px;
-        color: link-only ? Theme.highlight : outdated ? Theme.status-warning : installed ? Theme.status-success : Theme.dimmed-foreground;
+        color: status == ModStatus.broken ? Theme.status-error
+            : status == ModStatus.link-only ? Theme.highlight
+            : status == ModStatus.outdated ? Theme.status-warning
+            : status == ModStatus.installed ? Theme.status-success
+            : Theme.dimmed-foreground;
     }
 
     VerticalLayout {

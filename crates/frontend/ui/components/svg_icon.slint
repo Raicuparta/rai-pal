@@ -51,6 +51,7 @@ export enum Icon {
     unlocked,
     update,
     user,
+    warning,
     github,
     patreon,
     paypal,
@@ -131,6 +132,7 @@ export component SvgIcon inherits Image {
         if icon == Icon.delete { return @image-url("../icons/ui/delete.svg"); }
         if icon == Icon.unlocked { return @image-url("../icons/ui/unlocked.svg"); }
         if icon == Icon.update { return @image-url("../icons/ui/update.svg"); }
+        if icon == Icon.warning { return @image-url("../icons/ui/deprecated.svg"); }
         if icon == Icon.user { return @image-url("../icons/ui/user.svg"); }
         if icon == Icon.github { return @image-url("../icons/brands/github.svg"); }
         if icon == Icon.patreon { return @image-url("../icons/brands/patreon.svg"); }

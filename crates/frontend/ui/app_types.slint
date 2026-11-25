@@ -42,6 +42,14 @@ export enum SkipConfirmation {
     install-mod,
 }
 
+export enum ModStatus {
+    broken,
+    outdated,
+    installed,
+    not-installed,
+    link-only,
+}
+
 export enum ModActionKind {
     install,
     download,
@@ -227,10 +235,8 @@ export struct GameModData {
     release-date: string,
     author: string,
     engine-text: string,
-    installed: bool,
-    outdated: bool,
+    status: ModStatus,
     deprecated: bool,
-    broken: bool,
     has-install: bool,
     has-run: bool,
     actions: [ModActionData],
