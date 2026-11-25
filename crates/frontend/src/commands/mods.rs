@@ -529,7 +529,7 @@ fn broken_row_data(title: String) -> GameModData {
 	}
 }
 
-fn mod_status(manifest: &Mod, info: &ModInfo, installed: bool) -> ModStatus {
+const fn mod_status(manifest: &Mod, info: &ModInfo, installed: bool) -> ModStatus {
 	if !installed && manifest.install.is_none() && manifest.run_for_game.is_none() {
 		ModStatus::LinkOnly
 	} else if info.is_outdated {
