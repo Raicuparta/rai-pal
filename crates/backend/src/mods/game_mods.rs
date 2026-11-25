@@ -15,7 +15,7 @@ pub struct GameMod {
 
 impl GameMod {
 	pub const fn installed(&self) -> bool {
-		self.info.is_installed
+		self.info.install_state.is_installed()
 	}
 
 	pub const fn game_specific(&self) -> bool {

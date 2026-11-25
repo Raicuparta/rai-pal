@@ -27,13 +27,29 @@ use crate::{
 	result::{ContextResult, Error, LogErrExt, Result},
 };
 
+#[derive(serde::Serialize, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum InstallState {
+	NotInstalled,
+	Installed,
+	Outdated,
+}
+
+impl InstallState {
+	pub const fn is_installed(self) -> bool {
+		!matches!(self, Self::NotInstalled)
+	}
+
+	pub const fn is_outdated(self) -> bool {
+		matches!(self, Self::Outdated)
+	}
+}
+
 #[derive(serde::Serialize, Clone, Debug)]
 pub struct ModInfo {
 	pub mod_id: String,
 	pub installed_version: Option<String>,
-	pub is_installed: bool,
+	pub install_state: InstallState,
 	pub is_in_catalog: bool,
-	pub is_outdated: bool,
 	pub has_installed_dependants: bool,
 	pub compatible: bool,
 	pub tags: Vec<String>,
@@ -608,12 +624,17 @@ impl ModDatabase for Db {
 					OperatingSystem::get_current().to_string(),
 				],
 				|row| {
+					let install_state = match (row.get::<_, bool>(2)?, row.get::<_, bool>(4)?) {
+						(false, _) => InstallState::NotInstalled,
+						(true, true) => InstallState::Outdated,
+						(true, false) => InstallState::Installed,
+					};
+
 					Ok(ModInfo {
 						mod_id: row.get(0)?,
 						installed_version: row.get(1)?,
-						is_installed: row.get(2)?,
+						install_state,
 						is_in_catalog: row.get(3)?,
-						is_outdated: row.get(4)?,
 						has_installed_dependants: row.get(5)?,
 						compatible: row.get(6)?,
 						tags: row.get_json(7)?,

@@ -14,7 +14,7 @@ use rai_pal_backend::{
 	game_providers::game_provider::GameProviderId,
 	local_database::{
 		app_database::Db,
-		mod_database::{ModDatabase, ModInfo},
+		mod_database::{InstallState, ModDatabase, ModInfo},
 	},
 	mods::{
 		game_mods::{GameMod, GameModGroups},
@@ -135,7 +135,7 @@ impl CommandHandler {
 					.get_game_mods(&game.provider_id, &game.game_id)
 					.map_err(|err| err.to_string())?
 					.into_iter()
-					.filter(|info| info.compatible && info.is_outdated && info.is_installed)
+					.filter(|info| info.compatible && info.install_state.is_outdated())
 					.map(|info| info.mod_id)
 					.collect::<Vec<_>>();
 
@@ -376,7 +376,7 @@ fn load_mods(database: &Db, game: &Game) -> Result<LoadedMods> {
 fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	let GameMod { manifest, info } = entry;
 
-	let installed = info.is_installed;
+	let installed = info.install_state.is_installed();
 	let status = mod_status(&manifest, &info, installed);
 	let can_show_actions = info.compatible && game.exe_path.is_some();
 	let has_install = manifest.install.is_some();
@@ -434,14 +434,14 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		}
 	}
 
-	if can_show_actions && has_install && installable && !installed && !info.is_outdated {
+	if can_show_actions && has_install && installable && !installed {
 		actions.push(
 			ActionGroup::Primary,
 			actions.action(ModActionKind::Install, ActionKind::GameModInstall, ""),
 		);
 	}
 
-	if can_show_actions && info.is_outdated {
+	if can_show_actions && info.install_state.is_outdated() {
 		actions.push(
 			ActionGroup::Primary,
 			actions.action(ModActionKind::Update, ActionKind::GameModInstall, ""),
@@ -532,7 +532,7 @@ fn broken_row_data(title: String) -> GameModData {
 const fn mod_status(manifest: &Mod, info: &ModInfo, installed: bool) -> ModStatus {
 	if !installed && manifest.install.is_none() && manifest.run_for_game.is_none() {
 		ModStatus::LinkOnly
-	} else if info.is_outdated {
+	} else if info.install_state.is_outdated() {
 		ModStatus::Outdated
 	} else if installed {
 		ModStatus::Installed
@@ -553,7 +553,7 @@ fn version_text(info: &ModInfo, game_mod: &Mod) -> String {
 		parts.push(version);
 	}
 
-	if info.is_outdated
+	if info.install_state.is_outdated()
 		&& let Some(download_id) = download_id
 	{
 		parts.push(download_id);
@@ -764,7 +764,7 @@ fn collect_deps_to_install(
 			};
 
 			for info in matching_mods {
-				let outdated = !info.is_installed || info.is_outdated;
+				let outdated = info.install_state != InstallState::Installed;
 
 				if outdated
 					&& let Some(dep_mod) = database
