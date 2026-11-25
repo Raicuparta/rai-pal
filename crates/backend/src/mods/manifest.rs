@@ -203,7 +203,7 @@ impl InstalledManifest {
 				})
 			}
 			Err(error) => {
-				log::warn!(
+				log::debug!(
 					"Failed to parse installed mod manifest `{}`: {error}",
 					path.display()
 				);
