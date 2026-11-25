@@ -174,8 +174,7 @@ pub enum ModDependency {
 	Tag { tag: String },
 }
 
-#[derive(serde::Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug)]
 pub struct InstalledManifest {
 	pub id: String,
 	pub manifest: Option<Mod>,
