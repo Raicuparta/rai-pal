@@ -17,6 +17,7 @@ use crate::{
 	games_query::{FilterGroup, GamesQuery, GamesSortBy, InstallState},
 	local_database::{
 		app_database::{AppDatabase, Db},
+		engine_compatibility::{self, VersionColumns},
 		mod_database::{self, ModDatabase},
 		rusqlite_extensions::{JsonData, RowExt},
 	},
@@ -145,52 +146,36 @@ fn build_supported_os_inclusion_filter(
 	Some(format!("({})", branches.join(" OR ")))
 }
 
-const MOD_COMPATIBILITY_FILTER: &str = r"
+fn mod_compatibility_filter() -> String {
+	let version_in_range = engine_compatibility::engine_version_in_range(
+		VersionColumns {
+			major: "COALESCE(ig.engine_version_major, rg.engine_version_major)",
+			minor: "COALESCE(ig.engine_version_minor, rg.engine_version_minor)",
+			patch: "COALESCE(ig.engine_version_patch, rg.engine_version_patch)",
+		},
+		VersionColumns {
+			major: "m.engine_min_major",
+			minor: "m.engine_min_minor",
+			patch: "m.engine_min_patch",
+		},
+		VersionColumns {
+			major: "m.engine_max_major",
+			minor: "m.engine_max_minor",
+			patch: "m.engine_max_patch",
+		},
+	);
+
+	format!(
+		r"
 	(m.engine_key IS NULL OR m.engine_key = COALESCE(ig.engine_brand, rg.engine_brand))
 	AND (m.unity_backend_key IS NULL OR ig.unity_backend IS NULL OR m.unity_backend_key = ig.unity_backend)
 	AND (m.architecture_key IS NULL OR ig.architecture IS NULL OR m.architecture_key = ig.architecture)
 	AND (m.game_os_key IS NULL OR ig.executable_os IS NULL OR m.game_os_key = ig.executable_os)
 	AND (m.host_os_key IS NULL OR m.host_os_key = ?)
-	AND (
-		COALESCE(ig.engine_version_major, rg.engine_version_major) IS NULL
-		OR (
-			(m.engine_min_major IS NULL OR NOT (
-				m.engine_min_major > COALESCE(ig.engine_version_major, rg.engine_version_major)
-				OR (
-					m.engine_min_major = COALESCE(ig.engine_version_major, rg.engine_version_major)
-					AND m.engine_min_minor IS NOT NULL
-					AND COALESCE(ig.engine_version_minor, rg.engine_version_minor) IS NOT NULL
-					AND (
-						m.engine_min_minor > COALESCE(ig.engine_version_minor, rg.engine_version_minor)
-						OR (
-							m.engine_min_minor = COALESCE(ig.engine_version_minor, rg.engine_version_minor)
-							AND m.engine_min_patch IS NOT NULL
-							AND COALESCE(ig.engine_version_patch, rg.engine_version_patch) IS NOT NULL
-							AND m.engine_min_patch > COALESCE(ig.engine_version_patch, rg.engine_version_patch)
-						)
-					)
-				)
-			))
-			AND (m.engine_max_major IS NULL OR NOT (
-				m.engine_max_major < COALESCE(ig.engine_version_major, rg.engine_version_major)
-				OR (
-					m.engine_max_major = COALESCE(ig.engine_version_major, rg.engine_version_major)
-					AND m.engine_max_minor IS NOT NULL
-					AND COALESCE(ig.engine_version_minor, rg.engine_version_minor) IS NOT NULL
-					AND (
-						m.engine_max_minor < COALESCE(ig.engine_version_minor, rg.engine_version_minor)
-						OR (
-							m.engine_max_minor = COALESCE(ig.engine_version_minor, rg.engine_version_minor)
-							AND m.engine_max_patch IS NOT NULL
-							AND COALESCE(ig.engine_version_patch, rg.engine_version_patch) IS NOT NULL
-							AND m.engine_max_patch < COALESCE(ig.engine_version_patch, rg.engine_version_patch)
-						)
-					)
-				)
-			))
-		)
+	AND {version_in_range}
+"
 	)
-";
+}
 
 fn build_mod_tag_inclusion_filter(
 	group: &FilterGroup<String>,
@@ -284,6 +269,8 @@ fn build_game_mod_tags_cte(
 		""
 	};
 
+	let compatibility_filter = mod_compatibility_filter();
+
 	format!(
 		r"
 		WITH filterable_tags AS MATERIALIZED (
@@ -304,7 +291,7 @@ fn build_game_mod_tags_cte(
 			INNER JOIN main.mod_tag_links mod_tag ON mod_tag.mod_id = m.id
 			INNER JOIN filterable_tags ON filterable_tags.tag_id = mod_tag.tag
 			WHERE COALESCE(m.hide_from_game_mods_list, 0) = 0
-				AND {MOD_COMPATIBILITY_FILTER}
+				AND {compatibility_filter}
 				{game_filter_sql}
 			UNION
 			SELECT DISTINCT g.provider_id, g.game_id, mod_tag.tag AS tag
@@ -315,7 +302,7 @@ fn build_game_mod_tags_cte(
 			INNER JOIN main.mod_tag_links mod_tag ON mod_tag.mod_id = m.id
 			INNER JOIN filterable_tags ON filterable_tags.tag_id = mod_tag.tag
 			WHERE COALESCE(m.hide_from_game_mods_list, 0) = 0
-				AND {MOD_COMPATIBILITY_FILTER}
+				AND {compatibility_filter}
 				{game_filter_sql}
 		)
 		"

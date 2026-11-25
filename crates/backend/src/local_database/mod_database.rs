@@ -12,6 +12,7 @@ use crate::{
 	game_providers::game_provider::GameProviderId,
 	local_database::{
 		app_database::{AppDatabase, Db},
+		engine_compatibility::{self, VersionColumns},
 		game_database::{GameDatabase, REMOTE_GAME_JOIN},
 		rusqlite_extensions::RowExt,
 	},
@@ -522,6 +523,24 @@ impl ModDatabase for Db {
 	}
 
 	fn get_game_mods(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Vec<ModInfo>> {
+		let version_compatible = engine_compatibility::engine_version_in_range(
+			VersionColumns {
+				major: "cm.game_major",
+				minor: "cm.game_minor",
+				patch: "cm.game_patch",
+			},
+			VersionColumns {
+				major: "cm.min_major",
+				minor: "cm.min_minor",
+				patch: "cm.min_patch",
+			},
+			VersionColumns {
+				major: "cm.max_major",
+				minor: "cm.max_minor",
+				patch: "cm.max_patch",
+			},
+		);
+
 		let mut mod_infos = self
 			.read_db()?
 			.prepare_cached(&format!(
@@ -605,6 +624,17 @@ impl ModDatabase for Db {
 						m.host_os_key IS NULL
 						OR m.host_os_key = $3
 					)
+			),
+			installed_dependencies AS (
+				SELECT dependant.mod_id AS mod_id, dependency.value AS dependency
+				FROM candidate_mods dependant
+				INNER JOIN json_each(dependant.optional_dependencies) dependency ON 1=1
+				WHERE dependant.is_installed = 1
+				UNION ALL
+				SELECT dependant.mod_id AS mod_id, dependency.value AS dependency
+				FROM candidate_mods dependant
+				INNER JOIN json_each(dependant.required_dependencies) dependency ON 1=1
+				WHERE dependant.is_installed = 1
 			)
 			SELECT
 				cm.mod_id,
@@ -614,66 +644,16 @@ impl ModDatabase for Db {
 				CASE
 					WHEN EXISTS (
 						SELECT 1
-						FROM candidate_mods dependant
-						INNER JOIN json_each(dependant.optional_dependencies) dep ON 1=1
+						FROM installed_dependencies dependant
 						WHERE dependant.mod_id <> cm.mod_id
-							AND dependant.is_installed = 1
 							AND (
-								json_extract(dep.value, '$.modId') = cm.mod_id
-								OR EXISTS (SELECT 1 FROM main.mod_tag_links mod_tag_link WHERE mod_tag_link.mod_id = cm.mod_id AND mod_tag_link.tag = json_extract(dep.value, '$.tag'))
-							)
-					) THEN 1
-					WHEN EXISTS (
-						SELECT 1
-						FROM candidate_mods dependant
-						INNER JOIN json_each(dependant.required_dependencies) dep ON 1=1
-						WHERE dependant.mod_id <> cm.mod_id
-							AND dependant.is_installed = 1
-							AND (
-								json_extract(dep.value, '$.modId') = cm.mod_id
-								OR EXISTS (SELECT 1 FROM main.mod_tag_links mod_tag_link WHERE mod_tag_link.mod_id = cm.mod_id AND mod_tag_link.tag = json_extract(dep.value, '$.tag'))
+								json_extract(dependant.dependency, '$.modId') = cm.mod_id
+								OR EXISTS (SELECT 1 FROM main.mod_tag_links mod_tag_link WHERE mod_tag_link.mod_id = cm.mod_id AND mod_tag_link.tag = json_extract(dependant.dependency, '$.tag'))
 							)
 					) THEN 1
 					ELSE 0
 				END AS has_installed_dependants,
-				CASE
-					WHEN cm.game_major IS NULL THEN 1
-					WHEN cm.min_major IS NOT NULL AND (
-						cm.min_major > cm.game_major
-						OR (
-							cm.min_major = cm.game_major
-							AND cm.min_minor IS NOT NULL
-							AND cm.game_minor IS NOT NULL
-							AND (
-								cm.min_minor > cm.game_minor
-								OR (
-									cm.min_minor = cm.game_minor
-									AND cm.min_patch IS NOT NULL
-									AND cm.game_patch IS NOT NULL
-									AND cm.min_patch > cm.game_patch
-								)
-							)
-						)
-					) THEN 0
-					WHEN cm.max_major IS NOT NULL AND (
-						cm.max_major < cm.game_major
-						OR (
-							cm.max_major = cm.game_major
-							AND cm.max_minor IS NOT NULL
-							AND cm.game_minor IS NOT NULL
-							AND (
-								cm.max_minor < cm.game_minor
-								OR (
-									cm.max_minor = cm.game_minor
-									AND cm.max_patch IS NOT NULL
-									AND cm.game_patch IS NOT NULL
-									AND cm.max_patch < cm.game_patch
-								)
-							)
-						)
-					) THEN 0
-					ELSE 1
-				END AS compatible,
+				CASE WHEN {version_compatible} THEN 1 ELSE 0 END AS compatible,
 				cm.tags
 			FROM candidate_mods cm
 		",
