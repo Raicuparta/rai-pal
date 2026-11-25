@@ -218,12 +218,6 @@ pub fn register(window: &crate::MainWindow) {
 	on_command!(window, GamesActions, on_open_wine_binary_folder, || handler => {
 		handler.open_wine_binary_folder();
 	});
-	on_command!(window, ModActions, on_run_standalone, |mod_id| handler => {
-		handler.run_standalone_mod(mod_id.to_string());
-	});
-	on_command!(window, ModActions, on_install_standalone, |mod_id| handler => {
-		handler.install_standalone_mod(mod_id.to_string());
-	});
 	on_command!(window, ModActions, on_open_local_mods_folder, || handler => {
 		handler.open_local_mods_folder();
 	});

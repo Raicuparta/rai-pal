@@ -1,4 +1,4 @@
-import { AppColorScheme, AppTab, FilterGroupId, ModActionData, ProviderAction, SkipConfirmation } from "app_types.slint";
+import { AppColorScheme, AppTab, FilterGroupId, ModActionData, ProviderAction } from "app_types.slint";
 
 export global AppActions {
     callback reset-settings;
@@ -39,7 +39,6 @@ export global GamesActions {
     callback open-wine-binary-folder;
     callback remove-game;
     callback request-debug-data;
-    callback request-mod-debug-data(mod-id: string);
 }
 
 export global ModsTabActions {
@@ -76,16 +75,8 @@ export global DialogActions {
 }
 
 export global ModActions {
-    callback request-install(mod-id: string, skip-confirmation: SkipConfirmation);
-    callback uninstall(mod-id: string);
-    callback update(mod-id: string);
-    callback reinstall(mod-id: string);
-    callback run(mod-id: string);
-    callback open-path(mod-id: string, path-id: string, open-folder: bool);
     callback request-uninstall-all;
     callback request-update-all;
-    callback run-standalone(mod-id: string);
-    callback install-standalone(mod-id: string);
     callback open-url(url: string);
     callback open-local-mods-folder;
 }

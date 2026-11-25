@@ -20,7 +20,7 @@ use rai_pal_backend::{
 		game_mods::{GameMod, GameModGroups},
 		manifest::{Mod, ModDependency, ModPathState, ModPathType, install_steps},
 	},
-	result::{Error, LogErrExt, Result},
+	result::{LogErrExt, Result},
 };
 use slint::ComponentHandle;
 
@@ -241,32 +241,25 @@ impl CommandHandler {
 			action_state::key(ActionKind::GameModRun, mod_id.clone()),
 			MessageContext::RunMod,
 			move || {
-				load_mod(&database, &game, &mod_id).and_then(|game_mod| game_mod.run(Some(&game)))
+				database
+					.get_mod_or_installed(&game.provider_id, &game.game_id, &mod_id)
+					.and_then(|game_mod| game_mod.run(Some(&game)))
 			},
 		);
 	}
 
-	pub fn open_mod_path(&self, game: Game, mod_id: String, path_id: String, open_folder: bool) {
+	pub fn open_mod_path(&self, game: Game, mod_id: String, path: String, open_folder: bool) {
 		let database = Arc::clone(&self.database);
 
 		self.spawn_action(
 			action_state::key(ActionKind::GameModOpenPath, mod_id.clone()),
 			MessageContext::OpenModPath,
 			move || {
-				load_mod(&database, &game, &mod_id)
-					.and_then(|game_mod| game_mod.open_path(&path_id, Some(&game), open_folder))
+				database
+					.get_mod_or_installed(&game.provider_id, &game.game_id, &mod_id)
+					.and_then(|game_mod| game_mod.open_path(&path, Some(&game), open_folder))
 			},
 		);
-	}
-}
-
-fn load_mod(database: &Db, game: &Game, mod_id: &str) -> Result<Mod> {
-	match database.get_mod(mod_id) {
-		Ok(game_mod) => Ok(game_mod),
-		Err(Error::ModNotFound(_)) => Ok(database
-			.try_get_installed_mod(&game.provider_id, &game.game_id, mod_id)?
-			.game_mod),
-		Err(error) => Err(error),
 	}
 }
 
@@ -403,8 +396,6 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 			engine_text: "".into(),
 			status: ModStatus::Broken,
 			deprecated: false,
-			has_install: false,
-			has_run: false,
 			actions: Rc::new(slint::VecModel::from(actions)).into(),
 			special_actions: Rc::new(slint::VecModel::from(Vec::<ModActionData>::new())).into(),
 		};
@@ -533,8 +524,6 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		engine_text: engine_text.into(),
 		status,
 		deprecated: manifest.deprecated == Some(true),
-		has_install,
-		has_run,
 		actions: Rc::new(slint::VecModel::from(actions)).into(),
 		special_actions: Rc::new(slint::VecModel::from(special_actions)).into(),
 	}
@@ -815,9 +804,7 @@ impl CommandHandler {
 		let mod_id = action.mod_id.to_string();
 
 		match action.kind {
-			ModActionKind::Install => {
-				self.prompt_install_mod(mod_id, crate::SkipConfirmation::InstallMod);
-			}
+			ModActionKind::Install => self.prompt_install_mod(mod_id),
 			ModActionKind::Update => self.with_selected_mod(&mod_id, Self::update_mod),
 			ModActionKind::Run => self.with_selected_mod(&mod_id, Self::run_mod),
 			ModActionKind::Reinstall => {
@@ -858,22 +845,5 @@ impl CommandHandler {
 pub fn register(window: &crate::MainWindow) {
 	on_command!(window, ModMenuActions, on_activate, |action| handler => {
 		handler.activate_mod_action(action);
-	});
-	on_command!(window, ModActions, on_update, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), CommandHandler::update_mod);
-	});
-	on_command!(window, ModActions, on_reinstall, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), CommandHandler::install_mod);
-	});
-	on_command!(window, ModActions, on_uninstall, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), CommandHandler::uninstall_mod);
-	});
-	on_command!(window, ModActions, on_run, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), CommandHandler::run_mod);
-	});
-	on_command!(window, ModActions, on_open_path, |mod_id, path_id, open_folder| handler => {
-		handler.with_selected_mod(mod_id.as_str(), |handler, game, mod_id| {
-			handler.open_mod_path(game, mod_id, path_id.to_string(), open_folder);
-		});
 	});
 }

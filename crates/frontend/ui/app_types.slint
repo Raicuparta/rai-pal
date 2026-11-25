@@ -37,11 +37,6 @@ export enum EngineId {
     game-maker,
 }
 
-export enum SkipConfirmation {
-    none,
-    install-mod,
-}
-
 export enum ModStatus {
     broken,
     outdated,
@@ -237,8 +232,6 @@ export struct GameModData {
     engine-text: string,
     status: ModStatus,
     deprecated: bool,
-    has-install: bool,
-    has-run: bool,
     actions: [ModActionData],
     special-actions: [ModActionData],
 }
@@ -271,7 +264,6 @@ export struct ModsTabModData {
     engine-text: string,
     deprecated: bool,
     actions: [ModActionData],
-    special-actions: [ModActionData],
 }
 
 export struct NotificationData {

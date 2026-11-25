@@ -1,7 +1,7 @@
 import { ModsTabModData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { IconButton } from "icon_button.slint";
-import { ModActionsMenu, ModSpecialActionButton } from "mod_actions.slint";
+import { ModActionsMenu } from "mod_actions.slint";
 import { ModSummaryView } from "mod_summary.slint";
 import { RowDivider } from "row_divider.slint";
 import { Icon } from "svg_icon.slint";
@@ -69,10 +69,6 @@ export component ModsTabRow inherits VerticalLayout {
                 alignment: end;
                 spacing: Theme.space-xs;
                 min-width: self.preferred-width;
-
-                for action in root.mod-data.special-actions: ModSpecialActionButton {
-                    action: action;
-                }
 
                 IconButton {
                     icon: Icon.more;

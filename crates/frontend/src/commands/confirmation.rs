@@ -22,7 +22,7 @@ struct PendingConfirmation {
 pub struct PendingState(RefCell<Option<PendingConfirmation>>);
 
 impl CommandHandler {
-	pub fn prompt_install_mod(&self, mod_id: String, skip: crate::SkipConfirmation) {
+	pub fn prompt_install_mod(&self, mod_id: String) {
 		let Some(game) = self.selected_game() else {
 			return;
 		};
@@ -30,7 +30,7 @@ impl CommandHandler {
 		self.prompt(
 			PendingAction::InstallMod { game, mod_id },
 			ConfirmKind::InstallMod,
-			skip.into(),
+			Some(SkipConfirmation::InstallMod),
 		);
 	}
 
@@ -122,9 +122,6 @@ pub fn register(window: &crate::MainWindow) {
 	});
 	on_command!(window, GamesActions, on_remove_game, || handler => {
 		handler.prompt_remove_game();
-	});
-	on_command!(window, ModActions, on_request_install, |mod_id, skip| handler => {
-		handler.prompt_install_mod(mod_id.to_string(), skip);
 	});
 	on_command!(window, ModActions, on_request_uninstall_all, || handler => {
 		handler.prompt_uninstall_all_mods();

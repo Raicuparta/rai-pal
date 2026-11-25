@@ -240,7 +240,6 @@ fn mod_data(game_mod: Mod, games: &[ModGame]) -> ModsTabModData {
 		engine_text: engine_text.into(),
 		deprecated: game_mod.deprecated == Some(true),
 		actions: Rc::new(slint::VecModel::from(actions.finish())).into(),
-		special_actions: Default::default(),
 	}
 }
 
