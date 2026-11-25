@@ -6,16 +6,8 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
-Database over at ~/Repos/rai-pal-db. Feel free to change and commit there if needed, with the expectation that things won't be live until i push.
-
 ## Do later
 
 ## Notes, questions, decisions, etc
 
 ## Done
-
-- Mod sources are an ordered list now: the default source is always first, custom sources can be reordered with up/down buttons, later sources override mods with the same id from earlier ones, and local folder mods always win. Removed mod scopes, source hashes, `ModProviderId`, and the per-source reconciliation code; the catalog is rebuilt from the enabled sources on each refresh.
-- Mod DB `install.manifestPath` is now `install.installKind` (`Shared` or `PerGame`). Manifest paths are derived as `installed-mods/<exe hash>/manifests/<id>.json` or `shared-mods/<id>/rai-pal-manifest.json`; every mod that was already in the database matched one of these exactly.
-- Installed mods are detected by scanning those two locations instead of the catalog, so mods that disappear from the DB (or come from a disabled/offline source) keep their installed state. Old scoped ids in installed manifests are normalized by dropping the old prefix, and unknown manifests still fall back to an id-only read. Mods that only exist as installed manifests show as installed, without update/reinstall actions.
-- Installed manifests that can't be parsed show as a broken mod row (title is the manifest file name) with only the "Reinstall all mods" action, instead of being silently invisible. Reinstalling uninstalls everything (same as "Uninstall all mods") and then reinstalls the previously installed non-broken mods. The action also appears as the top-priority sidebar action when broken mods exist. The description is translated in all languages.
-- Mod descriptions wrap again in both the game details list and the mods tab; titles and meta values stay single-line with ellipsis. The mods tab uses a virtualized `ListView`, which supports variable row heights (offscreen rows use the last measured height as an estimate, so scroll positions can shift slightly until rows are measured).
