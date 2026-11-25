@@ -856,3 +856,7 @@ msgstr "インストール可能"
 msgctxt "filterValue"
 msgid "Link Only"
 msgstr "リンクのみ"
+
+msgctxt "gameModRow"
+msgid "This mod is not fully installed, but left some files behind. It's safest to uninstall all mods first before continuing."
+msgstr "このModは完全にはインストールされていませんが、いくつかのファイルが残っています。続行する前に、まずすべてのModをアンインストールするのが最も安全です。"

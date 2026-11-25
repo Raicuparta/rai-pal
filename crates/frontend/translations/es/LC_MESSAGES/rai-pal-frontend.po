@@ -856,3 +856,7 @@ msgstr "Instalable"
 msgctxt "filterValue"
 msgid "Link Only"
 msgstr "Solo enlace"
+
+msgctxt "gameModRow"
+msgid "This mod is not fully installed, but left some files behind. It's safest to uninstall all mods first before continuing."
+msgstr "Este mod no está completamente instalado, pero dejó algunos archivos atrás. Lo más seguro es desinstalar todos los mods primero antes de continuar."
