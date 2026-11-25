@@ -129,7 +129,7 @@ export component GameDetailsPage inherits HorizontalLayout {
                         inset: Theme.space-md;
                         text: @tr("gameModal" => "Update all mods");
                         icon: Icon.update;
-                        tint: GameDetailsState.has-broken-mods ? transparent : Theme.primary;
+                        tint: GameDetailsState.has-outdated-mods && !GameDetailsState.has-broken-mods ? Theme.primary : transparent;
                         enabled: GameDetailsState.has-outdated-mods;
                         action-key: { kind: ActionKind.game-mod-update-all, target: "" };
 
