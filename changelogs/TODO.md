@@ -8,6 +8,9 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do later
 
+- "update now" button shouldn't scroll away from visibility when lots of changelog stuff.
+- some buttons still not reacting on first click while window unfocused ugh. mod install button is one of them. this needs to be fixed completely.
+
 ## Notes, questions, decisions, etc
 
 ## Done
