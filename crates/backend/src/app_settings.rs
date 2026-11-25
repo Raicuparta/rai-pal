@@ -5,6 +5,7 @@ use rai_pal_proc_macros::serde_enum;
 
 use crate::{
 	app_paths,
+	game_providers::game_provider::GameProviderId,
 	games_query::{FilterGroupKey, GamesQuery},
 	mods_query::ModsQuery,
 	path_extensions::PathExt,
@@ -76,6 +77,13 @@ pub enum SkipConfirmation {
 	InstallMod,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct SelectedGame {
+	pub provider_id: GameProviderId,
+	pub game_id: String,
+}
+
 #[derive(serde::Serialize, serde::Deserialize, Default, Clone, Copy)]
 pub struct WindowState {
 	pub x: i32,
@@ -106,6 +114,8 @@ pub struct AppSettings {
 	pub color_scheme: ColorScheme,
 	#[serde(default)]
 	pub window_state: Option<WindowState>,
+	#[serde(default)]
+	pub selected_game: Option<SelectedGame>,
 }
 
 // If the settings schema changes, update this so it gets recreated.

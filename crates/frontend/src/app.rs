@@ -165,6 +165,13 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	);
 	ctx.load_mods_tab();
 	ctx.load_user();
+
+	if initial_tab == AppTab::Games
+		&& let Some(selected_game) = app_settings.borrow().selected_game.clone()
+	{
+		ctx.select_game_by_id(selected_game.provider_id, &selected_game.game_id);
+	}
+
 	if initial_tab == AppTab::Thanks {
 		ctx.load_patrons();
 	}

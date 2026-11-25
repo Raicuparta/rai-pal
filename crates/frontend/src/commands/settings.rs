@@ -5,7 +5,7 @@ use std::{
 };
 
 use rai_pal_backend::{
-	app_settings::{AppLocale, AppSettings},
+	app_settings::{AppLocale, AppSettings, SelectedGame},
 	game::Game,
 	game_providers::game_provider::GameProviderId,
 	games_query::GamesSortBy,
@@ -257,10 +257,18 @@ impl CommandHandler {
 		if game.exe_path.is_some() {
 			self.refresh_game();
 		}
+
+		self.settings.borrow_mut().selected_game = Some(SelectedGame {
+			provider_id: game.provider_id,
+			game_id: game.game_id,
+		});
+		self.persist_settings();
 	}
 
 	pub fn deselect_game(&self) {
 		self.hide_game_details();
+		self.settings.borrow_mut().selected_game = None;
+		self.persist_settings();
 	}
 
 	pub fn refresh_selected_row(&self, game: &Game) {
