@@ -329,7 +329,14 @@ impl Mod {
 				.as_ref()
 				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "download".to_string()))?;
 
-			let source_dir = download.download(&self.id, true, &on_progress).await?;
+			let source_dir = download
+				.download(
+					&replace_tokens(&download.url, game_option, self),
+					&self.id,
+					true,
+					&on_progress,
+				)
+				.await?;
 
 			for extract_action in extract_actions {
 				let source_path = source_dir.join(&extract_action.source);
@@ -354,7 +361,14 @@ impl Mod {
 				.as_ref()
 				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "download".to_string()))?;
 
-			let source_path = download.download(&self.id, false, &on_progress).await?;
+			let source_path = download
+				.download(
+					&replace_tokens(&download.url, game_option, self),
+					&self.id,
+					false,
+					&on_progress,
+				)
+				.await?;
 
 			for copy_action in copy_actions {
 				let destination_path =
@@ -585,16 +599,17 @@ fn make_executable(path: &Path) -> Result {
 impl ModDownload {
 	async fn download(
 		&self,
+		url: &str,
 		mod_id: &str,
 		extract: bool,
 		on_progress: &(impl Fn(ProgressStatus) + Send + Sync),
 	) -> Result<PathBuf> {
-		if let Some(local_path) = self.url.strip_prefix("file://") {
+		if let Some(local_path) = url.strip_prefix("file://") {
 			return Ok(PathBuf::from(local_path));
 		}
 
 		let mut hasher = DefaultHasher::new();
-		self.url.hash(&mut hasher);
+		url.hash(&mut hasher);
 		self.id.hash(&mut hasher);
 		let url_hash = hasher.finish().to_string();
 
@@ -615,7 +630,7 @@ impl ModDownload {
 					kind: InstallStepKind::Download,
 				};
 
-				http::download(&self.url, &part_path, &download_step, on_progress).await?;
+				http::download(url, &part_path, &download_step, on_progress).await?;
 				fs_err::tokio::rename(&part_path, &download_path).await?;
 			}
 

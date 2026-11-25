@@ -1,7 +1,7 @@
 use rai_pal_proc_macros::serde_enum;
 
 use crate::{
-	app_paths,
+	app_paths, database_url,
 	game::Game,
 	game_providers::provider_command::{ProviderCommandAction, ProviderCommandKind},
 	mods::manifest::Mod,
@@ -11,6 +11,7 @@ use crate::{
 
 #[serde_enum]
 pub enum ReplacementToken {
+	DatabaseUrlBase,
 	GameExecutableFolderPath,
 	GameExecutableName,
 	GameExecutableNameWithoutExtension,
@@ -51,7 +52,11 @@ fn replace_parameter_value<TValue: AsRef<str>, TGetValue: Fn() -> Result<TValue>
 }
 
 pub fn replace_tokens(base_string: &str, game_option: Option<&Game>, game_mod: &Mod) -> String {
-	let mut result = base_string.to_string();
+	let mut result = replace_parameter_value(
+		base_string,
+		ReplacementToken::DatabaseUrlBase,
+		|| Ok(database_url::base_url()),
+	);
 
 	if let Some(game) = game_option {
 		let start_command = game
