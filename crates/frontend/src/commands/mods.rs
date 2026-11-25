@@ -312,6 +312,7 @@ fn refresh_path_states(window: slint::Weak<MainWindow>, database: Arc<Db>, game:
 fn apply_mods(window: &MainWindow, models: &GameDetailsModels, database: &Db, game: &Game) {
 	let state = window.global::<crate::GameDetailsState>();
 	state.set_mods_folder_exists(game.mods_folder_exists());
+	state.set_mods_folder_has_files(game.mods_folder_has_files());
 
 	let loaded = match load_mods(database, game) {
 		Ok(loaded) => loaded,

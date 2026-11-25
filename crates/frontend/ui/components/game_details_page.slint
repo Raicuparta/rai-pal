@@ -23,6 +23,7 @@ export global GameDetailsState {
     in property <bool> show-wine-folders: false;
     in property <bool> has-outdated-mods: false;
     in property <bool> mods-folder-exists: false;
+    in property <bool> mods-folder-has-files: false;
     in property <[ProviderActionData]> provider-actions;
     in property <[GameModData]> installed;
     in property <[GameModData]> game-specific;
@@ -111,11 +112,12 @@ export component GameDetailsPage inherits HorizontalLayout {
                         padding-bottom: Theme.space-xs;
                     }
 
-                    if GameDetailsState.has-outdated-mods: ActionButton {
+                    ActionButton {
                         inset: Theme.space-md;
                         text: @tr("gameModal" => "Update all mods");
                         icon: Icon.update;
                         tint: Theme.primary;
+                        enabled: GameDetailsState.has-outdated-mods;
                         action-key: { kind: ActionKind.game-mod-update-all, target: "" };
 
                         clicked => {
@@ -123,10 +125,11 @@ export component GameDetailsPage inherits HorizontalLayout {
                         }
                     }
 
-                    if GameDetailsState.installed.length > 0 || GameDetailsState.mods-folder-exists: ActionButton {
+                    ActionButton {
                         inset: Theme.space-md;
                         text: @tr("gameModal" => "Uninstall all mods");
                         icon: Icon.delete;
+                        enabled: GameDetailsState.installed.length > 0 || GameDetailsState.mods-folder-has-files;
                         action-key: { kind: ActionKind.game-mod-uninstall-all, target: "" };
 
                         clicked => {
