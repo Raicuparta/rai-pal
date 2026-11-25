@@ -51,7 +51,7 @@ export component ModSummaryView inherits HorizontalLayout {
     if show-status: SvgIcon {
         icon: status == ModStatus.broken ? Icon.warning
             : status == ModStatus.link-only ? Icon.external-link
-            : status == ModStatus.outdated ? Icon.outdated
+            : status == ModStatus.outdated ? Icon.update
             : status == ModStatus.installed ? Icon.success
             : Icon.mod-not-installed;
         size: 22px;
@@ -86,7 +86,7 @@ export component ModSummaryView inherits HorizontalLayout {
             cross-axis-alignment: center;
 
             if root.deprecated: MetaItem {
-                icon: Icon.deprecated;
+                icon: Icon.warning;
                 text: @tr("modsPage" => "Deprecated");
                 tooltip: root.deprecated-tooltip;
                 color: Theme.deprecated-foreground;

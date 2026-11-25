@@ -13,7 +13,6 @@ export enum Icon {
     close,
     copied,
     copy,
-    deprecated,
     download,
     engine,
     error,
@@ -95,7 +94,6 @@ export component SvgIcon inherits Image {
         if icon == Icon.close { return @image-url("../icons/ui/close.svg"); }
         if icon == Icon.copied { return @image-url("../icons/ui/copied.svg"); }
         if icon == Icon.copy { return @image-url("../icons/ui/copy.svg"); }
-        if icon == Icon.deprecated { return @image-url("../icons/ui/deprecated.svg"); }
         if icon == Icon.download { return @image-url("../icons/ui/download.svg"); }
         if icon == Icon.engine { return @image-url("../icons/ui/engine.svg"); }
         if icon == Icon.error { return @image-url("../icons/ui/error.svg"); }
@@ -132,7 +130,7 @@ export component SvgIcon inherits Image {
         if icon == Icon.delete { return @image-url("../icons/ui/delete.svg"); }
         if icon == Icon.unlocked { return @image-url("../icons/ui/unlocked.svg"); }
         if icon == Icon.update { return @image-url("../icons/ui/update.svg"); }
-        if icon == Icon.warning { return @image-url("../icons/ui/deprecated.svg"); }
+        if icon == Icon.warning { return @image-url("../icons/ui/warning.svg"); }
         if icon == Icon.user { return @image-url("../icons/ui/user.svg"); }
         if icon == Icon.github { return @image-url("../icons/brands/github.svg"); }
         if icon == Icon.patreon { return @image-url("../icons/brands/patreon.svg"); }
