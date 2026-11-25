@@ -290,7 +290,7 @@ fn build_game_mod_tags_cte(
 			INNER JOIN main.mods m ON m.id = mod_game_id.mod_id
 			INNER JOIN main.mod_tag_links mod_tag ON mod_tag.mod_id = m.id
 			INNER JOIN filterable_tags ON filterable_tags.tag_id = mod_tag.tag
-			WHERE COALESCE(m.hide_from_game_mods_list, 0) = 0
+			WHERE COALESCE(json_extract(m.install, '$.dependencyOnly'), 0) = 0
 				AND {compatibility_filter}
 				{game_filter_sql}
 			UNION
@@ -301,7 +301,7 @@ fn build_game_mod_tags_cte(
 			INNER JOIN main.mods m ON m.has_game_ids = 0
 			INNER JOIN main.mod_tag_links mod_tag ON mod_tag.mod_id = m.id
 			INNER JOIN filterable_tags ON filterable_tags.tag_id = mod_tag.tag
-			WHERE COALESCE(m.hide_from_game_mods_list, 0) = 0
+			WHERE COALESCE(json_extract(m.install, '$.dependencyOnly'), 0) = 0
 				AND {compatibility_filter}
 				{game_filter_sql}
 		)

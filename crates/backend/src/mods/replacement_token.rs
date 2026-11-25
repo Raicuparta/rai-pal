@@ -52,11 +52,10 @@ fn replace_parameter_value<TValue: AsRef<str>, TGetValue: Fn() -> Result<TValue>
 }
 
 pub fn replace_tokens(base_string: &str, game_option: Option<&Game>, game_mod: &Mod) -> String {
-	let mut result = replace_parameter_value(
-		base_string,
-		ReplacementToken::DatabaseUrlBase,
-		|| Ok(database_url::base_url()),
-	);
+	let mut result =
+		replace_parameter_value(base_string, ReplacementToken::DatabaseUrlBase, || {
+			Ok(database_url::base_url())
+		});
 
 	if let Some(game) = game_option {
 		let start_command = game

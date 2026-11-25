@@ -88,7 +88,6 @@ pub struct Mod {
 	pub tags: Option<Vec<String>>,
 	pub game_ids: Option<GameIds>,
 	pub title: String,
-	pub hide_from_game_mods_list: Option<bool>,
 	pub author: String,
 	pub website: Option<String>,
 	pub description: String,
@@ -134,6 +133,8 @@ pub struct ModInstallCopy {
 #[serde(rename_all = "camelCase")]
 pub struct ModInstall {
 	pub install_kind: Option<InstallKind>,
+	#[serde(default)]
+	pub dependency_only: bool,
 	pub extract: Option<Vec<ModInstallExtract>>,
 	pub copy: Option<Vec<ModInstallCopy>>,
 	pub write: Option<Vec<ModInstallWrite>>,

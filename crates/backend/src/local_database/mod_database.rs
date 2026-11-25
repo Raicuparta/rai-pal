@@ -101,7 +101,6 @@ const MOD_COLUMNS: &str = r"
 	run_for_game,
 	run_standalone,
 	hash,
-	hide_from_game_mods_list,
 	tags,
 	game_environment,
 	game_ids
@@ -129,10 +128,9 @@ fn read_mod(row: &rusqlite::Row<'_>) -> rusqlite::Result<Mod> {
 		run_for_game: row.get_json(17)?,
 		run_standalone: row.get_json(18)?,
 		hash: row.get(19)?,
-		hide_from_game_mods_list: row.get(20)?,
-		tags: row.get_json(21)?,
-		game_environment: row.get_json(22)?,
-		game_ids: row.get_json(23)?,
+		tags: row.get_json(20)?,
+		game_environment: row.get_json(21)?,
+		game_ids: row.get_json(22)?,
 	})
 }
 
@@ -168,7 +166,6 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 				game_os TEXT,
 				host_os TEXT,
 				deprecated INTEGER,
-				hide_from_game_mods_list INTEGER,
 				paths TEXT,
 				optional_dependencies TEXT,
 				required_dependencies TEXT,
@@ -931,11 +928,10 @@ fn insert_mod_row(
 				run_for_game,
 				run_standalone,
 				game_environment,
-				hide_from_game_mods_list,
 				hash,
 				tags,
 				game_ids
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)",
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)",
 		)?
 		.execute(rusqlite::params![
 			game_mod.id,
@@ -959,7 +955,6 @@ fn insert_mod_row(
 			serialize_json_option(game_mod.run_for_game.as_ref())?,
 			serialize_json_option(game_mod.run_standalone.as_ref())?,
 			serialize_json_option(game_mod.game_environment.as_ref())?,
-			game_mod.hide_from_game_mods_list,
 			game_mod.hash,
 			serde_json::to_string(&game_mod.tags.clone().unwrap_or_default())?,
 			serialize_json_option(game_mod.game_ids.as_ref())?,

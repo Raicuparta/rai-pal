@@ -29,7 +29,7 @@ pub struct GameDetailsModels {
 	pub installed: Rc<VecModel<GameModData>>,
 	pub game_specific: Rc<VecModel<GameModData>>,
 	pub available: Rc<VecModel<GameModData>>,
-	pub hidden: Rc<VecModel<GameModData>>,
+	pub dependency_only: Rc<VecModel<GameModData>>,
 	pub incompatible: Rc<VecModel<GameModData>>,
 }
 
@@ -39,7 +39,7 @@ impl GameDetailsModels {
 		let installed = Rc::new(VecModel::default());
 		let game_specific = Rc::new(VecModel::default());
 		let available = Rc::new(VecModel::default());
-		let hidden = Rc::new(VecModel::default());
+		let dependency_only = Rc::new(VecModel::default());
 		let incompatible = Rc::new(VecModel::default());
 
 		let state = window.global::<crate::GameDetailsState>();
@@ -47,7 +47,7 @@ impl GameDetailsModels {
 		state.set_installed(installed.clone().into());
 		state.set_game_specific(game_specific.clone().into());
 		state.set_available(available.clone().into());
-		state.set_hidden(hidden.clone().into());
+		state.set_dependency_only(dependency_only.clone().into());
 		state.set_incompatible(incompatible.clone().into());
 
 		Self {
@@ -55,7 +55,7 @@ impl GameDetailsModels {
 			installed,
 			game_specific,
 			available,
-			hidden,
+			dependency_only,
 			incompatible,
 		}
 	}
@@ -65,7 +65,7 @@ impl GameDetailsModels {
 		self.installed.clear();
 		self.game_specific.clear();
 		self.available.clear();
-		self.hidden.clear();
+		self.dependency_only.clear();
 		self.incompatible.clear();
 	}
 }

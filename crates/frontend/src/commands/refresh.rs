@@ -157,7 +157,7 @@ impl CommandHandler {
 		self.refresh_game_with_state(true);
 	}
 
-	fn refresh_game_with_state(&self, show_state: bool) {
+	pub fn refresh_game_with_state(&self, show_state: bool) {
 		let Some(game) = self.selected_game() else {
 			return;
 		};

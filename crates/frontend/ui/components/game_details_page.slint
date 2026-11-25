@@ -27,7 +27,7 @@ export global GameDetailsState {
     in property <[GameModData]> installed;
     in property <[GameModData]> game-specific;
     in property <[GameModData]> available;
-    in property <[GameModData]> hidden;
+    in property <[GameModData]> dependency-only;
     in property <[GameModData]> incompatible;
 }
 
@@ -249,7 +249,7 @@ export component GameDetailsPage inherits HorizontalLayout {
                 }
             }
 
-            if GameDetailsState.installed.length + GameDetailsState.game-specific.length + GameDetailsState.available.length + GameDetailsState.hidden.length + GameDetailsState.incompatible.length == 0: HorizontalLayout {
+            if GameDetailsState.installed.length + GameDetailsState.game-specific.length + GameDetailsState.available.length + GameDetailsState.dependency-only.length + GameDetailsState.incompatible.length == 0: HorizontalLayout {
                 height: self.preferred-height;
                 padding-left: Theme.space-sm;
                 padding-right: Theme.space-sm;
@@ -293,10 +293,10 @@ export component GameDetailsPage inherits HorizontalLayout {
                     mods: GameDetailsState.available;
                 }
 
-                if GameDetailsState.hidden.length > 0: ModsSection {
+                if GameDetailsState.dependency-only.length > 0: ModsSection {
                     label: @tr("gameModal" => "Other things");
                     description: @tr("gameModal" => "These are mostly dependencies and other stuff that you don't usually need to mess with directly.");
-                    mods: GameDetailsState.hidden;
+                    mods: GameDetailsState.dependency-only;
                 }
 
                 if GameDetailsState.incompatible.length > 0: ModsSection {

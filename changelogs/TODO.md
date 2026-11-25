@@ -10,8 +10,6 @@ Database over at ~/Repos/rai-pal-db. Feel free to change and commit there if nee
 
 ## Do later
 
-- Updating database versions too frequently now, this makes all mods stop showing as installed.
-
 ## Notes, questions, decisions, etc
 
 ## Done

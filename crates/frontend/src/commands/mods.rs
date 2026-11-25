@@ -40,7 +40,7 @@ struct LoadedMods {
 	installed: Vec<GameModData>,
 	game_specific: Vec<GameModData>,
 	available: Vec<GameModData>,
-	hidden: Vec<GameModData>,
+	dependency_only: Vec<GameModData>,
 	incompatible: Vec<GameModData>,
 }
 
@@ -282,7 +282,7 @@ fn refresh_path_states(window: slint::Weak<MainWindow>, database: Arc<Db>, game:
 			.iter()
 			.chain(groups.game_specific.iter())
 			.chain(groups.available.iter())
-			.chain(groups.hidden.iter())
+			.chain(groups.dependency_only.iter())
 			.chain(groups.incompatible.iter())
 		{
 			let manifest = &entry.manifest;
@@ -324,20 +324,20 @@ fn apply_mods(window: &MainWindow, models: &GameDetailsModels, database: &Db, ga
 	let has_outdated_mods = loaded
 		.installed
 		.iter()
-		.chain(loaded.hidden.iter())
+		.chain(loaded.dependency_only.iter())
 		.any(|mod_data| mod_data.status == ModStatus::Outdated);
 	let LoadedMods {
 		installed,
 		game_specific,
 		available,
-		hidden,
+		dependency_only,
 		incompatible,
 	} = loaded;
 	state.set_has_outdated_mods(has_outdated_mods);
 	model::sync_vec_model(&models.installed, installed);
 	model::sync_vec_model(&models.game_specific, game_specific);
 	model::sync_vec_model(&models.available, available);
-	model::sync_vec_model(&models.hidden, hidden);
+	model::sync_vec_model(&models.dependency_only, dependency_only);
 	model::sync_vec_model(&models.incompatible, incompatible);
 }
 
@@ -359,8 +359,8 @@ fn load_mods(database: &Db, game: &Game) -> Result<LoadedMods> {
 		.into_iter()
 		.map(|entry| row_data(entry, game))
 		.collect::<Vec<_>>();
-	let hidden = list
-		.hidden
+	let dependency_only = list
+		.dependency_only
 		.into_iter()
 		.map(|entry| row_data(entry, game))
 		.collect::<Vec<_>>();
@@ -373,7 +373,7 @@ fn load_mods(database: &Db, game: &Game) -> Result<LoadedMods> {
 		installed,
 		game_specific,
 		available,
-		hidden,
+		dependency_only,
 		incompatible,
 	})
 }
@@ -414,8 +414,11 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	let can_show_actions = info.compatible && game.exe_path.is_some();
 	let has_install = manifest.install.is_some();
 	let has_run = manifest.run_for_game.is_some();
-	let installable =
-		manifest.hide_from_game_mods_list != Some(true) || info.has_installed_dependants;
+	let dependency_only = manifest
+		.install
+		.as_ref()
+		.is_some_and(|install| install.dependency_only);
+	let installable = !dependency_only || info.has_installed_dependants;
 	let version_text = version_text(&info, &manifest);
 	let release_date = release_date_display(&manifest);
 	let engine_text = engine_text(&manifest);

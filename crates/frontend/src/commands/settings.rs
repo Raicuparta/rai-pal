@@ -255,7 +255,7 @@ impl CommandHandler {
 		self.refresh_mods(&game);
 
 		if game.exe_path.is_some() {
-			self.refresh_game();
+			self.refresh_game_with_state(false);
 		}
 
 		self.settings.borrow_mut().selected_game = Some(SelectedGame {

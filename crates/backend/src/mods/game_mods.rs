@@ -28,7 +28,7 @@ pub struct GameModGroups {
 	pub installed: Vec<GameMod>,
 	pub game_specific: Vec<GameMod>,
 	pub available: Vec<GameMod>,
-	pub hidden: Vec<GameMod>,
+	pub dependency_only: Vec<GameMod>,
 	pub incompatible: Vec<GameMod>,
 }
 
@@ -38,7 +38,7 @@ impl GameModGroups {
 		let mods = database.get_mod_map()?;
 
 		let mut compatible_parts = Vec::new();
-		let mut hidden_parts = Vec::new();
+		let mut dependency_only_parts = Vec::new();
 		let mut incompatible_parts = Vec::new();
 
 		for file_name in database.get_broken_installed_manifests(game)? {
@@ -66,20 +66,26 @@ impl GameModGroups {
 
 			let entry = GameMod { manifest, info };
 
+			let dependency_only = entry
+				.manifest
+				.install
+				.as_ref()
+				.is_some_and(|install| install.dependency_only);
+
 			if entry.info.compatible {
-				if entry.manifest.hide_from_game_mods_list == Some(true) {
-					hidden_parts.push(entry);
+				if dependency_only {
+					dependency_only_parts.push(entry);
 				} else {
 					compatible_parts.push(entry);
 				}
-			} else if entry.manifest.hide_from_game_mods_list != Some(true) {
+			} else if !dependency_only {
 				incompatible_parts.push(entry);
 			}
 		}
 
 		let compatible_tags = compatible_parts
 			.iter()
-			.chain(hidden_parts.iter())
+			.chain(dependency_only_parts.iter())
 			.filter_map(|entry| entry.manifest.tags.as_ref())
 			.flatten()
 			.cloned()
@@ -92,7 +98,7 @@ impl GameModGroups {
 		});
 
 		sort_entries(&mut compatible_parts);
-		sort_entries(&mut hidden_parts);
+		sort_entries(&mut dependency_only_parts);
 		sort_entries(&mut incompatible_parts);
 
 		let (installed, available): (Vec<GameMod>, Vec<GameMod>) =
@@ -104,7 +110,7 @@ impl GameModGroups {
 			installed,
 			game_specific,
 			available,
-			hidden: hidden_parts,
+			dependency_only: dependency_only_parts,
 			incompatible: incompatible_parts,
 		})
 	}
@@ -116,7 +122,6 @@ fn broken_manifest(file_name: String) -> Mod {
 		tags: None,
 		game_ids: None,
 		title: file_name,
-		hide_from_game_mods_list: None,
 		author: String::new(),
 		website: None,
 		description: String::new(),
