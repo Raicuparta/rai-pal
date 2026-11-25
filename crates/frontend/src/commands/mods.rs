@@ -338,11 +338,12 @@ fn apply_mods(window: &MainWindow, models: &GameDetailsModels, database: &Db, ga
 fn load_mods(database: &Db, game: &Game) -> Result<LoadedMods> {
 	let list = GameModGroups::load(database, game)?;
 
-	let installed = list
+	let mut installed = list
 		.installed
 		.into_iter()
 		.map(|entry| row_data(entry, game))
 		.collect::<Vec<_>>();
+	installed.extend(list.broken.into_iter().map(broken_row_data));
 	let game_specific = list
 		.game_specific
 		.into_iter()
@@ -374,32 +375,6 @@ fn load_mods(database: &Db, game: &Game) -> Result<LoadedMods> {
 
 fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	let GameMod { manifest, info } = entry;
-
-	if info.broken {
-		let mut action_list = ModActionList::new(&manifest.id);
-		action_list.push(
-			ActionGroup::Primary,
-			action_list.action(
-				ModActionKind::UninstallAll,
-				ActionKind::GameModUninstallAll,
-				"",
-			),
-		);
-		let actions = action_list.finish();
-
-		return GameModData {
-			title: manifest.title.into(),
-			description: "".into(),
-			version_text: "".into(),
-			release_date: "".into(),
-			author: "".into(),
-			engine_text: "".into(),
-			status: ModStatus::Broken,
-			deprecated: false,
-			actions: Rc::new(slint::VecModel::from(actions)).into(),
-			special_actions: Rc::new(slint::VecModel::from(Vec::<ModActionData>::new())).into(),
-		};
-	}
 
 	let installed = info.is_installed;
 	let status = mod_status(&manifest, &info, installed);
@@ -526,6 +501,31 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		deprecated: manifest.deprecated == Some(true),
 		actions: Rc::new(slint::VecModel::from(actions)).into(),
 		special_actions: Rc::new(slint::VecModel::from(special_actions)).into(),
+	}
+}
+
+fn broken_row_data(title: String) -> GameModData {
+	let mut actions = ModActionList::new(&title);
+	actions.push(
+		ActionGroup::Primary,
+		actions.action(
+			ModActionKind::UninstallAll,
+			ActionKind::GameModUninstallAll,
+			"",
+		),
+	);
+
+	GameModData {
+		title: title.into(),
+		description: "".into(),
+		version_text: "".into(),
+		release_date: "".into(),
+		author: "".into(),
+		engine_text: "".into(),
+		status: ModStatus::Broken,
+		deprecated: false,
+		actions: Rc::new(slint::VecModel::from(actions.finish())).into(),
+		special_actions: Rc::new(slint::VecModel::from(Vec::<ModActionData>::new())).into(),
 	}
 }
 

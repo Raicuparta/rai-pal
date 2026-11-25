@@ -25,6 +25,7 @@ impl GameMod {
 
 #[derive(Clone, Debug, Default)]
 pub struct GameModGroups {
+	pub broken: Vec<String>,
 	pub installed: Vec<GameMod>,
 	pub game_specific: Vec<GameMod>,
 	pub available: Vec<GameMod>,
@@ -40,23 +41,6 @@ impl GameModGroups {
 		let mut compatible_parts = Vec::new();
 		let mut dependency_only_parts = Vec::new();
 		let mut incompatible_parts = Vec::new();
-
-		for file_name in database.get_broken_installed_manifests(game)? {
-			compatible_parts.push(GameMod {
-				manifest: broken_manifest(file_name.clone()),
-				info: ModInfo {
-					mod_id: file_name,
-					installed_version: None,
-					is_installed: true,
-					is_in_catalog: false,
-					broken: true,
-					is_outdated: false,
-					has_installed_dependants: false,
-					compatible: true,
-					tags: Vec::new(),
-				},
-			});
-		}
 
 		for info in mod_infos {
 			let Some(manifest) = mods.get(&info.mod_id).cloned() else {
@@ -106,40 +90,13 @@ impl GameModGroups {
 			available.into_iter().partition(GameMod::game_specific);
 
 		Ok(Self {
+			broken: database.get_broken_installed_manifests(game)?,
 			installed,
 			game_specific,
 			available,
 			dependency_only: dependency_only_parts,
 			incompatible: incompatible_parts,
 		})
-	}
-}
-
-fn broken_manifest(file_name: String) -> Mod {
-	Mod {
-		id: file_name.clone(),
-		tags: None,
-		game_ids: None,
-		title: file_name,
-		author: String::new(),
-		website: None,
-		description: String::new(),
-		download: None,
-		engine: None,
-		engine_version_range: None,
-		unity_backend: None,
-		architecture: None,
-		game_os: None,
-		host_os: None,
-		deprecated: Some(true),
-		paths: None,
-		optional_dependencies: None,
-		required_dependencies: None,
-		install: None,
-		run_for_game: None,
-		run_standalone: None,
-		game_environment: None,
-		hash: None,
 	}
 }
 
