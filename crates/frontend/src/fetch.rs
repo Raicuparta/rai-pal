@@ -107,7 +107,7 @@ where
 	}
 }
 
-fn decode_and_cache_thumbnail(url: &str, thumbnail: ThumbnailBytes) -> Option<FetchedImage> {
+fn decode_and_cache_thumbnail(url: &str, thumbnail: &ThumbnailBytes) -> Option<FetchedImage> {
 	let width = image_cache::THUMBNAIL_WIDTH;
 	let height = image_cache::THUMBNAIL_HEIGHT;
 
@@ -141,7 +141,7 @@ pub fn fetch_selected_thumbnail(window: slint::Weak<MainWindow>, url: String) {
 			return;
 		};
 
-		let Some(image) = decode_and_cache_thumbnail(&url, bytes) else {
+		let Some(image) = decode_and_cache_thumbnail(&url, &bytes) else {
 			return;
 		};
 
@@ -371,7 +371,7 @@ fn spawn_decode_worker(
 				continue;
 			}
 
-			let Some(image) = decode_and_cache_thumbnail(&job.url, thumbnail) else {
+			let Some(image) = decode_and_cache_thumbnail(&job.url, &thumbnail) else {
 				scheduler.finish_thumbnail(&job, ThumbnailOutcome::Failed);
 				continue;
 			};

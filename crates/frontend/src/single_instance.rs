@@ -32,8 +32,6 @@ pub fn acquire() -> bool {
 			{
 				*guard = Some(lock_file);
 			}
-
-			true
 		}
 		Err(TryLockError::WouldBlock) => {
 			if forward_arguments() {
@@ -43,14 +41,13 @@ pub fn acquire() -> bool {
 			log::warn!(
 				"Starting anyway: another instance holds the lock but did not accept forwarded arguments"
 			);
-
-			true
 		}
 		Err(TryLockError::Error(err)) => {
 			log::warn!("Failed to lock single instance file: {err}");
-			true
 		}
 	}
+
+	true
 }
 
 fn open_lock_file() -> Option<File> {

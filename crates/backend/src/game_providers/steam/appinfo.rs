@@ -265,7 +265,7 @@ impl SteamAppInfoFile {
 			let app = App { key_values };
 			let Some(app_id) = record_app_id.or_else(|| {
 				value_to_i32(app.get(&["appinfo", "appid"]))
-					.and_then(|app_id| u32::try_from(app_id).ok())
+					.and_then(|app_id| u32::try_from(app_id).ok_or_log("Invalid Steam app id"))
 			}) else {
 				continue;
 			};

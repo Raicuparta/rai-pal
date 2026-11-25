@@ -234,7 +234,13 @@ impl ProviderParser for Steam {
 		let steam_dir = SteamDir::from_dir(steam_path)?;
 		let appinfo_paths = get_appinfo_paths(steam_dir.path())?;
 
-		if !appinfo_paths.is_empty() {
+		if appinfo_paths.is_empty() {
+			log::warn!(
+				"Steam appinfo cache not found at `{}` or `{}`. Skipping Steam appinfo game insertion.",
+				get_appinfo_dir(steam_dir.path()).display(),
+				get_appinfo_path(steam_dir.path()).display()
+			);
+		} else {
 			let app_info_reader = SteamAppInfoReader::new(&appinfo_paths)?;
 			let mut app_paths = HashMap::<u32, PathBuf>::new();
 			for library in (steam_dir.libraries()?).flatten() {
@@ -343,12 +349,6 @@ impl ProviderParser for Steam {
 					}
 				}
 			}
-		} else {
-			log::warn!(
-				"Steam appinfo cache not found at `{}` or `{}`. Skipping Steam appinfo game insertion.",
-				get_appinfo_dir(steam_dir.path()).display(),
-				get_appinfo_path(steam_dir.path()).display()
-			);
 		}
 
 		games.extend(Self::get_shortcut_games(&steam_dir));

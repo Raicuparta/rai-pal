@@ -180,7 +180,7 @@ pub fn set_wine_dll_overrides_in_reg(prefix_path: &Path, dll_overrides: &[String
 	Ok(())
 }
 
-/// Resolves the Roaming AppData folder of the prefix's current Wine user by reading `user.reg`,
+/// Resolves the Roaming `AppData` folder of the prefix's current Wine user by reading `user.reg`,
 /// which is where Wine itself gets `%APPDATA%` from.
 pub fn get_roaming_app_data(prefix_path: &Path) -> Result<PathBuf> {
 	let user_reg_path = prefix_path.join("user.reg");

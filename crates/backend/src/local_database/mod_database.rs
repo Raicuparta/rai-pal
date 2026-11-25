@@ -24,7 +24,7 @@ use crate::{
 	},
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
-	result::{ContextResult, Error, Result},
+	result::{ContextResult, Error, LogErrExt, Result},
 };
 
 #[derive(serde::Serialize, Clone, Debug)]
@@ -349,7 +349,7 @@ impl ModDatabase for Db {
 		for installed_mod in self.get_installed_mods_for_game(game)? {
 			let mod_environment = installed_mod.game_mod.get_game_environment(Some(game));
 			if !mod_environment.is_empty() {
-				environment_mod_ids.push(installed_mod.game_mod.id.clone());
+				environment_mod_ids.push(installed_mod.game_mod.id);
 			}
 			environment.extend(mod_environment);
 		}
@@ -755,7 +755,9 @@ fn read_installed_manifests(folder: &Path, install_kind: InstallKind) -> Vec<Ins
 
 	entries
 		.filter_map(|entry| {
-			let path = entry.ok()?.path();
+			let path = entry
+				.ok_or_log("Failed to read installed mod manifest entry")?
+				.path();
 
 			let manifest_path = if install_kind == InstallKind::Shared {
 				path.join(Mod::FILE_NAME)

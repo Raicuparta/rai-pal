@@ -394,14 +394,14 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 
 	for path in manifest.paths.as_deref().unwrap_or_default() {
 		let state = cached_path_state(game, mod_id, &path.path);
-		let display_path = match &state {
-			Some(state) => state.path.as_path(),
-			None => Path::new(&path.path),
-		};
-		let exists = |open_folder| {
-			state
-				.as_ref()
-				.map_or(game.exe_path.is_some(), |state| state.exists(open_folder))
+		let display_path = state
+			.as_ref()
+			.map_or_else(|| Path::new(&path.path), |state| state.path.as_path());
+		let path_exists = |open_folder| {
+			state.as_ref().map_or_else(
+				|| game.exe_path.is_some(),
+				|state| state.exists(open_folder),
+			)
 		};
 		let display_name = |open_folder| {
 			let target = if matches!(&path.path_type, ModPathType::File) && open_folder {
@@ -416,12 +416,12 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 			)
 		};
 		let variants = if matches!(&path.path_type, ModPathType::Folder) {
-			vec![(true, exists(true))]
+			vec![(true, path_exists(true))]
 		} else {
-			vec![(false, exists(false)), (true, exists(true))]
+			vec![(false, path_exists(false)), (true, path_exists(true))]
 		};
 
-		for (open_folder, exists) in variants {
+		for (open_folder, enabled) in variants {
 			let mut action = actions.action(
 				ModActionKind::OpenPath,
 				ActionKind::GameModOpenPath,
@@ -429,7 +429,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 			);
 			action.subject = display_name(open_folder).into();
 			action.open_folder = open_folder;
-			action.enabled = exists;
+			action.enabled = enabled;
 			actions.push(ActionGroup::Path, action);
 		}
 	}
@@ -800,7 +800,7 @@ impl CommandHandler {
 		action(self, game, mod_id.to_string());
 	}
 
-	pub fn activate_mod_action(&self, action: ModActionData) {
+	pub fn activate_mod_action(&self, action: &ModActionData) {
 		let mod_id = action.mod_id.to_string();
 
 		match action.kind {
@@ -844,6 +844,6 @@ impl CommandHandler {
 
 pub fn register(window: &crate::MainWindow) {
 	on_command!(window, ModMenuActions, on_activate, |action| handler => {
-		handler.activate_mod_action(action);
+		handler.activate_mod_action(&action);
 	});
 }

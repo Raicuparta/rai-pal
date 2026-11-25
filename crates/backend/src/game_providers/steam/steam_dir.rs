@@ -27,7 +27,11 @@ pub fn get_appinfo_paths(steam_path: &Path) -> Result<Vec<PathBuf>> {
 				continue;
 			};
 
-			if file_name.starts_with("appinfo_") && file_name.ends_with(".vdf") {
+			if file_name.starts_with("appinfo_")
+				&& Path::new(file_name)
+					.extension()
+					.is_some_and(|extension| extension.eq_ignore_ascii_case("vdf"))
+			{
 				paths.push(path);
 			}
 		}

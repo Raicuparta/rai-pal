@@ -15,7 +15,7 @@ impl UiModels {
 		let mods_tab = Rc::new(VecModel::default());
 		window
 			.global::<crate::ModsState>()
-			.set_items(mods_tab.clone().into());
+			.set_items(Rc::clone(&mods_tab).into());
 
 		Self {
 			game_details,
@@ -43,12 +43,12 @@ impl GameDetailsModels {
 		let incompatible = Rc::new(VecModel::default());
 
 		let state = window.global::<crate::GameDetailsState>();
-		state.set_provider_actions(provider_actions.clone().into());
-		state.set_installed(installed.clone().into());
-		state.set_game_specific(game_specific.clone().into());
-		state.set_available(available.clone().into());
-		state.set_dependency_only(dependency_only.clone().into());
-		state.set_incompatible(incompatible.clone().into());
+		state.set_provider_actions(Rc::clone(&provider_actions).into());
+		state.set_installed(Rc::clone(&installed).into());
+		state.set_game_specific(Rc::clone(&game_specific).into());
+		state.set_available(Rc::clone(&available).into());
+		state.set_dependency_only(Rc::clone(&dependency_only).into());
+		state.set_incompatible(Rc::clone(&incompatible).into());
 
 		Self {
 			provider_actions,

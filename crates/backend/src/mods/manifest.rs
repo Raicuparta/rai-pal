@@ -258,12 +258,13 @@ impl Mod {
 		for dependencies in [
 			&mut self.required_dependencies,
 			&mut self.optional_dependencies,
-		] {
-			if let Some(dependencies) = dependencies {
-				for dependency in dependencies.iter_mut() {
-					if let ModDependency::ModId { mod_id } = dependency {
-						*mod_id = strip_scope_prefix(mod_id).to_string();
-					}
+		]
+		.into_iter()
+		.flatten()
+		{
+			for dependency in dependencies.iter_mut() {
+				if let ModDependency::ModId { mod_id } = dependency {
+					*mod_id = strip_scope_prefix(mod_id).to_string();
 				}
 			}
 		}
@@ -414,7 +415,7 @@ impl Mod {
 		let kind = match &mod_path.path_type {
 			ModPathType::File => ModPathKind::File {
 				exists: resolved_path.is_file(),
-				folder_exists: resolved_path.parent().is_some_and(|parent| parent.is_dir()),
+				folder_exists: resolved_path.parent().is_some_and(Path::is_dir),
 			},
 			ModPathType::Folder => ModPathKind::Folder {
 				exists: resolved_path.is_dir(),
