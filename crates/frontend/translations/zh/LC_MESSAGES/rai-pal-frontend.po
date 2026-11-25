@@ -782,6 +782,18 @@ msgid "Add source"
 msgstr "添加来源"
 
 msgctxt "urlModSources"
+msgid "Move up"
+msgstr "上移"
+
+msgctxt "urlModSources"
+msgid "Move down"
+msgstr "下移"
+
+msgctxt "urlModSources"
+msgid "Sources later in the list override mods with the same id from earlier sources."
+msgstr "列表中靠后的来源会覆盖前面来源中相同 ID 的模组。"
+
+msgctxt "urlModSources"
 msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep link:"
 msgstr "Rai Pal é¤äºé»è®¤æ°æ®åºå¤ï¼è¿ä¼å¨æ­¤æä¾çæææ°æ®åºä¸­æ£æ¥æ¨¡ç»ãä½ å¯ä»¥éè¿ä»¥ä¸æ·±å±é¾æ¥å±äº«æ¨¡ç»æ¥æºï¼"
 

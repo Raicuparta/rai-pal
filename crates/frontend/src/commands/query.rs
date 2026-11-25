@@ -135,12 +135,11 @@ fn run_query(
 
 			sync_rows(model, &response.game_ids);
 
-			if let Some(handler) = crate::commands::CommandHandler::current() {
-				if let Some(index) = handler.take_pending_selection(&response.game_ids) {
-					if let Ok(index) = i32::try_from(index) {
-						handler.select_game(index);
-					}
-				}
+			if let Some(handler) = crate::commands::CommandHandler::current()
+				&& let Some(index) = handler.take_pending_selection(&response.game_ids)
+				&& let Ok(index) = i32::try_from(index)
+			{
+				handler.select_game(index);
 			}
 
 			list.set_total_count(i32::try_from(response.total_count).unwrap_or_else(|err| {

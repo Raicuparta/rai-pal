@@ -116,7 +116,7 @@ impl Game {
 			.is_ok_and(|folder| folder.is_dir())
 	}
 
-	fn get_installed_mods_folder_path(&self) -> Result<PathBuf> {
+	pub fn get_installed_mods_folder_path(&self) -> Result<PathBuf> {
 		Ok(app_paths::installed_mods_path()?.join(self.try_get_exe_path()?.hash_string()))
 	}
 

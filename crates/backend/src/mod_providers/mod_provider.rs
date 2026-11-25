@@ -1,48 +1,24 @@
-use rai_pal_proc_macros::{serde_enum, sql_enum};
+use std::collections::BTreeMap;
+
 use tokio::sync::Mutex as AsyncMutex;
 
 use crate::{
 	local_database::{app_database::Db, mod_database::ModDatabase},
-	mod_providers::{folder_mod_provider::FolderModProvider, url_mod_provider::UrlModProvider},
+	mod_providers::{folder_mod_provider, url_mod_provider},
 	result::Result,
 };
 
-pub trait ModProvider {
-	fn default() -> Result<Self>
-	where
-		Self: Sized;
-	fn get_id() -> ModProviderId;
-
-	/// Reconciles this provider's mods in the database.
-	///
-	/// Fetches mods from enabled sources (or manifests present on disk) and
-	/// removes anything that should no longer exist. Unlike the previous
-	/// timestamp-based approach, removal is deterministic and based on source
-	/// identity, so it doesn't race with other refreshes or depend on wall-clock
-	/// timing.
-	async fn refresh(&self, db: &Db) -> Result;
-}
-
-#[serde_enum]
-#[sql_enum]
-pub enum ModProviderId {
-	Folder,
-	Url,
-}
-
 // The whole refresh is guarded so concurrent calls (a toggle racing the
-// initial data update, or rapid toggles) can't interleave their insert/remove
-// phases and leave stale mods behind. Calls that arrive while a refresh is
-// already running are skipped instead of queued, so slow refreshes can't pile
-// up.
+// initial data update, or rapid toggles) can't interleave their write phases
+// and leave stale mods behind. Calls that arrive while a refresh is already
+// running are skipped instead of queued, so slow refreshes can't pile up.
 static REFRESH_LOCK: AsyncMutex<()> = AsyncMutex::const_new(());
 
-/// Refreshes every mod provider, guarded by a module-level lock.
+/// Rebuilds the mod catalog from every available source.
 ///
-/// Does nothing if another refresh is already running. Every provider is
-/// attempted even if an earlier one fails, so a broken local mod manifest can't
-/// stop the remote (including third party) mod databases from being refreshed.
-/// The first error is still returned at the end.
+/// URL sources are merged in priority order, so later sources overwrite mods
+/// with the same id from earlier ones. Local folder mods always have the
+/// highest priority. Sources that fail to load are skipped for this refresh.
 pub async fn refresh_all_mods(db: &Db) -> Result {
 	let _guard = match REFRESH_LOCK.try_lock() {
 		Ok(guard) => guard,
@@ -52,19 +28,39 @@ pub async fn refresh_all_mods(db: &Db) -> Result {
 		}
 	};
 
-	let mut first_error = if let Err(error) = FolderModProvider::default()?.refresh(db).await {
-		log::error!("Failed to refresh local mods: {error}");
-		Some(error)
-	} else {
-		None
-	};
+	let mut mods = BTreeMap::new();
+	let mut tags = BTreeMap::new();
 
-	if let Err(error) = UrlModProvider::default()?.refresh(db).await {
-		log::error!("Failed to refresh URL mod sources: {error}");
-		first_error.get_or_insert(error);
+	for url in url_mod_provider::enabled_sources() {
+		match url_mod_provider::fetch_mod_database(&url).await {
+			Ok(database) => {
+				tags.extend(database.tags);
+				mods.extend(
+					database
+						.mods
+						.into_iter()
+						.map(|game_mod| (game_mod.id.clone(), game_mod)),
+				);
+			}
+			Err(error) => {
+				log::warn!("Failed to refresh mod source `{url}`, skipping it: {error}");
+			}
+		}
 	}
 
+	match folder_mod_provider::fetch_mods() {
+		Ok(folder_mods) => {
+			mods.extend(
+				folder_mods
+					.into_iter()
+					.map(|game_mod| (game_mod.id.clone(), game_mod)),
+			);
+		}
+		Err(error) => log::error!("Failed to load local mods: {error}"),
+	}
+
+	db.replace_catalog(&mods.into_values().collect::<Vec<_>>(), &tags)?;
 	db.refresh_installed_mods()?;
 
-	first_error.map_or(Ok(()), Err)
+	Ok(())
 }

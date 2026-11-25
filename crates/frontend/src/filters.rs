@@ -79,7 +79,10 @@ pub fn load_all_mod_tags(database: &Db) -> BTreeMap<String, String> {
 }
 
 fn load_tags(database: &Db, filterable_only: bool) -> BTreeMap<String, String> {
-	let Some(mods) = database.get_mod_map().ok_or_log("Failed to load mod map") else {
+	let Some(mods) = database
+		.get_catalog_mod_map()
+		.ok_or_log("Failed to load mod map")
+	else {
 		return BTreeMap::new();
 	};
 	let tag_definitions = database

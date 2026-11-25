@@ -782,6 +782,18 @@ msgid "Add source"
 msgstr "소스 추가"
 
 msgctxt "urlModSources"
+msgid "Move up"
+msgstr "위로 이동"
+
+msgctxt "urlModSources"
+msgid "Move down"
+msgstr "아래로 이동"
+
+msgctxt "urlModSources"
+msgid "Sources later in the list override mods with the same id from earlier sources."
+msgstr "목록에서 뒤에 있는 소스는 이전 소스의 같은 ID 모드를 덮어씁니다."
+
+msgctxt "urlModSources"
 msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep link:"
 msgstr "Rai Palì´ ê¸°ë³¸ ë°ì´í°ë² ì´ì¤ ì¸ìë ì¬ê¸°ì ì ê³µë ëª¨ë  ë°ì´í°ë² ì´ì¤ìì ëª¨ëë¥¼ íì¸í©ëë¤. ë¤ì ë¥ë§í¬ë¥¼ íµí´ ëª¨ë ìì¤ë¥¼ ê³µì í  ì ììµëë¤:"
 

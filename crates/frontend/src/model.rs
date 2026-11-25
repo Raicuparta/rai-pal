@@ -113,11 +113,13 @@ pub fn sync_rows(model: &slint::VecModel<GameRowData>, game_ids: &[GameId]) {
 		.map(|game_id| {
 			reusable
 				.remove(&(game_id.provider_id, game_id.game_id.clone()))
-				.map(|mut row| {
-					row.loaded = false;
-					row
-				})
-				.unwrap_or_else(|| make_row(game_id))
+				.map_or_else(
+					|| make_row(game_id),
+					|mut row| {
+						row.loaded = false;
+						row
+					},
+				)
 		})
 		.collect::<Vec<_>>();
 

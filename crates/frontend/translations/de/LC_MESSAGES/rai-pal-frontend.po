@@ -782,6 +782,18 @@ msgid "Add source"
 msgstr "Quelle hinzufügen"
 
 msgctxt "urlModSources"
+msgid "Move up"
+msgstr "Nach oben"
+
+msgctxt "urlModSources"
+msgid "Move down"
+msgstr "Nach unten"
+
+msgctxt "urlModSources"
+msgid "Sources later in the list override mods with the same id from earlier sources."
+msgstr "Quellen weiter unten in der Liste überschreiben Mods mit derselben ID aus früheren Quellen."
+
+msgctxt "urlModSources"
 msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep link:"
 msgstr "Rai Pal sucht in allen hier angegebenen Datenbanken nach Mods, zusätzlich zur Standard-Datenbank. Du kannst Mod-Quellen über diesen Deep-Link teilen:"
 

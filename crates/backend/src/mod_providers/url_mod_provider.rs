@@ -1,18 +1,8 @@
 use fs_err as fs;
-use std::{
-	collections::BTreeMap,
-	hash::{DefaultHasher, Hash, Hasher},
-	path::PathBuf,
-};
+use std::collections::BTreeMap;
 
-use super::mod_provider::ModProvider;
 use crate::{
 	app_paths, database_url, http,
-	local_database::{
-		app_database::Db,
-		mod_database::{ModDatabase, compute_scope, scope_id},
-	},
-	mod_providers::mod_provider::ModProviderId,
 	mods::{manifest::Mod, mod_tag::ModTag},
 	path_extensions::PathExt,
 	result::{LogErrExt, Result},
@@ -36,12 +26,6 @@ fn default_url() -> String {
 		"{}/mod-db/{DATABASE_VERSION}/mods.json",
 		database_url::base_url()
 	)
-}
-
-fn compute_source_hash(url: &str) -> String {
-	let mut hasher = DefaultHasher::new();
-	url.hash(&mut hasher);
-	hasher.finish().to_string()
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
@@ -75,7 +59,7 @@ const fn default_true() -> bool {
 // If the mod sources schema changes, update this so it gets recreated.
 const URL_MOD_SOURCES_VERSION: u32 = 1u32;
 
-fn url_mod_sources_path() -> Result<PathBuf> {
+fn url_mod_sources_path() -> Result<std::path::PathBuf> {
 	app_paths::app_data_file(&format!("url-mod-sources-{URL_MOD_SOURCES_VERSION}.json"))
 }
 
@@ -115,18 +99,40 @@ pub struct UrlModSourcesResponse {
 	pub sources: Vec<UrlModSource>,
 }
 
-pub async fn get_mods_from_url_mod_source(url: &str) -> Result<Vec<Mod>> {
-	let mods = http::CLIENT
+pub async fn fetch_mod_database(url: &str) -> Result<UrlModDatabase> {
+	let database = http::CLIENT
 		.get(url)
 		.timeout(std::time::Duration::from_secs(15))
 		.send()
 		.await?
 		.error_for_status()?
 		.json::<UrlModDatabase>()
-		.await?
-		.mods;
+		.await?;
 
-	Ok(mods)
+	Ok(database)
+}
+
+pub async fn get_mods_from_url_mod_source(url: &str) -> Result<Vec<Mod>> {
+	Ok(fetch_mod_database(url).await?.mods)
+}
+
+pub fn enabled_sources() -> Vec<String> {
+	let sources = read_url_mod_sources();
+	let mut urls = Vec::new();
+
+	if sources.default_enabled {
+		urls.push(default_url());
+	}
+
+	urls.extend(
+		sources
+			.sources
+			.iter()
+			.filter(|source| source.enabled)
+			.map(|source| source.url.clone()),
+	);
+
+	urls
 }
 
 pub fn add_url_mod_source(url: String) -> Result {
@@ -159,6 +165,27 @@ pub fn set_url_mod_source_enabled(url: &str, enabled: bool) -> Result {
 	write_url_mod_sources(&sources)
 }
 
+pub fn move_url_mod_source(url: &str, up: bool) -> Result {
+	let mut sources = read_url_mod_sources();
+
+	let Some(index) = sources.sources.iter().position(|source| source.url == url) else {
+		return Ok(());
+	};
+
+	let target = if up {
+		index.checked_sub(1)
+	} else {
+		Some(index + 1).filter(|target| *target < sources.sources.len())
+	};
+
+	if let Some(target) = target {
+		sources.sources.swap(index, target);
+		write_url_mod_sources(&sources)?;
+	}
+
+	Ok(())
+}
+
 pub fn get_url_mod_sources() -> UrlModSourcesResponse {
 	let sources = read_url_mod_sources();
 
@@ -169,97 +196,4 @@ pub fn get_url_mod_sources() -> UrlModSourcesResponse {
 		},
 		sources: sources.sources,
 	}
-}
-
-pub struct UrlModProvider;
-
-impl ModProvider for UrlModProvider {
-	fn get_id() -> ModProviderId {
-		ModProviderId::Url
-	}
-
-	fn default() -> Result<Self> {
-		Ok(Self)
-	}
-
-	async fn refresh(&self, db: &Db) -> Result {
-		let sources = read_url_mod_sources();
-
-		let mut enabled_sources = Vec::new();
-
-		if sources.default_enabled {
-			enabled_sources.push((default_url(), String::new()));
-		}
-
-		enabled_sources.extend(
-			sources
-				.sources
-				.iter()
-				.filter(|source| source.enabled)
-				.map(|source| (source.url.clone(), compute_source_hash(&source.url))),
-		);
-
-		let mut keep_ids = Vec::new();
-		let mut keep_tag_ids = Vec::new();
-
-		for (url, source_hash) in enabled_sources {
-			let scope = compute_scope(Self::get_id(), &source_hash);
-
-			match fetch_and_insert(&url, &source_hash, &scope, db).await {
-				Ok((ids, tag_ids)) => {
-					keep_ids.extend(ids);
-					keep_tag_ids.extend(tag_ids);
-				}
-				Err(error) => {
-					// If a source fails to refresh, keep whatever we already had
-					// for it as a fallback, but still remove disabled sources.
-					log::warn!(
-						"Failed to refresh mod source `{url}`, keeping existing mods as fallback: {error}"
-					);
-					keep_ids.extend(db.get_mod_ids_in_scope(Self::get_id(), &scope)?);
-					keep_tag_ids.extend(db.get_tag_ids_in_scope(Self::get_id(), &scope)?);
-				}
-			}
-		}
-
-		db.remove_mods_except(Self::get_id(), &keep_ids)?;
-		db.remove_mod_tags_except(Self::get_id(), &keep_tag_ids)?;
-
-		Ok(())
-	}
-}
-
-async fn fetch_and_insert(
-	url: &str,
-	source_hash: &str,
-	scope: &str,
-	db: &Db,
-) -> Result<(Vec<String>, Vec<String>)> {
-	// The timeout bounds how long a refresh can hold the mod refresh lock,
-	// so a single unresponsive mod source can't block all future refreshes.
-	let database = http::CLIENT
-		.get(url)
-		.timeout(std::time::Duration::from_secs(15))
-		.send()
-		.await?
-		.json::<UrlModDatabase>()
-		.await?;
-
-	db.insert_mod_tags(&database.tags, ModProviderId::Url, source_hash);
-
-	db.insert_mods(&database.mods, ModProviderId::Url, source_hash);
-
-	let ids = database
-		.mods
-		.iter()
-		.map(|game_mod| scope_id(scope, &game_mod.id).into_owned())
-		.collect::<Vec<_>>();
-
-	let tag_ids = database
-		.tags
-		.keys()
-		.map(|tag_id| scope_id(scope, tag_id).into_owned())
-		.collect();
-
-	Ok((ids, tag_ids))
 }

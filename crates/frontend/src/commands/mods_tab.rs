@@ -37,7 +37,7 @@ impl CommandHandler {
 			return;
 		};
 
-		let mods = match self.database.get_mod_map() {
+		let mods = match self.database.get_catalog_mod_map() {
 			Ok(mods) => mods,
 			Err(err) => {
 				notifications::error(&window, notifications::data(MessageContext::LoadMods, &err));
@@ -51,7 +51,7 @@ impl CommandHandler {
 		let mod_tags = load_all_mod_tags(&self.database);
 		let has_untagged_mods = mods
 			.values()
-			.any(|game_mod| game_mod.tags.as_ref().is_none_or(|tags| tags.is_empty()));
+			.any(|game_mod| game_mod.tags.as_ref().is_none_or(std::vec::Vec::is_empty));
 		let (query, groups, availability_changed) = {
 			let mut settings = self.settings.borrow_mut();
 			let availability_changed =
@@ -119,7 +119,7 @@ impl CommandHandler {
 				return;
 			}
 
-			let Some(handler) = CommandHandler::current() else {
+			let Some(handler) = Self::current() else {
 				return;
 			};
 

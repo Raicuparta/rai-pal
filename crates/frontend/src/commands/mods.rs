@@ -20,7 +20,7 @@ use rai_pal_backend::{
 		game_mods::{GameMod, GameModGroups},
 		manifest::{Mod, ModDependency, ModPathState, ModPathType, install_steps},
 	},
-	result::{LogErrExt, Result},
+	result::{Error, LogErrExt, Result},
 };
 use slint::ComponentHandle;
 
@@ -135,9 +135,7 @@ impl CommandHandler {
 					.get_game_mods(&game.provider_id, &game.game_id)
 					.map_err(|err| err.to_string())?
 					.into_iter()
-					.filter(|info| {
-						info.compatible && info.is_outdated && info.installed_hash.is_some()
-					})
+					.filter(|info| info.compatible && info.is_outdated && info.is_installed)
 					.map(|info| info.mod_id)
 					.collect::<Vec<_>>();
 
@@ -243,9 +241,7 @@ impl CommandHandler {
 			action_state::key(ActionKind::GameModRun, mod_id.clone()),
 			MessageContext::RunMod,
 			move || {
-				database
-					.get_mod(&mod_id)
-					.and_then(|game_mod| game_mod.run(Some(&game)))
+				load_mod(&database, &game, &mod_id).and_then(|game_mod| game_mod.run(Some(&game)))
 			},
 		);
 	}
@@ -257,28 +253,39 @@ impl CommandHandler {
 			action_state::key(ActionKind::GameModOpenPath, mod_id.clone()),
 			MessageContext::OpenModPath,
 			move || {
-				database
-					.get_mod(&mod_id)
+				load_mod(&database, &game, &mod_id)
 					.and_then(|game_mod| game_mod.open_path(&path_id, Some(&game), open_folder))
 			},
 		);
 	}
 }
 
+fn load_mod(database: &Db, game: &Game, mod_id: &str) -> Result<Mod> {
+	match database.get_mod(mod_id) {
+		Ok(game_mod) => Ok(game_mod),
+		Err(Error::ModNotFound(_)) => Ok(database
+			.try_get_installed_mod(&game.provider_id, &game.game_id, mod_id)?
+			.game_mod),
+		Err(error) => Err(error),
+	}
+}
+
 fn refresh_path_states(window: slint::Weak<MainWindow>, database: Arc<Db>, game: Game) {
 	thread::spawn(move || {
-		let Ok(mod_infos) = database.get_game_mods(&game.provider_id, &game.game_id) else {
-			return;
-		};
-		let Ok(mods) = database.get_mod_map() else {
+		let Ok(groups) = GameModGroups::load(database.as_ref(), &game) else {
 			return;
 		};
 		let mut states = PathStateMap::new();
 
-		for info in mod_infos {
-			let Some(manifest) = mods.get(&info.mod_id) else {
-				continue;
-			};
+		for entry in groups
+			.installed
+			.iter()
+			.chain(groups.game_specific.iter())
+			.chain(groups.available.iter())
+			.chain(groups.hidden.iter())
+			.chain(groups.incompatible.iter())
+		{
+			let manifest = &entry.manifest;
 			let Some(paths) = manifest.paths.as_ref() else {
 				continue;
 			};
@@ -373,7 +380,7 @@ fn load_mods(database: &Db, game: &Game) -> Result<LoadedMods> {
 
 fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	let GameMod { manifest, info } = entry;
-	let installed = info.installed_hash.is_some();
+	let installed = info.is_installed;
 	let can_show_actions = info.compatible && game.exe_path.is_some();
 	let has_install = manifest.install.is_some();
 	let has_run = manifest.run_for_game.is_some();
@@ -448,7 +455,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 		);
 	}
 
-	if can_show_actions && installed && has_install {
+	if can_show_actions && installed && has_install && info.is_in_catalog {
 		actions.push(
 			ActionGroup::Manage,
 			actions.action(ModActionKind::Reinstall, ActionKind::GameModInstall, ""),
@@ -645,7 +652,7 @@ fn install_mods(
 			Ok(()) => downloads.finish_steps(&steps),
 			Err(err) => {
 				downloads.fail_steps(&steps);
-				return Err(err.to_string());
+				return Err(err.clone());
 			}
 		}
 	}
@@ -766,13 +773,13 @@ impl CommandHandler {
 			ModActionKind::Install => {
 				self.prompt_install_mod(mod_id, crate::SkipConfirmation::InstallMod);
 			}
-			ModActionKind::Update => self.with_selected_mod(&mod_id, CommandHandler::update_mod),
-			ModActionKind::Run => self.with_selected_mod(&mod_id, CommandHandler::run_mod),
+			ModActionKind::Update => self.with_selected_mod(&mod_id, Self::update_mod),
+			ModActionKind::Run => self.with_selected_mod(&mod_id, Self::run_mod),
 			ModActionKind::Reinstall => {
-				self.with_selected_mod(&mod_id, CommandHandler::install_mod);
+				self.with_selected_mod(&mod_id, Self::install_mod);
 			}
 			ModActionKind::Uninstall => {
-				self.with_selected_mod(&mod_id, CommandHandler::uninstall_mod);
+				self.with_selected_mod(&mod_id, Self::uninstall_mod);
 			}
 			ModActionKind::OpenPath => {
 				self.with_selected_mod(&mod_id, |handler, game, mod_id| {

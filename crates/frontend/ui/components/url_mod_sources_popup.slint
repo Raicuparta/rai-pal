@@ -3,6 +3,7 @@ import { CheckBox } from "check_box.slint";
 import { TextField } from "text_field.slint";
 import { CopyableText } from "copyable_text.slint";
 import { Icon } from "svg_icon.slint";
+import { IconButton } from "icon_button.slint";
 import { MessageData, UrlModSourceData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
 import { Modal } from "modal.slint";
@@ -22,8 +23,12 @@ export global ModSourcesState {
 component UrlModSourceRow inherits Rectangle {
     in property <UrlModSourceData> source;
     in property <bool> toggling;
+    in property <bool> can-move-up;
+    in property <bool> can-move-down;
 
     callback toggled(enabled: bool);
+    callback moved-up;
+    callback moved-down;
     callback removed;
 
     HorizontalLayout {
@@ -44,6 +49,26 @@ component UrlModSourceRow inherits Rectangle {
             horizontal-stretch: 1;
             text: root.source.url;
             read-only: true;
+        }
+
+        if !root.source.is-default: IconButton {
+            icon: Icon.chevron-up;
+            tooltip: @tr("urlModSources" => "Move up");
+            enabled: root.can-move-up && !root.toggling;
+
+            clicked => {
+                root.moved-up();
+            }
+        }
+
+        if !root.source.is-default: IconButton {
+            icon: Icon.chevron-down;
+            tooltip: @tr("urlModSources" => "Move down");
+            enabled: root.can-move-down && !root.toggling;
+
+            clicked => {
+                root.moved-down();
+            }
         }
 
         if !root.source.is-default: Button {
@@ -73,12 +98,22 @@ export component UrlModSourcesPopup inherits Modal {
         }
     }
 
-    for source in ModSourcesState.sources: UrlModSourceRow {
+    for source[index] in ModSourcesState.sources: UrlModSourceRow {
         source: source;
         toggling: ModSourcesState.state == ActionState.loading;
+        can-move-up: index > 0;
+        can-move-down: index < ModSourcesState.sources.length - 1;
 
         toggled(enabled) => {
             DialogActions.set-url-mod-source-enabled(source.url, enabled);
+        }
+
+        moved-up => {
+            DialogActions.move-url-mod-source(source.url, true);
+        }
+
+        moved-down => {
+            DialogActions.move-url-mod-source(source.url, false);
         }
 
         removed => {
@@ -132,6 +167,13 @@ export component UrlModSourcesPopup inherits Modal {
 
         CopyableText {
             text: "rai-pal://add-mod-source?url=[URL]";
+        }
+
+        Text {
+            text: @tr("urlModSources" => "Sources later in the list override mods with the same id from earlier sources.");
+            font-size: Theme.font-sm;
+            opacity: 0.7;
+            wrap: word-wrap;
         }
     }
 }

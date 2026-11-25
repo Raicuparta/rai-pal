@@ -142,6 +142,10 @@ impl CommandHandler {
 		self.change_mod_sources(move || url_mod_provider::remove_url_mod_source(&url));
 	}
 
+	pub fn move_mod_source(&self, url: String, up: bool) {
+		self.change_mod_sources(move || url_mod_provider::move_url_mod_source(&url, up));
+	}
+
 	fn change_mod_sources(&self, action: impl FnOnce() -> Result<(), Error> + Send + 'static) {
 		let Some(window) = self.ui() else {
 			return;
@@ -276,5 +280,8 @@ pub fn register(window: &crate::MainWindow) {
 	});
 	on_command!(window, DialogActions, on_remove_url_mod_source, |url| handler => {
 		handler.remove_mod_source(url.to_string());
+	});
+	on_command!(window, DialogActions, on_move_url_mod_source, |url, up| handler => {
+		handler.move_mod_source(url.to_string(), up);
 	});
 }

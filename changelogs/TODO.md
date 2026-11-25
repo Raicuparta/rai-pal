@@ -13,3 +13,9 @@ Database over at ~/Repos/rai-pal-db. Feel free to change and commit there if nee
 - Updating database versions too frequently now, this makes all mods stop showing as installed.
 
 ## Notes, questions, decisions, etc
+
+## Done
+
+- Mod sources are an ordered list now: the default source is always first, custom sources can be reordered with up/down buttons, later sources override mods with the same id from earlier ones, and local folder mods always win. Removed mod scopes, source hashes, `ModProviderId`, and the per-source reconciliation code; the catalog is rebuilt from the enabled sources on each refresh.
+- Mod DB `install.manifestPath` is now `install.installKind` (`Shared` or `PerGame`). Manifest paths are derived as `installed-mods/<exe hash>/manifests/<id>.json` or `shared-mods/<id>/rai-pal-manifest.json`; every mod that was already in the database matched one of these exactly.
+- Installed mods are detected by scanning those two locations instead of the catalog, so mods that disappear from the DB (or come from a disabled/offline source) keep their installed state. Old scoped ids in installed manifests are normalized by dropping the old prefix, and unknown manifests still fall back to an id-only read. Mods that only exist as installed manifests show as installed, without update/reinstall actions.

@@ -33,6 +33,12 @@ pub enum ModPathType {
 	Folder,
 }
 
+#[serde_enum]
+pub enum InstallKind {
+	Shared,
+	PerGame,
+}
+
 #[derive(Clone, Debug)]
 pub struct ModPathState {
 	pub path: PathBuf,
@@ -79,7 +85,6 @@ pub struct GameIds(pub BTreeMap<String, Vec<String>>);
 #[serde(rename_all = "camelCase")]
 pub struct Mod {
 	pub id: String,
-	pub scope: Option<String>,
 	pub tags: Option<Vec<String>>,
 	pub game_ids: Option<GameIds>,
 	pub title: String,
@@ -128,7 +133,7 @@ pub struct ModInstallCopy {
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ModInstall {
-	pub manifest_path: String,
+	pub install_kind: Option<InstallKind>,
 	pub extract: Option<Vec<ModInstallExtract>>,
 	pub copy: Option<Vec<ModInstallCopy>>,
 	pub write: Option<Vec<ModInstallWrite>>,
@@ -168,22 +173,108 @@ pub enum ModDependency {
 	Tag { tag: String },
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct InstalledModManifest {
+pub struct InstalledManifest {
 	pub id: String,
-	pub download: Option<ModDownload>,
-	pub hash: Option<String>,
+	pub installed_version: Option<String>,
+	pub installed_hash: Option<String>,
+	pub manifest: Option<Mod>,
 }
 
-impl InstalledModManifest {
-	pub fn from_file(path: &Path) -> Option<Self> {
-		read_manifest(path)
+impl InstalledManifest {
+	pub fn from_file(path: &Path, install_kind: InstallKind) -> Option<Self> {
+		let Ok(contents) = fs_err::read_to_string(path) else {
+			log::warn!("Failed to read installed mod manifest `{}`", path.display());
+			return None;
+		};
+
+		match serde_json::from_str::<Mod>(&contents) {
+			Ok(mut manifest) => {
+				manifest.normalize_legacy_scope();
+
+				if let Some(install) = &mut manifest.install
+					&& install.install_kind.is_none()
+				{
+					install.install_kind = Some(install_kind);
+				}
+
+				Some(Self {
+					id: manifest.id.clone(),
+					installed_version: manifest
+						.download
+						.as_ref()
+						.map(|download| download.id.clone()),
+					installed_hash: manifest.hash.clone(),
+					manifest: Some(manifest),
+				})
+			}
+			Err(error) => {
+				log::warn!(
+					"Failed to parse installed mod manifest `{}`, reading just its id: {error}",
+					path.display()
+				);
+
+				let value = serde_json::from_str::<serde_json::Value>(&contents).ok()?;
+				let id = strip_scope_prefix(value.get("id")?.as_str()?);
+
+				Some(Self {
+					id: id.to_string(),
+					installed_version: value
+						.get("download")
+						.and_then(|download| download.get("id"))
+						.and_then(|id| id.as_str())
+						.map(std::string::ToString::to_string),
+					installed_hash: value
+						.get("hash")
+						.and_then(|hash| hash.as_str())
+						.map(std::string::ToString::to_string),
+					manifest: None,
+				})
+			}
+		}
 	}
+}
+
+fn strip_scope_prefix(value: &str) -> &str {
+	let mut parts = value.splitn(3, ':');
+
+	if let (Some("Folder" | "Url"), Some(hash), Some(rest)) =
+		(parts.next(), parts.next(), parts.next())
+		&& !hash.is_empty()
+		&& hash.bytes().all(|byte| byte.is_ascii_digit())
+	{
+		return rest;
+	}
+
+	value
 }
 
 impl Mod {
 	pub const FILE_NAME: &'static str = "rai-pal-manifest.json";
+
+	fn normalize_legacy_scope(&mut self) {
+		self.id = strip_scope_prefix(&self.id).to_string();
+
+		if let Some(tags) = &mut self.tags {
+			for tag in tags.iter_mut() {
+				*tag = strip_scope_prefix(tag).to_string();
+			}
+		}
+
+		for dependencies in [
+			&mut self.required_dependencies,
+			&mut self.optional_dependencies,
+		] {
+			if let Some(dependencies) = dependencies {
+				for dependency in dependencies.iter_mut() {
+					if let ModDependency::ModId { mod_id } = dependency {
+						*mod_id = strip_scope_prefix(mod_id).to_string();
+					}
+				}
+			}
+		}
+	}
 
 	pub fn release_date(&self) -> Option<&str> {
 		self.download
@@ -192,11 +283,22 @@ impl Mod {
 	}
 
 	pub fn get_manifest_target_path(&self, game: Option<&Game>) -> Result<PathBuf> {
-		Ok(PathBuf::from(replace_tokens(
-			&self.get_install()?.manifest_path,
-			game,
-			self,
-		)))
+		let install_kind = self.get_install()?.install_kind.ok_or_else(|| {
+			Error::ModInfoMissing(self.id.clone(), "install.installKind".to_string())
+		})?;
+
+		let path = match install_kind {
+			InstallKind::Shared => app_paths::shared_mods_path()?
+				.join(&self.id)
+				.join(Self::FILE_NAME),
+			InstallKind::PerGame => game
+				.ok_or(Error::GameNeeded())?
+				.get_installed_mods_folder_path()?
+				.join("manifests")
+				.join(format!("{}.json", self.id)),
+		};
+
+		Ok(path)
 	}
 
 	pub fn from_file(path: &Path) -> Option<Self> {

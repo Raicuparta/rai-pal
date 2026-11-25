@@ -1,13 +1,14 @@
+use fs_err as fs;
 use std::{
-	borrow::Cow,
-	collections::BTreeMap,
-	time::{SystemTime, UNIX_EPOCH},
+	collections::{BTreeMap, HashSet},
+	path::Path,
 };
 
 use rusqlite::OptionalExtension;
 use serde::Serialize;
 
 use crate::{
+	app_paths,
 	game::Game,
 	game_providers::game_provider::GameProviderId,
 	local_database::{
@@ -16,15 +17,14 @@ use crate::{
 		game_database::{GameDatabase, REMOTE_GAME_JOIN},
 		rusqlite_extensions::RowExt,
 	},
-	mod_providers::mod_provider::ModProviderId,
 	mods::{
 		installed_mod::InstalledMod,
-		manifest::{InstalledModManifest, Mod, ModDependency},
+		manifest::{InstallKind, InstalledManifest, Mod, ModDependency},
 		mod_tag::ModTag,
 	},
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
-	result::{ContextResult, Error, LogErrExt, Result},
+	result::{ContextResult, Error, Result},
 };
 
 #[derive(serde::Serialize, Clone, Debug)]
@@ -32,6 +32,8 @@ pub struct ModInfo {
 	pub mod_id: String,
 	pub installed_version: Option<String>,
 	pub installed_hash: Option<String>,
+	pub is_installed: bool,
+	pub is_in_catalog: bool,
 	pub is_outdated: bool,
 	pub has_installed_dependants: bool,
 	pub compatible: bool,
@@ -52,7 +54,7 @@ pub struct GameEnvironment {
 }
 
 pub trait ModDatabase {
-	fn insert_mods(&self, mods: &[Mod], provider_id: ModProviderId, source_hash: &str);
+	fn replace_catalog(&self, mods: &[Mod], tags: &BTreeMap<String, ModTag>) -> Result;
 	fn get_mod(&self, mod_id: &str) -> Result<Mod>;
 	fn get_installed_mod(
 		&self,
@@ -69,36 +71,11 @@ pub trait ModDatabase {
 		mod_id: &str,
 	) -> Result<InstalledMod>;
 	fn get_mod_map(&self) -> Result<BTreeMap<String, Mod>>;
+	fn get_catalog_mod_map(&self) -> Result<BTreeMap<String, Mod>>;
 	fn refresh_installed_mods(&self) -> Result;
 	fn get_game_mods(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Vec<ModInfo>>;
 	fn get_mod_games(&self) -> Result<BTreeMap<String, Vec<ModGame>>>;
-	fn get_mod_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>>;
-	fn remove_mods_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result;
-	fn insert_mod_tags(
-		&self,
-		tags: &BTreeMap<String, ModTag>,
-		provider_id: ModProviderId,
-		source_hash: &str,
-	);
 	fn get_mod_tags(&self) -> Result<BTreeMap<String, ModTag>>;
-	fn get_tag_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>>;
-	fn remove_mod_tags_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result;
-}
-
-pub(crate) fn compute_scope(provider_id: ModProviderId, source_hash: &str) -> String {
-	if source_hash.is_empty() {
-		String::new()
-	} else {
-		format!("{provider_id}:{source_hash}")
-	}
-}
-
-pub(crate) fn scope_id<'a>(scope: &'a str, original_id: &'a str) -> Cow<'a, str> {
-	if scope.is_empty() {
-		Cow::Borrowed(original_id)
-	} else {
-		Cow::Owned(format!("{scope}:{original_id}"))
-	}
 }
 
 const MOD_COLUMNS: &str = r"
@@ -124,7 +101,6 @@ const MOD_COLUMNS: &str = r"
 	hash,
 	hide_from_game_mods_list,
 	tags,
-	scope,
 	game_environment,
 	game_ids
 ";
@@ -153,9 +129,8 @@ fn read_mod(row: &rusqlite::Row<'_>) -> rusqlite::Result<Mod> {
 		hash: row.get(19)?,
 		hide_from_game_mods_list: row.get(20)?,
 		tags: row.get_json(21)?,
-		scope: row.get(22)?,
-		game_environment: row.get_json(23)?,
-		game_ids: row.get_json(24)?,
+		game_environment: row.get_json(22)?,
+		game_ids: row.get_json(23)?,
 	})
 }
 
@@ -178,8 +153,7 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 		r"
 			CREATE TABLE IF NOT EXISTS mods (
 				id TEXT NOT NULL PRIMARY KEY,
-				scope TEXT NOT NULL DEFAULT '',
-				provider_id TEXT NOT NULL,
+				in_catalog INTEGER NOT NULL DEFAULT 1,
 				title TEXT NOT NULL,
 				author TEXT NOT NULL,
 				website TEXT,
@@ -203,7 +177,6 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 				hash TEXT,
 				tags TEXT,
 				game_ids TEXT,
-				created_at INTEGER,
 				has_game_ids INTEGER GENERATED ALWAYS AS (json_extract(game_ids, '$') IS NOT NULL) VIRTUAL,
 				engine_key TEXT GENERATED ALWAYS AS (json_extract(engine, '$')) VIRTUAL,
 				unity_backend_key TEXT GENERATED ALWAYS AS (json_extract(unity_backend, '$')) VIRTUAL,
@@ -218,8 +191,6 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 				engine_max_patch INTEGER GENERATED ALWAYS AS (json_extract(engine_version_range, '$.maximum.patch')) VIRTUAL
 			);
 
-			CREATE INDEX IF NOT EXISTS idx_mods_created_at ON mods(created_at);
-
 			CREATE INDEX IF NOT EXISTS idx_mods_has_game_ids ON mods(has_game_ids);
 
 			CREATE TABLE IF NOT EXISTS mod_game_ids (
@@ -233,9 +204,6 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 
 			CREATE TABLE IF NOT EXISTS mod_tags (
 				id TEXT NOT NULL PRIMARY KEY,
-				scope TEXT NOT NULL DEFAULT '',
-				provider_id TEXT NOT NULL,
-				tag_id TEXT NOT NULL,
 				data TEXT NOT NULL
 			);
 
@@ -250,7 +218,7 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 				mod_id TEXT NOT NULL,
 				installed_version TEXT,
 				installed_hash TEXT,
-				created_at INTEGER,
+				manifest TEXT,
 				PRIMARY KEY (exe_path_hash, mod_id)
 			);
 
@@ -262,14 +230,8 @@ pub(crate) fn create_tables(connection: &rusqlite::Connection) -> Result {
 }
 
 impl ModDatabase for Db {
-	fn insert_mods(&self, mods: &[Mod], provider_id: ModProviderId, source_hash: &str) {
-		if let Err(err) = try_insert_mods(self, mods, provider_id, source_hash) {
-			log::error!(
-				"Failed to insert {} mods into local database: {}",
-				mods.len(),
-				err
-			);
-		}
+	fn replace_catalog(&self, mods: &[Mod], tags: &BTreeMap<String, ModTag>) -> Result {
+		try_replace_catalog(self, mods, tags)
 	}
 
 	fn get_mod(&self, mod_id: &str) -> Result<Mod> {
@@ -288,22 +250,21 @@ impl ModDatabase for Db {
 		provider_id_option: Option<GameProviderId>,
 		game_id_option: Option<String>,
 	) -> Result<Option<InstalledMod>> {
-		let is_installed = self
+		let manifest = self
 			.read_db()?
 			.prepare_cached(
-				"SELECT EXISTS(
-					SELECT 1
-					FROM main.installed_mods im
-					WHERE im.mod_id = $1
-						AND (
-							$2 IS NULL OR $3 IS NULL OR im.exe_path_hash = (
-								SELECT g.exe_path_hash
-								FROM main.games g
-								WHERE g.provider_id = $2 AND g.game_id = $3
-								LIMIT 1
-							)
+				"SELECT installed_version, installed_hash, manifest
+				FROM main.installed_mods im
+				WHERE im.mod_id = $1
+					AND (
+						$2 IS NULL OR $3 IS NULL OR im.exe_path_hash = (
+							SELECT g.exe_path_hash
+							FROM main.games g
+							WHERE g.provider_id = $2 AND g.game_id = $3
+							LIMIT 1
 						)
-				)",
+					)
+				LIMIT 1",
 			)?
 			.query_row(
 				rusqlite::params![
@@ -311,19 +272,28 @@ impl ModDatabase for Db {
 					provider_id_option.map(|provider_id| { provider_id.to_string() }),
 					game_id_option.as_deref(),
 				],
-				|row| row.get::<_, bool>(0),
+				|row| {
+					Ok(InstalledModRow {
+						installed_version: row.get(0)?,
+						installed_hash: row.get(1)?,
+						manifest: row.get(2)?,
+					})
+				},
 			)
+			.optional()
 			.with_context(|| format!("checking whether mod `{mod_id}` is installed"))?;
 
-		if !is_installed {
+		let Some(row) = manifest else {
 			return Ok(None);
-		}
-
-		let game_mod = match self.get_mod(mod_id) {
-			Ok(game_mod) => game_mod,
-			Err(Error::ModNotFound(_)) => return Ok(None),
-			Err(error) => return Err(error),
 		};
+
+		let installed_version = row.installed_version.clone();
+		let installed_hash = row.installed_hash.clone();
+		let game_mod = match read_installed_mod(self, mod_id, row)? {
+			Some(game_mod) => game_mod,
+			None => return Ok(None),
+		};
+
 		let game_option = if let Some(game_id) = game_id_option
 			&& let Some(provider_id) = provider_id_option
 		{
@@ -332,7 +302,12 @@ impl ModDatabase for Db {
 			None
 		};
 
-		Ok(Some(InstalledMod::new(game_mod, game_option)))
+		Ok(Some(InstalledMod::new(
+			game_mod,
+			game_option,
+			installed_version,
+			installed_hash,
+		)))
 	}
 
 	fn try_get_installed_mod(
@@ -348,48 +323,54 @@ impl ModDatabase for Db {
 	fn get_installed_mods_for_game(&self, game: &Game) -> Result<Vec<InstalledMod>> {
 		let exe_path_hash = game.try_get_exe_path()?.hash_string();
 
-		let mod_ids = self
+		let rows = self
 			.read_db()?
-			.prepare_cached("SELECT mod_id FROM main.installed_mods WHERE exe_path_hash = $1")?
-			.query_map([exe_path_hash], |row| row.get::<_, String>(0))?
-			.collect::<rusqlite::Result<Vec<String>>>()?;
+			.prepare_cached(
+				"SELECT mod_id, installed_version, installed_hash, manifest
+				FROM main.installed_mods
+				WHERE exe_path_hash = $1",
+			)?
+			.query_map([exe_path_hash], |row| {
+				Ok((
+					row.get::<_, String>(0)?,
+					InstalledModRow {
+						installed_version: row.get(1)?,
+						installed_hash: row.get(2)?,
+						manifest: row.get(3)?,
+					},
+				))
+			})?
+			.collect::<rusqlite::Result<Vec<_>>>()?;
 
 		let mut installed_mods = Vec::new();
 
-		for mod_id in mod_ids {
-			if let Some(game_mod) = self
-				.get_mod(&mod_id)
-				.ok_or_log("Failed to load installed mod")
-			{
-				installed_mods.push(InstalledMod::new(game_mod, Some(game.clone())));
-			}
+		for (mod_id, row) in rows {
+			let installed_version = row.installed_version.clone();
+			let installed_hash = row.installed_hash.clone();
+
+			let Some(game_mod) = read_installed_mod(self, &mod_id, row)? else {
+				continue;
+			};
+
+			installed_mods.push(InstalledMod::new(
+				game_mod,
+				Some(game.clone()),
+				installed_version,
+				installed_hash,
+			));
 		}
 
 		Ok(installed_mods)
 	}
 
 	fn get_game_environment(&self, game: &Game) -> Result<GameEnvironment> {
-		let exe_path_hash = game.try_get_exe_path()?.hash_string();
-
-		let mod_ids = self
-			.read_db()?
-			.prepare_cached("SELECT mod_id FROM main.installed_mods WHERE exe_path_hash = $1")?
-			.query_map([exe_path_hash], |row| row.get::<_, String>(0))?
-			.collect::<rusqlite::Result<Vec<String>>>()?;
-
 		let mut environment = BTreeMap::new();
 		let mut environment_mod_ids = Vec::new();
 
-		for mod_id in mod_ids {
-			let Some(game_mod) = self
-				.get_mod(&mod_id)
-				.ok_or_log("Failed to load mod environment")
-			else {
-				continue;
-			};
-			let mod_environment = game_mod.get_game_environment(Some(game));
+		for installed_mod in self.get_installed_mods_for_game(game)? {
+			let mod_environment = installed_mod.game_mod.get_game_environment(Some(game));
 			if !mod_environment.is_empty() {
-				environment_mod_ids.push(mod_id);
+				environment_mod_ids.push(installed_mod.game_mod.id.clone());
 			}
 			environment.extend(mod_environment);
 		}
@@ -401,123 +382,117 @@ impl ModDatabase for Db {
 	}
 
 	fn get_mod_map(&self) -> Result<BTreeMap<String, Mod>> {
-		Ok(self
-			.read_db()?
-			.prepare_cached(&format!("SELECT {MOD_COLUMNS} FROM main.mods"))?
-			.query_map([], read_mod)?
-			.filter_map(|game_mod| match game_mod {
-				Ok(parsed) => Some((parsed.id.clone(), parsed)),
-				Err(err) => {
-					log::warn!("Failed to read mod from local database: {err}");
-					None
-				}
-			})
-			.collect())
+		read_mod_map(self, false)
+	}
+
+	fn get_catalog_mod_map(&self) -> Result<BTreeMap<String, Mod>> {
+		read_mod_map(self, true)
 	}
 
 	fn refresh_installed_mods(&self) -> Result {
-		let installed_game_ids = self
+		let exe_path_hashes = self
 			.read_db()?
 			.prepare_cached(
-				"SELECT DISTINCT provider_id, game_id FROM main.installed_games WHERE exe_path IS NOT NULL",
+				"SELECT DISTINCT exe_path FROM main.installed_games WHERE exe_path IS NOT NULL",
 			)?
-			.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
-			.filter_map(|game_id| match game_id {
-				Ok(id) => Some(id),
+			.query_map([], |row| row.get::<_, String>(0))?
+			.filter_map(|exe_path| match exe_path {
+				Ok(exe_path) => Some(Path::new(&exe_path).hash_string()),
 				Err(err) => {
 					log::warn!("Failed to read installed game from local database: {err}");
 					None
 				}
 			})
-			.collect::<Vec<(crate::game_providers::game_provider::GameProviderId, String)>>();
+			.collect::<Vec<_>>();
 
-		let game_mods = self.get_mod_map()?;
 		let mut installed_mod_rows = Vec::new();
 
-		for (provider_id, game_id) in installed_game_ids {
-			let Some(game) = self
-				.get_game(&provider_id, &game_id)
-				.ok_or_log("Failed to load installed game while refreshing mods")
-			else {
-				continue;
-			};
-			let Some(exe_path) = game
-				.try_get_exe_path()
-				.ok_or_log("Failed to get game executable path while refreshing installed mods")
-			else {
-				continue;
-			};
-			let exe_path_hash = exe_path.hash_string();
+		for exe_path_hash in &exe_path_hashes {
+			let manifests_folder = app_paths::installed_mods_path()?
+				.join(exe_path_hash)
+				.join("manifests");
 
-			for game_mod in game_mods.values() {
-				if game_mod.install.is_none() {
-					continue;
-				}
-
-				let Some(manifest_path) = game_mod
-					.get_manifest_target_path(Some(&game))
-					.ok_or_log("Failed to get installed mod manifest path")
-				else {
-					continue;
-				};
-
-				if !manifest_path.exists() {
-					continue;
-				}
-
-				let Some(manifest) = InstalledModManifest::from_file(&manifest_path) else {
-					continue;
-				};
-
-				installed_mod_rows.push((
-					exe_path_hash.clone(),
-					manifest.id,
-					manifest
-						.download
-						.as_ref()
-						.map(|download| download.id.clone()),
-					manifest.hash,
-				));
+			for manifest in read_installed_manifests(&manifests_folder, InstallKind::PerGame) {
+				installed_mod_rows.push((exe_path_hash.clone(), manifest));
 			}
 		}
 
-		let created_at = SystemTime::now()
-			.duration_since(UNIX_EPOCH)?
-			.as_secs()
-			.cast_signed();
+		let shared_mods_folder = app_paths::shared_mods_path()?;
+
+		for manifest in read_shared_installed_manifests(&shared_mods_folder) {
+			for exe_path_hash in &exe_path_hashes {
+				installed_mod_rows.push((exe_path_hash.clone(), manifest.clone()));
+			}
+		}
+
+		let mut connection = self.write_db()?;
+		let transaction = connection.transaction()?;
+
+		transaction.execute(
+			"DELETE FROM main.mod_game_ids WHERE mod_id IN (SELECT id FROM main.mods WHERE in_catalog = 0);",
+			[],
+		)?;
+		transaction.execute(
+			"DELETE FROM main.mod_tag_links WHERE mod_id IN (SELECT id FROM main.mods WHERE in_catalog = 0);",
+			[],
+		)?;
+		transaction.execute("DELETE FROM main.mods WHERE in_catalog = 0;", [])?;
 
 		{
-			let mut connection = self.write_db()?;
-			let transaction = connection.transaction()?;
+			let catalog_ids = transaction
+				.prepare_cached("SELECT id FROM main.mods;")?
+				.query_map([], |row| row.get::<_, String>(0))?
+				.collect::<rusqlite::Result<HashSet<String>>>()?;
 
-			transaction.execute("DELETE FROM main.installed_mods;", [])?;
+			let mut installed_only_ids = HashSet::new();
 
-			{
-				let mut statement = transaction.prepare_cached(
-					"INSERT OR REPLACE INTO main.installed_mods (
-						exe_path_hash,
-						mod_id,
-						installed_version,
-						installed_hash,
-						created_at
-					) VALUES ($1, $2, $3, $4, $5)",
-				)?;
+			for (_, installed_manifest) in &installed_mod_rows {
+				let Some(manifest) = installed_manifest.manifest.as_ref() else {
+					continue;
+				};
 
-				for (exe_path_hash, mod_id, installed_version, installed_hash) in installed_mod_rows
+				if catalog_ids.contains(&manifest.id)
+					|| !installed_only_ids.insert(manifest.id.clone())
 				{
-					statement.execute(rusqlite::params![
-						exe_path_hash,
-						mod_id,
-						installed_version,
-						installed_hash,
-						created_at,
-					])?;
+					continue;
 				}
-			}
 
-			transaction.commit()?;
-			drop(connection);
+				insert_mod_row(&transaction, manifest, false)?;
+			}
 		}
+
+		transaction.execute("DELETE FROM main.installed_mods;", [])?;
+
+		{
+			let mut statement = transaction.prepare_cached(
+				"INSERT OR REPLACE INTO main.installed_mods (
+					exe_path_hash,
+					mod_id,
+					installed_version,
+					installed_hash,
+					manifest
+				) VALUES ($1, $2, $3, $4, $5)",
+			)?;
+
+			for (exe_path_hash, installed_manifest) in installed_mod_rows {
+				let manifest = installed_manifest
+					.manifest
+					.as_ref()
+					.map(serde_json::to_string)
+					.transpose()?;
+
+				statement.execute(rusqlite::params![
+					exe_path_hash,
+					installed_manifest.id,
+					installed_manifest.installed_version,
+					installed_manifest.installed_hash,
+					manifest,
+				])?;
+			}
+		}
+
+		transaction.commit()?;
+		drop(connection);
 
 		Ok(())
 	}
@@ -571,6 +546,7 @@ impl ModDatabase for Db {
 					m.optional_dependencies AS optional_dependencies,
 					m.required_dependencies AS required_dependencies,
 					m.tags AS tags,
+					m.in_catalog AS in_catalog,
 					CASE
 						WHEN im.mod_id IS NULL THEN 0
 						ELSE 1
@@ -640,6 +616,8 @@ impl ModDatabase for Db {
 				cm.mod_id,
 				cm.installed_version,
 				cm.installed_hash,
+				cm.is_installed,
+				cm.in_catalog AS is_in_catalog,
 				cm.is_outdated,
 				CASE
 					WHEN EXISTS (
@@ -669,10 +647,12 @@ impl ModDatabase for Db {
 						mod_id: row.get(0)?,
 						installed_version: row.get(1)?,
 						installed_hash: row.get(2)?,
-						is_outdated: row.get(3)?,
-						has_installed_dependants: row.get(4)?,
-						compatible: row.get(5)?,
-						tags: row.get_json(6)?,
+						is_installed: row.get(3)?,
+						is_in_catalog: row.get(4)?,
+						is_outdated: row.get(5)?,
+						has_installed_dependants: row.get(6)?,
+						compatible: row.get(7)?,
+						tags: row.get_json(8)?,
 					})
 				},
 			)?
@@ -743,63 +723,10 @@ impl ModDatabase for Db {
 		Ok(games)
 	}
 
-	fn get_mod_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>> {
-		let ids = self
-			.read_db()?
-			.prepare_cached("SELECT id FROM main.mods WHERE provider_id = $1 AND scope = $2;")?
-			.query_map(rusqlite::params![provider_id, scope], |row| {
-				row.get::<_, String>(0)
-			})?
-			.collect::<rusqlite::Result<Vec<String>>>()?;
-
-		Ok(ids)
-	}
-
-	fn remove_mods_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result {
-		let keep_json = serde_json::to_string(keep_ids)?;
-
-		let mut connection = self.write_db()?;
-		let transaction = connection.transaction()?;
-
-		let doomed_mod_ids = "SELECT id FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?)) AND id NOT IN (SELECT mod_id FROM main.installed_mods)";
-
-		transaction
-			.prepare_cached(&format!(
-				"DELETE FROM main.mod_game_ids WHERE mod_id IN ({doomed_mod_ids});"
-			))?
-			.execute(rusqlite::params![provider_id, keep_json])?;
-		transaction
-			.prepare_cached(&format!(
-				"DELETE FROM main.mod_tag_links WHERE mod_id IN ({doomed_mod_ids});"
-			))?
-			.execute(rusqlite::params![provider_id, keep_json])?;
-		transaction
-			.prepare_cached(&format!(
-				"DELETE FROM main.mods WHERE id IN ({doomed_mod_ids});"
-			))?
-			.execute(rusqlite::params![provider_id, keep_json])?;
-
-		transaction.commit()?;
-		drop(connection);
-
-		Ok(())
-	}
-
-	fn insert_mod_tags(
-		&self,
-		tags: &BTreeMap<String, ModTag>,
-		provider_id: ModProviderId,
-		source_hash: &str,
-	) {
-		if let Err(err) = try_insert_mod_tags(self, tags, provider_id, source_hash) {
-			log::error!("Failed to insert mod tags into local database: {err}");
-		}
-	}
-
 	fn get_mod_tags(&self) -> Result<BTreeMap<String, ModTag>> {
 		let rows = self
 			.read_db()?
-			.prepare_cached("SELECT tag_id, data FROM main.mod_tags ORDER BY id;")?
+			.prepare_cached("SELECT id, data FROM main.mod_tags ORDER BY id;")?
 			.query_map([], |row| {
 				Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
 			})?
@@ -820,45 +747,94 @@ impl ModDatabase for Db {
 
 		Ok(tags)
 	}
+}
 
-	fn get_tag_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>> {
-		let ids = self
-			.read_db()?
-			.prepare_cached("SELECT id FROM main.mod_tags WHERE provider_id = $1 AND scope = $2;")?
-			.query_map(rusqlite::params![provider_id, scope], |row| {
-				row.get::<_, String>(0)
-			})?
-			.collect::<rusqlite::Result<Vec<String>>>()?;
+struct InstalledModRow {
+	installed_version: Option<String>,
+	installed_hash: Option<String>,
+	manifest: Option<String>,
+}
 
-		Ok(ids)
+fn read_installed_mod(db: &Db, mod_id: &str, row: InstalledModRow) -> Result<Option<Mod>> {
+	if let Some(manifest) = row.manifest {
+		match serde_json::from_str::<Mod>(&manifest) {
+			Ok(manifest) => return Ok(Some(manifest)),
+			Err(error) => {
+				log::warn!("Failed to parse stored installed mod manifest for `{mod_id}`: {error}");
+			}
+		}
 	}
 
-	fn remove_mod_tags_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result {
-		let keep_json = serde_json::to_string(keep_ids)?;
-
-		self.write_db()?
-			.prepare_cached(
-				"DELETE FROM main.mod_tags WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?));",
-			)?
-			.execute(rusqlite::params![provider_id, keep_json])?;
-
-		Ok(())
+	match db.get_mod(mod_id) {
+		Ok(game_mod) => Ok(Some(game_mod)),
+		Err(Error::ModNotFound(_)) => Ok(None),
+		Err(error) => Err(error),
 	}
+}
+
+fn read_installed_manifests(folder: &Path, install_kind: InstallKind) -> Vec<InstalledManifest> {
+	let Ok(entries) = fs::read_dir(folder) else {
+		return Vec::new();
+	};
+
+	entries
+		.filter_map(|entry| {
+			let path = entry.ok()?.path();
+
+			if path.extension().is_none_or(|extension| extension != "json") {
+				return None;
+			}
+
+			InstalledManifest::from_file(&path, install_kind)
+		})
+		.collect()
+}
+
+fn read_shared_installed_manifests(folder: &Path) -> Vec<InstalledManifest> {
+	let Ok(entries) = fs::read_dir(folder) else {
+		return Vec::new();
+	};
+
+	let mut manifests = Vec::new();
+
+	for entry in entries.flatten() {
+		let manifest_path = entry.path().join(Mod::FILE_NAME);
+
+		if !manifest_path.is_file() {
+			continue;
+		}
+
+		if let Some(manifest) = InstalledManifest::from_file(&manifest_path, InstallKind::Shared) {
+			manifests.push(manifest);
+		}
+	}
+
+	manifests
+}
+
+fn read_mod_map(db: &Db, catalog_only: bool) -> Result<BTreeMap<String, Mod>> {
+	let filter = if catalog_only {
+		" WHERE in_catalog = 1"
+	} else {
+		""
+	};
+
+	Ok(db
+		.read_db()?
+		.prepare_cached(&format!("SELECT {MOD_COLUMNS} FROM main.mods{filter}"))?
+		.query_map([], read_mod)?
+		.filter_map(|game_mod| match game_mod {
+			Ok(parsed) => Some((parsed.id.clone(), parsed)),
+			Err(err) => {
+				log::warn!("Failed to read mod from local database: {err}");
+				None
+			}
+		})
+		.collect())
 }
 
 fn serialize_json_option<T: Serialize>(value: Option<&T>) -> Result<String> {
 	serde_json::to_string(&value).map_err(Into::into)
-}
-
-fn scope_dependencies(deps: &[ModDependency], scope: &str) -> Vec<ModDependency> {
-	deps.iter()
-		.map(|dep| match dep {
-			ModDependency::ModId { mod_id } => ModDependency::ModId {
-				mod_id: scope_id(scope, mod_id).into_owned(),
-			},
-			ModDependency::Tag { .. } => dep.clone(),
-		})
-		.collect()
 }
 
 // A mod is considered not compatible if any of its required dependencies
@@ -906,26 +882,16 @@ fn dependency_matches(dep: &ModDependency, info: &ModInfo) -> bool {
 	}
 }
 
-fn try_insert_mods(
-	connection_mutex: &Db,
-	mods: &[Mod],
-	provider_id: ModProviderId,
-	source_hash: &str,
+fn insert_mod_row(
+	transaction: &rusqlite::Transaction<'_>,
+	game_mod: &Mod,
+	in_catalog: bool,
 ) -> Result {
-	let scope = compute_scope(provider_id, source_hash);
-	let created_at = SystemTime::now()
-		.duration_since(UNIX_EPOCH)?
-		.as_secs()
-		.cast_signed();
-
-	let mut connection = connection_mutex.write_db()?;
-	let transaction = connection.transaction()?;
-
-	{
-		let mut insert_mod = transaction.prepare_cached(
+	transaction
+		.prepare_cached(
 			"INSERT OR REPLACE INTO mods (
 				id,
-				provider_id,
+				in_catalog,
 				title,
 				author,
 				website,
@@ -948,126 +914,89 @@ fn try_insert_mods(
 				hide_from_game_mods_list,
 				hash,
 				tags,
-				created_at,
-				scope,
 				game_ids
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)",
-		)?;
-		let mut delete_game_ids =
-			transaction.prepare_cached("DELETE FROM main.mod_game_ids WHERE mod_id = $1;")?;
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)",
+		)?
+		.execute(rusqlite::params![
+			game_mod.id,
+			in_catalog,
+			game_mod.title,
+			game_mod.author,
+			game_mod.website,
+			game_mod.description,
+			serialize_json_option(game_mod.download.as_ref())?,
+			serialize_json_option(game_mod.engine.as_ref())?,
+			serialize_json_option(game_mod.engine_version_range.as_ref())?,
+			serialize_json_option(game_mod.unity_backend.as_ref())?,
+			serialize_json_option(game_mod.architecture.as_ref())?,
+			serialize_json_option(game_mod.game_os.as_ref())?,
+			serialize_json_option(game_mod.host_os.as_ref())?,
+			game_mod.deprecated,
+			serialize_json_option(game_mod.paths.as_ref())?,
+			serialize_json_option(game_mod.optional_dependencies.as_ref())?,
+			serialize_json_option(game_mod.required_dependencies.as_ref())?,
+			serialize_json_option(game_mod.install.as_ref())?,
+			serialize_json_option(game_mod.run_for_game.as_ref())?,
+			serialize_json_option(game_mod.run_standalone.as_ref())?,
+			serialize_json_option(game_mod.game_environment.as_ref())?,
+			game_mod.hide_from_game_mods_list,
+			game_mod.hash,
+			serde_json::to_string(&game_mod.tags.clone().unwrap_or_default())?,
+			serialize_json_option(game_mod.game_ids.as_ref())?,
+		])?;
+
+	if let Some(game_ids) = &game_mod.game_ids {
 		let mut insert_game_id = transaction.prepare_cached(
 			"INSERT OR IGNORE INTO main.mod_game_ids (mod_id, external_id_provider, external_id) VALUES ($1, $2, $3);",
 		)?;
-		let mut delete_tag_links =
-			transaction.prepare_cached("DELETE FROM main.mod_tag_links WHERE mod_id = $1;")?;
-		let mut insert_tag_link = transaction.prepare_cached(
-			"INSERT OR IGNORE INTO main.mod_tag_links (mod_id, tag) VALUES ($1, $2);",
-		)?;
 
-		for game_mod in mods {
-			let scoped_id = scope_id(&scope, &game_mod.id);
-
-			let scoped_optional_deps = game_mod
-				.optional_dependencies
-				.as_ref()
-				.map(|deps| scope_dependencies(deps, &scope));
-			let scoped_required_deps = game_mod
-				.required_dependencies
-				.as_ref()
-				.map(|deps| scope_dependencies(deps, &scope));
-
-			insert_mod.execute(rusqlite::params![
-				scoped_id.as_ref(),
-				provider_id,
-				game_mod.title,
-				game_mod.author,
-				game_mod.website,
-				game_mod.description,
-				serialize_json_option(game_mod.download.as_ref())?,
-				serialize_json_option(game_mod.engine.as_ref())?,
-				serialize_json_option(game_mod.engine_version_range.as_ref())?,
-				serialize_json_option(game_mod.unity_backend.as_ref())?,
-				serialize_json_option(game_mod.architecture.as_ref())?,
-				serialize_json_option(game_mod.game_os.as_ref())?,
-				serialize_json_option(game_mod.host_os.as_ref())?,
-				game_mod.deprecated,
-				serialize_json_option(game_mod.paths.as_ref())?,
-				serialize_json_option(scoped_optional_deps.as_ref())?,
-				serialize_json_option(scoped_required_deps.as_ref())?,
-				serialize_json_option(game_mod.install.as_ref())?,
-				serialize_json_option(game_mod.run_for_game.as_ref())?,
-				serialize_json_option(game_mod.run_standalone.as_ref())?,
-				serialize_json_option(game_mod.game_environment.as_ref())?,
-				game_mod.hide_from_game_mods_list,
-				game_mod.hash,
-				serde_json::to_string(&game_mod.tags.clone().unwrap_or_default())?,
-				created_at,
-				scope,
-				serialize_json_option(game_mod.game_ids.as_ref())?,
-			])?;
-
-			delete_game_ids.execute([scoped_id.as_ref()])?;
-			delete_tag_links.execute([scoped_id.as_ref()])?;
-
-			if let Some(game_ids) = &game_mod.game_ids {
-				for (provider, ids) in &game_ids.0 {
-					for id in ids {
-						insert_game_id.execute(rusqlite::params![
-							scoped_id.as_ref(),
-							provider,
-							id
-						])?;
-					}
-				}
-			}
-
-			if let Some(tags) = &game_mod.tags {
-				for tag in tags {
-					insert_tag_link.execute(rusqlite::params![scoped_id.as_ref(), tag])?;
-				}
+		for (provider, ids) in &game_ids.0 {
+			for id in ids {
+				insert_game_id.execute(rusqlite::params![game_mod.id, provider, id])?;
 			}
 		}
 	}
 
-	transaction.commit()?;
-	drop(connection);
+	if let Some(tags) = &game_mod.tags {
+		let mut insert_tag_link = transaction.prepare_cached(
+			"INSERT OR IGNORE INTO main.mod_tag_links (mod_id, tag) VALUES ($1, $2);",
+		)?;
+
+		for tag in tags {
+			insert_tag_link.execute(rusqlite::params![game_mod.id, tag])?;
+		}
+	}
 
 	Ok(())
 }
 
-fn try_insert_mod_tags(
-	connection_mutex: &Db,
-	tags: &BTreeMap<String, ModTag>,
-	provider_id: ModProviderId,
-	source_hash: &str,
-) -> Result {
-	let scope = compute_scope(provider_id, source_hash);
+fn insert_mod_tag(transaction: &rusqlite::Transaction<'_>, tag_id: &str, tag: &ModTag) -> Result {
+	transaction
+		.prepare_cached("INSERT OR REPLACE INTO main.mod_tags (id, data) VALUES ($1, $2)")?
+		.execute(rusqlite::params![tag_id, serde_json::to_string(tag)?])?;
 
-	let mut connection = connection_mutex.write_db()?;
+	Ok(())
+}
+
+fn try_replace_catalog(db: &Db, mods: &[Mod], tags: &BTreeMap<String, ModTag>) -> Result {
+	let mut connection = db.write_db()?;
 	let transaction = connection.transaction()?;
 
-	{
-		let mut statement = transaction.prepare_cached(
-			"INSERT OR REPLACE INTO mod_tags (
-				id,
-				scope,
-				provider_id,
-				tag_id,
-				data
-			) VALUES ($1, $2, $3, $4, $5)",
-		)?;
+	transaction.execute_batch(
+		r"
+		DELETE FROM main.mod_tag_links;
+		DELETE FROM main.mod_game_ids;
+		DELETE FROM main.mods;
+		DELETE FROM main.mod_tags;
+		",
+	)?;
 
-		for (tag_id, tag) in tags {
-			let scoped_id = scope_id(&scope, tag_id);
+	for game_mod in mods {
+		insert_mod_row(&transaction, game_mod, true)?;
+	}
 
-			statement.execute(rusqlite::params![
-				scoped_id.as_ref(),
-				scope,
-				provider_id,
-				tag_id,
-				serde_json::to_string(tag)?,
-			])?;
-		}
+	for (tag_id, tag) in tags {
+		insert_mod_tag(&transaction, tag_id, tag)?;
 	}
 
 	transaction.commit()?;

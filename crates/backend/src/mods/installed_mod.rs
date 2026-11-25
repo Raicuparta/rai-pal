@@ -9,11 +9,23 @@ use crate::{
 pub struct InstalledMod {
 	pub game_mod: Mod,
 	pub game: Option<Game>,
+	pub installed_version: Option<String>,
+	pub installed_hash: Option<String>,
 }
 
 impl InstalledMod {
-	pub const fn new(game_mod: Mod, game: Option<Game>) -> Self {
-		Self { game_mod, game }
+	pub fn new(
+		game_mod: Mod,
+		game: Option<Game>,
+		installed_version: Option<String>,
+		installed_hash: Option<String>,
+	) -> Self {
+		Self {
+			game_mod,
+			game,
+			installed_version,
+			installed_hash,
+		}
 	}
 
 	pub async fn uninstall(&self) -> Result {
