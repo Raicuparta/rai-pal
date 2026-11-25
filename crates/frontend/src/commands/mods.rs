@@ -1,7 +1,8 @@
 use std::{
 	cell::RefCell,
 	collections::{HashMap, HashSet},
-	path::Path,
+	ffi::OsStr,
+	path::{Path, PathBuf},
 	rc::Rc,
 	sync::Arc,
 	thread,
@@ -68,6 +69,82 @@ fn store_path_states(game: &Game, states: PathStateMap) {
 	PATH_STATES.with(|cache| {
 		cache.borrow_mut().insert(game_key(game), states);
 	});
+}
+
+fn path_label(path: &Path, depth: usize, shared_suffix: usize) -> String {
+	let components = path.components();
+	let skip = components.clone().count().saturating_sub(depth);
+
+	components
+		.skip(skip)
+		.take(depth - shared_suffix)
+		.collect::<PathBuf>()
+		.display()
+		.to_string()
+}
+
+fn unique_suffix_depths(paths: &[PathBuf]) -> Vec<usize> {
+	let component_counts: Vec<usize> = paths.iter().map(|path| path.components().count()).collect();
+	let mut depths = vec![1; paths.len()];
+
+	loop {
+		let labels: Vec<String> = paths
+			.iter()
+			.zip(&depths)
+			.map(|(path, depth)| path_label(path, *depth, 0))
+			.collect();
+		let mut colliding = vec![false; labels.len()];
+
+		for (index, label) in labels.iter().enumerate() {
+			for (other_index, other_label) in labels.iter().enumerate().skip(index + 1) {
+				if label == other_label && paths[index] != paths[other_index] {
+					colliding[index] = true;
+					colliding[other_index] = true;
+				}
+			}
+		}
+
+		let mut expanded = false;
+
+		for (index, collides) in colliding.iter().enumerate() {
+			if *collides && depths[index] < component_counts[index] {
+				depths[index] += 1;
+				expanded = true;
+			}
+		}
+
+		if !expanded {
+			return depths;
+		}
+	}
+}
+
+fn path_labels(paths: &[PathBuf]) -> Vec<String> {
+	let depths = unique_suffix_depths(paths);
+	let components: Vec<Vec<&OsStr>> = paths.iter().map(|path| path.iter().collect()).collect();
+	let min_depth = depths.iter().copied().min().unwrap_or(0);
+	let first = components.first().map_or(&[][..], Vec::as_slice);
+	let max_shared_suffix = min_depth.saturating_sub(1);
+	let shared_suffix = (0..max_shared_suffix)
+		.take_while(|offset| {
+			components
+				.iter()
+				.all(|other| other[other.len() - 1 - offset] == first[first.len() - 1 - offset])
+		})
+		.count();
+
+	paths
+		.iter()
+		.zip(depths)
+		.map(|(path, depth)| path_label(path, depth, shared_suffix))
+		.collect()
+}
+
+struct PathTarget<'a> {
+	key: &'a str,
+	target: PathBuf,
+	open_folder: bool,
+	enabled: bool,
 }
 
 impl CommandHandler {
@@ -405,46 +482,65 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	let mod_id = manifest.id.as_str();
 	let mut actions = ModActionList::new(mod_id);
 
-	for path in manifest.paths.as_deref().unwrap_or_default() {
-		let state = cached_path_state(game, mod_id, &path.path);
-		let display_path = state
-			.as_ref()
-			.map_or_else(|| Path::new(&path.path), |state| state.path.as_path());
-		let path_exists = |open_folder| {
-			state.as_ref().map_or_else(
-				|| game.exe_path.is_some(),
-				|state| state.exists(open_folder),
-			)
-		};
-		let display_name = |open_folder| {
-			let target = if matches!(&path.path_type, ModPathType::File) && open_folder {
-				display_path.parent().unwrap_or(display_path)
+	let path_targets: Vec<PathTarget> = manifest
+		.paths
+		.as_deref()
+		.unwrap_or_default()
+		.iter()
+		.flat_map(|path| {
+			let state = cached_path_state(game, mod_id, &path.path);
+			let display_path = state
+				.as_ref()
+				.map_or_else(|| Path::new(&path.path), |state| state.path.as_path());
+			let path_exists = |open_folder| {
+				state.as_ref().map_or_else(
+					|| game.exe_path.is_some(),
+					|state| state.exists(open_folder),
+				)
+			};
+			let is_file = matches!(&path.path_type, ModPathType::File);
+			let variants = if is_file {
+				vec![(false, path_exists(false)), (true, path_exists(true))]
 			} else {
-				display_path
+				vec![(true, path_exists(true))]
 			};
 
-			target.file_name().map_or_else(
-				|| target.display().to_string(),
-				|name| name.to_string_lossy().into_owned(),
-			)
-		};
-		let variants = if matches!(&path.path_type, ModPathType::Folder) {
-			vec![(true, path_exists(true))]
-		} else {
-			vec![(false, path_exists(false)), (true, path_exists(true))]
-		};
+			variants
+				.into_iter()
+				.map(|(open_folder, enabled)| {
+					let target = if is_file && open_folder {
+						display_path.parent().unwrap_or(display_path)
+					} else {
+						display_path
+					};
 
-		for (open_folder, enabled) in variants {
-			let mut action = actions.action(
-				ModActionKind::OpenPath,
-				ActionKind::GameModOpenPath,
-				&path.path,
-			);
-			action.subject = display_name(open_folder).into();
-			action.open_folder = open_folder;
-			action.enabled = enabled;
-			actions.push(ActionGroup::Path, action);
-		}
+					PathTarget {
+						key: &path.path,
+						target: target.to_path_buf(),
+						open_folder,
+						enabled,
+					}
+				})
+				.collect::<Vec<_>>()
+		})
+		.collect();
+	let labels = path_labels(
+		&path_targets
+			.iter()
+			.map(|target| target.target.clone())
+			.collect::<Vec<_>>(),
+	);
+
+	for (target, label) in path_targets.iter().zip(labels) {
+		let mut action = actions.action(
+			ModActionKind::OpenPath,
+			ActionKind::GameModOpenPath,
+			target.key,
+		);
+		action.subject = label.into();
+		action.open_folder = target.open_folder;
+		action.enabled = target.enabled;
+		actions.push(ActionGroup::Path, action);
 	}
 
 	if can_show_actions && has_install && installable && !installed {

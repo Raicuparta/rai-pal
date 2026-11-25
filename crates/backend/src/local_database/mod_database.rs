@@ -709,7 +709,10 @@ impl ModDatabase for Db {
 	}
 
 	fn get_broken_installed_manifests(&self, game: &Game) -> Result<Vec<String>> {
-		let exe_path_hash = game.try_get_exe_path()?.hash_string();
+		let Some(exe_path) = game.exe_path.as_ref() else {
+			return Ok(Vec::new());
+		};
+		let exe_path_hash = exe_path.hash_string();
 
 		let file_names = self
 			.read_db()?
