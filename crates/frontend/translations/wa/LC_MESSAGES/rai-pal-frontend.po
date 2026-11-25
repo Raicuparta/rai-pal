@@ -858,5 +858,13 @@ msgid "Link Only"
 msgstr "Seulmint loyén"
 
 msgctxt "gameModRow"
-msgid "This mod is not fully installed, but left some files behind. It's safest to uninstall all mods first before continuing."
+msgid "This mod is not fully installed, but left some files behind. It's safest to reinstall all mods before continuing."
 msgstr "Waaaaaah waah waah not waaaaaah wah, waah wah waah waaaaaah waah! Waaaaaaah wah waah waah wah wah waaaaah waah waah!"
+
+msgctxt "gameModal"
+msgid "Reinstall all mods"
+msgstr "Waaaaaaah wah waah waah!"
+
+msgctxt "messages"
+msgid "Failed to reinstall all mods"
+msgstr "Waaaaaaah wah waah waah waah!"

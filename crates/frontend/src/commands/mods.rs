@@ -200,24 +200,32 @@ impl CommandHandler {
 			action_state::key(ActionKind::GameModUninstallAll, ""),
 			MessageContext::UninstallAllMods,
 			move || {
-				let result = runtime::block_on(async {
-					let installed_mods = database.get_installed_mods_for_game(&game)?;
+				let result = runtime::block_on(uninstall_all_mods_inner(&database, &game));
 
-					analytics::record_all(installed_mods.iter().map(|installed_mod| {
-						Event::UninstallMod {
-							mod_id: installed_mod.game_mod.id.clone(),
-							tags: installed_mod.game_mod.tags.clone(),
-							game: Some(game.display_title.clone()),
-						}
-					}));
+				if result.is_ok() {
+					refresh_after_action(&window, &game);
+				}
 
-					for installed_mod in installed_mods {
-						installed_mod.uninstall().await?;
-					}
+				result.map(|_| ())
+			},
+		);
+	}
 
-					game.delete_mods_folder().await?;
-					database.refresh_installed_mods()
-				});
+	pub fn reinstall_all_mods(&self) {
+		let Some(game) = self.selected_game() else {
+			return;
+		};
+
+		let database = Arc::clone(&self.database);
+		let window = self.window();
+		let downloads = self.downloads.clone();
+
+		self.spawn_action(
+			action_state::key(ActionKind::GameModReinstallAll, ""),
+			MessageContext::ReinstallAllMods,
+			move || {
+				let result = runtime::block_on(uninstall_all_mods_inner(&database, &game))
+					.and_then(|mods| install_reinstalled_mods(&database, &game, mods, &downloads));
 
 				if result.is_ok() {
 					refresh_after_action(&window, &game);
@@ -320,6 +328,10 @@ fn apply_mods(window: &MainWindow, models: &GameDetailsModels, database: &Db, ga
 		.iter()
 		.chain(loaded.dependency_only.iter())
 		.any(|mod_data| mod_data.status == ModStatus::Outdated);
+	let has_broken_mods = loaded
+		.installed
+		.iter()
+		.any(|mod_data| mod_data.status == ModStatus::Broken);
 	let LoadedMods {
 		installed,
 		game_specific,
@@ -328,6 +340,7 @@ fn apply_mods(window: &MainWindow, models: &GameDetailsModels, database: &Db, ga
 		incompatible,
 	} = loaded;
 	state.set_has_outdated_mods(has_outdated_mods);
+	state.set_has_broken_mods(has_broken_mods);
 	model::sync_vec_model(&models.installed, installed);
 	model::sync_vec_model(&models.game_specific, game_specific);
 	model::sync_vec_model(&models.available, available);
@@ -509,8 +522,8 @@ fn broken_row_data(title: String) -> GameModData {
 	actions.push(
 		ActionGroup::Primary,
 		actions.action(
-			ModActionKind::UninstallAll,
-			ActionKind::GameModUninstallAll,
+			ModActionKind::ReinstallAll,
+			ActionKind::GameModReinstallAll,
 			"",
 		),
 	);
@@ -726,6 +739,70 @@ async fn install_mod(
 	Ok(())
 }
 
+async fn uninstall_all_mods_inner(database: &Db, game: &Game) -> Result<Vec<Mod>> {
+	let installed_mods = database.get_installed_mods_for_game(game)?;
+
+	analytics::record_all(
+		installed_mods
+			.iter()
+			.map(|installed_mod| Event::UninstallMod {
+				mod_id: installed_mod.game_mod.id.clone(),
+				tags: installed_mod.game_mod.tags.clone(),
+				game: Some(game.display_title.clone()),
+			}),
+	);
+
+	let mods_to_reinstall = installed_mods
+		.iter()
+		.map(|installed_mod| {
+			database
+				.get_mod(&installed_mod.game_mod.id)
+				.ok_or_log("Failed to load mod for reinstall")
+				.unwrap_or_else(|| installed_mod.game_mod.clone())
+		})
+		.filter(|game_mod| game_mod.install.is_some())
+		.collect::<Vec<_>>();
+
+	for installed_mod in &installed_mods {
+		installed_mod.uninstall().await?;
+	}
+
+	game.delete_mods_folder().await?;
+	database.refresh_installed_mods()?;
+
+	Ok(mods_to_reinstall)
+}
+
+fn install_reinstalled_mods(
+	database: &Db,
+	game: &Game,
+	mods: Vec<Mod>,
+	downloads: &Tracker,
+) -> std::result::Result<(), String> {
+	for game_mod in mods {
+		let steps = install_steps(std::slice::from_ref(&game_mod));
+		downloads.pending_steps(&steps);
+
+		let result =
+			runtime::block_on(game_mod.install(Some(game), |status| downloads.record(&status)))
+				.and_then(|()| {
+					database
+						.refresh_installed_mods()
+						.map_err(|err| err.to_string())
+				});
+
+		match result {
+			Ok(()) => downloads.finish_steps(&steps),
+			Err(err) => {
+				downloads.fail_steps(&steps);
+				return Err(err);
+			}
+		}
+	}
+
+	Ok(())
+}
+
 fn collect_deps_to_install(
 	mod_id: &str,
 	database: &Db,
@@ -814,6 +891,7 @@ impl CommandHandler {
 				self.with_selected_mod(&mod_id, Self::uninstall_mod);
 			}
 			ModActionKind::UninstallAll => self.prompt_uninstall_all_mods(),
+			ModActionKind::ReinstallAll => self.reinstall_all_mods(),
 			ModActionKind::OpenPath => {
 				self.with_selected_mod(&mod_id, |handler, game, mod_id| {
 					handler.open_mod_path(
@@ -845,5 +923,8 @@ impl CommandHandler {
 pub fn register(window: &crate::MainWindow) {
 	on_command!(window, ModMenuActions, on_activate, |action| handler => {
 		handler.activate_mod_action(&action);
+	});
+	on_command!(window, ModActions, on_request_reinstall_all, || handler => {
+		handler.reinstall_all_mods();
 	});
 }

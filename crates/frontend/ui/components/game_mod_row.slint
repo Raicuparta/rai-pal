@@ -56,7 +56,7 @@ export component GameModRow inherits VerticalLayout {
             ModSummaryView {
                 horizontal-stretch: 1;
                 title: game-mod.title;
-                description: game-mod.status == ModStatus.broken ? @tr("gameModRow" => "This mod is not fully installed, but left some files behind. It's safest to uninstall all mods first before continuing.") : game-mod.description;
+                description: game-mod.status == ModStatus.broken ? @tr("gameModRow" => "This mod is not fully installed, but left some files behind. It's safest to reinstall all mods before continuing.") : game-mod.description;
                 version-text: game-mod.version-text;
                 release-date: game-mod.release-date;
                 author: game-mod.author;

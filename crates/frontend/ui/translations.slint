@@ -221,6 +221,9 @@ export global Tr {
         if kind == ModActionKind.uninstall-all {
             return @tr("gameModal" => "Uninstall all mods");
         }
+        if kind == ModActionKind.reinstall-all {
+            return @tr("gameModal" => "Reinstall all mods");
+        }
         if kind == ModActionKind.website {
             return @tr("modModal" => "Website");
         }
@@ -327,6 +330,9 @@ export global Tr {
         }
         if data.context == MessageContext.uninstall-all-mods {
             return @tr("messages" => "Failed to uninstall all mods");
+        }
+        if data.context == MessageContext.reinstall-all-mods {
+            return @tr("messages" => "Failed to reinstall all mods");
         }
         if data.context == MessageContext.update-all-mods {
             return @tr("messages" => "Failed to update all mods");

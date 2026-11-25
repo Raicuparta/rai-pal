@@ -858,5 +858,13 @@ msgid "Link Only"
 msgstr "Solo enlace"
 
 msgctxt "gameModRow"
-msgid "This mod is not fully installed, but left some files behind. It's safest to uninstall all mods first before continuing."
-msgstr "Este mod no está completamente instalado, pero dejó algunos archivos atrás. Lo más seguro es desinstalar todos los mods primero antes de continuar."
+msgid "This mod is not fully installed, but left some files behind. It's safest to reinstall all mods before continuing."
+msgstr "Este mod no está completamente instalado, pero dejó algunos archivos atrás. Lo más seguro es reinstalar todos los mods antes de continuar."
+
+msgctxt "gameModal"
+msgid "Reinstall all mods"
+msgstr "Reinstalar todos los mods"
+
+msgctxt "messages"
+msgid "Failed to reinstall all mods"
+msgstr "No se pudieron reinstalar todos los mods"

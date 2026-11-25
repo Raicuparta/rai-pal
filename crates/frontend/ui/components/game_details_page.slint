@@ -22,6 +22,7 @@ export global GameDetailsState {
     in property <string> provider-name: "";
     in property <bool> show-wine-folders: false;
     in property <bool> has-outdated-mods: false;
+    in property <bool> has-broken-mods: false;
     in property <bool> mods-folder-exists: false;
     in property <bool> mods-folder-has-files: false;
     in property <[ProviderActionData]> provider-actions;
@@ -88,7 +89,7 @@ export component GameDetailsPage inherits HorizontalLayout {
                         inset: Theme.space-md;
                         text: Tr.provider-command(action.action);
                         icon: root.provider-command-icon(action.action);
-                        tint: index == 0 && !GameDetailsState.has-outdated-mods ? Theme.primary : transparent;
+                        tint: index == 0 && !GameDetailsState.has-outdated-mods && !GameDetailsState.has-broken-mods ? Theme.primary : transparent;
                         action-key: { kind: ActionKind.provider-action, target: action.action-id };
 
                         clicked => {
@@ -112,11 +113,23 @@ export component GameDetailsPage inherits HorizontalLayout {
                         padding-bottom: Theme.space-xs;
                     }
 
+                    if GameDetailsState.has-broken-mods: ActionButton {
+                        inset: Theme.space-md;
+                        text: @tr("gameModal" => "Reinstall all mods");
+                        icon: Icon.reinstall;
+                        tint: Theme.primary;
+                        action-key: { kind: ActionKind.game-mod-reinstall-all, target: "" };
+
+                        clicked => {
+                            ModActions.request-reinstall-all();
+                        }
+                    }
+
                     ActionButton {
                         inset: Theme.space-md;
                         text: @tr("gameModal" => "Update all mods");
                         icon: Icon.update;
-                        tint: Theme.primary;
+                        tint: GameDetailsState.has-broken-mods ? transparent : Theme.primary;
                         enabled: GameDetailsState.has-outdated-mods;
                         action-key: { kind: ActionKind.game-mod-update-all, target: "" };
 
