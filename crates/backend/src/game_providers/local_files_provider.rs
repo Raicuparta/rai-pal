@@ -6,7 +6,7 @@ use std::{
 
 use log::error;
 
-use super::game_provider::{GameProviderId, ProviderActions};
+use super::game_provider::ProviderActions;
 use super::provider_command::{ProviderCommandAction, ProviderCommandKind};
 use crate::{
 	app_paths,
@@ -30,7 +30,7 @@ const IGNORED_EXE_NAMES: [&str; 8] = [
 	"unitycrashhandler32",
 ];
 
-pub struct Manual {}
+pub struct LocalFiles {}
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct GamesConfig {
@@ -50,7 +50,7 @@ pub struct DirectoryScanResult {
 	pub duration_secs: f64,
 }
 
-impl ProviderActions for Manual {
+impl ProviderActions for LocalFiles {
 	fn get_games(&self) -> Result<Vec<Game>> {
 		let config = read_games_config(&games_config_path()?);
 
@@ -155,12 +155,12 @@ impl ProviderActions for Manual {
 }
 
 #[cfg(target_os = "windows")]
-impl WineProviderActions for Manual {}
+impl WineProviderActions for LocalFiles {}
 #[cfg(not(any(target_os = "linux", target_os = "windows")))]
-impl WineProviderActions for Manual {}
+impl WineProviderActions for LocalFiles {}
 
 #[cfg(target_os = "linux")]
-impl WineProviderActions for Manual {
+impl WineProviderActions for LocalFiles {
 	fn get_wine_prefix_path(&self, _game: &Game) -> Result<PathBuf> {
 		Ok(crate::wine::get_default_wine_prefix())
 	}
@@ -206,8 +206,7 @@ fn get_game_from_path(exe_path: &Path) -> Result<Game> {
 		.and_then(|p| p.file_name())
 		.map(|f| f.to_string_lossy().to_string());
 
-	let mut game = Game::new(
-		GameProviderId::Manual,
+	let mut game = Game::new_local_files(
 		exe_path.hash_string(),
 		match parent_folder {
 			Some(ref folder) => format!("{folder} / {name}"),
@@ -215,6 +214,11 @@ fn get_game_from_path(exe_path: &Path) -> Result<Game> {
 		},
 	);
 	game.set_executable(exe_path);
+
+	if game.exe_path.is_none() {
+		return Err(Error::NoExecutableFound(exe_path.to_owned()));
+	}
+
 	game.add_provider_command(ProviderCommandAction::Delete, ProviderCommandKind::Delete);
 	Ok(game)
 }
@@ -278,10 +282,6 @@ fn compute_title_discriminators(games: &mut [Game]) {
 
 pub async fn add_game(path: &Path) -> Result<Game> {
 	let game = get_game_from_path(path)?;
-
-	if game.exe_path.is_none() {
-		return Err(Error::NoExecutableFound(path.to_owned()));
-	}
 
 	let config_path = games_config_path()?;
 

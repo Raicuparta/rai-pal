@@ -1,20 +1,30 @@
 import { ActionKind } from "../action_state.slint";
-import { ScrollView } from "std-widgets.slint";
-import { DialogActions, ModActions } from "../actions.slint";
+import { ListView } from "std-widgets.slint";
+import { DialogActions, ModActions, ModsTabActions } from "../actions.slint";
 import { UrlModSourcesPopup } from "url_mod_sources_popup.slint";
 import { ConfirmModSourcePopup } from "confirm_mod_source_popup.slint";
-import { ModsTabItemData } from "../app_types.slint";
+import { FilterGroupData, ModsTabModData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
+import { FilterPanel } from "filter_panel.slint";
+import { MessageState } from "message_state.slint";
 import { ModsTabRow } from "mods_tab_row.slint";
-import { ModsTabFamilyRow } from "mods_tab_family_row.slint";
 import { RefreshButton } from "refresh_button.slint";
-import { Sidebar, SidebarScroll } from "sidebar.slint";
+import { RowDivider } from "row_divider.slint";
+import { Sidebar } from "sidebar.slint";
 import { ActionButton } from "action_button.slint";
+import { TextField } from "text_field.slint";
 import { Icon } from "svg_icon.slint";
 
 export global ModsState {
-    in property <[ModsTabItemData]> items;
+    in property <[ModsTabModData]> items;
     in property <int> total-count: 0;
+}
+
+export global ModsQuery {
+    in-out property <string> search-text: "";
+    in property <[FilterGroupData]> filter-groups;
+    in property <bool> filters-have-changes: false;
+    in property <bool> filters-have-expanded: false;
 }
 
 export component ModsPage inherits Rectangle {
@@ -22,7 +32,7 @@ export component ModsPage inherits Rectangle {
 
     HorizontalLayout {
         Sidebar {
-            status-text: @tr("modsPage" => "{} mods", ModsState.total-count);
+            status-text: @tr("modsPage" => "{} mods", ModsState.items.length == ModsState.total-count ? ModsState.total-count : "\{ModsState.items.length} / \{ModsState.total-count}");
 
             VerticalLayout {
                 vertical-stretch: 0;
@@ -33,33 +43,85 @@ export component ModsPage inherits Rectangle {
                     inset: Theme.space-md;
                 }
 
-                SidebarScroll {
-                    VerticalLayout {
-                        alignment: start;
+                ActionButton {
+                    inset: Theme.space-md;
+                    text: @tr("urlModSources" => "Mod Sources");
+                    icon: Icon.mod-sources;
 
-                        ActionButton {
-                            inset: Theme.space-md;
-                            text: @tr("urlModSources" => "Mod Sources");
-                            icon: Icon.mod-sources;
+                    clicked => {
+                        root.url-mod-sources-open = true;
+                        DialogActions.request-url-mod-sources();
+                    }
+                }
 
-                            clicked => {
-                                root.url-mod-sources-open = true;
-                                DialogActions.request-url-mod-sources();
-                            }
-                        }
+                ActionButton {
+                    inset: Theme.space-md;
+                    text: @tr("modsPage" => "Open Local Mods Folder");
+                    icon: Icon.folder-mods;
+                    action-key: { kind: ActionKind.open-local-mods-folder, target: "" };
+                    tooltip: @tr("modsPage" => "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database.");
 
-                        ActionButton {
-                            inset: Theme.space-md;
-                            text: @tr("modsPage" => "Open Local Mods Folder");
-                            icon: Icon.folder-mods;
-                            action-key: { kind: ActionKind.open-local-mods-folder, target: "" };
-                            tooltip: @tr("modsPage" => "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database.");
+                    clicked => {
+                        ModActions.open-local-mods-folder();
+                    }
+                }
 
-                            clicked => {
-                                ModActions.open-local-mods-folder();
-                            }
+                RowDivider { }
+
+                HorizontalLayout {
+                    padding-left: Theme.space-md;
+                    padding-right: Theme.space-md;
+                    spacing: Theme.space-xs;
+                    cross-axis-alignment: center;
+
+                    TextField {
+                        text <=> ModsQuery.search-text;
+                        icon: Icon.search;
+                        clearable: true;
+                        tooltip: @tr("modsPage" => "Search mods");
+
+                        edited(text) => {
+                            ModsTabActions.search-changed(text);
                         }
                     }
+                }
+            }
+
+            FilterPanel {
+                groups: ModsQuery.filter-groups;
+                have-changes: ModsQuery.filters-have-changes;
+                have-expanded: ModsQuery.filters-have-expanded;
+
+                filter-toggled(group, value, checked) => {
+                    ModsTabActions.filter-toggled(group, value, checked);
+                }
+
+                filter-lock-toggled(group, value) => {
+                    ModsTabActions.filter-lock-toggled(group, value);
+                }
+
+                filter-only(group, value) => {
+                    ModsTabActions.filter-only(group, value);
+                }
+
+                filter-reset(group) => {
+                    ModsTabActions.filter-reset(group);
+                }
+
+                filters-reset => {
+                    ModsTabActions.filters-reset();
+                }
+
+                filters-collapse-all => {
+                    ModsTabActions.filters-collapse-all();
+                }
+
+                filters-expand-all => {
+                    ModsTabActions.filters-expand-all();
+                }
+
+                filter-expanded-changed(group, expanded) => {
+                    ModsTabActions.filter-expanded-changed(group, expanded);
                 }
             }
         }
@@ -67,22 +129,19 @@ export component ModsPage inherits Rectangle {
         Rectangle {
             horizontal-stretch: 1;
 
-            ScrollView {
-                VerticalLayout {
-                    alignment: start;
+            if ModsState.items.length == 0: VerticalLayout {
+                padding: Theme.space-xl;
+                alignment: center;
 
-                    for item in ModsState.items: VerticalLayout {
-                        alignment: start;
-                        vertical-stretch: 0;
+                MessageState {
+                    message: @tr("modsPage" => "No mods match your search and filters.");
+                }
+            }
 
-                        if item.is-family: ModsTabFamilyRow {
-                            item: item;
-                        }
-
-                        if !item.is-family: ModsTabRow {
-                            mod-data: item.single-mod;
-                        }
-                    }
+            ListView {
+                visible: ModsState.items.length > 0;
+                for mod-row in ModsState.items: ModsTabRow {
+                    mod-data: mod-row;
                 }
             }
         }

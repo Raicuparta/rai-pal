@@ -236,7 +236,7 @@ pub fn process_game(game: &mut Game) -> bool {
 
 pub fn open_data_folder(game: &Game) -> Result {
 	let app_data = game
-		.get_roaming_app_data_slow()?
+		.get_roaming_app_data()?
 		.try_parent()?
 		.to_owned()
 		.join("LocalLow");

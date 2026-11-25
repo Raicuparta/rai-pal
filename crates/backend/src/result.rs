@@ -123,6 +123,9 @@ pub enum Error {
 	#[error("Game `{0}` is no longer in the local database. Refresh the games list and try again.")]
 	GameNotFound(String),
 
+	#[error("Game is missing an external ID for provider {0}.")]
+	MissingGameExternalId(GameProviderId),
+
 	#[error("Mod `{0}` is no longer in the local mod list. Refresh the mods and try again.")]
 	ModNotFound(String),
 
@@ -163,6 +166,11 @@ pub enum Error {
 
 	#[error("Wine prefix not initialized at `{0}`. Please start the game at least once first.")]
 	WinePrefixNotInitialized(PathBuf),
+
+	#[error(
+		"Couldn't find the Wine user's AppData folder in the prefix at `{0}`. Please start the game at least once first."
+	)]
+	WineRoamingAppDataNotFound(PathBuf),
 
 	#[error("{message}: {source}")]
 	Context {

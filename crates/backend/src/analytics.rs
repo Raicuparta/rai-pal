@@ -12,22 +12,22 @@ pub const MAX_EVENTS_PER_REQUEST: usize = 250;
 pub enum Event {
 	InstallMod {
 		mod_id: String,
-		family: Option<String>,
+		tags: Option<Vec<String>>,
 		game: Option<String>,
 	},
 	UninstallMod {
 		mod_id: String,
-		family: Option<String>,
+		tags: Option<Vec<String>>,
 		game: Option<String>,
 	},
 	UpdateMod {
 		mod_id: String,
-		family: Option<String>,
+		tags: Option<Vec<String>>,
 		game: Option<String>,
 	},
 	RunMod {
 		mod_id: String,
-		family: Option<String>,
+		tags: Option<Vec<String>>,
 		game: Option<String>,
 	},
 	ProviderCommand {
@@ -46,26 +46,18 @@ pub enum Event {
 impl Event {
 	fn into_wire(self) -> WireEvent {
 		match self {
-			Self::InstallMod {
-				mod_id,
-				family,
-				game,
-			} => WireEvent::mod_event("InstallMod", mod_id, family, game),
-			Self::UninstallMod {
-				mod_id,
-				family,
-				game,
-			} => WireEvent::mod_event("UninstallMod", mod_id, family, game),
-			Self::UpdateMod {
-				mod_id,
-				family,
-				game,
-			} => WireEvent::mod_event("UpdateMod", mod_id, family, game),
-			Self::RunMod {
-				mod_id,
-				family,
-				game,
-			} => WireEvent::mod_event("RunMod", mod_id, family, game),
+			Self::InstallMod { mod_id, tags, game } => {
+				WireEvent::mod_event("InstallMod", mod_id, tags, game)
+			}
+			Self::UninstallMod { mod_id, tags, game } => {
+				WireEvent::mod_event("UninstallMod", mod_id, tags, game)
+			}
+			Self::UpdateMod { mod_id, tags, game } => {
+				WireEvent::mod_event("UpdateMod", mod_id, tags, game)
+			}
+			Self::RunMod { mod_id, tags, game } => {
+				WireEvent::mod_event("RunMod", mod_id, tags, game)
+			}
 			Self::ProviderCommand { action, game } => {
 				WireEvent::new("ProviderCommand", json!({ "action": action, "game": game }))
 			}
@@ -117,14 +109,14 @@ impl WireEvent {
 	fn mod_event(
 		id: &'static str,
 		mod_id: String,
-		family: Option<String>,
+		tags: Option<Vec<String>>,
 		game: Option<String>,
 	) -> Self {
 		let mut data = Map::new();
 		data.insert("mod_id".to_string(), mod_id.into());
 
-		if let Some(family) = family {
-			data.insert("family".to_string(), family.into());
+		if let Some(tags) = tags {
+			data.insert("tags".to_string(), tags.into());
 		}
 
 		if let Some(game) = game {

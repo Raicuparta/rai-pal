@@ -6,6 +6,8 @@ use rai_pal_proc_macros::serde_enum;
 use crate::{
 	app_paths,
 	games_query::{FilterGroupKey, GamesQuery},
+	local_database::game_database::GameId,
+	mods_query::ModsQuery,
 	path_extensions::PathExt,
 	result::Result,
 };
@@ -90,6 +92,8 @@ pub struct AppSettings {
 	pub hide_game_thumbnails: bool,
 	pub override_language: Option<AppLocale>,
 	pub games_query: GamesQuery,
+	#[serde(default)]
+	pub mods_query: ModsQuery,
 	pub selected_tab: TabId,
 	#[serde(default)]
 	pub skip_confirm_dialogs: HashSet<SkipConfirmation>,
@@ -98,9 +102,13 @@ pub struct AppSettings {
 	#[serde(default)]
 	pub collapsed_filters: HashSet<FilterGroupKey>,
 	#[serde(default)]
+	pub mods_collapsed_filters: HashSet<FilterGroupKey>,
+	#[serde(default)]
 	pub color_scheme: ColorScheme,
 	#[serde(default)]
 	pub window_state: Option<WindowState>,
+	#[serde(default)]
+	pub selected_game: Option<GameId>,
 }
 
 // If the settings schema changes, update this so it gets recreated.

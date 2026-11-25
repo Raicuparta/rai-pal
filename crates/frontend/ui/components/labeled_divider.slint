@@ -4,6 +4,7 @@ import { Icon, SvgIcon } from "svg_icon.slint";
 export component LabeledDivider inherits HorizontalLayout {
     in property <string> label;
     in property <string> tooltip: "";
+    in property <bool> strong: false;
 
     vertical-stretch: 0;
     spacing: Theme.space-sm;
@@ -12,7 +13,7 @@ export component LabeledDivider inherits HorizontalLayout {
     Rectangle {
         horizontal-stretch: 1;
         height: Theme.border-width;
-        background: Theme.border;
+        background: strong ? Theme.dimmed-foreground : Theme.border;
     }
 
     HorizontalLayout {
@@ -24,7 +25,7 @@ export component LabeledDivider inherits HorizontalLayout {
         Text {
             text: root.label;
             font-size: Theme.font-sm;
-            color: Theme.dimmed-foreground;
+            color: strong ? Theme.foreground : Theme.dimmed-foreground;
         }
 
         if root.tooltip != "" : SvgIcon {
@@ -41,6 +42,6 @@ export component LabeledDivider inherits HorizontalLayout {
     Rectangle {
         horizontal-stretch: 1;
         height: Theme.border-width;
-        background: Theme.border;
+        background: strong ? Theme.dimmed-foreground : Theme.border;
     }
 }

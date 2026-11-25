@@ -2,10 +2,7 @@ use fs_err as fs;
 #[cfg(target_os = "linux")]
 use rai_pal_backend::path_extensions::AsValidStr;
 use slint::ComponentHandle as _;
-#[cfg(any(target_os = "linux", target_os = "macos"))]
-use std::path::Path;
-#[cfg(target_os = "windows")]
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::{
 	collections::HashMap,
 	sync::{
@@ -123,8 +120,8 @@ impl Updater {
 		}
 
 		thread::spawn(move || {
-			let result =
-				download_and_verify(&release).and_then(|bytes| install_and_restart(&bytes));
+			let result = download_and_verify(&release)
+				.and_then(|archive_path| install_and_restart(&archive_path));
 
 			if let Err(err) = result {
 				log::error!("Failed to install app update: {err}");
@@ -274,27 +271,9 @@ fn platform_key() -> Option<&'static str> {
 	}
 }
 
-fn download_and_verify(release: &Release) -> Result<Vec<u8>, String> {
-	let bytes = runtime::run(async {
-		http::CLIENT
-			.get(&release.url)
-			.timeout(Duration::from_mins(10))
-			.send()
-			.await
-			.map_err(|err| err.to_string())?
-			.error_for_status()
-			.map_err(|err| err.to_string())?
-			.bytes()
-			.await
-			.map(|bytes| bytes.to_vec())
-			.map_err(|err| err.to_string())
-	})?;
+fn download_and_verify(release: &Release) -> Result<PathBuf, String> {
+	let archive_path = update_archive_path()?;
 
-	verify_signature(&bytes, &release.signature)?;
-	Ok(bytes)
-}
-
-fn verify_signature(data: &[u8], signature_b64: &str) -> Result<(), String> {
 	let public_key_text =
 		String::from_utf8(STANDARD.decode(PUBLIC_KEY).map_err(|err| err.to_string())?)
 			.map_err(|err| err.to_string())?;
@@ -302,19 +281,82 @@ fn verify_signature(data: &[u8], signature_b64: &str) -> Result<(), String> {
 
 	let signature_text = String::from_utf8(
 		STANDARD
-			.decode(signature_b64)
+			.decode(&release.signature)
 			.map_err(|err| err.to_string())?,
 	)
 	.map_err(|err| err.to_string())?;
 	let signature = Signature::decode(&signature_text).map_err(|err| err.to_string())?;
 
-	public_key
-		.verify(data, &signature, true)
+	let mut verifier = public_key
+		.verify_stream(&signature)
+		.map_err(|err| err.to_string())?;
+
+	let download_result = runtime::run(async {
+		http::download_to_file_with_chunks(
+			&release.url,
+			&archive_path,
+			Some(Duration::from_mins(10)),
+			|chunk| verifier.update(chunk),
+		)
+		.await
 		.map_err(|err| err.to_string())
+	});
+
+	if let Err(err) = download_result {
+		remove_archive(&archive_path);
+		return Err(err);
+	}
+
+	verifier
+		.finalize()
+		.map_err(|err| format!("Update signature verification failed: {err}"))
+		.inspect_err(|_| remove_archive(&archive_path))?;
+
+	Ok(archive_path)
+}
+
+fn remove_archive(path: &Path) {
+	if let Err(err) = fs::remove_file(path)
+		&& err.kind() != std::io::ErrorKind::NotFound
+	{
+		log::warn!("Failed to remove update archive {}: {err}", path.display());
+	}
 }
 
 #[cfg(target_os = "linux")]
-fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
+fn update_archive_path() -> Result<PathBuf, String> {
+	let update_dir = app_paths::temp_dir("update").map_err(|err| err.to_string())?;
+
+	Ok(update_dir.join("updater-linux.tar.gz"))
+}
+
+#[cfg(target_os = "macos")]
+fn update_archive_path() -> Result<PathBuf, String> {
+	let update_dir = app_paths::temp_dir("update").map_err(|err| err.to_string())?;
+
+	Ok(update_dir.join("updater-macos.tar.gz"))
+}
+
+#[cfg(target_os = "windows")]
+fn update_archive_path() -> Result<PathBuf, String> {
+	let update_dir = app_paths::temp_dir("update").map_err(|err| err.to_string())?;
+
+	let archive_name = if AppVariant::get_current() == AppVariant::WindowsPortable {
+		"updater-windows-portable.zip"
+	} else {
+		"updater-windows.zip"
+	};
+
+	Ok(update_dir.join(archive_name))
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "windows", target_os = "macos")))]
+fn update_archive_path() -> Result<PathBuf, String> {
+	Err("Automatic updates are not supported on this platform".to_string())
+}
+
+#[cfg(target_os = "linux")]
+fn install_and_restart(archive_path: &Path) -> Result<(), String> {
 	use std::os::unix::fs::PermissionsExt;
 
 	use rai_pal_backend::files;
@@ -338,14 +380,11 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 	let temp_path = parent.join(format!(".{file_name}.update"));
 
 	let update_dir = app_paths::temp_dir("update").map_err(|err| err.to_string())?;
-	let archive_path = update_dir.join("updater-linux.tar.gz");
-	fs::write(&archive_path, bytes).map_err(|err| err.to_string())?;
-
 	let extract_dir = update_dir.join("extracted-linux");
 	if extract_dir.exists() {
 		fs::remove_dir_all(&extract_dir).map_err(|err| err.to_string())?;
 	}
-	files::extract_tar_gz(&archive_path, &extract_dir).map_err(|err| err.to_string())?;
+	files::extract_tar_gz(archive_path, &extract_dir).map_err(|err| err.to_string())?;
 
 	let appimage_path = fs::read_dir(&extract_dir)
 		.map_err(|err| err.to_string())?
@@ -388,42 +427,41 @@ fn shell_quote(path: &Path) -> Result<String, String> {
 }
 
 #[cfg(target_os = "windows")]
-fn extract_update_archive(
-	bytes: &[u8],
-	archive_name: &str,
-	extract_dir_name: &str,
-) -> Result<PathBuf, String> {
+fn extract_update_archive(archive_path: &Path, extract_dir_name: &str) -> Result<PathBuf, String> {
 	use rai_pal_backend::files;
 
-	let update_dir = app_paths::temp_dir("update").map_err(|err| err.to_string())?;
-	let archive_path = update_dir.join(archive_name);
-	fs::write(&archive_path, bytes).map_err(|err| err.to_string())?;
+	let Some(update_dir) = archive_path.parent() else {
+		return Err(format!(
+			"Could not find the update folder for {}",
+			archive_path.display()
+		));
+	};
 
 	let extract_dir = update_dir.join(extract_dir_name);
 	if extract_dir.exists() {
 		fs::remove_dir_all(&extract_dir).map_err(|err| err.to_string())?;
 	}
-	files::extract(&archive_path, &extract_dir, &|_, _| {}).map_err(|err| err.to_string())?;
+	files::extract(archive_path, &extract_dir, &|_, _| {}).map_err(|err| err.to_string())?;
 
 	Ok(extract_dir)
 }
 
 #[cfg(target_os = "windows")]
-fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
+fn install_and_restart(archive_path: &Path) -> Result<(), String> {
 	if AppVariant::get_current() == AppVariant::WindowsPortable {
-		install_portable_and_restart(bytes)
+		install_portable_and_restart(archive_path)
 	} else {
-		install_installer_and_restart(bytes)
+		install_installer_and_restart(archive_path)
 	}
 }
 
 #[cfg(target_os = "windows")]
-fn install_installer_and_restart(bytes: &[u8]) -> Result<(), String> {
+fn install_installer_and_restart(archive_path: &Path) -> Result<(), String> {
 	use std::{ffi::OsStr, os::windows::ffi::OsStrExt};
 
 	use windows_sys::Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOWNORMAL};
 
-	let extract_dir = extract_update_archive(bytes, "updater-windows.zip", "extracted-windows")?;
+	let extract_dir = extract_update_archive(archive_path, "extracted-windows")?;
 	let installer = extract_dir.join("RaiPal-Setup.exe");
 	if !installer.is_file() {
 		return Err("Could not find the updated installer".to_string());
@@ -459,14 +497,10 @@ fn install_installer_and_restart(bytes: &[u8]) -> Result<(), String> {
 }
 
 #[cfg(target_os = "windows")]
-fn install_portable_and_restart(bytes: &[u8]) -> Result<(), String> {
+fn install_portable_and_restart(archive_path: &Path) -> Result<(), String> {
 	use std::process::Command;
 
-	let extract_dir = extract_update_archive(
-		bytes,
-		"updater-windows-portable.zip",
-		"extracted-windows-portable",
-	)?;
+	let extract_dir = extract_update_archive(archive_path, "extracted-windows-portable")?;
 	let new_exe = extract_dir.join("RaiPal-Portable.exe");
 	if !new_exe.is_file() {
 		return Err("Could not find the updated portable executable".to_string());
@@ -541,7 +575,7 @@ fn cleanup_portable_update_files() {
 }
 
 #[cfg(target_os = "macos")]
-fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
+fn install_and_restart(archive_path: &Path) -> Result<(), String> {
 	use std::process::Command;
 
 	use rai_pal_backend::files;
@@ -557,14 +591,11 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 		.ok_or_else(|| "Could not find the app bundle folder".to_string())?;
 
 	let update_dir = app_paths::temp_dir("update").map_err(|err| err.to_string())?;
-	let archive_path = update_dir.join("updater-macos.tar.gz");
-	fs::write(&archive_path, bytes).map_err(|err| err.to_string())?;
-
 	let extract_dir = update_dir.join("extracted");
 	if extract_dir.exists() {
 		fs::remove_dir_all(&extract_dir).map_err(|err| err.to_string())?;
 	}
-	files::extract_tar_gz(&archive_path, &extract_dir).map_err(|err| err.to_string())?;
+	files::extract_tar_gz(archive_path, &extract_dir).map_err(|err| err.to_string())?;
 
 	let new_bundle = fs::read_dir(&extract_dir)
 		.map_err(|err| err.to_string())?
@@ -602,7 +633,7 @@ fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "windows", target_os = "macos")))]
-fn install_and_restart(_bytes: &[u8]) -> Result<(), String> {
+fn install_and_restart(_archive_path: &Path) -> Result<(), String> {
 	Err("Automatic updates are not supported on this platform".to_string())
 }
 

@@ -19,24 +19,77 @@ use crate::{
 	game_launch::{GameLaunch, spawn_game},
 	game_providers::game_provider,
 	http::{self},
-	mods::{mod_config::ModConfig, replacement_token::replace_tokens},
+	mods::replacement_token::replace_tokens,
+	open_better::open_detached_better,
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
-	remote_config::RemoteConfig,
 	result::{Error, LogErrExt, Result},
 };
+
+#[serde_enum]
+pub enum ModPathType {
+	File,
+	Folder,
+}
+
+#[serde_enum]
+pub enum InstallKind {
+	Shared,
+	PerGame,
+}
+
+#[derive(Clone, Debug)]
+pub struct ModPathState {
+	pub path: PathBuf,
+	kind: ModPathKind,
+}
+
+#[derive(Clone, Copy, Debug)]
+enum ModPathKind {
+	File { exists: bool, folder_exists: bool },
+	Folder { exists: bool },
+}
+
+impl ModPathState {
+	pub const fn exists(&self, open_folder: bool) -> bool {
+		match self.kind {
+			ModPathKind::File {
+				exists,
+				folder_exists,
+			} => {
+				if open_folder {
+					folder_exists
+				} else {
+					exists
+				}
+			}
+			ModPathKind::Folder { exists } => exists,
+		}
+	}
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ModPath {
+	pub path: String,
+	#[serde(rename = "type")]
+	pub path_type: ModPathType,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Default)]
+#[serde(transparent)]
+pub struct GameIds(pub BTreeMap<String, Vec<String>>);
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Mod {
 	pub id: String,
-	pub scope: Option<String>,
-	pub family: Option<String>,
+	pub tags: Option<Vec<String>>,
+	pub game_ids: Option<GameIds>,
 	pub title: String,
-	pub hide_from_game_mods_list: Option<bool>,
 	pub author: String,
-	pub source_code: String,
+	pub website: Option<String>,
 	pub description: String,
 	pub download: Option<ModDownload>,
 	pub engine: Option<EngineBrand>,
@@ -46,7 +99,7 @@ pub struct Mod {
 	pub game_os: Option<OperatingSystem>,
 	pub host_os: Option<OperatingSystem>,
 	pub deprecated: Option<bool>,
-	pub config: Option<ModConfig>,
+	pub paths: Option<Vec<ModPath>>,
 	pub optional_dependencies: Option<Vec<ModDependency>>,
 	pub required_dependencies: Option<Vec<ModDependency>>,
 	pub install: Option<ModInstall>,
@@ -72,12 +125,20 @@ pub struct ModInstallWrite {
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct ModInstallCopy {
+	pub destination: String,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct ModInstall {
-	pub manifest_path: String,
+	pub install_kind: Option<InstallKind>,
+	#[serde(default)]
+	pub dependency_only: bool,
 	pub extract: Option<Vec<ModInstallExtract>>,
+	pub copy: Option<Vec<ModInstallCopy>>,
 	pub write: Option<Vec<ModInstallWrite>>,
 	pub wine_dll_overrides: Option<Vec<String>>,
-	pub main_installed_folder_path: Option<String>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
@@ -110,17 +171,104 @@ pub enum ModDependency {
 	#[serde(rename_all = "camelCase")]
 	ModId { mod_id: String },
 	#[serde(rename_all = "camelCase")]
-	Family { family: String },
+	Tag { tag: String },
 }
 
-#[serde_enum]
-pub enum ModConfigDestinationType {
-	File,
-	Folder,
+#[derive(Clone, Debug)]
+pub struct InstalledManifest {
+	pub id: String,
+	pub manifest: Option<Mod>,
+}
+
+impl InstalledManifest {
+	pub fn from_file(path: &Path, install_kind: InstallKind) -> Option<Self> {
+		let Ok(contents) = fs_err::read_to_string(path) else {
+			log::warn!("Failed to read installed mod manifest `{}`", path.display());
+			return None;
+		};
+
+		match serde_json::from_str::<Mod>(&contents) {
+			Ok(mut manifest) => {
+				manifest.normalize_legacy_scope();
+
+				if let Some(install) = &mut manifest.install
+					&& install.install_kind.is_none()
+				{
+					install.install_kind = Some(install_kind);
+				}
+
+				Some(Self {
+					id: manifest.id.clone(),
+					manifest: Some(manifest),
+				})
+			}
+			Err(error) => {
+				log::debug!(
+					"Failed to parse installed mod manifest `{}`: {error}",
+					path.display()
+				);
+
+				let name_source = if install_kind == InstallKind::Shared {
+					path.parent()
+				} else {
+					Some(path)
+				};
+
+				let file_name = name_source
+					.and_then(Path::file_name)
+					.and_then(|file_name| file_name.to_str())
+					.unwrap_or_default()
+					.to_string();
+
+				Some(Self {
+					id: file_name,
+					manifest: None,
+				})
+			}
+		}
+	}
+}
+
+fn strip_scope_prefix(value: &str) -> &str {
+	let mut parts = value.splitn(3, ':');
+
+	if let (Some("Folder" | "Url"), Some(hash), Some(rest)) =
+		(parts.next(), parts.next(), parts.next())
+		&& !hash.is_empty()
+		&& hash.bytes().all(|byte| byte.is_ascii_digit())
+	{
+		return rest;
+	}
+
+	value
 }
 
 impl Mod {
 	pub const FILE_NAME: &'static str = "rai-pal-manifest.json";
+
+	fn normalize_legacy_scope(&mut self) {
+		self.id = strip_scope_prefix(&self.id).to_string();
+
+		if let Some(tags) = &mut self.tags {
+			for tag in tags.iter_mut() {
+				*tag = strip_scope_prefix(tag).to_string();
+			}
+		}
+
+		for dependencies in [
+			&mut self.required_dependencies,
+			&mut self.optional_dependencies,
+		]
+		.into_iter()
+		.flatten()
+		{
+			for dependency in dependencies.iter_mut() {
+				if let ModDependency::ModId { mod_id } = dependency {
+					*mod_id = strip_scope_prefix(mod_id).to_string();
+				}
+			}
+		}
+	}
 
 	pub fn release_date(&self) -> Option<&str> {
 		self.download
@@ -129,59 +277,32 @@ impl Mod {
 	}
 
 	pub fn get_manifest_target_path(&self, game: Option<&Game>) -> Result<PathBuf> {
-		Ok(PathBuf::from(replace_tokens(
-			&self.get_install()?.manifest_path,
-			game,
-			self,
-		)))
+		let install_kind = self.get_install()?.install_kind.ok_or_else(|| {
+			Error::ModInfoMissing(self.id.clone(), "install.installKind".to_string())
+		})?;
+
+		let path = match install_kind {
+			InstallKind::Shared => app_paths::shared_mods_path()?
+				.join(&self.id)
+				.join(Self::FILE_NAME),
+			InstallKind::PerGame => game
+				.ok_or(Error::GameNeeded())?
+				.get_installed_mods_folder_path()?
+				.join("manifests")
+				.join(format!("{}.json", self.id)),
+		};
+
+		Ok(path)
 	}
 
 	pub fn from_file(path: &Path) -> Option<Self> {
-		match fs_err::read_to_string(path)
-			.and_then(|manifest_bytes| Ok(serde_json::from_str::<Self>(&manifest_bytes)?))
-		{
-			Ok(manifest) => Some(manifest),
-			Err(error) => {
-				log::error!(
-					"Error getting manifest in path '{}': {}",
-					path.display(),
-					error
-				);
-				None
-			}
-		}
+		read_manifest(path)
 	}
 
 	pub fn get_install(&self) -> Result<&ModInstall> {
 		self.install
 			.as_ref()
 			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))
-	}
-
-	pub fn get_config_db_id(&self) -> &str {
-		self.config
-			.as_ref()
-			.and_then(|config| config.mod_id_override.as_deref())
-			.unwrap_or(&self.id)
-	}
-
-	pub async fn get_remote_config(&self, game: &Game) -> Result<Option<RemoteConfig>> {
-		Ok(game
-			.get_remote_configs()
-			.await?
-			.and_then(|configs| configs.get_for_mod(self).cloned()))
-	}
-
-	pub async fn download_remote_config(&self, game: &Game, overwrite: bool) -> Result {
-		let Some(config) = self.config.as_ref() else {
-			return Ok(());
-		};
-
-		let Some(remote_config) = self.get_remote_config(game).await? else {
-			return Ok(());
-		};
-
-		config.download(game, self, &remote_config, overwrite).await
 	}
 
 	pub async fn install(
@@ -200,7 +321,14 @@ impl Mod {
 				.as_ref()
 				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "download".to_string()))?;
 
-			let source_dir = download.download(&self.id, &on_progress).await?;
+			let source_dir = download
+				.download(
+					&replace_tokens(&download.url, game_option, self),
+					&self.id,
+					true,
+					&on_progress,
+				)
+				.await?;
 
 			for extract_action in extract_actions {
 				let source_path = source_dir.join(&extract_action.source);
@@ -216,6 +344,30 @@ impl Mod {
 					fs_err::tokio::create_dir_all(destination_path.try_parent()?).await?;
 					fs_err::tokio::copy(&source_path, &destination_path).await?;
 				}
+			}
+		}
+
+		if let Some(copy_actions) = install.copy.as_ref() {
+			let download = self
+				.download
+				.as_ref()
+				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "download".to_string()))?;
+
+			let source_path = download
+				.download(
+					&replace_tokens(&download.url, game_option, self),
+					&self.id,
+					false,
+					&on_progress,
+				)
+				.await?;
+
+			for copy_action in copy_actions {
+				let destination_path =
+					PathBuf::from(replace_tokens(&copy_action.destination, game_option, self));
+
+				fs_err::tokio::create_dir_all(destination_path.try_parent()?).await?;
+				fs_err::tokio::copy(&source_path, &destination_path).await?;
 			}
 		}
 
@@ -239,6 +391,48 @@ impl Mod {
 		self.update_installed_mod_manifest(game_option).await?;
 
 		Ok(())
+	}
+
+	pub fn open_path(&self, path: &str, game: Option<&Game>, open_folder: bool) -> Result {
+		let mod_path = self.get_path(path)?;
+		let resolved_path = PathBuf::from(replace_tokens(&mod_path.path, game, self));
+
+		if open_folder || matches!(&mod_path.path_type, ModPathType::Folder) {
+			resolved_path.open_folder_or_parent()?;
+		} else if resolved_path.is_file() {
+			open_detached_better(resolved_path)?;
+		} else {
+			resolved_path.open_folder_or_parent()?;
+		}
+
+		Ok(())
+	}
+
+	pub fn get_path_state(&self, path: &str, game: Option<&Game>) -> Result<ModPathState> {
+		let mod_path = self.get_path(path)?;
+		let resolved_path = PathBuf::from(replace_tokens(&mod_path.path, game, self));
+
+		let kind = match &mod_path.path_type {
+			ModPathType::File => ModPathKind::File {
+				exists: resolved_path.is_file(),
+				folder_exists: resolved_path.parent().is_some_and(Path::is_dir),
+			},
+			ModPathType::Folder => ModPathKind::Folder {
+				exists: resolved_path.is_dir(),
+			},
+		};
+
+		Ok(ModPathState {
+			path: resolved_path,
+			kind,
+		})
+	}
+
+	fn get_path(&self, path: &str) -> Result<&ModPath> {
+		self.paths
+			.as_ref()
+			.and_then(|paths| paths.iter().find(|mod_path| mod_path.path == path))
+			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), format!("path `{path}`")))
 	}
 
 	pub fn get_run(&self, game_option: Option<&Game>) -> Result<&ModRun> {
@@ -354,6 +548,22 @@ impl Mod {
 	}
 }
 
+fn read_manifest<T: serde::de::DeserializeOwned>(path: &Path) -> Option<T> {
+	match fs_err::read_to_string(path)
+		.and_then(|manifest_bytes| Ok(serde_json::from_str::<T>(&manifest_bytes)?))
+	{
+		Ok(manifest) => Some(manifest),
+		Err(error) => {
+			log::error!(
+				"Error getting manifest in path '{}': {}",
+				path.display(),
+				error
+			);
+			None
+		}
+	}
+}
+
 fn replace_env_tokens(
 	environment: Option<&BTreeMap<String, String>>,
 	game_option: Option<&Game>,
@@ -381,45 +591,47 @@ fn make_executable(path: &Path) -> Result {
 impl ModDownload {
 	async fn download(
 		&self,
+		url: &str,
 		mod_id: &str,
+		extract: bool,
 		on_progress: &(impl Fn(ProgressStatus) + Send + Sync),
 	) -> Result<PathBuf> {
-		if let Some(local_path) = self.url.strip_prefix("file://") {
-			let source_path = PathBuf::from(local_path);
-
-			if source_path.is_dir() {
-				return Ok(source_path);
-			}
-
-			return Ok(source_path);
+		if let Some(local_path) = url.strip_prefix("file://") {
+			return Ok(PathBuf::from(local_path));
 		}
 
 		let mut hasher = DefaultHasher::new();
-		self.url.hash(&mut hasher);
+		url.hash(&mut hasher);
+		self.id.hash(&mut hasher);
 		let url_hash = hasher.finish().to_string();
 
 		let temp_dir = app_paths::temp_dir(&url_hash)?;
 		let extracted_folder = temp_dir.join("extracted");
+		let download_path = temp_dir.join(if extract { "download.zip" } else { "download" });
+		let part_path = temp_dir.join("download.part");
 
 		let mut attempts = 0;
 		loop {
-			fs_err::tokio::create_dir_all(&extracted_folder).await?;
+			if extract {
+				fs_err::tokio::create_dir_all(&extracted_folder).await?;
+			}
 
-			let part_path = temp_dir.join("download.zip.part");
-			let zip_path = temp_dir.join("download.zip");
-
-			if !zip_path.is_file() {
+			if !download_path.is_file() {
 				let download_step = InstallStep {
 					mod_id: mod_id.to_string(),
 					kind: InstallStepKind::Download,
 				};
 
-				http::download(&self.url, &part_path, &download_step, on_progress).await?;
-				fs_err::tokio::rename(&part_path, &zip_path).await?;
+				http::download(url, &part_path, &download_step, on_progress).await?;
+				fs_err::tokio::rename(&part_path, &download_path).await?;
+			}
+
+			if !extract {
+				return Ok(download_path);
 			}
 
 			let extract_result = files::extract(
-				&zip_path,
+				&download_path,
 				&extracted_folder,
 				&|extracted_bytes, total_uncompressed| {
 					#[expect(

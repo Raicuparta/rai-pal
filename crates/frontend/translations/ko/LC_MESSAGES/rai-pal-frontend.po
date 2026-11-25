@@ -190,8 +190,8 @@ msgid "Provider"
 msgstr "플랫폼"
 
 msgctxt "filterProperty"
-msgid "Tag"
-msgstr "태그"
+msgid "Game Tag"
+msgstr "게임 태그"
 
 msgctxt "filterProperty"
 msgid "Architecture"
@@ -218,8 +218,8 @@ msgid "Install status"
 msgstr "설치 상태"
 
 msgctxt "filterProperty"
-msgid "Mod"
-msgstr "모드"
+msgid "Mod Tag"
+msgstr "모드 태그"
 
 msgctxt "filterValue"
 msgid "Unknown"
@@ -254,8 +254,8 @@ msgid "Not installed"
 msgstr "설치되지 않음"
 
 msgctxt "filterValue"
-msgid "Manual"
-msgstr "수동"
+msgid "Local Files"
+msgstr "로컬 파일"
 
 msgctxt "filterValueNote"
 msgid "Only shows PC Xbox games if they're installed."
@@ -268,22 +268,6 @@ msgstr "Godot 게임은 아직 완전히 지원되지 않습니다."
 msgctxt "filterValueNote"
 msgid "GameMaker games are not fully supported yet."
 msgstr "GameMaker 게임은 아직 완전히 지원되지 않습니다."
-
-msgctxt "gameModRow"
-msgid "Edit Mod Config"
-msgstr "모드 설정 편집"
-
-msgctxt "gameModRow"
-msgid "Open Config Folder"
-msgstr "설정 폴더 열기"
-
-msgctxt "gameModRow"
-msgid "Open Mod Folder"
-msgstr "모드 폴더 열기"
-
-msgctxt "gameModRow"
-msgid "Download Recommended Config"
-msgstr "권장 설정 다운로드"
 
 msgctxt "gameModRow"
 msgid "Reinstall"
@@ -310,14 +294,6 @@ msgid "Mod actions"
 msgstr "모드 작업"
 
 msgctxt "gameModRow"
-msgid "Recommended config"
-msgstr "권장 설정"
-
-msgctxt "gameModRow"
-msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
-msgstr "권장 설정이 있어요. 아직 설정이 없으면 자동으로 받고, 세 점 메뉴에서 강제로 받을 수도 있어요."
-
-msgctxt "gameModRow"
 msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
 msgstr "멀티플레이 게임에 모드 설치할 땐 조심하세요! 안티치트가 모드를 감지하면 해롭지 않아 보여도 밴 당할 수 있어요."
 
@@ -334,12 +310,24 @@ msgid "Install this game to see more detailed information about which mods are c
 msgstr "게임을 설치하면 어떤 모드가 호환되는지 자세히 볼 수 있어요"
 
 msgctxt "gameModal"
+msgid "Game-Specific Mods"
+msgstr "게임 전용 모드"
+
+msgctxt "gameModal"
 msgid "Installed Mods"
 msgstr "설치된 모드"
 
 msgctxt "gameModal"
 msgid "Uninstall all mods"
 msgstr "모드 모두 제거"
+
+msgctxt "gameModal"
+msgid "Mods"
+msgstr "모드"
+
+msgctxt "gameModal"
+msgid "Update all mods"
+msgstr "모드 모두 업데이트"
 
 msgctxt "gameModal"
 msgid "Available Mods"
@@ -530,10 +518,6 @@ msgid "Failed to install mod {0}"
 msgstr "모드 {0}을(를) 설치하지 못했습니다"
 
 msgctxt "messages"
-msgid "Failed to download config for mod {0}"
-msgstr "모드 {0}의 설정을 다운로드하지 못했습니다"
-
-msgctxt "messages"
 msgid "Failed to uninstall mod {0}"
 msgstr "모드 {0}을(를) 제거하지 못했습니다"
 
@@ -542,16 +526,16 @@ msgid "Failed to uninstall all mods"
 msgstr "모든 모드를 제거하지 못했습니다"
 
 msgctxt "messages"
+msgid "Failed to update all mods"
+msgstr "모든 모드를 업데이트하지 못했습니다"
+
+msgctxt "messages"
 msgid "Failed to run mod {0}"
 msgstr "모드 {0}을(를) 실행하지 못했습니다"
 
 msgctxt "messages"
-msgid "Failed to open mod folder {0}"
+msgid "Failed to open mod path {0}"
 msgstr "모드 {0}의 폴더를 열지 못했습니다"
-
-msgctxt "messages"
-msgid "Failed to configure mod {0}"
-msgstr "모드 {0}을(를) 구성하지 못했습니다"
 
 msgctxt "messages"
 msgid "Failed to refresh game"
@@ -636,6 +620,14 @@ msgstr "사용 중지됨"
 msgctxt "modsPage"
 msgid "{} mods"
 msgstr "모드 {}개"
+
+msgctxt "modsPage"
+msgid "Search mods"
+msgstr "모드 검색"
+
+msgctxt "modsPage"
+msgid "No mods match your search and filters."
+msgstr "검색 및 필터와 일치하는 모드가 없습니다."
 
 msgctxt "modsPage"
 msgid "Open Local Mods Folder"
@@ -790,6 +782,18 @@ msgid "Add source"
 msgstr "소스 추가"
 
 msgctxt "urlModSources"
+msgid "Move up"
+msgstr "위로 이동"
+
+msgctxt "urlModSources"
+msgid "Move down"
+msgstr "아래로 이동"
+
+msgctxt "urlModSources"
+msgid "Sources later in the list override mods with the same id from earlier sources."
+msgstr "목록에서 뒤에 있는 소스는 이전 소스의 같은 ID 모드를 덮어씁니다."
+
+msgctxt "urlModSources"
 msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep link:"
 msgstr "Rai Palì´ ê¸°ë³¸ ë°ì´í°ë² ì´ì¤ ì¸ìë ì¬ê¸°ì ì ê³µë ëª¨ë  ë°ì´í°ë² ì´ì¤ìì ëª¨ëë¥¼ íì¸í©ëë¤. ë¤ì ë¥ë§í¬ë¥¼ íµí´ ëª¨ë ìì¤ë¥¼ ê³µì í  ì ììµëë¤:"
 
@@ -828,3 +832,39 @@ msgstr "게임 정렬"
 msgctxt "textField"
 msgid "Clear"
 msgstr "지우기"
+
+msgctxt "gameModRow"
+msgid "Open file: {0}"
+msgstr "파일 열기: {0}"
+
+msgctxt "gameModRow"
+msgid "Open folder: {0}"
+msgstr "폴더 열기: {0}"
+
+msgctxt "modsTabRow"
+msgid "Show {0} game: \"{1}\""
+msgstr "{0} 게임 \"{1}\" 표시"
+
+msgctxt "filterProperty"
+msgid "Mod Type"
+msgstr "모드 유형"
+
+msgctxt "filterValue"
+msgid "Installable"
+msgstr "설치 가능"
+
+msgctxt "filterValue"
+msgid "Link Only"
+msgstr "링크 전용"
+
+msgctxt "gameModRow"
+msgid "This mod is not fully installed, but left some files behind. It's safest to reinstall all mods before continuing."
+msgstr "이 모드는 완전히 설치되지 않았지만 일부 파일이 남아 있습니다. 계속하기 전에 모든 모드를 다시 설치하는 것이 가장 안전합니다."
+
+msgctxt "gameModal"
+msgid "Reinstall all mods"
+msgstr "모든 모드 다시 설치"
+
+msgctxt "messages"
+msgid "Failed to reinstall all mods"
+msgstr "모든 모드를 다시 설치하지 못했습니다"

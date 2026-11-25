@@ -1,5 +1,5 @@
 use rai_pal_backend::{
-	app_settings::{ColorScheme, SkipConfirmation as CoreSkipConfirmation, TabId},
+	app_settings::{ColorScheme, TabId},
 	app_variant::AppVariant,
 	filter_views::{FilterValueLabel, FilterValueNote},
 	game_engines::game_engine::EngineBrand,
@@ -11,7 +11,6 @@ use rai_pal_backend::{
 use crate::{
 	AppColorScheme, AppTab, EngineId, FilterGroupId, FilterValueLabel as UiFilterValueLabel,
 	FilterValueNote as UiFilterValueNote, ProviderAction, ProviderId,
-	SkipConfirmation as UiSkipConfirmation,
 };
 
 macro_rules! slint_enum_conversions {
@@ -64,7 +63,8 @@ macro_rules! slint_optional_enum_conversions {
 slint_enum_conversions!(FilterGroupKey => FilterGroupId {
 	Installed,
 	Engines,
-	ModFamilies,
+	ModTags,
+	ModTypes,
 	Tags,
 	Providers,
 	UnityBackends,
@@ -82,7 +82,9 @@ slint_optional_enum_conversions!(FilterValueLabel => UiFilterValueLabel {
 	TagUntagged,
 	StatusInstalled,
 	StatusNotInstalled,
-	ProviderManual,
+	ProviderLocalFiles,
+	ModTypeInstallable,
+	ModTypeLinkOnly,
 });
 
 slint_enum_conversions!(FilterValueNote => UiFilterValueNote {
@@ -127,7 +129,7 @@ slint_optional_enum_conversions!(GameProviderId => ProviderId {
 	Epic,
 	Gog,
 	Itch,
-	Manual,
+	LocalFiles,
 	Steam,
 	Xbox,
 });
@@ -147,8 +149,4 @@ slint_optional_enum_conversions!(ProviderCommandAction => ProviderAction {
 	ShowInStore,
 	OpenInBrowser,
 	Delete,
-});
-
-slint_optional_enum_conversions!(CoreSkipConfirmation => UiSkipConfirmation {
-	InstallMod,
 });

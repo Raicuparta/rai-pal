@@ -2,7 +2,7 @@ use std::{rc::Rc, sync::Arc, thread};
 
 use rai_pal_backend::{
 	local_database::{app_database::Db, game_database::GameDatabase},
-	mod_providers::url_mod_provider,
+	mod_sources::url,
 	result::{Error, LogErrExt},
 };
 use slint::ComponentHandle;
@@ -56,7 +56,8 @@ impl CommandHandler {
 		let window = window.as_weak();
 
 		thread::spawn(move || {
-			let result = get_mods(&url);
+			let result =
+				runtime::block_on(url::fetch_mod_database(&url)).map(|database| database.mods);
 
 			crate::runtime::with_ui_window(&window, move |window| match result {
 				Ok(mods) => {
@@ -112,7 +113,7 @@ impl CommandHandler {
 		run_mod_source_change(
 			window.as_weak(),
 			Arc::clone(&self.database),
-			move || url_mod_provider::add_url_mod_source(url),
+			move || url::add_url_mod_source(url),
 			|window, result| {
 				let confirm_state = window.global::<crate::ConfirmModSourceState>();
 
@@ -133,13 +134,15 @@ impl CommandHandler {
 	}
 
 	pub fn set_mod_source_enabled(&self, url: String, enabled: bool) {
-		self.change_mod_sources(move || {
-			url_mod_provider::set_url_mod_source_enabled(&url, enabled)
-		});
+		self.change_mod_sources(move || url::set_url_mod_source_enabled(&url, enabled));
 	}
 
 	pub fn remove_mod_source(&self, url: String) {
-		self.change_mod_sources(move || url_mod_provider::remove_url_mod_source(&url));
+		self.change_mod_sources(move || url::remove_url_mod_source(&url));
+	}
+
+	pub fn move_mod_source(&self, url: String, up: bool) {
+		self.change_mod_sources(move || url::move_url_mod_source(&url, up));
 	}
 
 	fn change_mod_sources(&self, action: impl FnOnce() -> Result<(), Error> + Send + 'static) {
@@ -182,7 +185,7 @@ impl CommandHandler {
 			super::query::ScrollBehavior::Reset,
 		);
 
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 
@@ -207,10 +210,14 @@ fn run_mod_source_change(
 	thread::spawn(move || {
 		let result = action();
 
-		if result.is_ok()
-			&& let Err(err) = refresh::refresh_mods(&database)
-		{
-			log::warn!("Failed to refresh mods after changing URL mod sources: {err}");
+		if result.is_ok() {
+			if let Err(err) = refresh::refresh_mods(&database) {
+				log::warn!("Failed to refresh mods after changing URL mod sources: {err}");
+			}
+
+			if let Err(err) = database.refresh_game_mod_tags() {
+				log::warn!("Failed to refresh game mod tags after changing URL mod sources: {err}");
+			}
 		}
 
 		crate::runtime::with_ui_window(&window, move |window| {
@@ -225,7 +232,7 @@ fn run_mod_source_change(
 }
 
 fn load_sources(window: &MainWindow) {
-	let response = url_mod_provider::get_url_mod_sources();
+	let response = url::get_url_mod_sources();
 
 	window
 		.global::<crate::ModSourcesState>()
@@ -250,10 +257,6 @@ fn load_sources(window: &MainWindow) {
 		.set_sources(Rc::new(slint::VecModel::from(sources)).into());
 }
 
-fn get_mods(url: &str) -> Result<Vec<rai_pal_backend::mods::manifest::Mod>, String> {
-	runtime::block_on(url_mod_provider::get_mods_from_url_mod_source(url))
-}
-
 pub fn register(window: &crate::MainWindow) {
 	on_command!(window, DialogActions, on_request_url_mod_sources, || handler => {
 		handler.show_mod_sources();
@@ -272,5 +275,8 @@ pub fn register(window: &crate::MainWindow) {
 	});
 	on_command!(window, DialogActions, on_remove_url_mod_source, |url| handler => {
 		handler.remove_mod_source(url.to_string());
+	});
+	on_command!(window, DialogActions, on_move_url_mod_source, |url, up| handler => {
+		handler.move_mod_source(url.to_string(), up);
 	});
 }

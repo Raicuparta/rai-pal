@@ -22,7 +22,9 @@ use crate::{
 	game::Game,
 	game_engines::pe_utils,
 	game_launch::{GameLaunch, spawn_game},
-	game_providers::{itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam},
+	game_providers::{
+		itch_provider::Itch, local_files_provider::LocalFiles, steam::steam_provider::Steam,
+	},
 	local_database::{app_database::Db, game_database::GameDatabase},
 	result::{Error, Result},
 };
@@ -35,7 +37,7 @@ pub enum GameProviderId {
 	Epic,
 	Gog,
 	Itch,
-	Manual,
+	LocalFiles,
 	Steam,
 	Xbox,
 }
@@ -47,7 +49,7 @@ impl GameProviderId {
 			Self::Epic => "Epic",
 			Self::Gog => "GOG",
 			Self::Itch => "itch.io",
-			Self::Manual => "Manual",
+			Self::LocalFiles => "Local Files",
 			Self::Steam => "Steam",
 			Self::Xbox => "Xbox",
 		}
@@ -133,7 +135,7 @@ pub trait WineProviderActions {
 			"Launched `{}` with Wine for game `{}` ({})",
 			exe_path.display(),
 			game.display_title,
-			game.external_id,
+			game.get_provider_external_id().unwrap_or(&game.game_id),
 		);
 
 		Ok(())
@@ -147,7 +149,7 @@ pub fn get_provider(provider_id: GameProviderId) -> Result<Box<dyn GameProvider>
 	match provider_id {
 		GameProviderId::Steam => Ok(Box::new(Steam {})),
 
-		GameProviderId::Manual => Ok(Box::new(Manual {})),
+		GameProviderId::LocalFiles => Ok(Box::new(LocalFiles {})),
 
 		GameProviderId::Itch => Ok(Box::new(Itch {})),
 

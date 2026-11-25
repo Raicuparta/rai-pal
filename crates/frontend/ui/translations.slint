@@ -8,7 +8,9 @@ import {
     FilterValueNote,
     MessageContext,
     MessageData,
+    ModActionKind,
     ProviderAction,
+    ProviderId,
     RefreshTaskData,
     RefreshTaskKind,
     Renderer,
@@ -85,7 +87,7 @@ export global Tr {
             return @tr("filterProperty" => "Provider");
         }
         if group == FilterGroupId.tags {
-            return @tr("filterProperty" => "Tag");
+            return @tr("filterProperty" => "Game Tag");
         }
         if group == FilterGroupId.architectures {
             return @tr("filterProperty" => "Architecture");
@@ -105,7 +107,10 @@ export global Tr {
         if group == FilterGroupId.installed {
             return @tr("filterProperty" => "Install status");
         }
-        return @tr("filterProperty" => "Mod");
+        if group == FilterGroupId.mod-types {
+            return @tr("filterProperty" => "Mod Type");
+        }
+        return @tr("filterProperty" => "Mod Tag");
     }
 
     public pure function filter-value(label: FilterValueLabel) -> string {
@@ -133,7 +138,13 @@ export global Tr {
         if label == FilterValueLabel.status-not-installed {
             return @tr("filterValue" => "Not installed");
         }
-        return @tr("filterValue" => "Manual");
+        if label == FilterValueLabel.mod-type-installable {
+            return @tr("filterValue" => "Installable");
+        }
+        if label == FilterValueLabel.mod-type-link-only {
+            return @tr("filterValue" => "Link Only");
+        }
+        return @tr("filterValue" => "Local Files");
     }
 
     public pure function filter-value-note(note: FilterValueNote) -> string {
@@ -147,6 +158,79 @@ export global Tr {
             return @tr("filterValueNote" => "GameMaker games are not fully supported yet.");
         }
         return "";
+    }
+
+    public pure function provider-name(provider: ProviderId) -> string {
+        if provider == ProviderId.amazon {
+            return "Amazon";
+        }
+        if provider == ProviderId.epic {
+            return "Epic";
+        }
+        if provider == ProviderId.gog {
+            return "GOG";
+        }
+        if provider == ProviderId.itch {
+            return "itch.io";
+        }
+        if provider == ProviderId.local-files {
+            return "Local Files";
+        }
+        if provider == ProviderId.steam {
+            return "Steam";
+        }
+        if provider == ProviderId.xbox {
+            return "Xbox";
+        }
+        return "";
+    }
+
+    public pure function mod-action-label(
+        kind: ModActionKind,
+        subject: string,
+        open-folder: bool,
+        provider: ProviderId,
+    ) -> string {
+        if kind == ModActionKind.install {
+            return @tr("gameModRow" => "Install");
+        }
+        if kind == ModActionKind.download {
+            return @tr("modModal" => "Download");
+        }
+        if kind == ModActionKind.update {
+            return @tr("gameModRow" => "Update");
+        }
+        if kind == ModActionKind.run {
+            return @tr("gameModRow" => "Run");
+        }
+        if kind == ModActionKind.run-standalone {
+            return @tr("modModal" => "Run");
+        }
+        if kind == ModActionKind.open-path {
+            if open-folder {
+                return @tr("gameModRow" => "Open folder: {0}", subject);
+            }
+            return @tr("gameModRow" => "Open file: {0}", subject);
+        }
+        if kind == ModActionKind.reinstall {
+            return @tr("gameModRow" => "Reinstall");
+        }
+        if kind == ModActionKind.uninstall {
+            return @tr("gameModRow" => "Uninstall");
+        }
+        if kind == ModActionKind.uninstall-all {
+            return @tr("gameModal" => "Uninstall all mods");
+        }
+        if kind == ModActionKind.reinstall-all {
+            return @tr("gameModal" => "Reinstall all mods");
+        }
+        if kind == ModActionKind.website {
+            return @tr("modModal" => "Website");
+        }
+        if kind == ModActionKind.show-game {
+            return @tr("modsTabRow" => "Show {0} game: \"{1}\"", provider-name(provider), subject);
+        }
+        return @tr("debugData" => "Debug data");
     }
 
     public pure function provider-command(action: ProviderAction) -> string {
@@ -241,23 +325,23 @@ export global Tr {
         if data.context == MessageContext.install-mod {
             return @tr("messages" => "Failed to install mod {0}", data.subject);
         }
-        if data.context == MessageContext.download-mod-config {
-            return @tr("messages" => "Failed to download config for mod {0}", data.subject);
-        }
         if data.context == MessageContext.uninstall-mod {
             return @tr("messages" => "Failed to uninstall mod {0}", data.subject);
         }
         if data.context == MessageContext.uninstall-all-mods {
             return @tr("messages" => "Failed to uninstall all mods");
         }
+        if data.context == MessageContext.reinstall-all-mods {
+            return @tr("messages" => "Failed to reinstall all mods");
+        }
+        if data.context == MessageContext.update-all-mods {
+            return @tr("messages" => "Failed to update all mods");
+        }
         if data.context == MessageContext.run-mod {
             return @tr("messages" => "Failed to run mod {0}", data.subject);
         }
-        if data.context == MessageContext.open-mod-folder {
-            return @tr("messages" => "Failed to open mod folder {0}", data.subject);
-        }
-        if data.context == MessageContext.configure-mod {
-            return @tr("messages" => "Failed to configure mod {0}", data.subject);
+        if data.context == MessageContext.open-mod-path {
+            return @tr("messages" => "Failed to open mod path {0}", data.subject);
         }
         if data.context == MessageContext.refresh-game {
             return @tr("messages" => "Failed to refresh game");

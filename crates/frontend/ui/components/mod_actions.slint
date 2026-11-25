@@ -1,0 +1,98 @@
+import { ModActionData, ModActionKind } from "../app_types.slint";
+import { ModMenuActions } from "../actions.slint";
+import { Tr } from "../translations.slint";
+import { Theme } from "../theme.slint";
+import { ActionButton } from "action_button.slint";
+import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
+import { Icon } from "svg_icon.slint";
+
+export global ModActionIcons {
+    public pure function icon(kind: ModActionKind, open-folder: bool) -> Icon {
+        if kind == ModActionKind.install {
+            return Icon.install;
+        }
+        if kind == ModActionKind.download {
+            return Icon.download;
+        }
+        if kind == ModActionKind.update {
+            return Icon.update;
+        }
+        if kind == ModActionKind.run || kind == ModActionKind.run-standalone {
+            return Icon.play;
+        }
+        if kind == ModActionKind.open-path {
+            return open-folder ? Icon.folder : Icon.file;
+        }
+        if kind == ModActionKind.reinstall || kind == ModActionKind.reinstall-all {
+            return Icon.reinstall;
+        }
+        if kind == ModActionKind.uninstall || kind == ModActionKind.uninstall-all {
+            return Icon.delete;
+        }
+        if kind == ModActionKind.website {
+            return Icon.external-link;
+        }
+        if kind == ModActionKind.show-game {
+            return Icon.games;
+        }
+        return Icon.bug;
+    }
+}
+
+component ModMenuItem inherits VerticalLayout {
+    in property <ModActionData> action;
+
+    callback clicked;
+
+    vertical-stretch: 0;
+    alignment: start;
+
+    if root.action.separator-before: PopupMenuSeparator { }
+
+    PopupMenuItem {
+        text: Tr.mod-action-label(
+            root.action.kind,
+            root.action.subject,
+            root.action.open-folder,
+            root.action.provider,
+        );
+        icon: ModActionIcons.icon(root.action.kind, root.action.open-folder);
+        enabled: root.action.enabled;
+
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+export component ModActionsMenu inherits PopupMenu {
+    in property <[ModActionData]> actions;
+
+    for action in root.actions: ModMenuItem {
+        action: action;
+
+        clicked => {
+            ModMenuActions.activate(action);
+            root.close();
+        }
+    }
+}
+
+export component ModSpecialActionButton inherits ActionButton {
+    in property <ModActionData> action;
+
+    text: Tr.mod-action-label(
+        root.action.kind,
+        root.action.subject,
+        root.action.open-folder,
+        root.action.provider,
+    );
+    icon: ModActionIcons.icon(root.action.kind, root.action.open-folder);
+    action-key: root.action.action-key;
+    enabled: root.action.enabled;
+    tint: root.action.kind == ModActionKind.update ? Theme.primary : Theme.surface-background;
+
+    clicked => {
+        ModMenuActions.activate(root.action);
+    }
+}

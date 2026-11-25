@@ -16,11 +16,11 @@ RequestExecutionLevel admin
 Unicode true
 SetCompressor /SOLID lzma
 
-VIProductVersion "${VERSION}.0"
+VIProductVersion "${NUMERIC_VERSION}"
 VIAddVersionKey "ProductName" "${APP_NAME}"
 VIAddVersionKey "ProductVersion" "${VERSION}"
 VIAddVersionKey "FileDescription" "${APP_NAME} installer"
-VIAddVersionKey "FileVersion" "${VERSION}"
+VIAddVersionKey "FileVersion" "${NUMERIC_VERSION}"
 VIAddVersionKey "LegalCopyright" "Raicuparta"
 
 !define MUI_ABORTWARNING

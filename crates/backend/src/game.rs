@@ -9,23 +9,23 @@ use crate::{
 		unity::{self, UnityBackend},
 		unreal,
 	},
+	game_external_id::{ExternalIds, GameIdKind},
 	game_providers::{
 		game_provider::GameProviderId,
 		provider_command::{ProviderCommand, ProviderCommandAction, ProviderCommandKind},
 	},
 	game_tag::GameTag,
-	game_title::is_probably_demo,
+	game_title::{get_normalized_titles, is_probably_demo, normalize_executable_name},
 	operating_system::{self, OperatingSystem},
 	path_extensions::PathExt,
-	remote_config::{self, RemoteConfigs},
-	result::{ContextResult, Error, Result},
+	result::{Error, Result},
 };
 
 #[derive(serde::Serialize, Clone, Debug)]
 pub struct Game {
 	pub provider_id: GameProviderId,
 	pub game_id: String,
-	pub external_id: String,
+	pub external_ids: ExternalIds,
 	pub display_title: String,
 	pub title_discriminator: Option<String>,
 	pub thumbnail_url: Option<String>,
@@ -46,10 +46,25 @@ pub struct Game {
 
 impl Game {
 	pub fn new(provider_id: GameProviderId, game_id: String, title: String) -> Self {
+		let normalized_titles = get_normalized_titles(&title);
+		let mut game = Self::new_internal(provider_id, game_id, title);
+
+		game.external_ids.insert(provider_id, game.game_id.clone());
+		game.external_ids
+			.insert_all(GameIdKind::NormalizedTitle, normalized_titles);
+
+		game
+	}
+
+	pub fn new_local_files(game_id: String, title: String) -> Self {
+		Self::new_internal(GameProviderId::LocalFiles, game_id, title)
+	}
+
+	fn new_internal(provider_id: GameProviderId, game_id: String, title: String) -> Self {
 		let mut game = Self {
 			provider_id,
-			external_id: game_id.clone(),
 			game_id,
+			external_ids: ExternalIds::default(),
 			display_title: title,
 			title_discriminator: None,
 			thumbnail_url: None,
@@ -90,11 +105,25 @@ impl Game {
 	}
 
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
-		let installed_mods_folder =
-			app_paths::installed_mods_path()?.join(self.try_get_exe_path()?.hash_string());
+		let installed_mods_folder = self.get_installed_mods_folder_path()?;
 		fs_err::create_dir_all(&installed_mods_folder)?;
 
 		Ok(installed_mods_folder)
+	}
+
+	pub fn mods_folder_exists(&self) -> bool {
+		self.get_installed_mods_folder_path()
+			.is_ok_and(|folder| folder.is_dir())
+	}
+
+	pub fn mods_folder_has_files(&self) -> bool {
+		self.get_installed_mods_folder_path().is_ok_and(|folder| {
+			fs_err::read_dir(folder).is_ok_and(|mut entries| entries.next().is_some())
+		})
+	}
+
+	pub fn get_installed_mods_folder_path(&self) -> Result<PathBuf> {
+		Ok(app_paths::installed_mods_path()?.join(self.try_get_exe_path()?.hash_string()))
 	}
 
 	pub fn try_get_exe_path(&self) -> Result<&Path> {
@@ -110,6 +139,15 @@ impl Game {
 			.and_then(|file_name| file_name.to_str())
 			.map(std::string::ToString::to_string)
 			.ok_or_else(|| Error::InvalidOsStr(path.display().to_string()))
+	}
+
+	pub fn get_provider_external_id(&self) -> Option<&str> {
+		self.external_ids.first(self.provider_id)
+	}
+
+	pub fn try_get_provider_external_id(&self) -> Result<&str> {
+		self.get_provider_external_id()
+			.ok_or(Error::MissingGameExternalId(self.provider_id))
 	}
 
 	pub fn add_provider_command(
@@ -183,6 +221,18 @@ impl Game {
 
 			self.exe_path = Some(exe_path.normalize());
 
+			if let Some(normalized_executable_name) = exe_path
+				.file_stem()
+				.and_then(|file_stem| file_stem.to_str())
+				.map(normalize_executable_name)
+			{
+				self.external_ids
+					.map
+					.remove(&GameIdKind::NormalizedExecutable);
+				self.external_ids
+					.insert(GameIdKind::NormalizedExecutable, normalized_executable_name);
+			}
+
 			self.executable_os = operating_system::get_os_from_path(exe_path);
 
 			// Order matters here. We're checking all sequentially, so we should leave the most expensive ones last.
@@ -204,13 +254,6 @@ impl Game {
 		Ok(self)
 	}
 
-	pub async fn get_remote_configs(&self) -> Result<Option<RemoteConfigs>> {
-		match self.exe_path.as_ref() {
-			Some(exe_path) => remote_config::get_remote_configs(exe_path).await,
-			None => Ok(None),
-		}
-	}
-
 	pub fn open_data_folder(&self) -> Result {
 		if let Some(engine) = self.engine_brand {
 			return match engine {
@@ -229,44 +272,18 @@ impl Game {
 		))
 	}
 
-	/// Marked slow because potentially runs slow wine command to get inner path,
-	/// don't call while processing games or any other performance-sensitive places.
-	pub fn get_roaming_app_data_slow(&self) -> Result<PathBuf> {
+	pub fn get_roaming_app_data(&self) -> Result<PathBuf> {
 		#[cfg(target_os = "linux")]
 		{
-			use std::path::PathBuf;
-
-			use crate::{game_providers::game_provider, path_extensions::AsValidStr};
+			use crate::{game_providers::game_provider, wine};
 
 			let provider = game_provider::get_provider(self.provider_id)?;
 			let prefix_path = provider.get_wine_prefix_path(self)?;
-			let mut launch = provider.get_run_with_wine_command(self)?;
-			launch.arg("cmd").arg("/C").arg("echo %APPDATA%");
 
-			let output = launch
-				.to_command()
-				.output()
-				.context("failed to run `cmd /C echo %APPDATA%` in the Wine prefix")?;
-
-			let win_path = str::from_utf8(&output.stdout)?.trim();
-
-			// 2. Convert Windows path to Linux path manually
-			// The format is always C:\users\username\AppData\Roaming
-			// We replace 'C:\' with the actual path to drive_c
-			let drive_c_path = PathBuf::from(format!("{}/drive_c", prefix_path.try_to_str()?));
-
-			// Remove the 'C:\' prefix and replace backslashes with slashes
-			let relative_path = win_path.replace("C:\\", "").replace('\\', "/");
-
-			Ok(drive_c_path.join(relative_path))
+			wine::get_roaming_app_data(&prefix_path)
 		}
 
-		#[cfg(target_os = "windows")]
-		{
-			Ok(app_paths::base_dirs()?.config_dir().to_owned())
-		}
-
-		#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+		#[cfg(not(target_os = "linux"))]
 		{
 			Ok(app_paths::base_dirs()?.config_dir().to_owned())
 		}

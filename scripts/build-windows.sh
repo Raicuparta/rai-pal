@@ -37,6 +37,14 @@ if [[ -z "$VERSION" ]]; then
 	echo "Could not determine version from Cargo.toml." >&2
 	exit 1
 fi
+VERSION_WITHOUT_BUILD="${VERSION%%+*}"
+BASE_VERSION="${VERSION_WITHOUT_BUILD%%-*}"
+PRERELEASE_VERSION="${VERSION_WITHOUT_BUILD#"$BASE_VERSION"}"
+PRERELEASE_NUMBER="${PRERELEASE_VERSION##*.}"
+if [[ ! "$PRERELEASE_NUMBER" =~ ^[0-9]+$ ]]; then
+	PRERELEASE_NUMBER=0
+fi
+NUMERIC_VERSION="${BASE_VERSION}.${PRERELEASE_NUMBER}"
 
 if [[ "$SKIP_BUILD" -eq 0 ]]; then
 	if ! command -v llvm-rc >/dev/null 2>&1; then
@@ -84,6 +92,7 @@ cp "$BINARY" "$STAGING_DIR/Rai-Pal.exe"
 
 makensis \
 	-DVERSION="$VERSION" \
+	-DNUMERIC_VERSION="$NUMERIC_VERSION" \
 	-DSOURCE_EXE="$STAGING_DIR/Rai-Pal.exe" \
 	-DOUTPUT_FILE="$FINAL_INSTALLER" \
 	-DICON_FILE="$INSTALLER_ICON" \

@@ -1,10 +1,14 @@
-use std::{collections::HashSet, rc::Rc};
+use std::{
+	collections::{BTreeMap, HashSet},
+	rc::Rc,
+};
 
 use rai_pal_backend::{
-	filter_views::{FilterGroupView, FilterValueView, build_filter_views},
+	filter_views::{FilterGroupView, FilterValueView, build_filter_views, build_mods_filter_views},
 	game_providers::game_provider::GameProviderId,
 	games_query::{FilterGroupKey, GamesFilter},
 	local_database::{app_database::Db, game_database::GameDatabase, mod_database::ModDatabase},
+	mods_query::ModsFilter,
 	result::LogErrExt,
 };
 
@@ -37,19 +41,26 @@ fn group_data(group: FilterGroupView) -> FilterGroupData {
 
 pub fn build_groups(
 	filter: &GamesFilter,
-	mod_families: &[String],
+	mod_tags: &BTreeMap<String, String>,
 	collapsed_filters: &HashSet<FilterGroupKey>,
 	providers_with_games: &HashSet<GameProviderId>,
 ) -> Vec<FilterGroupData> {
-	build_filter_views(
-		filter,
-		mod_families,
-		collapsed_filters,
-		providers_with_games,
-	)
-	.into_iter()
-	.map(group_data)
-	.collect()
+	build_filter_views(filter, mod_tags, collapsed_filters, providers_with_games)
+		.into_iter()
+		.map(group_data)
+		.collect()
+}
+
+pub fn build_mods_groups(
+	filter: &ModsFilter,
+	mod_tags: &BTreeMap<String, String>,
+	collapsed_filters: &HashSet<FilterGroupKey>,
+	has_untagged_mods: bool,
+) -> Vec<FilterGroupData> {
+	build_mods_filter_views(filter, mod_tags, collapsed_filters, has_untagged_mods)
+		.into_iter()
+		.map(group_data)
+		.collect()
 }
 
 pub fn load_providers_with_games(database: &Db) -> HashSet<GameProviderId> {
@@ -59,16 +70,35 @@ pub fn load_providers_with_games(database: &Db) -> HashSet<GameProviderId> {
 	})
 }
 
-pub fn load_mod_families(database: &Db) -> Vec<String> {
-	let Some(mods) = database.get_mod_map().ok_or_log("Failed to load mod map") else {
-		return Vec::new();
-	};
+pub fn load_mod_tags(database: &Db) -> BTreeMap<String, String> {
+	load_tags(database, true)
+}
 
-	let mut families: Vec<String> = mods
-		.values()
-		.filter_map(|game_mod| game_mod.family.clone())
-		.collect();
-	families.sort_by_key(|family| family.to_lowercase());
-	families.dedup();
-	families
+pub fn load_all_mod_tags(database: &Db) -> BTreeMap<String, String> {
+	load_tags(database, false)
+}
+
+fn load_tags(database: &Db, filterable_only: bool) -> BTreeMap<String, String> {
+	let Some(mods) = database
+		.get_catalog_mod_map()
+		.ok_or_log("Failed to load mod map")
+	else {
+		return BTreeMap::new();
+	};
+	let tag_definitions = database
+		.get_mod_tags()
+		.ok_or_log("Failed to load mod tags")
+		.unwrap_or_default();
+
+	mods.values()
+		.filter_map(|game_mod| game_mod.tags.as_ref())
+		.flatten()
+		.filter_map(|tag_id| {
+			let tag = tag_definitions.get(tag_id)?;
+			if filterable_only && tag.filterable != Some(true) {
+				return None;
+			}
+			Some((tag_id.clone(), tag.title.clone()))
+		})
+		.collect()
 }

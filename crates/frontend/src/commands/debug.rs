@@ -10,7 +10,7 @@ impl CommandHandler {
 		let Some(window) = self.ui() else {
 			return;
 		};
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 
@@ -53,8 +53,5 @@ impl CommandHandler {
 pub fn register(window: &MainWindow) {
 	on_command!(window, GamesActions, on_request_debug_data, || handler => {
 		handler.show_game_debug_data();
-	});
-	on_command!(window, GamesActions, on_request_mod_debug_data, |mod_id| handler => {
-		handler.show_mod_debug_data(mod_id.as_str());
 	});
 }

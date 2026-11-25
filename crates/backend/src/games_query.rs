@@ -45,7 +45,8 @@ pub enum FilterAction {
 pub enum FilterGroupKey {
 	Installed,
 	Engines,
-	ModFamilies,
+	ModTags,
+	ModTypes,
 	Tags,
 	Providers,
 	UnityBackends,
@@ -62,9 +63,9 @@ impl serde::Serialize for FilterGroupKey {
 
 impl<'de> serde::Deserialize<'de> for FilterGroupKey {
 	fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-		let value = String::deserialize(deserializer)?;
-
-		value.parse::<Self>().map_err(serde::de::Error::custom)
+		String::deserialize(deserializer)?
+			.parse::<Self>()
+			.map_err(serde::de::Error::custom)
 	}
 }
 
@@ -248,7 +249,7 @@ pub struct GamesFilter {
 	pub executable_os: FilterGroup<OperatingSystem>,
 	pub supported_os: FilterGroup<OperatingSystem>,
 	pub installed: FilterGroup<InstallState>,
-	pub mod_families: FilterGroup<String>,
+	pub mod_tags: FilterGroup<String>,
 }
 
 #[serde_enum]

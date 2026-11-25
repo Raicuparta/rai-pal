@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::HashSet, rc::Rc, sync::Arc};
+use std::{cell::RefCell, collections::BTreeMap, collections::HashSet, rc::Rc, sync::Arc};
 
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
@@ -8,7 +8,10 @@ use rai_pal_backend::{
 	local_database::game_database::try_create,
 	operating_system::Platform,
 };
-use slint::{ComponentHandle, winit_030::WinitWindowAccessor};
+use slint::{
+	ComponentHandle,
+	winit_030::{WinitWindowAccessor, winit::window::UserAttentionType},
+};
 
 use crate::{
 	AppTab, MainWindow, action_state, analytics,
@@ -16,15 +19,18 @@ use crate::{
 		CommandHandler, os_integration, query::load_game_ids, settings::apply_settings_to_ui,
 	},
 	fetch::spawn_fetchers,
-	filters::{load_mod_families, load_providers_with_games},
+	filters::{load_mod_tags, load_providers_with_games},
 	i18n, logging,
 	model::make_rows,
-	single_instance, window_state,
+	single_instance,
+	ui_models::UiModels,
+	window_state,
 };
 
 pub fn run() -> Result<(), slint::PlatformError> {
 	window_state::fix_gamescope_scale_factor();
 	logging::init();
+	log_startup_info();
 
 	if !single_instance::acquire() {
 		return Ok(());
@@ -43,13 +49,13 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 	let app_settings = Rc::new(RefCell::new(AppSettings::read()));
 	let detected_locale = i18n::detect_locale();
-	let mod_families = load_mod_families(&app_database);
+	let mod_tags = load_mod_tags(&app_database);
 	let providers_with_games = load_providers_with_games(&app_database);
 	{
 		let mut settings = app_settings.borrow_mut();
 		if sync_filter_availability(
 			&mut settings.games_query.filter,
-			&mod_families,
+			&mod_tags,
 			&providers_with_games,
 		) && let Err(err) = settings.try_write()
 		{
@@ -93,7 +99,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		&main_window,
 		&app_settings,
 		detected_locale,
-		&mod_families,
+		&mod_tags,
 		&providers_with_games,
 		games_total_count,
 	);
@@ -112,6 +118,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				log::warn!("Unexpected graphics API: {graphics_api:?}");
 				crate::Renderer::Unknown
 			};
+			log::info!("Renderer: {renderer:?} ({graphics_api:?})");
 			if let Some(window) = window_weak.upgrade() {
 				window.global::<crate::AppInfo>().set_renderer(renderer);
 			}
@@ -124,6 +131,9 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			crate::Renderer::Unknown
 		}
 	};
+	if !matches!(renderer, crate::Renderer::Unknown) {
+		log::info!("Renderer: {renderer:?}");
+	}
 	main_window
 		.global::<crate::AppInfo>()
 		.set_renderer(renderer);
@@ -144,15 +154,26 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		.global::<crate::GamesList>()
 		.set_rows(rows.into());
 
+	let models = UiModels::new(&main_window);
 	let ctx = CommandHandler::create(
 		window_weak,
 		Arc::clone(&app_database),
 		Rc::clone(&app_settings),
 		Arc::clone(&scheduler),
 		detected_locale,
+		models,
 	);
 	ctx.load_mods_tab();
 	ctx.load_user();
+
+	let selected_game = app_settings.borrow().selected_game.clone();
+
+	if initial_tab == AppTab::Games
+		&& let Some(selected_game) = selected_game
+	{
+		ctx.select_game_by_id(selected_game.provider_id, &selected_game.game_id);
+	}
+
 	if initial_tab == AppTab::Thanks {
 		ctx.load_patrons();
 	}
@@ -183,6 +204,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			window.window().set_minimized(false);
 			window.window().with_winit_window(|winit_window| {
 				winit_window.focus_window();
+				winit_window.request_user_attention(Some(UserAttentionType::Critical));
 			});
 
 			for argument in arguments {
@@ -195,11 +217,20 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	main_window.run()
 }
 
+fn log_startup_info() {
+	log::info!(
+		"Rai Pal {} (variant: {:?}, platform: {:?})",
+		env!("CARGO_PKG_VERSION"),
+		AppVariant::get_current(),
+		Platform::get_current(),
+	);
+}
+
 fn apply_initial_state(
 	window: &MainWindow,
 	app_settings: &Rc<RefCell<AppSettings>>,
 	detected_locale: Option<AppLocale>,
-	mod_families: &[String],
+	mod_tags: &BTreeMap<String, String>,
 	providers_with_games: &HashSet<GameProviderId>,
 	games_total_count: u32,
 ) {
@@ -209,7 +240,7 @@ fn apply_initial_state(
 		window,
 		&app_settings,
 		detected_locale,
-		mod_families,
+		mod_tags,
 		providers_with_games,
 	);
 	window

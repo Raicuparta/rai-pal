@@ -1,4 +1,4 @@
-import { AppColorScheme, AppTab, FilterGroupId, ProviderAction, SkipConfirmation } from "app_types.slint";
+import { AppColorScheme, AppTab, FilterGroupId, ModActionData, ProviderAction } from "app_types.slint";
 
 export global AppActions {
     callback reset-settings;
@@ -39,13 +39,25 @@ export global GamesActions {
     callback open-wine-binary-folder;
     callback remove-game;
     callback request-debug-data;
-    callback request-mod-debug-data(mod-id: string);
+}
+
+export global ModsTabActions {
+    callback search-changed(text: string);
+    callback filter-toggled(group: FilterGroupId, value: string, checked: bool);
+    callback filter-lock-toggled(group: FilterGroupId, value: string);
+    callback filter-only(group: FilterGroupId, value: string);
+    callback filter-reset(group: FilterGroupId);
+    callback filters-reset;
+    callback filters-collapse-all;
+    callback filters-expand-all;
+    callback filter-expanded-changed(group: FilterGroupId, expanded: bool);
 }
 
 export global DialogActions {
     callback request-url-mod-sources;
     callback set-url-mod-source-enabled(url: string, enabled: bool);
     callback remove-url-mod-source(url: string);
+    callback move-url-mod-source(url: string, up: bool);
     callback add-url-mod-source(url: string);
     callback confirm-url-mod-source;
     callback cancel-url-mod-source;
@@ -63,18 +75,13 @@ export global DialogActions {
 }
 
 export global ModActions {
-    callback request-install(mod-id: string, skip-confirmation: SkipConfirmation);
-    callback uninstall(mod-id: string);
-    callback update(mod-id: string);
-    callback reinstall(mod-id: string);
-    callback run(mod-id: string);
-    callback open-folder(mod-id: string);
-    callback download-config(mod-id: string);
-    callback configure(mod-id: string);
-    callback configure-folder(mod-id: string);
     callback request-uninstall-all;
-    callback run-standalone(mod-id: string);
-    callback install-standalone(mod-id: string);
+    callback request-reinstall-all;
+    callback request-update-all;
     callback open-url(url: string);
     callback open-local-mods-folder;
+}
+
+export global ModMenuActions {
+    callback activate(action: ModActionData);
 }

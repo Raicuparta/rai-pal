@@ -66,12 +66,6 @@ impl GameLaunch {
 		self
 	}
 
-	#[must_use]
-	pub fn with_cwd(mut self, cwd: impl Into<PathBuf>) -> Self {
-		self.cwd = Some(cwd.into());
-		self
-	}
-
 	pub fn to_command(&self) -> Command {
 		let mut command = Command::new(&self.program);
 		command.args(&self.args).envs(&self.env);

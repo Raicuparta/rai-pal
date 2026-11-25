@@ -190,8 +190,8 @@ msgid "Provider"
 msgstr "Anbieter"
 
 msgctxt "filterProperty"
-msgid "Tag"
-msgstr "Tag"
+msgid "Game Tag"
+msgstr "Spiel-Tag"
 
 msgctxt "filterProperty"
 msgid "Architecture"
@@ -218,8 +218,8 @@ msgid "Install status"
 msgstr "Installationsstatus"
 
 msgctxt "filterProperty"
-msgid "Mod"
-msgstr "Mod"
+msgid "Mod Tag"
+msgstr "Mod-Tag"
 
 msgctxt "filterValue"
 msgid "Unknown"
@@ -254,8 +254,8 @@ msgid "Not installed"
 msgstr "Nicht installiert"
 
 msgctxt "filterValue"
-msgid "Manual"
-msgstr "Manuell"
+msgid "Local Files"
+msgstr "Lokale Dateien"
 
 msgctxt "filterValueNote"
 msgid "Only shows PC Xbox games if they're installed."
@@ -268,22 +268,6 @@ msgstr "Godot-Spiele werden noch nicht vollständig unterstützt."
 msgctxt "filterValueNote"
 msgid "GameMaker games are not fully supported yet."
 msgstr "GameMaker-Spiele werden noch nicht vollständig unterstützt."
-
-msgctxt "gameModRow"
-msgid "Edit Mod Config"
-msgstr "Mod-Konfiguration bearbeiten"
-
-msgctxt "gameModRow"
-msgid "Open Config Folder"
-msgstr "Konfigurationsordner öffnen"
-
-msgctxt "gameModRow"
-msgid "Open Mod Folder"
-msgstr "Mod-Ordner öffnen"
-
-msgctxt "gameModRow"
-msgid "Download Recommended Config"
-msgstr "Empfohlene Konfiguration herunterladen"
 
 msgctxt "gameModRow"
 msgid "Reinstall"
@@ -310,14 +294,6 @@ msgid "Mod actions"
 msgstr "Mod-Aktionen"
 
 msgctxt "gameModRow"
-msgid "Recommended config"
-msgstr "Empfohlene Konfiguration"
-
-msgctxt "gameModRow"
-msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
-msgstr "Empfohlene Konfiguration verfügbar. Wird heruntergeladen, falls du noch keine hast. Du kannst auch über das Drei-Punkte-Menü den Download erzwingen."
-
-msgctxt "gameModRow"
 msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
 msgstr "Achtung: Sei vorsichtig beim Installieren von Mods in Mehrspielerspielen! Anticheat kann einige Mods erkennen und dich bannen, auch wenn sie harmlos aussehen."
 
@@ -334,12 +310,24 @@ msgid "Install this game to see more detailed information about which mods are c
 msgstr "Installiere dieses Spiel, um genauere Informationen darüber zu sehen, welche Mods kompatibel sind"
 
 msgctxt "gameModal"
+msgid "Game-Specific Mods"
+msgstr "Spielspezifische Mods"
+
+msgctxt "gameModal"
 msgid "Installed Mods"
 msgstr "Installierte Mods"
 
 msgctxt "gameModal"
 msgid "Uninstall all mods"
 msgstr "Alle Mods deinstallieren"
+
+msgctxt "gameModal"
+msgid "Mods"
+msgstr "Mods"
+
+msgctxt "gameModal"
+msgid "Update all mods"
+msgstr "Alle Mods aktualisieren"
 
 msgctxt "gameModal"
 msgid "Available Mods"
@@ -530,10 +518,6 @@ msgid "Failed to install mod {0}"
 msgstr "Mod {0} konnte nicht installiert werden"
 
 msgctxt "messages"
-msgid "Failed to download config for mod {0}"
-msgstr "Konfiguration für Mod {0} konnte nicht heruntergeladen werden"
-
-msgctxt "messages"
 msgid "Failed to uninstall mod {0}"
 msgstr "Mod {0} konnte nicht deinstalliert werden"
 
@@ -542,16 +526,16 @@ msgid "Failed to uninstall all mods"
 msgstr "Mods konnten nicht deinstalliert werden"
 
 msgctxt "messages"
+msgid "Failed to update all mods"
+msgstr "Mods konnten nicht aktualisiert werden"
+
+msgctxt "messages"
 msgid "Failed to run mod {0}"
 msgstr "Mod {0} konnte nicht gestartet werden"
 
 msgctxt "messages"
-msgid "Failed to open mod folder {0}"
+msgid "Failed to open mod path {0}"
 msgstr "Mod-Ordner {0} konnte nicht geöffnet werden"
-
-msgctxt "messages"
-msgid "Failed to configure mod {0}"
-msgstr "Mod {0} konnte nicht konfiguriert werden"
 
 msgctxt "messages"
 msgid "Failed to refresh game"
@@ -636,6 +620,14 @@ msgstr "Veraltet"
 msgctxt "modsPage"
 msgid "{} mods"
 msgstr "{} Mods"
+
+msgctxt "modsPage"
+msgid "Search mods"
+msgstr "Mods suchen"
+
+msgctxt "modsPage"
+msgid "No mods match your search and filters."
+msgstr "Keine Mods entsprechen deiner Suche und deinen Filtern."
 
 msgctxt "modsPage"
 msgid "Open Local Mods Folder"
@@ -790,6 +782,18 @@ msgid "Add source"
 msgstr "Quelle hinzufügen"
 
 msgctxt "urlModSources"
+msgid "Move up"
+msgstr "Nach oben"
+
+msgctxt "urlModSources"
+msgid "Move down"
+msgstr "Nach unten"
+
+msgctxt "urlModSources"
+msgid "Sources later in the list override mods with the same id from earlier sources."
+msgstr "Quellen weiter unten in der Liste überschreiben Mods mit derselben ID aus früheren Quellen."
+
+msgctxt "urlModSources"
 msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep link:"
 msgstr "Rai Pal sucht in allen hier angegebenen Datenbanken nach Mods, zusätzlich zur Standard-Datenbank. Du kannst Mod-Quellen über diesen Deep-Link teilen:"
 
@@ -828,3 +832,39 @@ msgstr "Spiele sortieren"
 msgctxt "textField"
 msgid "Clear"
 msgstr "Löschen"
+
+msgctxt "gameModRow"
+msgid "Open file: {0}"
+msgstr "Datei öffnen: {0}"
+
+msgctxt "gameModRow"
+msgid "Open folder: {0}"
+msgstr "Ordner öffnen: {0}"
+
+msgctxt "modsTabRow"
+msgid "Show {0} game: \"{1}\""
+msgstr "{0}-Spiel anzeigen: \"{1}\""
+
+msgctxt "filterProperty"
+msgid "Mod Type"
+msgstr "Mod-Typ"
+
+msgctxt "filterValue"
+msgid "Installable"
+msgstr "Installierbar"
+
+msgctxt "filterValue"
+msgid "Link Only"
+msgstr "Nur Link"
+
+msgctxt "gameModRow"
+msgid "This mod is not fully installed, but left some files behind. It's safest to reinstall all mods before continuing."
+msgstr "Dieser Mod ist nicht vollständig installiert, hat aber einige Dateien zurückgelassen. Am sichersten ist es, alle Mods neu zu installieren, bevor du fortfährst."
+
+msgctxt "gameModal"
+msgid "Reinstall all mods"
+msgstr "Alle Mods neu installieren"
+
+msgctxt "messages"
+msgid "Failed to reinstall all mods"
+msgstr "Alle Mods konnten nicht neu installiert werden"

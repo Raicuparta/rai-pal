@@ -1,3 +1,5 @@
+import { ActionKey } from "action_state.slint";
+
 export enum AppTab {
     games,
     mods,
@@ -22,7 +24,7 @@ export enum ProviderId {
     epic,
     gog,
     itch,
-    manual,
+    local-files,
     steam,
     xbox,
 }
@@ -35,9 +37,40 @@ export enum EngineId {
     game-maker,
 }
 
-export enum SkipConfirmation {
-    none,
-    install-mod,
+export enum ModStatus {
+    broken,
+    outdated,
+    installed,
+    not-installed,
+    link-only,
+}
+
+export enum ModActionKind {
+    install,
+    download,
+    update,
+    run,
+    run-standalone,
+    open-path,
+    reinstall,
+    uninstall,
+    uninstall-all,
+    reinstall-all,
+    website,
+    show-game,
+    debug-data,
+}
+
+export struct ModActionData {
+    kind: ModActionKind,
+    action-key: ActionKey,
+    mod-id: string,
+    subject: string,
+    target: string,
+    provider: ProviderId,
+    enabled: bool,
+    separator-before: bool,
+    open-folder: bool,
 }
 
 export enum ProviderAction {
@@ -110,12 +143,12 @@ export enum MessageContext {
     open-local-mods-folder,
     open-logs-folder,
     install-mod,
-    download-mod-config,
     uninstall-mod,
     uninstall-all-mods,
+    reinstall-all-mods,
+    update-all-mods,
     run-mod,
-    open-mod-folder,
-    configure-mod,
+    open-mod-path,
     refresh-game,
     refresh-games,
     refresh-installed-mods,
@@ -142,7 +175,8 @@ export struct MessageData {
 export enum FilterGroupId {
     installed,
     engines,
-    mod-families,
+    mod-tags,
+    mod-types,
     tags,
     providers,
     unity-backends,
@@ -161,7 +195,9 @@ export enum FilterValueLabel {
     tag-untagged,
     status-installed,
     status-not-installed,
-    provider-manual,
+    provider-local-files,
+    mod-type-installable,
+    mod-type-link-only,
 }
 
 export enum FilterValueNote {
@@ -190,24 +226,16 @@ export struct FilterGroupData {
 }
 
 export struct GameModData {
-    mod-id: string,
     title: string,
     description: string,
     version-text: string,
     release-date: string,
     author: string,
     engine-text: string,
-    installed: bool,
-    outdated: bool,
-    incompatible: bool,
+    status: ModStatus,
     deprecated: bool,
-    has-remote-config: bool,
-    source-code: string,
-    has-exe-path: bool,
-    has-install: bool,
-    has-run: bool,
-    has-config: bool,
-    has-installed-dependants: bool,
+    actions: [ModActionData],
+    special-actions: [ModActionData],
 }
 
 export struct GameRowData {
@@ -230,7 +258,6 @@ export struct GameRowData {
 }
 
 export struct ModsTabModData {
-    id: string,
     title: string,
     description: string,
     version-text: string,
@@ -238,17 +265,7 @@ export struct ModsTabModData {
     author: string,
     engine-text: string,
     deprecated: bool,
-    source-code: string,
-    can-run: bool,
-    can-install: bool,
-}
-
-export struct ModsTabItemData {
-    is-family: bool,
-    family-title: string,
-    family-description: string,
-    mods: [ModsTabModData],
-    single-mod: ModsTabModData,
+    actions: [ModActionData],
 }
 
 export struct NotificationData {
@@ -265,10 +282,6 @@ export struct PatronData {
     avatar: image,
 }
 
-export struct PotentialModData {
-    title: string,
-    description: string,
-}
 
 export struct UrlModSourceData {
     url: string,

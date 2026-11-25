@@ -1,6 +1,8 @@
 use std::{
 	cell::RefCell,
 	collections::{HashMap, HashSet},
+	ffi::OsStr,
+	path::{Path, PathBuf},
 	rc::Rc,
 	sync::Arc,
 	thread,
@@ -13,25 +15,40 @@ use rai_pal_backend::{
 	game_providers::game_provider::GameProviderId,
 	local_database::{
 		app_database::Db,
-		mod_database::{ModDatabase, ModInfo},
+		mod_database::{InstallState, ModDatabase, ModInfo},
 	},
 	mods::{
-		game_mods::{GameMod, GameModGroups, PotentialMod},
-		manifest::{Mod, ModDependency, install_steps},
+		game_mods::{GameMod, GameModGroups},
+		manifest::{Mod, ModDependency, ModPathState, ModPathType, install_steps},
 	},
 	result::{LogErrExt, Result},
 };
 use slint::ComponentHandle;
 
 use crate::{
-	ActionKind, GameModData, MainWindow, MessageContext, PotentialModData, action_state, analytics,
-	downloads::Tracker, notifications, runtime,
+	ActionKind, AppTab, GameModData, MainWindow, MessageContext, ModActionData, ModActionKind,
+	ModStatus, ProviderId, action_state, analytics,
+	downloads::Tracker,
+	mod_actions::{ActionGroup, ModActionList, select_actions},
+	model, notifications, runtime,
+	ui_models::GameDetailsModels,
 };
 
 use super::{CommandHandler, on_command};
 
+#[derive(Default)]
+struct LoadedMods {
+	installed: Vec<GameModData>,
+	game_specific: Vec<GameModData>,
+	available: Vec<GameModData>,
+	dependency_only: Vec<GameModData>,
+	incompatible: Vec<GameModData>,
+}
+
+type PathStateMap = HashMap<(String, String), ModPathState>;
+
 thread_local! {
-	static REMOTE_CONFIG_IDS: RefCell<HashMap<(GameProviderId, String), HashSet<String>>> =
+	static PATH_STATES: RefCell<HashMap<(GameProviderId, String), PathStateMap>> =
 		RefCell::new(HashMap::new());
 }
 
@@ -39,48 +56,114 @@ fn game_key(game: &Game) -> (GameProviderId, String) {
 	(game.provider_id, game.game_id.clone())
 }
 
-fn cached_remote_config_ids(game: &Game) -> HashSet<String> {
-	if game.exe_path.is_none() {
-		return HashSet::new();
-	}
-
-	REMOTE_CONFIG_IDS.with(|cache| {
+fn cached_path_state(game: &Game, mod_id: &str, path: &str) -> Option<ModPathState> {
+	PATH_STATES.with(|cache| {
 		cache
 			.borrow()
 			.get(&game_key(game))
-			.cloned()
-			.unwrap_or_default()
+			.and_then(|states| states.get(&(mod_id.to_string(), path.to_string())).cloned())
 	})
 }
 
-fn store_remote_config_ids(game: &Game, ids: HashSet<String>) {
-	REMOTE_CONFIG_IDS.with(|cache| {
-		cache.borrow_mut().insert(game_key(game), ids);
+fn store_path_states(game: &Game, states: PathStateMap) {
+	PATH_STATES.with(|cache| {
+		cache.borrow_mut().insert(game_key(game), states);
 	});
 }
 
-#[derive(Default)]
-struct LoadedMods {
-	installed: Vec<GameModData>,
-	available: Vec<GameModData>,
-	hidden: Vec<GameModData>,
-	incompatible: Vec<GameModData>,
-	potential: Vec<PotentialModData>,
+fn path_label(path: &Path, depth: usize, shared_suffix: usize) -> String {
+	let components = path.components();
+	let skip = components.clone().count().saturating_sub(depth);
+
+	components
+		.skip(skip)
+		.take(depth - shared_suffix)
+		.collect::<PathBuf>()
+		.display()
+		.to_string()
+}
+
+fn unique_suffix_depths(paths: &[PathBuf]) -> Vec<usize> {
+	let component_counts: Vec<usize> = paths.iter().map(|path| path.components().count()).collect();
+	let mut depths = vec![1; paths.len()];
+
+	loop {
+		let labels: Vec<String> = paths
+			.iter()
+			.zip(&depths)
+			.map(|(path, depth)| path_label(path, *depth, 0))
+			.collect();
+		let mut colliding = vec![false; labels.len()];
+
+		for (index, label) in labels.iter().enumerate() {
+			for (other_index, other_label) in labels.iter().enumerate().skip(index + 1) {
+				if label == other_label && paths[index] != paths[other_index] {
+					colliding[index] = true;
+					colliding[other_index] = true;
+				}
+			}
+		}
+
+		let mut expanded = false;
+
+		for (index, collides) in colliding.iter().enumerate() {
+			if *collides && depths[index] < component_counts[index] {
+				depths[index] += 1;
+				expanded = true;
+			}
+		}
+
+		if !expanded {
+			return depths;
+		}
+	}
+}
+
+fn path_labels(paths: &[PathBuf]) -> Vec<String> {
+	let depths = unique_suffix_depths(paths);
+	let components: Vec<Vec<&OsStr>> = paths.iter().map(|path| path.iter().collect()).collect();
+	let min_depth = depths.iter().copied().min().unwrap_or(0);
+	let first = components.first().map_or(&[][..], Vec::as_slice);
+	let max_shared_suffix = min_depth.saturating_sub(1);
+	let shared_suffix = (0..max_shared_suffix)
+		.take_while(|offset| {
+			components
+				.iter()
+				.all(|other| other[other.len() - 1 - offset] == first[first.len() - 1 - offset])
+		})
+		.count();
+
+	paths
+		.iter()
+		.zip(depths)
+		.map(|(path, depth)| path_label(path, depth, shared_suffix))
+		.collect()
+}
+
+struct PathTarget<'a> {
+	key: &'a str,
+	target: PathBuf,
+	open_folder: bool,
 }
 
 impl CommandHandler {
 	pub fn refresh_mods(&self, game: &Game) {
+		self.apply_mods(game);
+		refresh_path_states(self.window(), Arc::clone(&self.database), game.clone());
+	}
+
+	fn apply_mods(&self, game: &Game) {
 		let Some(window) = self.ui() else {
 			return;
 		};
 
-		refresh_mods_ui(&window, &self.database, game);
+		apply_mods(&window, &self.models.game_details, &self.database, game);
 	}
 
 	pub fn install_mod(&self, game: Game, mod_id: String) {
 		analytics::record(Event::InstallMod {
 			mod_id: mod_id.clone(),
-			family: self.mod_family(&mod_id),
+			tags: self.mod_tags(&mod_id),
 			game: Some(game.display_title.clone()),
 		});
 		self.install_mod_inner(game, mod_id);
@@ -89,7 +172,7 @@ impl CommandHandler {
 	pub fn update_mod(&self, game: Game, mod_id: String) {
 		analytics::record(Event::UpdateMod {
 			mod_id: mod_id.clone(),
-			family: self.mod_family(&mod_id),
+			tags: self.mod_tags(&mod_id),
 			game: Some(game.display_title.clone()),
 		});
 		self.install_mod_inner(game, mod_id);
@@ -104,31 +187,10 @@ impl CommandHandler {
 			action_state::key(ActionKind::GameModInstall, mod_id.clone()),
 			MessageContext::InstallMod,
 			move || {
-				let (game_mod, deps_to_install) = collect_install_mods(&database, &game, &mod_id)
-					.map_err(|err| err.to_string())?;
+				let result = install_mods(&database, &game, &[mod_id], &downloads);
 
-				let all_owned = deps_to_install
-					.iter()
-					.chain(std::iter::once(&game_mod))
-					.cloned()
-					.collect::<Vec<_>>();
-				let steps = install_steps(&all_owned);
-				downloads.pending_steps(&steps);
-
-				let result = runtime::block_on(install_mod(
-					&database,
-					&game,
-					game_mod,
-					deps_to_install,
-					&downloads,
-				));
-
-				match &result {
-					Ok(()) => {
-						downloads.finish_steps(&steps);
-						refresh_after_action(&window, &database, &game);
-					}
-					Err(_) => downloads.fail_steps(&steps),
+				if result.is_ok() {
+					refresh_after_action(&window, &game);
 				}
 
 				result
@@ -136,24 +198,38 @@ impl CommandHandler {
 		);
 	}
 
-	pub fn download_mod_config(&self, game: Game, mod_id: String) {
+	pub fn update_all_mods(&self, game: Game) {
 		let database = Arc::clone(&self.database);
 		let window = self.window();
+		let downloads = self.downloads.clone();
 
 		self.spawn_action(
-			action_state::key(ActionKind::GameModDownloadConfig, mod_id.clone()),
-			MessageContext::DownloadModConfig,
+			action_state::key(ActionKind::GameModUpdateAll, ""),
+			MessageContext::UpdateAllMods,
 			move || {
-				let result = runtime::block_on(async {
-					database
-						.get_mod(&mod_id)?
-						.download_remote_config(&game, true)
-						.await?;
-					database.refresh_installed_mods()
-				});
+				let outdated_ids = database
+					.get_game_mods(&game.provider_id, &game.game_id)
+					.map_err(|err| err.to_string())?
+					.into_iter()
+					.filter(|info| info.compatible && info.install_state.is_outdated())
+					.map(|info| info.mod_id)
+					.collect::<Vec<_>>();
+
+				analytics::record_all(outdated_ids.iter().filter_map(|mod_id| {
+					let game_mod = database
+						.get_mod(mod_id)
+						.ok_or_log("Failed to load mod for analytics")?;
+					Some(Event::UpdateMod {
+						mod_id: game_mod.id,
+						tags: game_mod.tags,
+						game: Some(game.display_title.clone()),
+					})
+				}));
+
+				let result = install_mods(&database, &game, &outdated_ids, &downloads);
 
 				if result.is_ok() {
-					refresh_after_action(&window, &database, &game);
+					refresh_after_action(&window, &game);
 				}
 
 				result
@@ -164,7 +240,7 @@ impl CommandHandler {
 	pub fn uninstall_mod(&self, game: Game, mod_id: String) {
 		analytics::record(Event::UninstallMod {
 			mod_id: mod_id.clone(),
-			family: self.mod_family(&mod_id),
+			tags: self.mod_tags(&mod_id),
 			game: Some(game.display_title.clone()),
 		});
 
@@ -184,7 +260,7 @@ impl CommandHandler {
 				});
 
 				if result.is_ok() {
-					refresh_after_action(&window, &database, &game);
+					refresh_after_action(&window, &game);
 				}
 
 				result
@@ -200,27 +276,35 @@ impl CommandHandler {
 			action_state::key(ActionKind::GameModUninstallAll, ""),
 			MessageContext::UninstallAllMods,
 			move || {
-				let result = runtime::block_on(async {
-					let installed_mods = database.get_installed_mods_for_game(&game)?;
-
-					analytics::record_all(installed_mods.iter().map(|installed_mod| {
-						Event::UninstallMod {
-							mod_id: installed_mod.game_mod.id.clone(),
-							family: installed_mod.game_mod.family.clone(),
-							game: Some(game.display_title.clone()),
-						}
-					}));
-
-					for installed_mod in installed_mods {
-						installed_mod.uninstall().await?;
-					}
-
-					game.delete_mods_folder().await?;
-					database.refresh_installed_mods()
-				});
+				let result = runtime::block_on(uninstall_all_mods_inner(&database, &game));
 
 				if result.is_ok() {
-					refresh_after_action(&window, &database, &game);
+					refresh_after_action(&window, &game);
+				}
+
+				result.map(|_| ())
+			},
+		);
+	}
+
+	pub fn reinstall_all_mods(&self) {
+		let Some(game) = self.selected_game() else {
+			return;
+		};
+
+		let database = Arc::clone(&self.database);
+		let window = self.window();
+		let downloads = self.downloads.clone();
+
+		self.spawn_action(
+			action_state::key(ActionKind::GameModReinstallAll, ""),
+			MessageContext::ReinstallAllMods,
+			move || {
+				let result = runtime::block_on(uninstall_all_mods_inner(&database, &game))
+					.and_then(|mods| install_reinstalled_mods(&database, &game, mods, &downloads));
+
+				if result.is_ok() {
+					refresh_after_action(&window, &game);
 				}
 
 				result
@@ -231,7 +315,7 @@ impl CommandHandler {
 	pub fn run_mod(&self, game: Game, mod_id: String) {
 		analytics::record(Event::RunMod {
 			mod_id: mod_id.clone(),
-			family: self.mod_family(&mod_id),
+			tags: self.mod_tags(&mod_id),
 			game: Some(game.display_title.clone()),
 		});
 
@@ -242,97 +326,76 @@ impl CommandHandler {
 			MessageContext::RunMod,
 			move || {
 				database
-					.get_mod(&mod_id)
+					.get_mod_or_installed(&game.provider_id, &game.game_id, &mod_id)
 					.and_then(|game_mod| game_mod.run(Some(&game)))
 			},
 		);
 	}
 
-	pub fn open_mod_folder(&self, game: Game, mod_id: String) {
+	pub fn open_mod_path(&self, game: Game, mod_id: String, path: String, open_folder: bool) {
 		let database = Arc::clone(&self.database);
 
 		self.spawn_action(
-			action_state::key(ActionKind::GameModOpenFolder, mod_id.clone()),
-			MessageContext::OpenModFolder,
+			action_state::key(ActionKind::GameModOpenPath, mod_id.clone()),
+			MessageContext::OpenModPath,
 			move || {
 				database
-					.try_get_installed_mod(&game.provider_id, &game.game_id, &mod_id)
-					.and_then(|installed_mod| installed_mod.open_folder())
-			},
-		);
-	}
-
-	pub fn configure_mod(&self, game: Game, mod_id: String, open_folder: bool) {
-		let database = Arc::clone(&self.database);
-		let kind = if open_folder {
-			ActionKind::GameModConfigureFolder
-		} else {
-			ActionKind::GameModConfigure
-		};
-
-		self.spawn_action(
-			action_state::key(kind, mod_id.clone()),
-			MessageContext::ConfigureMod,
-			move || {
-				database
-					.try_get_installed_mod(&game.provider_id, &game.game_id, &mod_id)
-					.and_then(|installed_mod| installed_mod.configure(open_folder))
+					.get_mod_or_installed(&game.provider_id, &game.game_id, &mod_id)
+					.and_then(|game_mod| game_mod.open_path(&path, Some(&game), open_folder))
 			},
 		);
 	}
 }
 
-fn refresh_mods_ui(window: &MainWindow, database: &Arc<Db>, game: &Game) {
-	let remote_config_ids = cached_remote_config_ids(game);
-	apply_mods(window, database, game, &remote_config_ids);
-	refresh_remote_configs(window.as_weak(), Arc::clone(database), game.clone());
-}
-
-fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<Db>, game: Game) {
+fn refresh_path_states(window: slint::Weak<MainWindow>, database: Arc<Db>, game: Game) {
 	if game.exe_path.is_none() {
 		return;
 	}
 
 	thread::spawn(move || {
-		let configs = match runtime::block_on(game.get_remote_configs()) {
-			Ok(configs) => configs,
-			Err(err) => {
-				log::error!("Failed to load remote configs: {err}");
-				return;
-			}
-		};
-
-		let Some(mods) = database.get_mod_map().ok_or_log("Failed to load mod map") else {
+		let Ok(groups) = GameModGroups::load(database.as_ref(), &game) else {
 			return;
 		};
+		let mut states = PathStateMap::new();
 
-		let remote_config_ids = mods
-			.into_values()
-			.filter(|game_mod| {
-				configs
-					.as_ref()
-					.is_some_and(|configs| configs.get_for_mod(game_mod).is_some())
-			})
-			.map(|game_mod| game_mod.id)
-			.collect::<HashSet<_>>();
+		for entry in groups
+			.installed
+			.iter()
+			.chain(groups.game_specific.iter())
+			.chain(groups.available.iter())
+			.chain(groups.dependency_only.iter())
+			.chain(groups.incompatible.iter())
+		{
+			let manifest = &entry.manifest;
+			let Some(paths) = manifest.paths.as_ref() else {
+				continue;
+			};
 
-		let database = Arc::clone(&database);
+			for path in paths {
+				if let Ok(state) = manifest.get_path_state(&path.path, Some(&game)) {
+					states.insert((manifest.id.clone(), path.path.clone()), state);
+				}
+			}
+		}
+
 		let game = game.clone();
 
-		crate::runtime::with_ui_window(&window, move |window| {
-			store_remote_config_ids(&game, remote_config_ids.clone());
-			apply_mods(&window, &database, &game, &remote_config_ids);
+		crate::runtime::with_ui_window(&window, move |_window| {
+			store_path_states(&game, states);
+
+			if let Some(handler) = CommandHandler::current() {
+				handler.apply_mods(&game);
+			}
 		});
 	});
 }
 
-fn apply_mods(
-	window: &MainWindow,
-	database: &Db,
-	game: &Game,
-	remote_config_ids: &HashSet<String>,
-) {
-	let loaded = match load_mods(database, game, remote_config_ids) {
+fn apply_mods(window: &MainWindow, models: &GameDetailsModels, database: &Db, game: &Game) {
+	let state = window.global::<crate::GameDetailsState>();
+	state.set_mods_folder_exists(game.mods_folder_exists());
+	state.set_mods_folder_has_files(game.mods_folder_has_files());
+
+	let loaded = match load_mods(database, game) {
 		Ok(loaded) => loaded,
 		Err(err) => {
 			log::error!("Failed to load mods: {err}");
@@ -340,32 +403,42 @@ fn apply_mods(
 			return;
 		}
 	};
-	window
-		.global::<crate::GameDetailsState>()
-		.set_installed(Rc::new(slint::VecModel::from(loaded.installed)).into());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_available(Rc::new(slint::VecModel::from(loaded.available)).into());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_hidden(Rc::new(slint::VecModel::from(loaded.hidden)).into());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_incompatible(Rc::new(slint::VecModel::from(loaded.incompatible)).into());
-	window
-		.global::<crate::GameDetailsState>()
-		.set_potential(Rc::new(slint::VecModel::from(loaded.potential)).into());
+	let has_outdated_mods = loaded
+		.installed
+		.iter()
+		.chain(loaded.dependency_only.iter())
+		.any(|mod_data| mod_data.status == ModStatus::Outdated);
+	let has_broken_mods = loaded
+		.installed
+		.iter()
+		.any(|mod_data| mod_data.status == ModStatus::Broken);
+	let LoadedMods {
+		installed,
+		game_specific,
+		available,
+		dependency_only,
+		incompatible,
+	} = loaded;
+	state.set_has_outdated_mods(has_outdated_mods);
+	state.set_has_broken_mods(has_broken_mods);
+	model::sync_vec_model(&models.installed, installed);
+	model::sync_vec_model(&models.game_specific, game_specific);
+	model::sync_vec_model(&models.available, available);
+	model::sync_vec_model(&models.dependency_only, dependency_only);
+	model::sync_vec_model(&models.incompatible, incompatible);
 }
 
-fn load_mods(
-	database: &Db,
-	game: &Game,
-	remote_config_ids: &HashSet<String>,
-) -> Result<LoadedMods> {
-	let list = GameModGroups::load(database, game, remote_config_ids)?;
+fn load_mods(database: &Db, game: &Game) -> Result<LoadedMods> {
+	let list = GameModGroups::load(database, game)?;
 
-	let installed = list
+	let mut installed = list
 		.installed
+		.into_iter()
+		.map(|entry| row_data(entry, game))
+		.collect::<Vec<_>>();
+	installed.extend(list.broken.into_iter().map(broken_row_data));
+	let game_specific = list
+		.game_specific
 		.into_iter()
 		.map(|entry| row_data(entry, game))
 		.collect::<Vec<_>>();
@@ -374,8 +447,8 @@ fn load_mods(
 		.into_iter()
 		.map(|entry| row_data(entry, game))
 		.collect::<Vec<_>>();
-	let hidden = list
-		.hidden
+	let dependency_only = list
+		.dependency_only
 		.into_iter()
 		.map(|entry| row_data(entry, game))
 		.collect::<Vec<_>>();
@@ -386,59 +459,196 @@ fn load_mods(
 		.collect::<Vec<_>>();
 	Ok(LoadedMods {
 		installed,
+		game_specific,
 		available,
-		hidden,
+		dependency_only,
 		incompatible,
-		potential: list.potential.into_iter().map(potential_row_data).collect(),
 	})
 }
 
 fn row_data(entry: GameMod, game: &Game) -> GameModData {
-	let GameMod {
-		manifest,
-		info,
-		has_remote_config,
-	} = entry;
-	let installed = info.installed_hash.is_some();
-	let is_incompatible = !info.compatible;
+	let GameMod { manifest, info } = entry;
+
+	let installed = info.install_state.is_installed();
+	let status = mod_status(&manifest, &info, installed);
+	let can_show_actions = info.compatible && game.exe_path.is_some();
+	let has_install = manifest.install.is_some();
+	let has_run = manifest.run_for_game.is_some();
+	let dependency_only = manifest
+		.install
+		.as_ref()
+		.is_some_and(|install| install.dependency_only);
+	let installable = !dependency_only || info.has_installed_dependants;
 	let version_text = version_text(&info, &manifest);
 	let release_date = release_date_display(&manifest);
 	let engine_text = engine_text(&manifest);
+	let mod_id = manifest.id.as_str();
+	let mut actions = ModActionList::new(mod_id);
+
+	let path_targets: Vec<PathTarget> = manifest
+		.paths
+		.as_deref()
+		.unwrap_or_default()
+		.iter()
+		.flat_map(|path| {
+			let state = cached_path_state(game, mod_id, &path.path);
+			let display_path = state
+				.as_ref()
+				.map_or_else(|| Path::new(&path.path), |state| state.path.as_path());
+			let path_exists = |open_folder| {
+				state.as_ref().map_or_else(
+					|| game.exe_path.is_some(),
+					|state| state.exists(open_folder),
+				)
+			};
+			let is_file = matches!(&path.path_type, ModPathType::File);
+			let variants = if is_file {
+				vec![(false, path_exists(false)), (true, path_exists(true))]
+			} else {
+				vec![(true, path_exists(true))]
+			};
+
+			variants
+				.into_iter()
+				.filter(|(_, enabled)| *enabled)
+				.map(|(open_folder, _)| {
+					let target = if is_file && open_folder {
+						display_path.parent().unwrap_or(display_path)
+					} else {
+						display_path
+					};
+
+					PathTarget {
+						key: &path.path,
+						target: target.to_path_buf(),
+						open_folder,
+					}
+				})
+				.collect::<Vec<_>>()
+		})
+		.collect();
+	let labels = path_labels(
+		&path_targets
+			.iter()
+			.map(|target| target.target.clone())
+			.collect::<Vec<_>>(),
+	);
+
+	for (target, label) in path_targets.iter().zip(labels) {
+		let mut action = actions.action(
+			ModActionKind::OpenPath,
+			ActionKind::GameModOpenPath,
+			target.key,
+		);
+		action.subject = label.into();
+		action.open_folder = target.open_folder;
+		actions.push(ActionGroup::Path, action);
+	}
+
+	if can_show_actions && has_install && installable && !installed {
+		actions.push(
+			ActionGroup::Primary,
+			actions.action(ModActionKind::Install, ActionKind::GameModInstall, ""),
+		);
+	}
+
+	if can_show_actions && info.install_state.is_outdated() {
+		actions.push(
+			ActionGroup::Primary,
+			actions.action(ModActionKind::Update, ActionKind::GameModInstall, ""),
+		);
+	}
+
+	if can_show_actions && has_run && (!has_install || installed) {
+		actions.push(
+			ActionGroup::Primary,
+			actions.action(ModActionKind::Run, ActionKind::GameModRun, ""),
+		);
+	}
+
+	if can_show_actions && installed && has_install && info.is_in_catalog {
+		actions.push(
+			ActionGroup::Manage,
+			actions.action(ModActionKind::Reinstall, ActionKind::GameModInstall, ""),
+		);
+
+		let mut uninstall =
+			actions.action(ModActionKind::Uninstall, ActionKind::GameModUninstall, "");
+		uninstall.enabled = !info.has_installed_dependants;
+		actions.push(ActionGroup::Manage, uninstall);
+	}
+
+	if let Some(website) = &manifest.website {
+		actions.push(
+			ActionGroup::Link,
+			actions.action(ModActionKind::Website, ActionKind::None, website),
+		);
+	}
+
+	actions.push(
+		ActionGroup::Debug,
+		actions.action(ModActionKind::DebugData, ActionKind::None, ""),
+	);
+
+	let actions = actions.finish();
+	let mut special_kinds = vec![
+		ModActionKind::Install,
+		ModActionKind::Update,
+		ModActionKind::Run,
+	];
+	if status == ModStatus::LinkOnly && manifest.website.is_some() {
+		special_kinds.push(ModActionKind::Website);
+	}
+	let special_actions = select_actions(&actions, &special_kinds);
 
 	GameModData {
-		mod_id: manifest.id.into(),
 		title: manifest.title.into(),
 		description: manifest.description.into(),
 		version_text: version_text.into(),
 		release_date: release_date.into(),
 		author: manifest.author.into(),
 		engine_text: engine_text.into(),
-		installed,
-		outdated: info.is_outdated,
-		incompatible: is_incompatible,
+		status,
 		deprecated: manifest.deprecated == Some(true),
-		has_remote_config,
-		source_code: manifest.source_code.into(),
-		has_exe_path: game.exe_path.is_some(),
-		has_install: manifest.install.is_some(),
-		has_run: manifest.run_for_game.is_some(),
-		has_config: manifest.config.is_some(),
-		has_installed_dependants: info.has_installed_dependants,
+		actions: Rc::new(slint::VecModel::from(actions)).into(),
+		special_actions: Rc::new(slint::VecModel::from(special_actions)).into(),
 	}
 }
 
-fn potential_row_data(item: PotentialMod) -> PotentialModData {
-	let (title, description) = match item {
-		PotentialMod::Family(family) => (family.title, family.description),
-		PotentialMod::Manifest(manifest) => {
-			let manifest = *manifest;
-			(manifest.title, manifest.description)
-		}
-	};
+fn broken_row_data(title: String) -> GameModData {
+	let mut actions = ModActionList::new(&title);
+	actions.push(
+		ActionGroup::Primary,
+		actions.action(
+			ModActionKind::ReinstallAll,
+			ActionKind::GameModReinstallAll,
+			"",
+		),
+	);
 
-	PotentialModData {
+	GameModData {
 		title: title.into(),
-		description: description.into(),
+		description: "".into(),
+		version_text: "".into(),
+		release_date: "".into(),
+		author: "".into(),
+		engine_text: "".into(),
+		status: ModStatus::Broken,
+		deprecated: false,
+		actions: Rc::new(slint::VecModel::from(actions.finish())).into(),
+		special_actions: Rc::new(slint::VecModel::from(Vec::<ModActionData>::new())).into(),
+	}
+}
+
+const fn mod_status(manifest: &Mod, info: &ModInfo, installed: bool) -> ModStatus {
+	if !installed && manifest.install.is_none() && manifest.run_for_game.is_none() {
+		ModStatus::LinkOnly
+	} else if info.install_state.is_outdated() {
+		ModStatus::Outdated
+	} else if installed {
+		ModStatus::Installed
+	} else {
+		ModStatus::NotInstalled
 	}
 }
 
@@ -454,7 +664,7 @@ fn version_text(info: &ModInfo, game_mod: &Mod) -> String {
 		parts.push(version);
 	}
 
-	if info.is_outdated
+	if info.install_state.is_outdated()
 		&& let Some(download_id) = download_id
 	{
 		parts.push(download_id);
@@ -530,20 +740,69 @@ fn version_numbers(version: &EngineVersionNumbers) -> String {
 	parts.join(".")
 }
 
-fn collect_install_mods(database: &Db, game: &Game, mod_id: &str) -> Result<(Mod, Vec<Mod>)> {
+fn collect_install_mods(
+	database: &Db,
+	mod_id: &str,
+	relevant_mods: &[ModInfo],
+) -> Result<(Mod, Vec<Mod>)> {
 	let game_mod = database.get_mod(mod_id)?;
-	let relevant_mods = database.get_game_mods(&game.provider_id, &game.game_id)?;
 	let mut deps_to_install = Vec::new();
 
 	collect_deps_to_install(
 		mod_id,
 		database,
-		&relevant_mods,
+		relevant_mods,
 		&mut HashSet::new(),
 		&mut deps_to_install,
 	);
 
 	Ok((game_mod, deps_to_install))
+}
+
+fn install_mods(
+	database: &Db,
+	game: &Game,
+	mod_ids: &[String],
+	downloads: &Tracker,
+) -> std::result::Result<(), String> {
+	if mod_ids.is_empty() {
+		return Ok(());
+	}
+
+	let relevant_mods = database
+		.get_game_mods(&game.provider_id, &game.game_id)
+		.map_err(|err| err.to_string())?;
+
+	for mod_id in mod_ids {
+		let (game_mod, deps_to_install) = collect_install_mods(database, mod_id, &relevant_mods)
+			.map_err(|err| err.to_string())?;
+
+		let all_owned = deps_to_install
+			.iter()
+			.chain(std::iter::once(&game_mod))
+			.cloned()
+			.collect::<Vec<_>>();
+		let steps = install_steps(&all_owned);
+		downloads.pending_steps(&steps);
+
+		let result = runtime::block_on(install_mod(
+			database,
+			game,
+			game_mod,
+			deps_to_install,
+			downloads,
+		));
+
+		match &result {
+			Ok(()) => downloads.finish_steps(&steps),
+			Err(err) => {
+				downloads.fail_steps(&steps);
+				return Err(err.clone());
+			}
+		}
+	}
+
+	Ok(())
 }
 
 async fn install_mod(
@@ -562,7 +821,7 @@ async fn install_mod(
 	}
 
 	if let Some(installed_mod) =
-		database.get_installed_mod(&mod_id, Some(game.provider_id), Some(game.game_id.clone()))?
+		database.get_installed_mod(&game.provider_id, &game.game_id, &mod_id)?
 	{
 		installed_mod.uninstall().await?;
 	}
@@ -574,6 +833,70 @@ async fn install_mod(
 	}
 
 	database.refresh_installed_mods()?;
+
+	Ok(())
+}
+
+async fn uninstall_all_mods_inner(database: &Db, game: &Game) -> Result<Vec<Mod>> {
+	let installed_mods = database.get_installed_mods_for_game(game)?;
+
+	analytics::record_all(
+		installed_mods
+			.iter()
+			.map(|installed_mod| Event::UninstallMod {
+				mod_id: installed_mod.game_mod.id.clone(),
+				tags: installed_mod.game_mod.tags.clone(),
+				game: Some(game.display_title.clone()),
+			}),
+	);
+
+	let mods_to_reinstall = installed_mods
+		.iter()
+		.map(|installed_mod| {
+			database
+				.get_mod(&installed_mod.game_mod.id)
+				.ok_or_log("Failed to load mod for reinstall")
+				.unwrap_or_else(|| installed_mod.game_mod.clone())
+		})
+		.filter(|game_mod| game_mod.install.is_some())
+		.collect::<Vec<_>>();
+
+	for installed_mod in &installed_mods {
+		installed_mod.uninstall().await?;
+	}
+
+	game.delete_mods_folder().await?;
+	database.refresh_installed_mods()?;
+
+	Ok(mods_to_reinstall)
+}
+
+fn install_reinstalled_mods(
+	database: &Db,
+	game: &Game,
+	mods: Vec<Mod>,
+	downloads: &Tracker,
+) -> std::result::Result<(), String> {
+	for game_mod in mods {
+		let steps = install_steps(std::slice::from_ref(&game_mod));
+		downloads.pending_steps(&steps);
+
+		let result =
+			runtime::block_on(game_mod.install(Some(game), |status| downloads.record(&status)))
+				.and_then(|()| {
+					database
+						.refresh_installed_mods()
+						.map_err(|err| err.to_string())
+				});
+
+		match result {
+			Ok(()) => downloads.finish_steps(&steps),
+			Err(err) => {
+				downloads.fail_steps(&steps);
+				return Err(err);
+			}
+		}
+	}
 
 	Ok(())
 }
@@ -609,16 +932,14 @@ fn collect_deps_to_install(
 					.iter()
 					.filter(|info| info.compatible && info.mod_id == *dep_id)
 					.collect::<Vec<_>>(),
-				ModDependency::Family { family: dep_family } => relevant_mods
+				ModDependency::Tag { tag: dep_tag } => relevant_mods
 					.iter()
-					.filter(|info| {
-						info.compatible && info.family.as_deref() == Some(dep_family.as_str())
-					})
+					.filter(|info| info.compatible && info.tags.contains(dep_tag))
 					.collect::<Vec<_>>(),
 			};
 
 			for info in matching_mods {
-				let outdated = info.installed_version.is_none() || info.is_outdated;
+				let outdated = info.install_state != InstallState::Installed;
 
 				if outdated
 					&& let Some(dep_mod) = database
@@ -634,53 +955,74 @@ fn collect_deps_to_install(
 	}
 }
 
-fn refresh_after_action(window: &slint::Weak<MainWindow>, database: &Arc<Db>, game: &Game) {
+fn refresh_after_action(window: &slint::Weak<MainWindow>, game: &Game) {
 	let window = window.clone();
-	let database = Arc::clone(database);
 	let game = game.clone();
 
-	crate::runtime::with_ui_window(&window, move |window| {
-		refresh_mods_ui(&window, &database, &game);
+	crate::runtime::with_ui_window(&window, move |_window| {
+		if let Some(handler) = CommandHandler::current() {
+			handler.refresh_mods(&game);
+		}
 	});
 }
 
 impl CommandHandler {
 	fn with_selected_mod(&self, mod_id: &str, action: impl FnOnce(&Self, Game, String)) {
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 
 		action(self, game, mod_id.to_string());
 	}
+
+	pub fn activate_mod_action(&self, action: &ModActionData) {
+		let mod_id = action.mod_id.to_string();
+
+		match action.kind {
+			ModActionKind::Install => self.prompt_install_mod(mod_id),
+			ModActionKind::Update => self.with_selected_mod(&mod_id, Self::update_mod),
+			ModActionKind::Run => self.with_selected_mod(&mod_id, Self::run_mod),
+			ModActionKind::Reinstall => {
+				self.with_selected_mod(&mod_id, Self::install_mod);
+			}
+			ModActionKind::Uninstall => {
+				self.with_selected_mod(&mod_id, Self::uninstall_mod);
+			}
+			ModActionKind::UninstallAll => self.prompt_uninstall_all_mods(),
+			ModActionKind::ReinstallAll => self.reinstall_all_mods(),
+			ModActionKind::OpenPath => {
+				self.with_selected_mod(&mod_id, |handler, game, mod_id| {
+					handler.open_mod_path(
+						game,
+						mod_id,
+						action.target.to_string(),
+						action.open_folder,
+					);
+				});
+			}
+			ModActionKind::Website => super::actions::open_url(action.target.to_string()),
+			ModActionKind::Download => self.install_standalone_mod(mod_id),
+			ModActionKind::RunStandalone => self.run_standalone_mod(mod_id),
+			ModActionKind::ShowGame => self.show_mod_game(action.provider, &action.target),
+			ModActionKind::DebugData => self.show_mod_debug_data(&mod_id),
+		}
+	}
+
+	fn show_mod_game(&self, provider: ProviderId, game_id: &str) {
+		let Some(provider_id) = Option::<GameProviderId>::from(provider) else {
+			return;
+		};
+
+		self.switch_tab(AppTab::Games);
+		self.select_game_by_id(provider_id, game_id);
+	}
 }
 
 pub fn register(window: &crate::MainWindow) {
-	on_command!(window, ModActions, on_update, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), CommandHandler::update_mod);
+	on_command!(window, ModMenuActions, on_activate, |action| handler => {
+		handler.activate_mod_action(&action);
 	});
-	on_command!(window, ModActions, on_reinstall, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), CommandHandler::install_mod);
-	});
-	on_command!(window, ModActions, on_uninstall, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), CommandHandler::uninstall_mod);
-	});
-	on_command!(window, ModActions, on_run, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), CommandHandler::run_mod);
-	});
-	on_command!(window, ModActions, on_open_folder, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), CommandHandler::open_mod_folder);
-	});
-	on_command!(window, ModActions, on_download_config, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), CommandHandler::download_mod_config);
-	});
-	on_command!(window, ModActions, on_configure, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), |handler, game, mod_id| {
-			handler.configure_mod(game, mod_id, false);
-		});
-	});
-	on_command!(window, ModActions, on_configure_folder, |mod_id| handler => {
-		handler.with_selected_mod(mod_id.as_str(), |handler, game, mod_id| {
-			handler.configure_mod(game, mod_id, true);
-		});
+	on_command!(window, ModActions, on_request_reinstall_all, || handler => {
+		handler.reinstall_all_mods();
 	});
 }

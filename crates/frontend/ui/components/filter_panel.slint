@@ -1,5 +1,6 @@
 import {
     FilterGroupData,
+    FilterGroupId,
     FilterValueData,
     FilterValueLabel,
     FilterValueNote,
@@ -13,7 +14,8 @@ import { ResetButton } from "reset_button.slint";
 import { Chevron, ChevronDirection } from "chevron.slint";
 import { Icon, SvgIcon } from "svg_icon.slint";
 import { CheckBoxMark } from "check_box.slint";
-import { GamesActions } from "../actions.slint";
+import { LabeledDivider } from "labeled_divider.slint";
+import { SidebarScroll } from "sidebar.slint";
 
 component FilterValueRow inherits BaseButton {
     in property <FilterValueData> item;
@@ -117,8 +119,14 @@ component FilterValueRow inherits BaseButton {
     }
 }
 
-export component FilterGroup inherits Rectangle {
+component FilterSection inherits Rectangle {
     in property <FilterGroupData> group;
+
+    callback toggled(value: string, checked: bool);
+    callback lock-toggled(value: string);
+    callback only(value: string);
+    callback reset;
+    callback expanded-changed(expanded: bool);
 
     VerticalLayout {
         alignment: start;
@@ -130,7 +138,7 @@ export component FilterGroup inherits Rectangle {
             accessible-label: Tr.filter-property(root.group.key);
 
             clicked => {
-                GamesActions.filter-expanded-changed(root.group.key, !root.group.expanded);
+                root.expanded-changed(!root.group.expanded);
             }
 
             HorizontalLayout {
@@ -171,7 +179,7 @@ export component FilterGroup inherits Rectangle {
                     visible: root.group.has-changes;
 
                     clicked => {
-                        GamesActions.filter-reset(root.group.key);
+                        root.reset();
                     }
                 }
             }
@@ -182,16 +190,93 @@ export component FilterGroup inherits Rectangle {
                 item: value;
 
                 toggled(checked) => {
-                    GamesActions.filter-toggled(root.group.key, value.value, checked);
+                    root.toggled(value.value, checked);
                 }
 
                 lock-toggled => {
-                    GamesActions.filter-lock-toggled(root.group.key, value.value);
+                    root.lock-toggled(value.value);
                 }
 
                 only => {
-                    GamesActions.filter-only(root.group.key, value.value);
+                    root.only(value.value);
                 }
+            }
+        }
+    }
+}
+
+export component FilterPanel inherits VerticalLayout {
+    in property <[FilterGroupData]> groups;
+    in property <bool> have-changes: false;
+    in property <bool> have-expanded: false;
+
+    callback filter-toggled(group: FilterGroupId, value: string, checked: bool);
+    callback filter-lock-toggled(group: FilterGroupId, value: string);
+    callback filter-only(group: FilterGroupId, value: string);
+    callback filter-reset(group: FilterGroupId);
+    callback filters-reset;
+    callback filters-collapse-all;
+    callback filters-expand-all;
+    callback filter-expanded-changed(group: FilterGroupId, expanded: bool);
+
+    HorizontalLayout {
+        vertical-stretch: 0;
+        padding-left: Theme.space-lg;
+        padding-right: Theme.space-lg;
+        padding-bottom: Theme.space-xs;
+        spacing: Theme.space-xs;
+        cross-axis-alignment: center;
+
+        IconButton {
+            icon: root.have-expanded ? Icon.chevron-down : Icon.chevron-right;
+            tooltip: root.have-expanded ? @tr("filterMenu" => "Collapse all filters") : @tr("filterMenu" => "Expand all filters");
+
+            clicked => {
+                if root.have-expanded {
+                    root.filters-collapse-all();
+                } else {
+                    root.filters-expand-all();
+                }
+            }
+        }
+
+        LabeledDivider {
+            label: @tr("filterMenu" => "Filters");
+            horizontal-stretch: 1;
+        }
+
+        ResetButton {
+            tooltip: @tr("filterMenu" => "Reset all filters");
+            enabled: root.have-changes;
+
+            clicked => {
+                root.filters-reset();
+            }
+        }
+    }
+
+    SidebarScroll {
+        for group in root.groups: FilterSection {
+            group: group;
+
+            toggled(value, checked) => {
+                root.filter-toggled(group.key, value, checked);
+            }
+
+            lock-toggled(value) => {
+                root.filter-lock-toggled(group.key, value);
+            }
+
+            only(value) => {
+                root.filter-only(group.key, value);
+            }
+
+            reset => {
+                root.filter-reset(group.key);
+            }
+
+            expanded-changed(expanded) => {
+                root.filter-expanded-changed(group.key, expanded);
             }
         }
     }

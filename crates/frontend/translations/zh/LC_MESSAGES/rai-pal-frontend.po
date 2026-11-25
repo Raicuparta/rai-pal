@@ -190,8 +190,8 @@ msgid "Provider"
 msgstr "平台"
 
 msgctxt "filterProperty"
-msgid "Tag"
-msgstr "标签"
+msgid "Game Tag"
+msgstr "游戏标签"
 
 msgctxt "filterProperty"
 msgid "Architecture"
@@ -218,8 +218,8 @@ msgid "Install status"
 msgstr "安装状态"
 
 msgctxt "filterProperty"
-msgid "Mod"
-msgstr "模组"
+msgid "Mod Tag"
+msgstr "模组标签"
 
 msgctxt "filterValue"
 msgid "Unknown"
@@ -254,8 +254,8 @@ msgid "Not installed"
 msgstr "未安装"
 
 msgctxt "filterValue"
-msgid "Manual"
-msgstr "手动"
+msgid "Local Files"
+msgstr "本地文件"
 
 msgctxt "filterValueNote"
 msgid "Only shows PC Xbox games if they're installed."
@@ -268,22 +268,6 @@ msgstr "Godot 游戏尚未完全支持。"
 msgctxt "filterValueNote"
 msgid "GameMaker games are not fully supported yet."
 msgstr "GameMaker 游戏尚未完全支持。"
-
-msgctxt "gameModRow"
-msgid "Edit Mod Config"
-msgstr "编辑模组配置"
-
-msgctxt "gameModRow"
-msgid "Open Config Folder"
-msgstr "打开配置文件夹"
-
-msgctxt "gameModRow"
-msgid "Open Mod Folder"
-msgstr "打开模组文件夹"
-
-msgctxt "gameModRow"
-msgid "Download Recommended Config"
-msgstr "下载推荐配置"
 
 msgctxt "gameModRow"
 msgid "Reinstall"
@@ -310,14 +294,6 @@ msgid "Mod actions"
 msgstr "模组操作"
 
 msgctxt "gameModRow"
-msgid "Recommended config"
-msgstr "推荐配置"
-
-msgctxt "gameModRow"
-msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
-msgstr "推荐配置可用。如果你还没有配置，将会下载。你也可以从三点菜单强制下载。"
-
-msgctxt "gameModRow"
 msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
 msgstr "警告：在多人游戏中安装模组时要小心！反作弊系统可能会检测到某些模组并导致封号，即使这些模组看起来无害。"
 
@@ -334,12 +310,24 @@ msgid "Install this game to see more detailed information about which mods are c
 msgstr "安装此游戏即可查看哪些模组兼容的更多详细信息"
 
 msgctxt "gameModal"
+msgid "Game-Specific Mods"
+msgstr "游戏专用模组"
+
+msgctxt "gameModal"
 msgid "Installed Mods"
 msgstr "已安装模组"
 
 msgctxt "gameModal"
 msgid "Uninstall all mods"
 msgstr "卸载所有模组"
+
+msgctxt "gameModal"
+msgid "Mods"
+msgstr "模组"
+
+msgctxt "gameModal"
+msgid "Update all mods"
+msgstr "更新所有模组"
 
 msgctxt "gameModal"
 msgid "Available Mods"
@@ -530,10 +518,6 @@ msgid "Failed to install mod {0}"
 msgstr "安装模组 {0} 失败"
 
 msgctxt "messages"
-msgid "Failed to download config for mod {0}"
-msgstr "下载模组 {0} 的配置失败"
-
-msgctxt "messages"
 msgid "Failed to uninstall mod {0}"
 msgstr "卸载模组 {0} 失败"
 
@@ -542,16 +526,16 @@ msgid "Failed to uninstall all mods"
 msgstr "卸载所有模组失败"
 
 msgctxt "messages"
+msgid "Failed to update all mods"
+msgstr "更新所有模组失败"
+
+msgctxt "messages"
 msgid "Failed to run mod {0}"
 msgstr "运行模组 {0} 失败"
 
 msgctxt "messages"
-msgid "Failed to open mod folder {0}"
+msgid "Failed to open mod path {0}"
 msgstr "打开模组 {0} 的文件夹失败"
-
-msgctxt "messages"
-msgid "Failed to configure mod {0}"
-msgstr "配置模组 {0} 失败"
 
 msgctxt "messages"
 msgid "Failed to refresh game"
@@ -636,6 +620,14 @@ msgstr "已弃用"
 msgctxt "modsPage"
 msgid "{} mods"
 msgstr "{} 个模组"
+
+msgctxt "modsPage"
+msgid "Search mods"
+msgstr "搜索模组"
+
+msgctxt "modsPage"
+msgid "No mods match your search and filters."
+msgstr "没有符合你的搜索和筛选条件的模组。"
 
 msgctxt "modsPage"
 msgid "Open Local Mods Folder"
@@ -790,6 +782,18 @@ msgid "Add source"
 msgstr "添加来源"
 
 msgctxt "urlModSources"
+msgid "Move up"
+msgstr "上移"
+
+msgctxt "urlModSources"
+msgid "Move down"
+msgstr "下移"
+
+msgctxt "urlModSources"
+msgid "Sources later in the list override mods with the same id from earlier sources."
+msgstr "列表中靠后的来源会覆盖前面来源中相同 ID 的模组。"
+
+msgctxt "urlModSources"
 msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep link:"
 msgstr "Rai Pal é¤äºé»è®¤æ°æ®åºå¤ï¼è¿ä¼å¨æ­¤æä¾çæææ°æ®åºä¸­æ£æ¥æ¨¡ç»ãä½ å¯ä»¥éè¿ä»¥ä¸æ·±å±é¾æ¥å±äº«æ¨¡ç»æ¥æºï¼"
 
@@ -828,3 +832,39 @@ msgstr "排序游戏"
 msgctxt "textField"
 msgid "Clear"
 msgstr "清除"
+
+msgctxt "gameModRow"
+msgid "Open file: {0}"
+msgstr "打开文件：{0}"
+
+msgctxt "gameModRow"
+msgid "Open folder: {0}"
+msgstr "打开文件夹：{0}"
+
+msgctxt "modsTabRow"
+msgid "Show {0} game: \"{1}\""
+msgstr "显示 {0} 游戏：\"{1}\""
+
+msgctxt "filterProperty"
+msgid "Mod Type"
+msgstr "Mod 类型"
+
+msgctxt "filterValue"
+msgid "Installable"
+msgstr "可安装"
+
+msgctxt "filterValue"
+msgid "Link Only"
+msgstr "仅链接"
+
+msgctxt "gameModRow"
+msgid "This mod is not fully installed, but left some files behind. It's safest to reinstall all mods before continuing."
+msgstr "此模组未完全安装，但留下了一些文件。继续之前，最安全的做法是重新安装所有模组。"
+
+msgctxt "gameModal"
+msgid "Reinstall all mods"
+msgstr "重新安装所有模组"
+
+msgctxt "messages"
+msgid "Failed to reinstall all mods"
+msgstr "重新安装所有模组失败"

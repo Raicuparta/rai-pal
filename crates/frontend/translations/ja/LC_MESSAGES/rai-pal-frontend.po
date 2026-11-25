@@ -190,8 +190,8 @@ msgid "Provider"
 msgstr "プロバイダー"
 
 msgctxt "filterProperty"
-msgid "Tag"
-msgstr "タグ"
+msgid "Game Tag"
+msgstr "ゲームタグ"
 
 msgctxt "filterProperty"
 msgid "Architecture"
@@ -218,8 +218,8 @@ msgid "Install status"
 msgstr "インストール状況"
 
 msgctxt "filterProperty"
-msgid "Mod"
-msgstr "Mod"
+msgid "Mod Tag"
+msgstr "Modタグ"
 
 msgctxt "filterValue"
 msgid "Unknown"
@@ -254,8 +254,8 @@ msgid "Not installed"
 msgstr "未インストール"
 
 msgctxt "filterValue"
-msgid "Manual"
-msgstr "手動"
+msgid "Local Files"
+msgstr "ローカルファイル"
 
 msgctxt "filterValueNote"
 msgid "Only shows PC Xbox games if they're installed."
@@ -268,22 +268,6 @@ msgstr "Godotゲームはまだ完全にはサポートされていません。"
 msgctxt "filterValueNote"
 msgid "GameMaker games are not fully supported yet."
 msgstr "GameMakerゲームはまだ完全にはサポートされていません。"
-
-msgctxt "gameModRow"
-msgid "Edit Mod Config"
-msgstr "Mod設定"
-
-msgctxt "gameModRow"
-msgid "Open Config Folder"
-msgstr "設定フォルダーを開く"
-
-msgctxt "gameModRow"
-msgid "Open Mod Folder"
-msgstr "Modフォルダーを開く"
-
-msgctxt "gameModRow"
-msgid "Download Recommended Config"
-msgstr "推奨設定をダウンロード"
 
 msgctxt "gameModRow"
 msgid "Reinstall"
@@ -310,14 +294,6 @@ msgid "Mod actions"
 msgstr "Modの操作"
 
 msgctxt "gameModRow"
-msgid "Recommended config"
-msgstr "推奨設定"
-
-msgctxt "gameModRow"
-msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
-msgstr "推奨設定あり。まだ設定がなければ自動でダウンロードされるよ。三点メニューから手動でもダウンロードできる。"
-
-msgctxt "gameModRow"
 msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
 msgstr "注意: マルチプレイゲームにModを入れるときは気をつけて！アンチチートがModを検出して、無害そうでもBANされることがあるからね。"
 
@@ -334,12 +310,24 @@ msgid "Install this game to see more detailed information about which mods are c
 msgstr "このゲームをインストールすると、どのModに互換性があるか詳しくわかるよ"
 
 msgctxt "gameModal"
+msgid "Game-Specific Mods"
+msgstr "ゲーム固有のMod"
+
+msgctxt "gameModal"
 msgid "Installed Mods"
 msgstr "導入済みMod"
 
 msgctxt "gameModal"
 msgid "Uninstall all mods"
 msgstr "すべてのModをアンインストール"
+
+msgctxt "gameModal"
+msgid "Mods"
+msgstr "Mod"
+
+msgctxt "gameModal"
+msgid "Update all mods"
+msgstr "すべてのModを更新"
 
 msgctxt "gameModal"
 msgid "Available Mods"
@@ -530,10 +518,6 @@ msgid "Failed to install mod {0}"
 msgstr "Mod {0}をインストールできませんでした"
 
 msgctxt "messages"
-msgid "Failed to download config for mod {0}"
-msgstr "Mod {0}の設定をダウンロードできませんでした"
-
-msgctxt "messages"
 msgid "Failed to uninstall mod {0}"
 msgstr "Mod {0}をアンインストールできませんでした"
 
@@ -542,16 +526,16 @@ msgid "Failed to uninstall all mods"
 msgstr "すべてのModをアンインストールできませんでした"
 
 msgctxt "messages"
+msgid "Failed to update all mods"
+msgstr "すべてのModを更新できませんでした"
+
+msgctxt "messages"
 msgid "Failed to run mod {0}"
 msgstr "Mod {0}を実行できませんでした"
 
 msgctxt "messages"
-msgid "Failed to open mod folder {0}"
+msgid "Failed to open mod path {0}"
 msgstr "Mod {0}のフォルダを開けませんでした"
-
-msgctxt "messages"
-msgid "Failed to configure mod {0}"
-msgstr "Mod {0}を設定できませんでした"
 
 msgctxt "messages"
 msgid "Failed to refresh game"
@@ -636,6 +620,14 @@ msgstr "非推奨"
 msgctxt "modsPage"
 msgid "{} mods"
 msgstr "{} Mod"
+
+msgctxt "modsPage"
+msgid "Search mods"
+msgstr "Modを検索"
+
+msgctxt "modsPage"
+msgid "No mods match your search and filters."
+msgstr "検索とフィルターに一致するModはありません。"
 
 msgctxt "modsPage"
 msgid "Open Local Mods Folder"
@@ -790,6 +782,18 @@ msgid "Add source"
 msgstr "ソースを追加"
 
 msgctxt "urlModSources"
+msgid "Move up"
+msgstr "上へ移動"
+
+msgctxt "urlModSources"
+msgid "Move down"
+msgstr "下へ移動"
+
+msgctxt "urlModSources"
+msgid "Sources later in the list override mods with the same id from earlier sources."
+msgstr "リストで後にあるソースは、前のソースにある同じ ID の Mod を上書きします。"
+
+msgctxt "urlModSources"
 msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep link:"
 msgstr "Rai Palã¯ããã©ã«ãã®ãã¼ã¿ãã¼ã¹ã«å ãã¦ãããã§æä¾ããã¦ãããã¹ã¦ã®ãã¼ã¿ãã¼ã¹ã§Modããã§ãã¯ãã¾ããModã½ã¼ã¹ã¯æ¬¡ã®ãã£ã¼ããªã³ã¯ã§å±æã§ãã¾ãï¼"
 
@@ -828,3 +832,39 @@ msgstr "ゲームを並べ替え"
 msgctxt "textField"
 msgid "Clear"
 msgstr "クリア"
+
+msgctxt "gameModRow"
+msgid "Open file: {0}"
+msgstr "ファイルを開く: {0}"
+
+msgctxt "gameModRow"
+msgid "Open folder: {0}"
+msgstr "フォルダーを開く: {0}"
+
+msgctxt "modsTabRow"
+msgid "Show {0} game: \"{1}\""
+msgstr "{0}のゲーム「{1}」を表示"
+
+msgctxt "filterProperty"
+msgid "Mod Type"
+msgstr "Modの種類"
+
+msgctxt "filterValue"
+msgid "Installable"
+msgstr "インストール可能"
+
+msgctxt "filterValue"
+msgid "Link Only"
+msgstr "リンクのみ"
+
+msgctxt "gameModRow"
+msgid "This mod is not fully installed, but left some files behind. It's safest to reinstall all mods before continuing."
+msgstr "このModは完全にはインストールされていませんが、いくつかのファイルが残っています。続行する前に、すべてのModを再インストールするのが最も安全です。"
+
+msgctxt "gameModal"
+msgid "Reinstall all mods"
+msgstr "すべてのModを再インストール"
+
+msgctxt "messages"
+msgid "Failed to reinstall all mods"
+msgstr "すべてのModの再インストールに失敗しました"

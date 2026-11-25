@@ -10,11 +10,14 @@ use log;
 
 use crate::{
 	game_launch::{GameLaunch, find_in_path},
-	result::Result,
+	result::{Error, Result},
 };
 
 const DLL_OVERRIDES_SECTION: &str = "[Software\\\\Wine\\\\DllOverrides]";
 const DLL_OVERRIDE_VALUE: &str = "native,builtin";
+const SHELL_FOLDERS_SECTION: &str =
+	"[Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\Shell Folders]";
+const ROAMING_APP_DATA_KEY: &str = "AppData";
 
 pub fn get_default_wine_prefix() -> PathBuf {
 	std::env::var_os("WINEPREFIX").map_or_else(
@@ -148,9 +151,7 @@ pub fn set_wine_dll_overrides_in_reg(prefix_path: &Path, dll_overrides: &[String
 	let user_reg_data = if path.exists() {
 		fs::read_to_string(&path)?
 	} else {
-		return Err(crate::result::Error::WinePrefixNotInitialized(
-			prefix_path.to_path_buf(),
-		));
+		return Err(Error::WinePrefixNotInitialized(prefix_path.to_path_buf()));
 	};
 	let mut ensured_user_reg_data = user_reg_data.clone();
 
@@ -177,6 +178,87 @@ pub fn set_wine_dll_overrides_in_reg(prefix_path: &Path, dll_overrides: &[String
 	}
 
 	Ok(())
+}
+
+/// Resolves the Roaming `AppData` folder of the prefix's current Wine user by reading `user.reg`,
+/// which is where Wine itself gets `%APPDATA%` from.
+pub fn get_roaming_app_data(prefix_path: &Path) -> Result<PathBuf> {
+	let user_reg_path = prefix_path.join("user.reg");
+
+	let user_reg_data = match fs::read_to_string(&user_reg_path) {
+		Ok(user_reg_data) => user_reg_data,
+		Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+			return Err(Error::WinePrefixNotInitialized(prefix_path.to_path_buf()));
+		}
+		Err(error) => return Err(error.into()),
+	};
+
+	let roaming_app_data =
+		reg_get_from_section(&user_reg_data, SHELL_FOLDERS_SECTION, ROAMING_APP_DATA_KEY)
+			.ok_or_else(|| Error::WineRoamingAppDataNotFound(prefix_path.to_path_buf()))?;
+
+	windows_path_to_prefix_path(prefix_path, &roaming_app_data)
+		.ok_or_else(|| Error::WineRoamingAppDataNotFound(prefix_path.to_path_buf()))
+}
+
+fn windows_path_to_prefix_path(prefix_path: &Path, windows_path: &str) -> Option<PathBuf> {
+	let (drive, rest) = windows_path.split_once(':')?;
+	let drive = drive.trim();
+
+	if drive.len() != 1 {
+		return None;
+	}
+
+	let relative_path = rest.replace('\\', "/");
+	let relative_path = relative_path.trim_start_matches('/');
+
+	Some(
+		prefix_path
+			.join("dosdevices")
+			.join(format!("{}:", drive.to_ascii_lowercase()))
+			.join(relative_path),
+	)
+}
+
+fn reg_get_from_section(reg_data: &str, section: &str, key: &str) -> Option<String> {
+	let key_prefix = format!("\"{key}\"=");
+	let mut in_section = false;
+
+	for line in reg_data.lines() {
+		let line = line.trim_start();
+
+		if line.starts_with('[') {
+			in_section = line.starts_with(section);
+			continue;
+		}
+
+		if !in_section {
+			continue;
+		}
+
+		if let Some(value) = line.strip_prefix(&key_prefix) {
+			return reg_get_string_value(value);
+		}
+	}
+
+	None
+}
+
+fn reg_get_string_value(value: &str) -> Option<String> {
+	let value = value.strip_prefix("str(2):").unwrap_or(value).trim();
+	let value = value.strip_prefix('"')?.strip_suffix('"')?;
+	let mut result = String::with_capacity(value.len());
+	let mut chars = value.chars();
+
+	while let Some(char) = chars.next() {
+		if char == '\\' {
+			result.push(chars.next()?);
+		} else {
+			result.push(char);
+		}
+	}
+
+	Some(result)
 }
 
 pub fn normalize_dll_override_name(dll_name: &str) -> String {

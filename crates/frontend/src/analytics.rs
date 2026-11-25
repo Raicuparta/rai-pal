@@ -12,7 +12,7 @@ static STARTED: Once = Once::new();
 
 static SINK: LazyLock<mpsc::Sender<Event>> = LazyLock::new(|| {
 	let (sender, receiver) = mpsc::channel();
-	thread::spawn(move || collect_events(receiver));
+	thread::spawn(move || collect_events(&receiver));
 	sender
 });
 
@@ -37,7 +37,7 @@ pub fn record_all(events: impl IntoIterator<Item = Event>) {
 	}
 }
 
-fn collect_events(receiver: mpsc::Receiver<Event>) {
+fn collect_events(receiver: &mpsc::Receiver<Event>) {
 	let session = core::Session::new();
 	let mut queue = VecDeque::new();
 

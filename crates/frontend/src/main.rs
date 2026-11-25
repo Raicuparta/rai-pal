@@ -20,6 +20,7 @@ mod i18n;
 mod image_cache;
 mod languages;
 mod logging;
+mod mod_actions;
 mod model;
 mod notifications;
 mod runtime;
@@ -27,6 +28,7 @@ mod scheduler;
 mod selected;
 mod single_instance;
 mod text;
+mod ui_models;
 mod window_state;
 
 fn main() -> Result<(), slint::PlatformError> {

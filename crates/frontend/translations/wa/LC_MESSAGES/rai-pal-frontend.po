@@ -190,8 +190,8 @@ msgid "Provider"
 msgstr "Waaaaaah!"
 
 msgctxt "filterProperty"
-msgid "Tag"
-msgstr "Wah!"
+msgid "Game Tag"
+msgstr "Wah game tag!"
 
 msgctxt "filterProperty"
 msgid "Architecture"
@@ -218,8 +218,8 @@ msgid "Install status"
 msgstr "Waaaaah waaaah!"
 
 msgctxt "filterProperty"
-msgid "Mod"
-msgstr "Wah!"
+msgid "Mod Tag"
+msgstr "Wah mod tag!"
 
 msgctxt "filterValue"
 msgid "Unknown"
@@ -254,7 +254,7 @@ msgid "Not installed"
 msgstr "Wah waaaaaaah!"
 
 msgctxt "filterValue"
-msgid "Manual"
+msgid "Local Files"
 msgstr "Waaaah!"
 
 msgctxt "filterValueNote"
@@ -268,22 +268,6 @@ msgstr "Waaah waaah wah wah waaah waaaaaaah waah!"
 msgctxt "filterValueNote"
 msgid "GameMaker games are not fully supported yet."
 msgstr "Waaaaaaah waaah wah wah waaah waaaaaaah waah!"
-
-msgctxt "gameModRow"
-msgid "Edit Mod Config"
-msgstr "Waah wah waaaah!"
-
-msgctxt "gameModRow"
-msgid "Open Config Folder"
-msgstr "Waah wah waaaah waaah!"
-
-msgctxt "gameModRow"
-msgid "Open Mod Folder"
-msgstr "Waah wah waaaah!"
-
-msgctxt "gameModRow"
-msgid "Download Recommended Config"
-msgstr "Waaaaaah waaaaaaaaah waaaah!"
 
 msgctxt "gameModRow"
 msgid "Reinstall"
@@ -310,14 +294,6 @@ msgid "Mod actions"
 msgstr "Wah waaaaah!"
 
 msgctxt "gameModRow"
-msgid "Recommended config"
-msgstr "Waaaaaaaaah waaaah!"
-
-msgctxt "gameModRow"
-msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
-msgstr "Waaaaaaaaah waaaah waaaaaaaah waah be waaaaaaaah if wah waaah waaaaah waah a waaaaah wah wah waah waaah it to waaaaaah waah wah waaah wah waaah!"
-
-msgctxt "gameModRow"
 msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
 msgstr "Waaaaaaaah be waaaaah waah waaaaaaaah waah on waaaaaaaaah waaaah waaaaaaah wah waaaah waah waah wah wah wah waaaaah waah if wah waah waah waaaaaaah!"
 
@@ -334,12 +310,24 @@ msgid "Install this game to see more detailed information about which mods are c
 msgstr "Waaaaah waah waah to wah waah waaaaaah waaaaaaaaah waaah waaah waah wah waaaaaaaah!"
 
 msgctxt "gameModal"
+msgid "Game-Specific Mods"
+msgstr "Waaaah mods!"
+
+msgctxt "gameModal"
 msgid "Installed Mods"
 msgstr "Waaaaaaah waah!"
 
 msgctxt "gameModal"
 msgid "Uninstall all mods"
 msgstr "Waaaaaaah wah waah!"
+
+msgctxt "gameModal"
+msgid "Mods"
+msgstr "Waah!"
+
+msgctxt "gameModal"
+msgid "Update all mods"
+msgstr "Waaaah wah wah!"
 
 msgctxt "gameModal"
 msgid "Available Mods"
@@ -530,10 +518,6 @@ msgid "Failed to install mod {0}"
 msgstr "Waaaah to waaaaah wah {0}"
 
 msgctxt "messages"
-msgid "Failed to download config for mod {0}"
-msgstr "Waaaah to waaaaaah waaaah wah wah {0}"
-
-msgctxt "messages"
 msgid "Failed to uninstall mod {0}"
 msgstr "Waaaah to waaaaaaah wah {0}"
 
@@ -542,16 +526,16 @@ msgid "Failed to uninstall all mods"
 msgstr "Waaaah to waaaaaaah wah waah!"
 
 msgctxt "messages"
+msgid "Failed to update all mods"
+msgstr "Waaaah to waaaaah wah wah!"
+
+msgctxt "messages"
 msgid "Failed to run mod {0}"
 msgstr "Waaaah to wah wah {0}"
 
 msgctxt "messages"
-msgid "Failed to open mod folder {0}"
+msgid "Failed to open mod path {0}"
 msgstr "Waaaah to waah wah waaaah {0}"
-
-msgctxt "messages"
-msgid "Failed to configure mod {0}"
-msgstr "Waaaah to waaaaaaah wah {0}"
 
 msgctxt "messages"
 msgid "Failed to refresh game"
@@ -636,6 +620,14 @@ msgstr "Waaaaaaaah!"
 msgctxt "modsPage"
 msgid "{} mods"
 msgstr "{} waahs!"
+
+msgctxt "modsPage"
+msgid "Search mods"
+msgstr "Wah mods!"
+
+msgctxt "modsPage"
+msgid "No mods match your search and filters."
+msgstr "Waaaah! No mods!"
 
 msgctxt "modsPage"
 msgid "Open Local Mods Folder"
@@ -790,6 +782,18 @@ msgid "Add source"
 msgstr "Wah waaaah!"
 
 msgctxt "urlModSources"
+msgid "Move up"
+msgstr "Wah waaaah!"
+
+msgctxt "urlModSources"
+msgid "Move down"
+msgstr "Waah waaaah!"
+
+msgctxt "urlModSources"
+msgid "Sources later in the list override mods with the same id from earlier sources."
+msgstr "Wah wah waah waaah wah waah wah waaaaaaah."
+
+msgctxt "urlModSources"
 msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep link:"
 msgstr "Wah wah waah waaah wah waah in wah waaaaaaah waaaaaah waaah in waaaaaah to waaaaaah wah waaaaah wah waaaaaaah wah wah waaah wah waaaaah wah wah waaaaaaah:"
 
@@ -828,3 +832,39 @@ msgstr "Wah wah waaah wah"
 msgctxt "textField"
 msgid "Clear"
 msgstr "Wah"
+
+msgctxt "gameModRow"
+msgid "Open file: {0}"
+msgstr "Waah file: {0}"
+
+msgctxt "gameModRow"
+msgid "Open folder: {0}"
+msgstr "Waaah folder: {0}"
+
+msgctxt "modsTabRow"
+msgid "Show {0} game: \"{1}\""
+msgstr "Mostrer djeu {0}: \"{1}\""
+
+msgctxt "filterProperty"
+msgid "Mod Type"
+msgstr "Sôre di mod"
+
+msgctxt "filterValue"
+msgid "Installable"
+msgstr "Astallåve"
+
+msgctxt "filterValue"
+msgid "Link Only"
+msgstr "Seulmint loyén"
+
+msgctxt "gameModRow"
+msgid "This mod is not fully installed, but left some files behind. It's safest to reinstall all mods before continuing."
+msgstr "Waaaaaah waah waah not waaaaaah wah, waah wah waah waaaaaah waah! Waaaaaaah wah waah waah wah wah waaaaah waah waah!"
+
+msgctxt "gameModal"
+msgid "Reinstall all mods"
+msgstr "Waaaaaaah wah waah waah!"
+
+msgctxt "messages"
+msgid "Failed to reinstall all mods"
+msgstr "Waaaaaaah wah waah waah waah!"

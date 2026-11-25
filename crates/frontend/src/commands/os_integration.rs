@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use rai_pal_backend::{
 	app_paths, game_providers::game_provider::GameProviderId,
-	local_database::game_database::GameDatabase, result::LogErrExt,
+	local_database::game_database::GameDatabase, path_extensions::AsValidStr, result::LogErrExt,
 };
 use url::Url;
 
@@ -83,7 +83,7 @@ impl CommandHandler {
 
 pub fn register() {
 	#[cfg(target_os = "linux")]
-	register_linux();
+	std::thread::spawn(register_linux);
 	#[cfg(target_os = "windows")]
 	register_windows();
 	#[cfg(target_os = "macos")]
@@ -191,6 +191,12 @@ fn register_linux() {
 	use std::path::PathBuf;
 
 	use fs_err as fs;
+	use rai_pal_backend::app_variant::AppVariant;
+
+	if AppVariant::get_current() != AppVariant::LinuxAppImage {
+		log::info!("Skipping Linux desktop entry registration outside of the AppImage build");
+		return;
+	}
 
 	let Some(dirs) = app_paths::base_dirs().ok_or_log("Failed to get base dirs for OS integration")
 	else {
@@ -241,7 +247,7 @@ fn register_linux() {
 
 #[cfg(target_os = "linux")]
 fn absolute_path(path: std::path::PathBuf) -> std::path::PathBuf {
-	std::fs::canonicalize(&path)
+	fs_err::canonicalize(&path)
 		.or_else(|_| std::path::absolute(&path))
 		.unwrap_or(path)
 }
@@ -249,7 +255,8 @@ fn absolute_path(path: std::path::PathBuf) -> std::path::PathBuf {
 #[cfg(target_os = "linux")]
 fn desktop_exec_arg(path: &std::path::Path) -> String {
 	let path = path
-		.to_string_lossy()
+		.try_to_str()
+		.unwrap_or_default()
 		.replace('\\', "\\\\")
 		.replace('"', "\\\"");
 	let path = path
@@ -263,12 +270,16 @@ fn desktop_exec_arg(path: &std::path::Path) -> String {
 fn set_linux_default_url_handler(desktop_file_name: &str) {
 	use std::process::Command;
 
-	match Command::new("xdg-mime")
-		.args(["default", desktop_file_name, "x-scheme-handler/rai-pal"])
-		.status()
-	{
-		Ok(status) if status.success() => {}
-		Ok(status) => log::warn!("xdg-mime exited with {status} while registering deep links"),
+	match run_fast_command(Command::new("xdg-mime").args([
+		"default",
+		desktop_file_name,
+		"x-scheme-handler/rai-pal",
+	])) {
+		Ok(Some(status)) if status.success() => {}
+		Ok(Some(status)) => {
+			log::warn!("xdg-mime exited with {status} while registering deep links");
+		}
+		Ok(None) => log::warn!("xdg-mime timed out while registering deep links"),
 		Err(err) => log::warn!("Failed to run xdg-mime for deep link registration: {err}"),
 	}
 }
@@ -277,19 +288,42 @@ fn set_linux_default_url_handler(desktop_file_name: &str) {
 fn update_linux_desktop_database(applications_dir: &std::path::Path) {
 	use std::process::Command;
 
-	match Command::new("update-desktop-database")
-		.arg(applications_dir)
-		.status()
-	{
-		Ok(status) if status.success() => {}
-		Ok(status) => log::warn!("update-desktop-database exited with {status}"),
+	match run_fast_command(Command::new("update-desktop-database").arg(applications_dir)) {
+		Ok(Some(status)) if status.success() => {}
+		Ok(Some(status)) => log::warn!("update-desktop-database exited with {status}"),
+		Ok(None) => log::warn!("update-desktop-database timed out"),
 		Err(err) => log::debug!("Failed to run update-desktop-database: {err}"),
 	}
 }
 
 #[cfg(target_os = "linux")]
+fn run_fast_command(
+	command: &mut std::process::Command,
+) -> std::io::Result<Option<std::process::ExitStatus>> {
+	const TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
+	const POLL_INTERVAL: std::time::Duration = std::time::Duration::from_millis(10);
+
+	let mut child = command.spawn()?;
+	let deadline = std::time::Instant::now() + TIMEOUT;
+
+	loop {
+		if let Some(status) = child.try_wait()? {
+			return Ok(Some(status));
+		}
+
+		if std::time::Instant::now() >= deadline {
+			child.kill()?;
+			child.wait()?;
+			return Ok(None);
+		}
+
+		std::thread::sleep(POLL_INTERVAL);
+	}
+}
+
+#[cfg(target_os = "linux")]
 fn remove_stale_linux_desktop_files(applications_dir: &std::path::Path, current: &std::path::Path) {
-	let Ok(entries) = std::fs::read_dir(applications_dir) else {
+	let Ok(entries) = fs_err::read_dir(applications_dir) else {
 		return;
 	};
 
@@ -299,14 +333,14 @@ fn remove_stale_linux_desktop_files(applications_dir: &std::path::Path, current:
 			continue;
 		}
 
-		let Ok(contents) = std::fs::read_to_string(&path) else {
+		let Ok(contents) = fs_err::read_to_string(&path) else {
 			continue;
 		};
 		if !is_rai_pal_desktop_entry(&contents) {
 			continue;
 		}
 
-		match std::fs::remove_file(&path) {
+		match fs_err::remove_file(&path) {
 			Ok(()) => log::info!("Removed stale Rai Pal desktop entry `{}`", path.display()),
 			Err(err) => log::warn!(
 				"Failed to remove stale Rai Pal desktop entry `{}`: {err}",
@@ -337,7 +371,7 @@ fn install_linux_icons(appdir: &std::path::Path, icons_dir: &std::path::Path) {
 	let hicolor_dir = appdir.join("usr/share/icons/hicolor");
 	let mut installed = false;
 
-	if let Ok(sizes) = std::fs::read_dir(&hicolor_dir) {
+	if let Ok(sizes) = fs_err::read_dir(&hicolor_dir) {
 		for size in sizes.flatten() {
 			let Some(size_name) = size.file_name().to_str().map(str::to_owned) else {
 				continue;
@@ -348,7 +382,7 @@ fn install_linux_icons(appdir: &std::path::Path, icons_dir: &std::path::Path) {
 			}
 
 			let target_dir = icons_dir.join("hicolor").join(size_name).join("apps");
-			if let Err(err) = std::fs::create_dir_all(&target_dir) {
+			if let Err(err) = fs_err::create_dir_all(&target_dir) {
 				log::warn!(
 					"Failed to create icon directory `{}`: {err}",
 					target_dir.display()
@@ -356,7 +390,7 @@ fn install_linux_icons(appdir: &std::path::Path, icons_dir: &std::path::Path) {
 				continue;
 			}
 
-			match std::fs::copy(&source, target_dir.join(format!("{LINUX_APP_ID}.png"))) {
+			match fs_err::copy(&source, target_dir.join(format!("{LINUX_APP_ID}.png"))) {
 				Ok(_) => installed = true,
 				Err(err) => log::warn!("Failed to install icon from `{}`: {err}", source.display()),
 			}
@@ -373,7 +407,7 @@ fn install_linux_icons(appdir: &std::path::Path, icons_dir: &std::path::Path) {
 	}
 
 	let target_dir = icons_dir.join("hicolor/512x512/apps");
-	if let Err(err) = std::fs::create_dir_all(&target_dir) {
+	if let Err(err) = fs_err::create_dir_all(&target_dir) {
 		log::warn!(
 			"Failed to create icon directory `{}`: {err}",
 			target_dir.display()
@@ -381,7 +415,7 @@ fn install_linux_icons(appdir: &std::path::Path, icons_dir: &std::path::Path) {
 		return;
 	}
 
-	if let Err(err) = std::fs::copy(
+	if let Err(err) = fs_err::copy(
 		&fallback_source,
 		target_dir.join(format!("{LINUX_APP_ID}.png")),
 	) {

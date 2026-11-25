@@ -28,7 +28,7 @@ impl CommandHandler {
 		};
 		let action_id = action.to_string();
 
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 
@@ -123,7 +123,7 @@ impl CommandHandler {
 		context: MessageContext,
 		open: impl FnOnce(&Game) -> Result + Send + 'static,
 	) {
-		let Some((_, game)) = self.selected_game() else {
+		let Some(game) = self.selected_game() else {
 			return;
 		};
 
@@ -133,7 +133,7 @@ impl CommandHandler {
 	pub fn run_standalone_mod(&self, mod_id: String) {
 		analytics::record(Event::RunMod {
 			mod_id: mod_id.clone(),
-			family: self.mod_family(&mod_id),
+			tags: self.mod_tags(&mod_id),
 			game: None,
 		});
 
@@ -150,7 +150,7 @@ impl CommandHandler {
 	pub fn install_standalone_mod(&self, mod_id: String) {
 		analytics::record(Event::InstallMod {
 			mod_id: mod_id.clone(),
-			family: self.mod_family(&mod_id),
+			tags: self.mod_tags(&mod_id),
 			game: None,
 		});
 
@@ -217,12 +217,6 @@ pub fn register(window: &crate::MainWindow) {
 	});
 	on_command!(window, GamesActions, on_open_wine_binary_folder, || handler => {
 		handler.open_wine_binary_folder();
-	});
-	on_command!(window, ModActions, on_run_standalone, |mod_id| handler => {
-		handler.run_standalone_mod(mod_id.to_string());
-	});
-	on_command!(window, ModActions, on_install_standalone, |mod_id| handler => {
-		handler.install_standalone_mod(mod_id.to_string());
 	});
 	on_command!(window, ModActions, on_open_local_mods_folder, || handler => {
 		handler.open_local_mods_folder();

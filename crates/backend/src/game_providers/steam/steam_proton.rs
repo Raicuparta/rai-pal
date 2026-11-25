@@ -19,15 +19,16 @@ use crate::{
 
 impl WineProviderActions for Steam {
 	fn get_wine_prefix_path(&self, game: &Game) -> Result<PathBuf> {
-		let app_id: u32 = game.external_id.parse()?;
+		let external_id = game.try_get_provider_external_id()?;
+		let app_id: u32 = external_id.parse()?;
 		let steam_dir = find_steam_dir()?;
 
 		if let Some((_, library)) = steam_dir.find_app(app_id)? {
-			return Ok(get_prefix_path(&library, &game.external_id));
+			return Ok(get_prefix_path(&library, external_id));
 		}
 
 		for library in (steam_dir.libraries()?).flatten() {
-			let prefix_path = get_prefix_path(&library, &game.external_id);
+			let prefix_path = get_prefix_path(&library, external_id);
 
 			if prefix_path.exists() {
 				return Ok(prefix_path);

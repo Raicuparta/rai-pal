@@ -66,14 +66,14 @@ where
 fn find_game<'a>(root: &Path, games: &'a [Game], external_id: &str) -> &'a Game {
 	games
 		.iter()
-		.find(|game| game.external_id == external_id)
+		.find(|game| game.get_provider_external_id() == Some(external_id))
 		.unwrap_or_else(|| {
 			panic!(
 				"expected game `{external_id}` not found in `{}`. Parsed games: {:#?}",
 				root.display(),
 				games
 					.iter()
-					.map(|game| (&game.external_id, &game.display_title))
+					.map(|game| (game.get_provider_external_id(), &game.display_title))
 					.collect::<Vec<_>>()
 			)
 		})

@@ -1,4 +1,9 @@
-use std::{collections::HashSet, fmt::Display, hash::Hash, str::FromStr};
+use std::{
+	collections::{BTreeMap, HashSet},
+	fmt::Display,
+	hash::Hash,
+	str::FromStr,
+};
 
 use strum::IntoEnumIterator;
 
@@ -8,6 +13,7 @@ use crate::{
 	game_providers::game_provider::GameProviderId,
 	game_tag::GameTag,
 	games_query::{FilterAction, FilterGroup, FilterGroupKey, GamesFilter, InstallState},
+	mods_query::{ModType, ModsFilter},
 	operating_system::OperatingSystem,
 	result::LogErrExt,
 };
@@ -22,7 +28,9 @@ pub enum FilterValueLabel {
 	TagUntagged,
 	StatusInstalled,
 	StatusNotInstalled,
-	ProviderManual,
+	ProviderLocalFiles,
+	ModTypeInstallable,
+	ModTypeLinkOnly,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -126,7 +134,7 @@ impl FilterValue for GameProviderId {
 
 	fn label(&self) -> Option<FilterValueLabel> {
 		match self {
-			Self::Manual => Some(FilterValueLabel::ProviderManual),
+			Self::LocalFiles => Some(FilterValueLabel::ProviderLocalFiles),
 			_ => None,
 		}
 	}
@@ -159,6 +167,25 @@ impl FilterValue for UnityBackend {
 impl FilterValue for OperatingSystem {
 	const VALUES: &'static [Self] = &Self::ALL;
 	const HAS_UNKNOWN: bool = true;
+}
+
+impl FilterValue for ModType {
+	const VALUES: &'static [Self] = &Self::ALL;
+
+	fn label(&self) -> Option<FilterValueLabel> {
+		Some(match self {
+			Self::Installable => FilterValueLabel::ModTypeInstallable,
+			Self::LinkOnly => FilterValueLabel::ModTypeLinkOnly,
+		})
+	}
+
+	fn display_text(&self) -> String {
+		match self {
+			Self::Installable => "Installable",
+			Self::LinkOnly => "Link Only",
+		}
+		.to_string()
+	}
 }
 
 impl FilterValue for Architecture {
@@ -205,13 +232,13 @@ fn unknown_view<T: FilterValue>(group: &FilterGroup<T>) -> FilterValueView {
 	}
 }
 
-fn text_view(group: &FilterGroup<String>, value: &str) -> FilterValueView {
+fn text_view(group: &FilterGroup<String>, value: &str, display: &str) -> FilterValueView {
 	let item = group.item(Some(&value.to_string()));
 
 	FilterValueView {
 		value: value.to_string(),
 		label: None,
-		display: value.to_string(),
+		display: display.to_string(),
 		note: FilterValueNote::None,
 		enabled: item.enabled,
 		locked: item.locked,
@@ -246,43 +273,108 @@ fn build_group<T: FilterValue>(
 	values: Vec<FilterValueView>,
 	collapsed_filters: &HashSet<FilterGroupKey>,
 ) -> FilterGroupView {
+	build_group_view(
+		key,
+		group,
+		values,
+		T::VALUES,
+		T::HAS_UNKNOWN,
+		collapsed_filters,
+	)
+}
+
+fn build_group_view<T: Hash + Eq>(
+	key: FilterGroupKey,
+	group: &FilterGroup<T>,
+	values: Vec<FilterValueView>,
+	possible_values: &[T],
+	has_unknown: bool,
+	collapsed_filters: &HashSet<FilterGroupKey>,
+) -> FilterGroupView {
 	FilterGroupView {
 		key,
 		values,
-		has_changes: group.has_changes(T::VALUES, T::HAS_UNKNOWN),
+		has_changes: group.has_changes(possible_values, has_unknown),
 		has_locked: group.has_locked(),
 		expanded: !collapsed_filters.contains(&key),
 	}
 }
 
-fn mod_family_group(
-	filter: &GamesFilter,
-	mod_families: &[String],
+fn tag_group_view(
+	group: &FilterGroup<String>,
+	mod_tags: &BTreeMap<String, String>,
+	unknown_label: Option<FilterValueLabel>,
 	collapsed_filters: &HashSet<FilterGroupKey>,
 ) -> FilterGroupView {
-	let mut values: Vec<FilterValueView> = mod_families
+	let mut values: Vec<FilterValueView> = mod_tags
 		.iter()
-		.map(|family| text_view(&filter.mod_families, family))
+		.map(|(tag_id, title)| text_view(group, tag_id, title))
 		.collect();
 	values.sort_by_key(|value| value.display.to_lowercase());
 
-	FilterGroupView {
-		key: FilterGroupKey::ModFamilies,
-		values,
-		has_changes: filter.mod_families.has_changes(mod_families, false),
-		has_locked: filter.mod_families.has_locked(),
-		expanded: !collapsed_filters.contains(&FilterGroupKey::ModFamilies),
+	if let Some(label) = unknown_label {
+		let item = group.item(None);
+		values.push(FilterValueView {
+			value: String::new(),
+			label: Some(label),
+			display: String::new(),
+			note: FilterValueNote::None,
+			enabled: item.enabled,
+			locked: item.locked,
+			available: true,
+		});
 	}
+
+	let tag_ids = mod_tags.keys().cloned().collect::<Vec<_>>();
+
+	build_group_view(
+		FilterGroupKey::ModTags,
+		group,
+		values,
+		&tag_ids,
+		unknown_label.is_some(),
+		collapsed_filters,
+	)
+}
+
+fn mod_tag_group(
+	filter: &GamesFilter,
+	mod_tags: &BTreeMap<String, String>,
+	collapsed_filters: &HashSet<FilterGroupKey>,
+) -> FilterGroupView {
+	let unknown_label = (!mod_tags.is_empty()).then_some(FilterValueLabel::TagUntagged);
+
+	tag_group_view(&filter.mod_tags, mod_tags, unknown_label, collapsed_filters)
+}
+
+pub fn build_mods_filter_views(
+	filter: &ModsFilter,
+	mod_tags: &BTreeMap<String, String>,
+	collapsed_filters: &HashSet<FilterGroupKey>,
+	has_untagged_mods: bool,
+) -> Vec<FilterGroupView> {
+	let unknown_label = has_untagged_mods.then_some(FilterValueLabel::TagUntagged);
+
+	vec![
+		build_group(
+			FilterGroupKey::ModTypes,
+			&filter.mod_types,
+			known_values(&filter.mod_types),
+			collapsed_filters,
+		),
+		tag_group_view(&filter.mod_tags, mod_tags, unknown_label, collapsed_filters),
+	]
 }
 
 fn group_view(
 	filter: &GamesFilter,
 	key: FilterGroupKey,
-	mod_families: &[String],
+	mod_tags: &BTreeMap<String, String>,
 	collapsed_filters: &HashSet<FilterGroupKey>,
 	providers_with_games: &HashSet<GameProviderId>,
-) -> FilterGroupView {
-	match key {
+) -> Option<FilterGroupView> {
+	Some(match key {
+		FilterGroupKey::ModTypes => return None,
 		FilterGroupKey::Installed => build_group(
 			key,
 			&filter.installed,
@@ -295,7 +387,7 @@ fn group_view(
 			known_values(&filter.engines),
 			collapsed_filters,
 		),
-		FilterGroupKey::ModFamilies => mod_family_group(filter, mod_families, collapsed_filters),
+		FilterGroupKey::ModTags => mod_tag_group(filter, mod_tags, collapsed_filters),
 		FilterGroupKey::Tags => build_group(
 			key,
 			&filter.tags,
@@ -334,21 +426,21 @@ fn group_view(
 			known_values(&filter.architectures),
 			collapsed_filters,
 		),
-	}
+	})
 }
 
 pub fn build_filter_views(
 	filter: &GamesFilter,
-	mod_families: &[String],
+	mod_tags: &BTreeMap<String, String>,
 	collapsed_filters: &HashSet<FilterGroupKey>,
 	providers_with_games: &HashSet<GameProviderId>,
 ) -> Vec<FilterGroupView> {
 	FilterGroupKey::iter()
-		.map(|key| {
+		.filter_map(|key| {
 			group_view(
 				filter,
 				key,
-				mod_families,
+				mod_tags,
 				collapsed_filters,
 				providers_with_games,
 			)
@@ -385,7 +477,7 @@ where
 
 pub fn apply_filter_action(
 	filter: &mut GamesFilter,
-	mod_families: &[String],
+	mod_tags: &BTreeMap<String, String>,
 	group_key: FilterGroupKey,
 	value: &str,
 	action: FilterAction,
@@ -401,9 +493,11 @@ pub fn apply_filter_action(
 		FilterGroupKey::Engines => {
 			apply_string_value(&mut filter.engines, value, &EngineBrand::ALL, true, action)
 		}
-		FilterGroupKey::ModFamilies => {
-			apply_string_value(&mut filter.mod_families, value, mod_families, false, action)
+		FilterGroupKey::ModTags => {
+			let tag_ids = mod_tags.keys().cloned().collect::<Vec<_>>();
+			apply_string_value(&mut filter.mod_tags, value, &tag_ids, true, action)
 		}
+		FilterGroupKey::ModTypes => false,
 		FilterGroupKey::Tags => {
 			apply_string_value(&mut filter.tags, value, &GameTag::ALL, true, action)
 		}
@@ -445,6 +539,25 @@ pub fn apply_filter_action(
 	}
 }
 
+pub fn apply_mods_filter_action(
+	filter: &mut ModsFilter,
+	mod_tags: &BTreeMap<String, String>,
+	group_key: FilterGroupKey,
+	value: &str,
+	action: FilterAction,
+) -> bool {
+	match group_key {
+		FilterGroupKey::ModTags => {
+			let tag_ids = mod_tags.keys().cloned().collect::<Vec<_>>();
+			apply_string_value(&mut filter.mod_tags, value, &tag_ids, true, action)
+		}
+		FilterGroupKey::ModTypes => {
+			apply_string_value(&mut filter.mod_types, value, &ModType::ALL, false, action)
+		}
+		_ => false,
+	}
+}
+
 fn value_key(values: impl Iterator<Item = String>) -> String {
 	let mut values: Vec<String> = values.collect();
 	values.sort_unstable();
@@ -453,7 +566,7 @@ fn value_key(values: impl Iterator<Item = String>) -> String {
 
 pub fn sync_filter_availability(
 	filter: &mut GamesFilter,
-	mod_families: &[String],
+	mod_tags: &BTreeMap<String, String>,
 	providers_with_games: &HashSet<GameProviderId>,
 ) -> bool {
 	let providers_key = value_key(
@@ -462,19 +575,46 @@ pub fn sync_filter_availability(
 			.filter(|provider| providers_with_games.contains(provider))
 			.map(ToString::to_string),
 	);
-	let mod_families_key = value_key(mod_families.iter().cloned());
+	let mod_tags_key = value_key(mod_tags.keys().cloned());
 
 	let providers_changed = filter.providers.sync_availability_key(providers_key);
-	let mod_families_changed = filter.mod_families.sync_availability_key(mod_families_key);
+	let mod_tags_changed = filter.mod_tags.sync_availability_key(mod_tags_key);
 
-	providers_changed || mod_families_changed
+	providers_changed || mod_tags_changed
+}
+
+pub fn sync_mods_filter_availability(
+	filter: &mut ModsFilter,
+	mod_tags: &BTreeMap<String, String>,
+) -> bool {
+	let mod_tags_key = value_key(mod_tags.keys().cloned());
+	filter.mod_tags.sync_availability_key(mod_tags_key)
+}
+
+pub fn reset_mods_filter_group(filter: &mut ModsFilter, group_key: FilterGroupKey) {
+	match group_key {
+		FilterGroupKey::ModTags => filter.mod_tags.keep_only_locked(),
+		FilterGroupKey::ModTypes => filter.mod_types.keep_only_locked(),
+		_ => {}
+	}
+}
+
+pub fn collapse_mods_filters(collapsed_filters: &mut HashSet<FilterGroupKey>) {
+	collapsed_filters.insert(FilterGroupKey::ModTags);
+	collapsed_filters.insert(FilterGroupKey::ModTypes);
+}
+
+pub fn reset_all_mods_filters(filter: &mut ModsFilter) {
+	filter.mod_tags.keep_only_locked();
+	filter.mod_types.keep_only_locked();
 }
 
 pub fn reset_filter_group(filter: &mut GamesFilter, group_key: FilterGroupKey) {
 	match group_key {
 		FilterGroupKey::Installed => filter.installed.keep_only_locked(),
 		FilterGroupKey::Engines => filter.engines.keep_only_locked(),
-		FilterGroupKey::ModFamilies => filter.mod_families.keep_only_locked(),
+		FilterGroupKey::ModTags => filter.mod_tags.keep_only_locked(),
+		FilterGroupKey::ModTypes => {}
 		FilterGroupKey::Tags => filter.tags.keep_only_locked(),
 		FilterGroupKey::Providers => filter.providers.keep_only_locked(),
 		FilterGroupKey::UnityBackends => filter.unity_backends.keep_only_locked(),

@@ -3,14 +3,15 @@ use std::{cell::RefCell, fmt::Display, rc::Rc, sync::Arc};
 use rai_pal_backend::{
 	app_settings::{AppLocale, AppSettings},
 	game::Game,
+	game_providers::game_provider::GameProviderId,
 	games_query::GamesQuery,
-	local_database::{app_database::Db, mod_database::ModDatabase},
+	local_database::{app_database::Db, game_database::GameId, mod_database::ModDatabase},
 	result::LogErrExt,
 };
 
 use crate::{
 	ActionKey, MainWindow, MessageContext, action_state, downloads::Tracker,
-	scheduler::FetchScheduler,
+	scheduler::FetchScheduler, ui_models::UiModels,
 };
 
 use self::{confirmation::PendingState, updater::Updater};
@@ -19,7 +20,7 @@ pub mod actions;
 pub mod confirmation;
 pub mod debug;
 pub mod filters;
-pub mod manual;
+pub mod local_files;
 pub mod mod_sources;
 pub mod mods;
 pub mod mods_tab;
@@ -58,9 +59,10 @@ pub fn register(window: &MainWindow) {
 	confirmation::register(window);
 	debug::register(window);
 	filters::register(window);
-	manual::register(window);
+	local_files::register(window);
 	mod_sources::register(window);
 	mods::register(window);
+	mods_tab::register(window);
 	query::register(window);
 	refresh::register(window);
 	settings::register(window);
@@ -80,9 +82,11 @@ pub struct CommandHandler {
 	pub settings: Rc<RefCell<AppSettings>>,
 	pub scheduler: Arc<FetchScheduler>,
 	pub downloads: Tracker,
+	pub models: UiModels,
 
 	window: slint::Weak<MainWindow>,
-	selected_game: RefCell<Option<(usize, Game)>>,
+	selected_game: RefCell<Option<Game>>,
+	pending_selection: RefCell<Option<(GameProviderId, String)>>,
 	pending_confirmation: PendingState,
 	detected_locale: Option<AppLocale>,
 	updater: Updater,
@@ -95,6 +99,7 @@ impl CommandHandler {
 		settings: Rc<RefCell<AppSettings>>,
 		scheduler: Arc<FetchScheduler>,
 		detected_locale: Option<AppLocale>,
+		models: UiModels,
 	) -> Rc<Self> {
 		let updater = Updater::start(window.clone());
 		let handler = Rc::new(Self {
@@ -102,8 +107,10 @@ impl CommandHandler {
 			settings,
 			scheduler,
 			downloads: Tracker::new(window.clone()),
+			models,
 			window,
 			selected_game: RefCell::default(),
+			pending_selection: RefCell::default(),
 			pending_confirmation: PendingState::default(),
 			detected_locale,
 			updater,
@@ -126,16 +133,30 @@ impl CommandHandler {
 		self.window.upgrade()
 	}
 
-	pub fn selected_game(&self) -> Option<(usize, Game)> {
+	pub fn selected_game(&self) -> Option<Game> {
 		self.selected_game.borrow().clone()
 	}
 
-	pub fn set_selected_game(&self, index: usize, game: Game) {
-		*self.selected_game.borrow_mut() = Some((index, game));
+	pub fn set_selected_game(&self, game: Game) {
+		*self.selected_game.borrow_mut() = Some(game);
 	}
 
 	pub fn clear_selected_game(&self) {
 		*self.selected_game.borrow_mut() = None;
+	}
+
+	pub fn select_when_listed(&self, provider_id: GameProviderId, game_id: String) {
+		*self.pending_selection.borrow_mut() = Some((provider_id, game_id));
+	}
+
+	pub fn take_pending_selection(&self, game_ids: &[GameId]) -> Option<usize> {
+		let mut pending = self.pending_selection.borrow_mut();
+		let (provider_id, game_id) = pending.as_ref()?;
+		let index = game_ids
+			.iter()
+			.position(|game| game.provider_id == *provider_id && game.game_id == *game_id)?;
+		*pending = None;
+		Some(index)
 	}
 
 	pub fn query(&self) -> GamesQuery {
@@ -168,10 +189,10 @@ impl CommandHandler {
 		}
 	}
 
-	fn mod_family(&self, mod_id: &str) -> Option<String> {
+	fn mod_tags(&self, mod_id: &str) -> Option<Vec<String>> {
 		self.database
 			.get_mod(mod_id)
 			.ok_or_log("Failed to load mod for analytics")
-			.and_then(|game_mod| game_mod.family)
+			.and_then(|game_mod| game_mod.tags)
 	}
 }
