@@ -22,6 +22,7 @@ export global GameDetailsState {
     in property <string> provider-name: "";
     in property <bool> show-wine-folders: false;
     in property <bool> has-outdated-mods: false;
+    in property <bool> mods-folder-exists: false;
     in property <[ProviderActionData]> provider-actions;
     in property <[GameModData]> installed;
     in property <[GameModData]> game-specific;
@@ -99,7 +100,7 @@ export component GameDetailsPage inherits HorizontalLayout {
                     }
                 }
 
-                if GameDetailsState.has-outdated-mods || GameDetailsState.installed.length > 0: VerticalLayout {
+                if GameDetailsState.has-outdated-mods || GameDetailsState.installed.length > 0 || GameDetailsState.mods-folder-exists: VerticalLayout {
                     alignment: start;
 
                     LabeledDivider {
@@ -122,7 +123,7 @@ export component GameDetailsPage inherits HorizontalLayout {
                         }
                     }
 
-                    if GameDetailsState.installed.length > 0: ActionButton {
+                    if GameDetailsState.installed.length > 0 || GameDetailsState.mods-folder-exists: ActionButton {
                         inset: Theme.space-md;
                         text: @tr("gameModal" => "Uninstall all mods");
                         icon: Icon.delete;

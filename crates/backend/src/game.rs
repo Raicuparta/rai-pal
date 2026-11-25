@@ -105,11 +105,19 @@ impl Game {
 	}
 
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
-		let installed_mods_folder =
-			app_paths::installed_mods_path()?.join(self.try_get_exe_path()?.hash_string());
+		let installed_mods_folder = self.get_installed_mods_folder_path()?;
 		fs_err::create_dir_all(&installed_mods_folder)?;
 
 		Ok(installed_mods_folder)
+	}
+
+	pub fn mods_folder_exists(&self) -> bool {
+		self.get_installed_mods_folder_path()
+			.is_ok_and(|folder| folder.is_dir())
+	}
+
+	fn get_installed_mods_folder_path(&self) -> Result<PathBuf> {
+		Ok(app_paths::installed_mods_path()?.join(self.try_get_exe_path()?.hash_string()))
 	}
 
 	pub fn try_get_exe_path(&self) -> Result<&Path> {

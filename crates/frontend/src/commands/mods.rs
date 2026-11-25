@@ -303,6 +303,9 @@ fn refresh_path_states(window: slint::Weak<MainWindow>, database: Arc<Db>, game:
 }
 
 fn apply_mods(window: &MainWindow, models: &GameDetailsModels, database: &Db, game: &Game) {
+	let state = window.global::<crate::GameDetailsState>();
+	state.set_mods_folder_exists(game.mods_folder_exists());
+
 	let loaded = match load_mods(database, game) {
 		Ok(loaded) => loaded,
 		Err(err) => {
@@ -323,7 +326,6 @@ fn apply_mods(window: &MainWindow, models: &GameDetailsModels, database: &Db, ga
 		hidden,
 		incompatible,
 	} = loaded;
-	let state = window.global::<crate::GameDetailsState>();
 	state.set_has_outdated_mods(has_outdated_mods);
 	model::sync_vec_model(&models.installed, installed);
 	model::sync_vec_model(&models.game_specific, game_specific);
