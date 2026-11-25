@@ -67,16 +67,10 @@ export component ModSummaryView inherits HorizontalLayout {
         alignment: start;
         spacing: Theme.space-2xs;
 
-        HorizontalLayout {
-            spacing: Theme.space-sm;
-            cross-axis-alignment: center;
-
-            Text {
-                text: root.title;
-                font-weight: Theme.weight-semibold;
-                overflow: elide;
-                horizontal-stretch: 1;
-            }
+        Text {
+            text: root.title;
+            font-weight: Theme.weight-semibold;
+            overflow: elide;
         }
 
         if root.has-details: FlexboxLayout {

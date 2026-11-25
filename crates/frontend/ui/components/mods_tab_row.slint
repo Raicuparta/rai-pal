@@ -64,20 +64,14 @@ export component ModsTabRow inherits VerticalLayout {
                 deprecated: mod-data.deprecated;
             }
 
-            HorizontalLayout {
+            IconButton {
                 horizontal-stretch: 0;
-                alignment: end;
-                spacing: Theme.space-xs;
-                min-width: self.preferred-width;
+                icon: Icon.more;
+                icon-size: 22px;
+                tooltip: @tr("gameModRow" => "Mod actions");
 
-                IconButton {
-                    icon: Icon.more;
-                    icon-size: 22px;
-                    tooltip: @tr("gameModRow" => "Mod actions");
-
-                    clicked => {
-                        root.open-menu(root.width - Theme.menu-width, root.height);
-                    }
+                clicked => {
+                    root.open-menu(root.width - Theme.menu-width, root.height);
                 }
             }
         }
