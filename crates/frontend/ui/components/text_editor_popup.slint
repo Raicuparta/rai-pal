@@ -1,0 +1,51 @@
+import { ActionKind } from "../action_state.slint";
+import { CodeModal } from "code_modal.slint";
+
+export global TextEditorState {
+    in-out property <bool> open: false;
+    in property <string> title: "";
+    in-out property <string> text: "";
+    in-out property <int> scroll-revision: 0;
+    in-out property <int> reset-scroll-revision: 0;
+    in-out property <bool> dirty: false;
+
+    callback request-open-file;
+    callback request-open-folder;
+    callback request-save;
+    callback text-changed(text: string);
+    callback closed;
+}
+
+export component TextEditorPopup inherits CodeModal {
+    open: TextEditorState.open;
+    title: TextEditorState.title;
+    text <=> TextEditorState.text;
+    has-folder-actions: true;
+    has-copy-action: true;
+    has-save-action: true;
+    save-enabled: TextEditorState.dirty;
+    save-action-key: { kind: ActionKind.save-text-editor, target: TextEditorState.title };
+    scroll-revision: TextEditorState.scroll-revision;
+    reset-scroll-revision: TextEditorState.reset-scroll-revision;
+
+    closed => {
+        TextEditorState.open = false;
+        TextEditorState.closed();
+    }
+
+    request-open-folder => {
+        TextEditorState.request-open-folder();
+    }
+
+    request-open-file => {
+        TextEditorState.request-open-file();
+    }
+
+    request-save => {
+        TextEditorState.request-save();
+    }
+
+    text-changed(text) => {
+        TextEditorState.text-changed(text);
+    }
+}

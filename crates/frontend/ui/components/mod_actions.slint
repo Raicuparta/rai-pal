@@ -23,6 +23,9 @@ export global ModActionIcons {
         if kind == ModActionKind.open-path {
             return open-folder ? Icon.folder : Icon.file;
         }
+        if kind == ModActionKind.edit-path {
+            return Icon.file;
+        }
         if kind == ModActionKind.reinstall || kind == ModActionKind.reinstall-all {
             return Icon.reinstall;
         }

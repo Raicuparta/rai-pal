@@ -23,6 +23,7 @@ semver = "1.0.28"
 chrono = { workspace = true, features = ["clock"] }
 tokio = { workspace = true, features = ["rt-multi-thread"] }
 minisign-verify = "0.3.0"
+notify = "8.2.2"
 url = "2.5.7"
 slint = { version = "1.19.0", features = [
   "unstable-winit-030",

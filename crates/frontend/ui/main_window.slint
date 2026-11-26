@@ -19,7 +19,8 @@ import { AppUpdatePopup } from "components/app_update_popup.slint";
 import { ConfirmationPopup } from "components/confirmation_popup.slint";
 import { SteamDeckPrompt } from "components/steam_deck_prompt.slint";
 import { NotificationsOverlay } from "components/notifications.slint";
-import { GameDetailsPopup } from "components/game_details_popup.slint";
+import { DebugDataPopup } from "components/debug_data_popup.slint";
+import { TextEditorPopup } from "components/text_editor_popup.slint";
 import { AppSettings } from "settings.slint";
 import { Viewport } from "components/modal.slint";
 import { Theme } from "theme.slint";
@@ -46,7 +47,8 @@ export { ModsState, ModsQuery } from "components/mods_page.slint";
 export { DownloadsState } from "components/download_progress.slint";
 export { NotificationsState } from "components/notifications.slint";
 export { ThanksState } from "components/thanks_page.slint";
-export { DebugState } from "components/game_details_popup.slint";
+export { DebugDataState } from "components/debug_data_popup.slint";
+export { TextEditorState } from "components/text_editor_popup.slint";
 export { AddGameState } from "components/add_game_popup.slint";
 export { ModSourcesState } from "components/url_mod_sources_popup.slint";
 export {
@@ -248,7 +250,9 @@ export component MainWindow inherits Window {
 
     SteamDeckPrompt { }
 
-    GameDetailsPopup { }
+    DebugDataPopup { }
+
+    TextEditorPopup { }
 
     AppUpdatePopup { }
 }
