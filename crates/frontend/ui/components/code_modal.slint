@@ -4,7 +4,7 @@ import { Theme } from "../theme.slint";
 import { ActionButton } from "action_button.slint";
 import { Button } from "button.slint";
 import { Icon } from "svg_icon.slint";
-import { Modal } from "modal.slint";
+import { Modal, ModalSize } from "modal.slint";
 
 component CodeEditor inherits Rectangle {
     in-out property <string> text;
@@ -121,8 +121,8 @@ export component CodeModal inherits Modal {
     callback request-save;
     callback text-changed(text: string);
 
-    big: true;
     fill-height: true;
+    size: ModalSize.ginormous;
 
     private property <bool> copied: false;
 
