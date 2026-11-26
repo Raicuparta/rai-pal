@@ -1,4 +1,11 @@
-use std::{future::Future, sync::LazyLock};
+use std::{
+	future::Future,
+	sync::{
+		LazyLock,
+		atomic::{AtomicBool, Ordering},
+	},
+	time::Duration,
+};
 
 static RUNTIME: LazyLock<tokio::runtime::Runtime> = LazyLock::new(|| {
 	#[expect(
@@ -25,9 +32,27 @@ pub fn spawn(future: impl Future<Output = ()> + Send + 'static) {
 	RUNTIME.spawn(future);
 }
 
+static POINTER_PRESSED: AtomicBool = AtomicBool::new(false);
+
+pub fn set_pointer_pressed(pressed: bool) {
+	POINTER_PRESSED.store(pressed, Ordering::Relaxed);
+}
+
 pub fn invoke_on_ui(callback: impl FnOnce() + Send + 'static) {
-	if let Err(err) = slint::invoke_from_event_loop(callback) {
+	if let Err(err) = slint::invoke_from_event_loop(move || {
+		run_when_pointer_released(Box::new(callback));
+	}) {
 		log::warn!("Failed to invoke UI callback: {err}");
+	}
+}
+
+fn run_when_pointer_released(callback: Box<dyn FnOnce()>) {
+	if POINTER_PRESSED.load(Ordering::Relaxed) {
+		slint::Timer::single_shot(Duration::from_millis(50), move || {
+			run_when_pointer_released(callback);
+		});
+	} else {
+		callback();
 	}
 }
 

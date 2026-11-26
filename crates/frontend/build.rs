@@ -78,8 +78,7 @@ fn main() {
 	println!("cargo:rerun-if-env-changed=RAI_PAL_CHECK_UI_DIAGNOSTICS");
 
 	let project_file = i_slint_compiler::project_file::ProjectFile::load(
-		PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-			.join(i_slint_compiler::project_file::FILE_NAME),
+		PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(i_slint_compiler::project_file::FILE_NAME),
 	)
 	.expect("failed to load the Slint project file");
 

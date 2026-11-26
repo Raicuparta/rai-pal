@@ -6,8 +6,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do now
 
-- some buttons still not reacting on first click while window unfocused ugh. meaning window unfocused, on game details page, clicking a button inside rai pal should always activate that button, but in the game details page it triggers a game refresh which seems to affect the clickability of some buttons. in this case it's the mod install button. we need to make sure this can't ever happen in any scenario, the previous fixes were maybe too hacky. maybe the refresh on focus should be slightly delayed to not affect any first clicks?
-
 ## Do later
 
 ## Notes, questions, decisions, etc
