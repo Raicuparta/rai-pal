@@ -20,12 +20,6 @@ export component AppUpdatePopup inherits Modal {
     close-on-click-outside: false;
     grow-width: true;
 
-    Text {
-        text: UpdateState.notes == "" ? @tr("appUpdate" => "(no changelog)") : UpdateState.notes;
-        wrap: word-wrap;
-        preferred-width: 0;
-    }
-
     VerticalLayout {
         spacing: Theme.space-sm;
 
@@ -52,5 +46,11 @@ export component AppUpdatePopup inherits Modal {
                 AppActions.ignore-update();
             }
         }
+    }
+
+    Text {
+        text: UpdateState.notes == "" ? @tr("appUpdate" => "(no changelog)") : UpdateState.notes;
+        wrap: word-wrap;
+        preferred-width: 0;
     }
 }
