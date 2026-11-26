@@ -64,6 +64,14 @@ impl TextEditor {
 
 impl CommandHandler {
 	pub fn open_text_editor(&self, path: PathBuf, text: String, title: String) {
+		self.open_text_file(path, text, title, false);
+	}
+
+	pub fn view_text_file(&self, path: PathBuf, text: String, title: String) {
+		self.open_text_file(path, text, title, true);
+	}
+
+	fn open_text_file(&self, path: PathBuf, text: String, title: String, read_only: bool) {
 		let Some(window) = self.ui() else {
 			return;
 		};
@@ -71,6 +79,7 @@ impl CommandHandler {
 		let state = window.global::<TextEditorState>();
 		state.set_title(title.into());
 		state.set_dirty(false);
+		state.set_read_only(read_only);
 		state.set_text(text.clone().into());
 		state.set_reset_scroll_revision(state.get_reset_scroll_revision() + 1);
 		state.set_open(true);

@@ -322,9 +322,6 @@ export global Tr {
         if data.context == MessageContext.open-local-mods-folder {
             return @tr("messages" => "Failed to open local mods folder");
         }
-        if data.context == MessageContext.open-logs-folder {
-            return @tr("messages" => "Failed to open logs folder");
-        }
         if data.context == MessageContext.install-mod {
             return @tr("messages" => "Failed to install mod {0}", data.subject);
         }

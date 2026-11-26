@@ -8,6 +8,7 @@ export global TextEditorState {
     in-out property <int> scroll-revision: 0;
     in-out property <int> reset-scroll-revision: 0;
     in-out property <bool> dirty: false;
+    in-out property <bool> read-only: false;
 
     callback request-open-file;
     callback request-open-folder;
@@ -22,7 +23,8 @@ export component TextEditorPopup inherits CodeModal {
     text <=> TextEditorState.text;
     has-folder-actions: true;
     has-copy-action: true;
-    has-save-action: true;
+    has-save-action: !TextEditorState.read-only;
+    read-only: TextEditorState.read-only;
     save-enabled: TextEditorState.dirty;
     save-action-key: { kind: ActionKind.save-text-editor, target: TextEditorState.title };
     scroll-revision: TextEditorState.scroll-revision;

@@ -1,6 +1,7 @@
 use rai_pal_backend::local_database::mod_database::ModDatabase;
 use serde::Serialize;
 use slint::ComponentHandle as _;
+use std::thread;
 
 use crate::{DebugDataState, MainWindow, MessageContext, notifications};
 
@@ -48,10 +49,44 @@ impl CommandHandler {
 			),
 		}
 	}
+
+	pub fn show_logs(&self) {
+		let window = self.window();
+
+		thread::spawn(move || {
+			let result = crate::logging::latest_log_file().and_then(|path| {
+				let text = fs_err::read_to_string(&path)?;
+				Ok((path, text))
+			});
+
+			crate::runtime::with_ui_window(&window, move |window| {
+				let Some(handler) = Self::current() else {
+					return;
+				};
+
+				match result {
+					Ok((path, text)) => {
+						let title = path
+							.file_name()
+							.map_or_default(|name| name.to_string_lossy().into_owned());
+
+						handler.view_text_file(path, text, title);
+					}
+					Err(err) => notifications::error(
+						&window,
+						notifications::data(MessageContext::None, &err),
+					),
+				}
+			});
+		});
+	}
 }
 
 pub fn register(window: &MainWindow) {
 	on_command!(window, GamesActions, on_request_debug_data, || handler => {
 		handler.show_game_debug_data();
+	});
+	on_command!(window, AppActions, on_show_logs, || handler => {
+		handler.show_logs();
 	});
 }

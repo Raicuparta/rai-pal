@@ -138,11 +138,11 @@ export component AppMenu inherits Rectangle {
             }
 
             PopupMenuItem {
-                text: @tr("appDropdownMenu" => "Open Logs Folder");
-                icon: Icon.folder;
+                text: @tr("appDropdownMenu" => "Rai Pal logs");
+                icon: Icon.file;
 
                 clicked => {
-                    AppActions.open-logs-folder();
+                    AppActions.show-logs();
                     menu.close();
                 }
             }
