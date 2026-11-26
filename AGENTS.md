@@ -51,7 +51,8 @@ Prefer content-driven sizing. Let layouts and children set dimensions with paddi
 - Use `in`/`out`/`in-out` deliberately. A callback that only reads or writes state shouldn't be routed through a component that does neither.
 - Don't add props just to tune the styling of a component's content, like spacing or padding. Have the parent wrap it instead.
 - Give custom interactive components `accessible-role` and `accessible-label` (and default actions where applicable).
-- Mark user-visible strings with `@tr`, and use `{}` placeholders instead of string concatenation so translations can reorder arguments. Translations are gettext catalogs in `crates/frontend/translations` and the source of truth for user-visible strings.
+- Mark user-visible strings with `@tr`, and use `{}` placeholders instead of string concatenation so translations can reorder arguments. Never leave any hardcoded untranslated text in slint files as a placeholder. If the user asks for no translations, that means don't touch translation files, but use @tr anyway, which means check.sh will fail as expected.
+- Don't touch translation files unless asked to.
 - Reserve space for hover-only controls and track hover across the whole row so layouts don't shift or flicker.
 
 For visual/runtime checks, use the Slint MCP server, not only source inspection.
