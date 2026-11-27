@@ -8,8 +8,6 @@ For agents: if asked to complete todos, do the ones in the "Do now" section one 
 
 ## Do later
 
-- add easier way to exit on steam deck.
-
 ## Notes, questions, decisions, etc
 
 ## Done

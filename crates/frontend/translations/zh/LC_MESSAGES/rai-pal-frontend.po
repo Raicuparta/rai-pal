@@ -69,6 +69,10 @@ msgctxt "appDropdownMenu"
 msgid "About..."
 msgstr "关于..."
 
+msgctxt "appDropdownMenu"
+msgid "Exit Rai Pal"
+msgstr "退出 Rai Pal"
+
 msgctxt "appUpdate"
 msgid "Rai Pal {0}"
 msgstr "Rai Pal {0}"

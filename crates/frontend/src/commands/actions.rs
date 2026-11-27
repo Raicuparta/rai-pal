@@ -217,6 +217,12 @@ pub fn register(window: &crate::MainWindow) {
 	window.global::<crate::ModActions>().on_open_url(|url| {
 		open_url(url.to_string());
 	});
+
+	window.global::<crate::AppActions>().on_quit(|| {
+		if let Err(err) = slint::quit_event_loop() {
+			log::error!("Failed to quit: {err}");
+		}
+	});
 }
 
 pub fn open_url(url: String) {
