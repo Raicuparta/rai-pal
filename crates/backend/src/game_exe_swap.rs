@@ -7,7 +7,7 @@ use std::{
 };
 
 use crate::{
-	game::{Game, exe_swap_backup_path},
+	game::exe_swap_backup_path,
 	open_better::open_detached_better,
 	path_extensions::AsValidStr,
 	result::{Error, Result},
@@ -99,22 +99,21 @@ fn build_script(
 	Ok(format!("{SCRIPT_PREFIX}{}\n", lines.join("\n")))
 }
 
-/// Replaces a native Linux Steam game's executable with a script that restores
-/// the real executable, sets the game's environment, and execs `program`, then
-/// asks Steam to launch the app.
+/// Replaces a native Linux game's executable with a script that restores the
+/// real executable, sets the game's environment, and execs it, then asks the
+/// provider to launch the game through `command`.
 ///
 /// Steam only tracks games it launched itself, so launching the game ourselves
 /// means Steam's "Exit Game" has nothing to stop. Going through Steam's own
 /// launch path (with our script in place of the game binary) gives Steam a
 /// launch record, so the whole process tree can be stopped again.
-pub fn launch_via_steam_with_swapped_exe(
-	game: &Game,
-	program: &Path,
+pub fn launch_with_swapped_exe(
+	exe_path: &Path,
 	args: &[String],
 	environment: &BTreeMap<String, String>,
 	cwd: Option<&Path>,
+	command: &str,
 ) -> Result {
-	let exe_path = game.try_get_exe_path()?;
 	let backup = backup_path(exe_path)?;
 
 	// Recover from an interrupted previous swap (launch never happened).
@@ -132,14 +131,14 @@ pub fn launch_via_steam_with_swapped_exe(
 		fs::rename(&backup, exe_path)?;
 	}
 
-	if !program.exists() {
+	if !exe_path.exists() {
 		return Err(Error::GameNotInstalled(format!(
 			"Launch target `{}` does not exist",
-			program.display()
+			exe_path.display()
 		)));
 	}
 
-	let script = build_script(exe_path, &backup, program, args, environment, cwd)?;
+	let script = build_script(exe_path, &backup, exe_path, args, environment, cwd)?;
 
 	fs::rename(exe_path, &backup)?;
 	if let Err(error) = fs::write(exe_path, script.as_bytes()) {
@@ -150,13 +149,12 @@ pub fn launch_via_steam_with_swapped_exe(
 	}
 	fs::set_permissions(exe_path, std::fs::Permissions::from_mode(0o755))?;
 
-	let url = format!("steam://rungameid/{}", game.try_get_provider_external_id()?);
 	log::info!(
-		"Replaced `{}` with a temporary launcher, asking Steam to launch `{url}`",
+		"Replaced `{}` with a temporary launcher, asking the provider to launch `{command}`",
 		exe_path.display()
 	);
 
-	if let Err(error) = open_detached_better(&url) {
+	if let Err(error) = open_detached_better(command) {
 		if let Err(remove_error) = fs::remove_file(exe_path) {
 			log::warn!("Failed to remove temporary game launcher: {remove_error}");
 		}

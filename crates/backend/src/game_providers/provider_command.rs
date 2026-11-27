@@ -55,12 +55,12 @@ impl ProviderCommand {
 				if !environment.is_empty() {
 					let exe_path = game.try_get_exe_path()?;
 					let cwd = exe_path.parent().map(PathBuf::from);
-					crate::game_providers::steam::steam_exe_swap::launch_via_steam_with_swapped_exe(
-						game,
+					crate::game_exe_swap::launch_with_swapped_exe(
 						exe_path,
 						&[],
 						environment,
 						cwd.as_deref(),
+						command,
 					)?;
 
 					return Ok(());
