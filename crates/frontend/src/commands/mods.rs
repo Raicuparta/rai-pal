@@ -502,7 +502,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 
 	let installed = info.install_state.is_installed();
 	let status = mod_status(&manifest, &info, installed);
-	let can_show_actions = info.compatible && game.exe_path.is_some();
+	let can_show_actions = (info.compatible || installed) && game.exe_path.is_some();
 	let has_install = manifest.install.is_some();
 	let has_run = manifest.run_for_game.is_some();
 	let dependency_only = manifest

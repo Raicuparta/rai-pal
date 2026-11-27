@@ -38,6 +38,7 @@ impl GameModGroups {
 		let mod_infos = database.get_game_mods(&game.provider_id, &game.game_id)?;
 		let mods = database.get_mod_map()?;
 
+		let mut installed_parts = Vec::new();
 		let mut compatible_parts = Vec::new();
 		let mut dependency_only_parts = Vec::new();
 		let mut incompatible_parts = Vec::new();
@@ -55,19 +56,20 @@ impl GameModGroups {
 				.as_ref()
 				.is_some_and(|install| install.dependency_only);
 
-			if entry.info.compatible {
-				if dependency_only {
-					dependency_only_parts.push(entry);
-				} else {
-					compatible_parts.push(entry);
-				}
-			} else if !dependency_only {
+			if dependency_only {
+				dependency_only_parts.push(entry);
+			} else if entry.installed() {
+				installed_parts.push(entry);
+			} else if entry.info.compatible {
+				compatible_parts.push(entry);
+			} else {
 				incompatible_parts.push(entry);
 			}
 		}
 
 		let compatible_tags = compatible_parts
 			.iter()
+			.chain(installed_parts.iter().filter(|entry| entry.info.compatible))
 			.chain(dependency_only_parts.iter())
 			.filter_map(|entry| entry.manifest.tags.as_ref())
 			.flatten()
@@ -80,18 +82,18 @@ impl GameModGroups {
 			tags.is_empty() || !tags.iter().all(|tag| compatible_tags.contains(tag))
 		});
 
+		sort_entries(&mut installed_parts);
 		sort_entries(&mut compatible_parts);
 		sort_entries(&mut dependency_only_parts);
 		sort_entries(&mut incompatible_parts);
 
-		let (installed, available): (Vec<GameMod>, Vec<GameMod>) =
-			compatible_parts.into_iter().partition(GameMod::installed);
-		let (game_specific, available): (Vec<GameMod>, Vec<GameMod>) =
-			available.into_iter().partition(GameMod::game_specific);
+		let (game_specific, available): (Vec<GameMod>, Vec<GameMod>) = compatible_parts
+			.into_iter()
+			.partition(GameMod::game_specific);
 
 		Ok(Self {
 			broken: database.get_broken_installed_manifests(game)?,
-			installed,
+			installed: installed_parts,
 			game_specific,
 			available,
 			dependency_only: dependency_only_parts,
