@@ -21,6 +21,13 @@ use crate::{
 	result::{Error, Result},
 };
 
+pub const EXE_SWAP_BACKUP_SUFFIX: &str = ".rai-pal-orig";
+
+pub fn exe_swap_backup_path(exe_path: &Path) -> Option<PathBuf> {
+	let file_name = exe_path.file_name()?.to_str()?;
+	Some(exe_path.with_file_name(format!("{file_name}{EXE_SWAP_BACKUP_SUFFIX}")))
+}
+
 #[derive(serde::Serialize, Clone, Debug)]
 pub struct Game {
 	pub provider_id: GameProviderId,
@@ -133,6 +140,18 @@ impl Game {
 			.ok_or_else(|| Error::GameNotInstalled(self.display_title.clone()))?)
 	}
 
+	// Sometimes we mess with the game exe (like for native Linux games, unless by the time you're reading this that process has changed and we don't do that anymore, in which case whoops tehe).
+	// In those cases we sometimes need to get the original backup of the real game exe to do things like parsing the game engine stuff.
+	pub fn original_exe_path(&self) -> PathBuf {
+		let Some(exe_path) = self.exe_path.as_ref() else {
+			return PathBuf::new();
+		};
+
+		exe_swap_backup_path(exe_path)
+			.filter(|backup_path| backup_path.is_file())
+			.unwrap_or_else(|| exe_path.clone())
+	}
+
 	pub fn try_get_exe_name(&self) -> Result<String> {
 		let path = self.try_get_exe_path()?;
 		path.file_name()
@@ -233,7 +252,7 @@ impl Game {
 					.insert(GameIdKind::NormalizedExecutable, normalized_executable_name);
 			}
 
-			self.executable_os = operating_system::get_os_from_path(exe_path);
+			self.executable_os = operating_system::get_os_from_path(&self.original_exe_path());
 
 			// Order matters here. We're checking all sequentially, so we should leave the most expensive ones last.
 			let _ = unity::process_game(self)

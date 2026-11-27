@@ -1,0 +1,22 @@
+import { CodeModal } from "code_modal.slint";
+
+export global DebugDataState {
+    in-out property <bool> open: false;
+    in-out property <string> text: "";
+    in-out property <int> reset-scroll-revision: 0;
+}
+
+export component DebugDataPopup inherits CodeModal {
+    open: DebugDataState.open;
+    title: @tr("debugData" => "Debug data");
+    text: DebugDataState.text;
+    read-only: true;
+    wrap: word-wrap;
+    has-copy-action: true;
+    reset-scroll-revision: DebugDataState.reset-scroll-revision;
+
+    closed => {
+        DebugDataState.open = false;
+        DebugDataState.text = "";
+    }
+}

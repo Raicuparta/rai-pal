@@ -140,10 +140,17 @@ fn path_labels(paths: &[PathBuf]) -> Vec<String> {
 		.collect()
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum PathTargetAction {
+	OpenFile,
+	OpenFolder,
+}
+
 struct PathTarget<'a> {
 	key: &'a str,
 	target: PathBuf,
-	open_folder: bool,
+	action: PathTargetAction,
+	editable: bool,
 }
 
 impl CommandHandler {
@@ -345,6 +352,30 @@ impl CommandHandler {
 			},
 		);
 	}
+
+	pub fn open_mod_path_editor(&self, game: &Game, mod_id: &str, path: &str, title: String) {
+		let Some(window) = self.ui() else {
+			return;
+		};
+
+		let result = self
+			.database
+			.get_mod_or_installed(&game.provider_id, &game.game_id, mod_id)
+			.and_then(|game_mod| {
+				let state = game_mod.get_path_state(path, Some(game))?;
+				let text = game_mod.read_path_text(path, Some(game))?;
+				Ok((state.path, text))
+			});
+
+		match result {
+			Ok((resolved_path, text)) => {
+				self.open_text_editor(resolved_path, text, title);
+			}
+			Err(err) => {
+				notifications::error(&window, notifications::data(MessageContext::None, &err));
+			}
+		}
+	}
 }
 
 fn refresh_path_states(window: slint::Weak<MainWindow>, database: Arc<Db>, game: Game) {
@@ -471,7 +502,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 
 	let installed = info.install_state.is_installed();
 	let status = mod_status(&manifest, &info, installed);
-	let can_show_actions = info.compatible && game.exe_path.is_some();
+	let can_show_actions = (info.compatible || installed) && game.exe_path.is_some();
 	let has_install = manifest.install.is_some();
 	let has_run = manifest.run_for_game.is_some();
 	let dependency_only = manifest
@@ -485,6 +516,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	let mod_id = manifest.id.as_str();
 	let mut actions = ModActionList::new(mod_id);
 
+	let mut seen_targets = HashSet::new();
 	let path_targets: Vec<PathTarget> = manifest
 		.paths
 		.as_deref()
@@ -502,17 +534,24 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 				)
 			};
 			let is_file = matches!(&path.path_type, ModPathType::File);
+			let editable = is_file && state.as_ref().is_some_and(ModPathState::is_text);
+
 			let variants = if is_file {
-				vec![(false, path_exists(false)), (true, path_exists(true))]
+				vec![
+					(PathTargetAction::OpenFile, path_exists(false)),
+					(PathTargetAction::OpenFolder, path_exists(true)),
+				]
 			} else {
-				vec![(true, path_exists(true))]
+				vec![(PathTargetAction::OpenFolder, path_exists(true))]
 			};
 
 			variants
 				.into_iter()
-				.filter(|(_, enabled)| *enabled)
-				.map(|(open_folder, _)| {
-					let target = if is_file && open_folder {
+				.filter(|(action, enabled)| {
+					*enabled && !(editable && *action == PathTargetAction::OpenFolder)
+				})
+				.map(|(action, _)| {
+					let target = if action == PathTargetAction::OpenFolder && is_file {
 						display_path.parent().unwrap_or(display_path)
 					} else {
 						display_path
@@ -521,9 +560,11 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 					PathTarget {
 						key: &path.path,
 						target: target.to_path_buf(),
-						open_folder,
+						action,
+						editable,
 					}
 				})
+				.filter(|target| seen_targets.insert((target.target.clone(), target.action)))
 				.collect::<Vec<_>>()
 		})
 		.collect();
@@ -535,13 +576,14 @@ fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	);
 
 	for (target, label) in path_targets.iter().zip(labels) {
-		let mut action = actions.action(
-			ModActionKind::OpenPath,
-			ActionKind::GameModOpenPath,
-			target.key,
-		);
+		let kind = if target.editable && target.action == PathTargetAction::OpenFile {
+			ModActionKind::EditPath
+		} else {
+			ModActionKind::OpenPath
+		};
+		let mut action = actions.action(kind, ActionKind::GameModOpenPath, target.key);
 		action.subject = label.into();
-		action.open_folder = target.open_folder;
+		action.open_folder = target.action == PathTargetAction::OpenFolder;
 		actions.push(ActionGroup::Path, action);
 	}
 
@@ -997,6 +1039,16 @@ impl CommandHandler {
 						mod_id,
 						action.target.to_string(),
 						action.open_folder,
+					);
+				});
+			}
+			ModActionKind::EditPath => {
+				self.with_selected_mod(&mod_id, |handler, game, mod_id| {
+					handler.open_mod_path_editor(
+						&game,
+						&mod_id,
+						&action.target,
+						action.subject.to_string(),
 					);
 				});
 			}

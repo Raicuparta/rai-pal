@@ -6,7 +6,7 @@ import { Icon } from "svg_icon.slint";
 import { IconButton } from "icon_button.slint";
 import { MessageData, UrlModSourceData } from "../app_types.slint";
 import { Theme } from "../theme.slint";
-import { Modal } from "modal.slint";
+import { Modal, ModalSize } from "modal.slint";
 import { ActionState } from "../action_state.slint";
 import { DialogActions } from "../actions.slint";
 import { Tr } from "../translations.slint";
@@ -87,7 +87,7 @@ component UrlModSourceRow inherits Rectangle {
 
 export component UrlModSourcesPopup inherits Modal {
     title: @tr("urlModSources" => "Mod Sources");
-    big: true;
+    size: ModalSize.big;
 
     if ModSourcesState.default-source.url != "": UrlModSourceRow {
         source: ModSourcesState.default-source;

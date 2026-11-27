@@ -91,13 +91,20 @@ pub fn register_events(window: &MainWindow) {
 		}
 
 		match event {
-			winit::event::WindowEvent::MouseInput {
-				state: winit::event::ElementState::Pressed,
-				..
-			} => {
-				if let Some(app_window) = main_window_weak.upgrade() {
+			winit::event::WindowEvent::MouseInput { state, .. } => {
+				crate::runtime::set_pointer_pressed(*state == winit::event::ElementState::Pressed);
+
+				if *state == winit::event::ElementState::Pressed
+					&& let Some(app_window) = main_window_weak.upgrade()
+				{
 					app_window.invoke_reset_focus();
 				}
+			}
+			winit::event::WindowEvent::Touch(touch) => {
+				crate::runtime::set_pointer_pressed(matches!(
+					touch.phase,
+					winit::event::TouchPhase::Started
+				));
 			}
 			winit::event::WindowEvent::Resized(_) | winit::event::WindowEvent::Moved(_) => {
 				if let Some(handler) = CommandHandler::current() {
@@ -114,6 +121,12 @@ pub fn register_events(window: &MainWindow) {
 				if let Some(handler) = CommandHandler::current() {
 					handler.refresh_selected_game_on_focus();
 				}
+			}
+			winit::event::WindowEvent::Focused(false) => {
+				crate::runtime::set_pointer_pressed(false);
+			}
+			winit::event::WindowEvent::CursorLeft { .. } => {
+				crate::runtime::set_pointer_pressed(false);
 			}
 			winit::event::WindowEvent::HoveredFile(_) => {
 				if let Some(handler) = CommandHandler::current()

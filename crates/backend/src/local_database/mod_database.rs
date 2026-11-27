@@ -499,6 +499,36 @@ impl ModDatabase for Db {
 			},
 		);
 
+		let mod_matches_game = format!(
+			r"(
+			{GAME_IDS_COMPATIBILITY_FILTER}
+			AND (m.deprecated IS NULL OR m.deprecated = 0)
+			AND (
+				m.engine_key IS NULL
+				OR m.engine_key = g.engine_brand
+			)
+			AND (
+				m.unity_backend_key IS NULL
+				OR g.unity_backend IS NULL
+				OR m.unity_backend_key = g.unity_backend
+			)
+			AND (
+				m.architecture_key IS NULL
+				OR g.architecture IS NULL
+				OR m.architecture_key = g.architecture
+			)
+			AND (
+				m.game_os_key IS NULL
+				OR g.executable_os IS NULL
+				OR m.game_os_key = g.executable_os
+			)
+			AND (
+				m.host_os_key IS NULL
+				OR m.host_os_key = $3
+			)
+		)"
+		);
+
 		let mut mod_infos = self
 			.read_db()?
 			.prepare_cached(&format!(
@@ -539,6 +569,7 @@ impl ModDatabase for Db {
 						WHEN m.hash IS NOT json_extract(im.manifest, '$.hash') THEN 1
 						ELSE 0
 					END AS is_outdated,
+					CASE WHEN {mod_matches_game} THEN 1 ELSE 0 END AS matches_game,
 					g.game_major AS game_major,
 					g.game_minor AS game_minor,
 					g.game_patch AS game_patch,
@@ -553,35 +584,7 @@ impl ModDatabase for Db {
 				LEFT JOIN main.installed_mods im ON
 					g.exe_path_hash = im.exe_path_hash
 					AND m.id = im.mod_id
-				WHERE {GAME_IDS_COMPATIBILITY_FILTER}
-					AND (
-						m.deprecated IS NULL
-						OR m.deprecated = 0
-						OR im.mod_id IS NOT NULL
-					)
-					AND (
-						m.engine_key IS NULL
-						OR m.engine_key = g.engine_brand
-					)
-					AND (
-						m.unity_backend_key IS NULL
-						OR g.unity_backend IS NULL
-						OR m.unity_backend_key = g.unity_backend
-					)
-					AND (
-						m.architecture_key IS NULL
-						OR g.architecture IS NULL
-						OR m.architecture_key = g.architecture
-					)
-					AND (
-						m.game_os_key IS NULL
-						OR g.executable_os IS NULL
-						OR m.game_os_key = g.executable_os
-					)
-					AND (
-						m.host_os_key IS NULL
-						OR m.host_os_key = $3
-					)
+				WHERE im.mod_id IS NOT NULL OR {mod_matches_game}
 			),
 			installed_dependencies AS (
 				SELECT dependant.mod_id AS mod_id, dependency.value AS dependency
@@ -612,7 +615,7 @@ impl ModDatabase for Db {
 					) THEN 1
 					ELSE 0
 				END AS has_installed_dependants,
-				CASE WHEN {version_compatible} THEN 1 ELSE 0 END AS compatible,
+				CASE WHEN cm.matches_game = 1 AND {version_compatible} THEN 1 ELSE 0 END AS compatible,
 				cm.tags
 			FROM candidate_mods cm
 		",

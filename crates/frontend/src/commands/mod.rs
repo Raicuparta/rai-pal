@@ -28,6 +28,7 @@ pub mod os_integration;
 pub mod query;
 pub mod refresh;
 pub mod settings;
+pub mod text_editor;
 pub mod thanks;
 pub mod tools;
 pub mod updater;
@@ -66,6 +67,7 @@ pub fn register(window: &MainWindow) {
 	query::register(window);
 	refresh::register(window);
 	settings::register(window);
+	text_editor::register(window);
 	tools::register(window);
 	updater::register(window);
 	user::register(window);
@@ -87,6 +89,7 @@ pub struct CommandHandler {
 	window: slint::Weak<MainWindow>,
 	selected_game: RefCell<Option<Game>>,
 	pending_selection: RefCell<Option<(GameProviderId, String)>>,
+	text_editor: text_editor::TextEditor,
 	pending_confirmation: PendingState,
 	detected_locale: Option<AppLocale>,
 	updater: Updater,
@@ -111,6 +114,7 @@ impl CommandHandler {
 			window,
 			selected_game: RefCell::default(),
 			pending_selection: RefCell::default(),
+			text_editor: text_editor::TextEditor::default(),
 			pending_confirmation: PendingState::default(),
 			detected_locale,
 			updater,

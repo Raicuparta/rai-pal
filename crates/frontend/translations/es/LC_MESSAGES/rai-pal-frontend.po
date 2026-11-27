@@ -50,8 +50,8 @@ msgid "Reset Rai Pal settings"
 msgstr "Restablecer configuración de Rai Pal"
 
 msgctxt "appDropdownMenu"
-msgid "Open Logs Folder"
-msgstr "Abrir carpeta de registros"
+msgid "Rai Pal logs"
+msgstr "Registros de Rai Pal"
 
 msgctxt "appDropdownMenu"
 msgid "Language"
@@ -68,6 +68,10 @@ msgstr "Esquema de color"
 msgctxt "appDropdownMenu"
 msgid "About..."
 msgstr "Acerca de..."
+
+msgctxt "appDropdownMenu"
+msgid "Exit Rai Pal"
+msgstr "Salir de Rai Pal"
 
 msgctxt "appUpdate"
 msgid "Rai Pal {0}"
@@ -86,6 +90,10 @@ msgid "Update now"
 msgstr "Actualizar ahora"
 
 msgctxt "commandButton"
+msgid "Save"
+msgstr "Guardar"
+
+msgctxt "commandButton"
 msgid "Don't ask again"
 msgstr "No preguntar de nuevo"
 
@@ -102,8 +110,8 @@ msgid "Yes"
 msgstr "Sí"
 
 msgctxt "debugData"
-msgid "Copy debug data"
-msgstr "Copiar datos de depuración"
+msgid "Copy"
+msgstr "Copiar"
 
 msgctxt "debugData"
 msgid "Debug data"
@@ -284,6 +292,22 @@ msgstr "Instalar"
 msgctxt "gameModRow"
 msgid "Update"
 msgstr "Actualizar"
+
+msgctxt "gameModRow"
+msgid "Folder: {0}"
+msgstr "Carpeta: {0}"
+
+msgctxt "gameModRow"
+msgid "File: {0}"
+msgstr "Archivo: {0}"
+
+msgctxt "gameModRow"
+msgid "Open folder"
+msgstr "Abrir carpeta"
+
+msgctxt "gameModRow"
+msgid "Open file"
+msgstr "Abrir archivo"
 
 msgctxt "gameModRow"
 msgid "Run"
@@ -508,10 +532,6 @@ msgstr "Error al abrir la carpeta del binario de Wine"
 msgctxt "messages"
 msgid "Failed to open local mods folder"
 msgstr "Error al abrir la carpeta local de mods"
-
-msgctxt "messages"
-msgid "Failed to open logs folder"
-msgstr "Error al abrir la carpeta de registros"
 
 msgctxt "messages"
 msgid "Failed to install mod {0}"
@@ -832,14 +852,6 @@ msgstr "Ordenar juegos"
 msgctxt "textField"
 msgid "Clear"
 msgstr "Borrar"
-
-msgctxt "gameModRow"
-msgid "Open file: {0}"
-msgstr "Abrir archivo: {0}"
-
-msgctxt "gameModRow"
-msgid "Open folder: {0}"
-msgstr "Abrir carpeta: {0}"
 
 msgctxt "modsTabRow"
 msgid "Show {0} game: \"{1}\""

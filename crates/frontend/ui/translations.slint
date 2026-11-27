@@ -208,9 +208,12 @@ export global Tr {
         }
         if kind == ModActionKind.open-path {
             if open-folder {
-                return @tr("gameModRow" => "Open folder: {0}", subject);
+                return @tr("gameModRow" => "Folder: {0}", subject);
             }
-            return @tr("gameModRow" => "Open file: {0}", subject);
+            return @tr("gameModRow" => "File: {0}", subject);
+        }
+        if kind == ModActionKind.edit-path {
+            return @tr("gameModRow" => "File: {0}", subject);
         }
         if kind == ModActionKind.reinstall {
             return @tr("gameModRow" => "Reinstall");
@@ -318,9 +321,6 @@ export global Tr {
         }
         if data.context == MessageContext.open-local-mods-folder {
             return @tr("messages" => "Failed to open local mods folder");
-        }
-        if data.context == MessageContext.open-logs-folder {
-            return @tr("messages" => "Failed to open logs folder");
         }
         if data.context == MessageContext.install-mod {
             return @tr("messages" => "Failed to install mod {0}", data.subject);

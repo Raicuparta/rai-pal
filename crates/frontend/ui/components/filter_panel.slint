@@ -90,9 +90,9 @@ component FilterValueRow inherits BaseButton {
             cross-axis-alignment: center;
 
             only-button := Button {
-                tint: Theme.surface-background;
+                tint: Theme.background;
                 text: @tr("filterMenu" => "Only");
-                text-size: Theme.font-xs;
+                text-size: Theme.font-2xs;
                 tooltip: @tr("filterMenu" => "Only show this value");
                 visible: !root.item.locked;
                 enabled: !root.item.locked && root.item.available;
@@ -109,7 +109,7 @@ component FilterValueRow inherits BaseButton {
                 tooltip: root.item.locked ? @tr("filterMenu" => "Unlock") : @tr("filterMenu" => "Disable and lock");
                 opacity: root.item.locked || root.show-actions ? 1 : 0;
                 enabled: root.item.available;
-                tint: root.item.locked ? Theme.highlight : Theme.surface-background;
+                tint: root.item.locked ? Theme.highlight : Theme.background;
 
                 clicked => {
                     root.lock-toggled();

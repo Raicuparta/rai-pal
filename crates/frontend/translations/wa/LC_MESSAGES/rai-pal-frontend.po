@@ -50,8 +50,8 @@ msgid "Reset Rai Pal settings"
 msgstr "Waaah wah wah waaaaaah!"
 
 msgctxt "appDropdownMenu"
-msgid "Open Logs Folder"
-msgstr "Waah waah waaaah!"
+msgid "Rai Pal logs"
+msgstr "Waah waah Rai Pal waaaah!"
 
 msgctxt "appDropdownMenu"
 msgid "Language"
@@ -68,6 +68,10 @@ msgstr "Waaah waaaah!"
 msgctxt "appDropdownMenu"
 msgid "About..."
 msgstr "Waaaaaah!"
+
+msgctxt "appDropdownMenu"
+msgid "Exit Rai Pal"
+msgstr "Waaaaaah, dji m' va!"
 
 msgctxt "appUpdate"
 msgid "Rai Pal {0}"
@@ -86,6 +90,10 @@ msgid "Update now"
 msgstr "Waaaah wah!"
 
 msgctxt "commandButton"
+msgid "Save"
+msgstr "Waah waah!"
+
+msgctxt "commandButton"
 msgid "Don't ask again"
 msgstr "Waaah wah waaah!"
 
@@ -102,8 +110,8 @@ msgid "Yes"
 msgstr "Waah!"
 
 msgctxt "debugData"
-msgid "Copy debug data"
-msgstr "Waah waaah waah!"
+msgid "Copy"
+msgstr "Waah waaah!"
 
 msgctxt "debugData"
 msgid "Debug data"
@@ -284,6 +292,22 @@ msgstr "Waaaaah!"
 msgctxt "gameModRow"
 msgid "Update"
 msgstr "Waaaah!"
+
+msgctxt "gameModRow"
+msgid "Folder: {0}"
+msgstr "Waaah folder: {0}"
+
+msgctxt "gameModRow"
+msgid "File: {0}"
+msgstr "Waah file: {0}"
+
+msgctxt "gameModRow"
+msgid "Open folder"
+msgstr "Waaah folder"
+
+msgctxt "gameModRow"
+msgid "Open file"
+msgstr "Waah file"
 
 msgctxt "gameModRow"
 msgid "Run"
@@ -508,10 +532,6 @@ msgstr "Waaaah to waah waah waaaah waaaah!"
 msgctxt "messages"
 msgid "Failed to open local mods folder"
 msgstr "Waaaah to waah waaah waah waaaah!"
-
-msgctxt "messages"
-msgid "Failed to open logs folder"
-msgstr "Waaaah to waah waah waaaah!"
 
 msgctxt "messages"
 msgid "Failed to install mod {0}"
@@ -832,14 +852,6 @@ msgstr "Wah wah waaah wah"
 msgctxt "textField"
 msgid "Clear"
 msgstr "Wah"
-
-msgctxt "gameModRow"
-msgid "Open file: {0}"
-msgstr "Waah file: {0}"
-
-msgctxt "gameModRow"
-msgid "Open folder: {0}"
-msgstr "Waaah folder: {0}"
 
 msgctxt "modsTabRow"
 msgid "Show {0} game: \"{1}\""

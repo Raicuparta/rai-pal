@@ -138,11 +138,11 @@ export component AppMenu inherits Rectangle {
             }
 
             PopupMenuItem {
-                text: @tr("appDropdownMenu" => "Open Logs Folder");
-                icon: Icon.folder;
+                text: @tr("appDropdownMenu" => "Rai Pal logs");
+                icon: Icon.file;
 
                 clicked => {
-                    AppActions.open-logs-folder();
+                    AppActions.show-logs();
                     menu.close();
                 }
             }
@@ -212,11 +212,20 @@ export component AppMenu inherits Rectangle {
 
             PopupMenuItem {
                 text: @tr("appDropdownMenu" => "About...");
-                icon: Icon.info;
 
                 clicked => {
                     root.about-open = true;
                     menu.close();
+                }
+            }
+
+            PopupMenuItem {
+                text: @tr("appDropdownMenu" => "Exit Rai Pal");
+                icon: Icon.close;
+
+                clicked => {
+                    menu.close();
+                    AppActions.quit();
                 }
             }
         }

@@ -11,6 +11,8 @@ pub mod files;
 pub mod filter_views;
 pub mod game;
 pub mod game_engines;
+#[cfg(target_os = "linux")]
+pub mod game_exe_swap;
 pub mod game_external_id;
 pub mod game_launch;
 pub mod game_providers;

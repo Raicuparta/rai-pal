@@ -47,16 +47,27 @@ pub struct ModPathState {
 
 #[derive(Clone, Copy, Debug)]
 enum ModPathKind {
-	File { exists: bool, folder_exists: bool },
-	Folder { exists: bool },
+	File {
+		exists: bool,
+		folder_exists: bool,
+		is_text: bool,
+	},
+	Folder {
+		exists: bool,
+	},
 }
 
 impl ModPathState {
+	pub const fn is_text(&self) -> bool {
+		matches!(self.kind, ModPathKind::File { is_text: true, .. })
+	}
+
 	pub const fn exists(&self, open_folder: bool) -> bool {
 		match self.kind {
 			ModPathKind::File {
 				exists,
 				folder_exists,
+				..
 			} => {
 				if open_folder {
 					folder_exists
@@ -80,6 +91,28 @@ pub struct ModPath {
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Default)]
 #[serde(transparent)]
 pub struct GameIds(pub BTreeMap<String, Vec<String>>);
+
+fn is_text_file(path: &Path) -> bool {
+	use std::io::Read as _;
+
+	let Ok(mut file) = fs_err::File::open(path) else {
+		return false;
+	};
+	let mut buffer = [0u8; 8192];
+	let Ok(read) = file.read(&mut buffer) else {
+		return false;
+	};
+	let bytes = &buffer[..read];
+
+	if bytes.contains(&0) {
+		return false;
+	}
+
+	match std::str::from_utf8(bytes) {
+		Ok(_) => true,
+		Err(err) => read == buffer.len() && err.valid_up_to() > 0,
+	}
+}
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -413,10 +446,14 @@ impl Mod {
 		let resolved_path = PathBuf::from(replace_tokens(&mod_path.path, game, self));
 
 		let kind = match &mod_path.path_type {
-			ModPathType::File => ModPathKind::File {
-				exists: resolved_path.is_file(),
-				folder_exists: resolved_path.parent().is_some_and(Path::is_dir),
-			},
+			ModPathType::File => {
+				let exists = resolved_path.is_file();
+				ModPathKind::File {
+					exists,
+					folder_exists: resolved_path.parent().is_some_and(Path::is_dir),
+					is_text: exists && is_text_file(&resolved_path),
+				}
+			}
 			ModPathType::Folder => ModPathKind::Folder {
 				exists: resolved_path.is_dir(),
 			},
@@ -426,6 +463,22 @@ impl Mod {
 			path: resolved_path,
 			kind,
 		})
+	}
+
+	pub fn read_path_text(&self, path: &str, game: Option<&Game>) -> Result<String> {
+		let mod_path = self.get_path(path)?;
+		let resolved_path = PathBuf::from(replace_tokens(&mod_path.path, game, self));
+
+		Ok(fs_err::read_to_string(resolved_path)?)
+	}
+
+	pub fn write_path_text(&self, path: &str, game: Option<&Game>, content: &str) -> Result {
+		let mod_path = self.get_path(path)?;
+		let resolved_path = PathBuf::from(replace_tokens(&mod_path.path, game, self));
+
+		fs_err::write(resolved_path, content)?;
+
+		Ok(())
 	}
 
 	fn get_path(&self, path: &str) -> Result<&ModPath> {

@@ -2,13 +2,16 @@ use std::{
 	io::{self, Write},
 	path::PathBuf,
 	sync::Mutex,
+	time::SystemTime,
 };
 
 use fs_err::{self as fs, File, OpenOptions};
 
 use log::{LevelFilter, Metadata, Record};
-
-const MAX_LOG_SIZE: u64 = 10 * 1024 * 1024;
+use rai_pal_backend::{
+	app_paths,
+	result::{Error, Result},
+};
 
 struct Logger {
 	file: Mutex<Option<File>>,
@@ -74,16 +77,19 @@ pub fn init() {
 		LevelFilter::Info
 	};
 
-	let file = log_file().and_then(|path| {
-		rotate_if_needed(&path);
-		match OpenOptions::new().create(true).append(true).open(&path) {
+	let file = match session_log_file() {
+		Ok(path) => match OpenOptions::new().create(true).append(true).open(&path) {
 			Ok(file) => Some(file),
 			Err(err) => {
 				eprintln!("Failed to open log file {}: {err}", path.display());
 				None
 			}
+		},
+		Err(err) => {
+			eprintln!("Failed to get logs folder: {err}");
+			None
 		}
-	});
+	};
 
 	let logger = Logger {
 		file: Mutex::new(file),
@@ -97,34 +103,34 @@ pub fn init() {
 	}
 }
 
-fn log_file() -> Option<PathBuf> {
-	let path = match rai_pal_backend::app_paths::logs_path() {
-		Ok(path) => path,
-		Err(err) => {
-			eprintln!("Failed to get logs folder: {err}");
-			return None;
-		}
-	}
-	.join("Rai Pal.log");
-	Some(path)
+fn session_log_file() -> Result<PathBuf> {
+	let name = format!(
+		"Rai Pal {}.log",
+		chrono::Local::now().format("%Y-%m-%d %H-%M-%S")
+	);
+	Ok(app_paths::logs_path()?.join(name))
 }
 
-fn rotate_if_needed(path: &PathBuf) {
-	let metadata = match fs::metadata(path) {
-		Ok(metadata) => metadata,
-		Err(err) if err.kind() == io::ErrorKind::NotFound => return,
-		Err(err) => {
-			eprintln!("Failed to read log file metadata {}: {err}", path.display());
-			return;
+pub fn latest_log_file() -> Result<PathBuf> {
+	let dir = app_paths::logs_path()?;
+	let mut latest: Option<(SystemTime, PathBuf)> = None;
+
+	for entry in fs::read_dir(dir)? {
+		let entry = entry?;
+		let modified = entry.metadata()?.modified()?;
+
+		if latest
+			.as_ref()
+			.is_none_or(|(latest_modified, _)| modified > *latest_modified)
+		{
+			latest = Some((modified, entry.path()));
 		}
-	};
-
-	if metadata.len() <= MAX_LOG_SIZE {
-		return;
 	}
 
-	let old_path = path.with_file_name("Rai Pal.old.log");
-	if let Err(err) = fs::rename(path, old_path) {
-		eprintln!("Failed to rotate log file: {err}");
-	}
+	latest.map(|(_, path)| path).ok_or_else(|| {
+		Error::Io(io::Error::new(
+			io::ErrorKind::NotFound,
+			"No log files found",
+		))
+	})
 }

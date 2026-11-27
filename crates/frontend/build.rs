@@ -45,12 +45,7 @@ fn embed_windows_icon() {
 		.expect("failed to embed Windows icon");
 }
 
-fn check_ui_diagnostics() {
-	let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-	let project_file = i_slint_compiler::project_file::ProjectFile::load(
-		manifest_dir.join(i_slint_compiler::project_file::FILE_NAME),
-	)
-	.expect("failed to load the Slint project file");
+fn check_ui_diagnostics(project_file: &i_slint_compiler::project_file::ProjectFile) {
 	let main = project_file
 		.main()
 		.expect("Slint project file has no 'main'");
@@ -81,8 +76,17 @@ fn check_ui_diagnostics() {
 
 fn main() {
 	println!("cargo:rerun-if-env-changed=RAI_PAL_CHECK_UI_DIAGNOSTICS");
+
+	let project_file = i_slint_compiler::project_file::ProjectFile::load(
+		PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(i_slint_compiler::project_file::FILE_NAME),
+	)
+	.expect("failed to load the Slint project file");
+
+	let experimental_features = project_file.experimental_features().unwrap_or_default();
+	println!("cargo:rustc-env=SLINT_PROJECT_EXPERIMENTAL_FEATURES={experimental_features}");
+
 	if std::env::var_os("RAI_PAL_CHECK_UI_DIAGNOSTICS").is_some() {
-		check_ui_diagnostics();
+		check_ui_diagnostics(&project_file);
 	}
 
 	let translations = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("translations");

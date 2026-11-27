@@ -23,6 +23,9 @@ export global ModActionIcons {
         if kind == ModActionKind.open-path {
             return open-folder ? Icon.folder : Icon.file;
         }
+        if kind == ModActionKind.edit-path {
+            return Icon.file;
+        }
         if kind == ModActionKind.reinstall || kind == ModActionKind.reinstall-all {
             return Icon.reinstall;
         }
@@ -90,7 +93,7 @@ export component ModSpecialActionButton inherits ActionButton {
     icon: ModActionIcons.icon(root.action.kind, root.action.open-folder);
     action-key: root.action.action-key;
     enabled: root.action.enabled;
-    tint: root.action.kind == ModActionKind.update ? Theme.primary : Theme.surface-background;
+    tint: root.action.kind == ModActionKind.update ? Theme.primary : Theme.background;
 
     clicked => {
         ModMenuActions.activate(root.action);

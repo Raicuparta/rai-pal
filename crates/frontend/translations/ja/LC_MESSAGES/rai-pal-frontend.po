@@ -50,8 +50,8 @@ msgid "Reset Rai Pal settings"
 msgstr "Rai Palの設定をリセット"
 
 msgctxt "appDropdownMenu"
-msgid "Open Logs Folder"
-msgstr "ログフォルダーを開く"
+msgid "Rai Pal logs"
+msgstr "Rai Pal のログ"
 
 msgctxt "appDropdownMenu"
 msgid "Language"
@@ -68,6 +68,10 @@ msgstr "カラースキーム"
 msgctxt "appDropdownMenu"
 msgid "About..."
 msgstr "Rai Palについて..."
+
+msgctxt "appDropdownMenu"
+msgid "Exit Rai Pal"
+msgstr "Rai Palを終了"
 
 msgctxt "appUpdate"
 msgid "Rai Pal {0}"
@@ -86,6 +90,10 @@ msgid "Update now"
 msgstr "今すぐ更新"
 
 msgctxt "commandButton"
+msgid "Save"
+msgstr "保存"
+
+msgctxt "commandButton"
 msgid "Don't ask again"
 msgstr "今後確認しない"
 
@@ -102,8 +110,8 @@ msgid "Yes"
 msgstr "はい"
 
 msgctxt "debugData"
-msgid "Copy debug data"
-msgstr "デバッグデータをコピー"
+msgid "Copy"
+msgstr "コピー"
 
 msgctxt "debugData"
 msgid "Debug data"
@@ -284,6 +292,22 @@ msgstr "インストール"
 msgctxt "gameModRow"
 msgid "Update"
 msgstr "更新"
+
+msgctxt "gameModRow"
+msgid "Folder: {0}"
+msgstr "フォルダー: {0}"
+
+msgctxt "gameModRow"
+msgid "File: {0}"
+msgstr "ファイル: {0}"
+
+msgctxt "gameModRow"
+msgid "Open folder"
+msgstr "フォルダーを開く"
+
+msgctxt "gameModRow"
+msgid "Open file"
+msgstr "ファイルを開く"
 
 msgctxt "gameModRow"
 msgid "Run"
@@ -508,10 +532,6 @@ msgstr "Wineバイナリフォルダを開けませんでした"
 msgctxt "messages"
 msgid "Failed to open local mods folder"
 msgstr "ローカルのModフォルダを開けませんでした"
-
-msgctxt "messages"
-msgid "Failed to open logs folder"
-msgstr "ログフォルダを開けませんでした"
 
 msgctxt "messages"
 msgid "Failed to install mod {0}"
@@ -832,14 +852,6 @@ msgstr "ゲームを並べ替え"
 msgctxt "textField"
 msgid "Clear"
 msgstr "クリア"
-
-msgctxt "gameModRow"
-msgid "Open file: {0}"
-msgstr "ファイルを開く: {0}"
-
-msgctxt "gameModRow"
-msgid "Open folder: {0}"
-msgstr "フォルダーを開く: {0}"
 
 msgctxt "modsTabRow"
 msgid "Show {0} game: \"{1}\""

@@ -10,9 +10,15 @@ export global Viewport {
     in-out property <length> height: 0;
 }
 
+export enum ModalSize {
+    small,
+    big,
+    ginormous,
+}
+
 export component Modal inherits Rectangle {
     in property <string> title;
-    in property <bool> big: false;
+    in property <ModalSize> size: small;
     in property <bool> fill-height: false;
     in property <bool> grow-width: false;
     in-out property <bool> open: false;
@@ -30,6 +36,22 @@ export component Modal inherits Rectangle {
 
     function dismiss() {
         root.closed();
+    }
+
+    pure function modal-width(natural-width: length, available-width: length) -> length {
+        if root.size == ModalSize.ginormous {
+            return available-width;
+        }
+        if root.grow-width {
+            return max(360px, natural-width);
+        }
+        if root.size == ModalSize.small {
+            return min(natural-width, 360px);
+        }
+        if root.size == ModalSize.big {
+            return 700px;
+        }
+        return available-width;
     }
 
     init => {
@@ -73,12 +95,12 @@ export component Modal inherits Rectangle {
         }
 
         Rectangle {
+            private property <length> available-width: parent.width - root.modal-margin * 2;
             private property <length> natural-width: max(header.preferred-width, body-layout.preferred-width) + root.modal-padding * 2;
-            private property <length> modal-width: root.grow-width ? max(360px, self.natural-width) : root.big ? 700px : min(self.natural-width, 360px);
 
             x: (parent.width - self.width) / 2;
             y: (parent.height - self.height) / 2;
-            width: min(self.modal-width, parent.width - root.modal-margin * 2);
+            width: min(root.modal-width(self.natural-width, self.available-width), self.available-width);
             height: root.fill-height ? parent.height - root.modal-margin * 2 : min(header.preferred-height + body-layout.preferred-height + root.modal-padding * 2 + Theme.space-md, parent.height - root.modal-margin * 2);
             background: Theme.background;
             border-width: Theme.border-width;

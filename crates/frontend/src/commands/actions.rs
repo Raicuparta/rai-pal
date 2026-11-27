@@ -189,14 +189,6 @@ impl CommandHandler {
 			|| app_paths::local_mods_path()?.open_folder_or_parent(),
 		);
 	}
-
-	pub fn open_logs_folder(&self) {
-		self.spawn_action(
-			action_state::key(ActionKind::OpenLogsFolder, ""),
-			MessageContext::OpenLogsFolder,
-			|| app_paths::logs_path()?.open_folder_or_parent(),
-		);
-	}
 }
 
 pub fn register(window: &crate::MainWindow) {
@@ -221,12 +213,15 @@ pub fn register(window: &crate::MainWindow) {
 	on_command!(window, ModActions, on_open_local_mods_folder, || handler => {
 		handler.open_local_mods_folder();
 	});
-	on_command!(window, AppActions, on_open_logs_folder, || handler => {
-		handler.open_logs_folder();
-	});
 
 	window.global::<crate::ModActions>().on_open_url(|url| {
 		open_url(url.to_string());
+	});
+
+	window.global::<crate::AppActions>().on_quit(|| {
+		if let Err(err) = slint::quit_event_loop() {
+			log::error!("Failed to quit: {err}");
+		}
 	});
 }
 

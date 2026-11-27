@@ -50,8 +50,8 @@ msgid "Reset Rai Pal settings"
 msgstr "Rai Pal 설정 재설정"
 
 msgctxt "appDropdownMenu"
-msgid "Open Logs Folder"
-msgstr "로그 폴더 열기"
+msgid "Rai Pal logs"
+msgstr "Rai Pal 로그"
 
 msgctxt "appDropdownMenu"
 msgid "Language"
@@ -68,6 +68,10 @@ msgstr "색상 구성표"
 msgctxt "appDropdownMenu"
 msgid "About..."
 msgstr "정보..."
+
+msgctxt "appDropdownMenu"
+msgid "Exit Rai Pal"
+msgstr "Rai Pal 종료"
 
 msgctxt "appUpdate"
 msgid "Rai Pal {0}"
@@ -86,6 +90,10 @@ msgid "Update now"
 msgstr "지금 업데이트"
 
 msgctxt "commandButton"
+msgid "Save"
+msgstr "저장"
+
+msgctxt "commandButton"
 msgid "Don't ask again"
 msgstr "다시 묻지 않기"
 
@@ -102,8 +110,8 @@ msgid "Yes"
 msgstr "예"
 
 msgctxt "debugData"
-msgid "Copy debug data"
-msgstr "디버그 데이터 복사"
+msgid "Copy"
+msgstr "복사"
 
 msgctxt "debugData"
 msgid "Debug data"
@@ -284,6 +292,22 @@ msgstr "설치"
 msgctxt "gameModRow"
 msgid "Update"
 msgstr "업데이트"
+
+msgctxt "gameModRow"
+msgid "Folder: {0}"
+msgstr "폴더: {0}"
+
+msgctxt "gameModRow"
+msgid "File: {0}"
+msgstr "파일: {0}"
+
+msgctxt "gameModRow"
+msgid "Open folder"
+msgstr "폴더 열기"
+
+msgctxt "gameModRow"
+msgid "Open file"
+msgstr "파일 열기"
 
 msgctxt "gameModRow"
 msgid "Run"
@@ -508,10 +532,6 @@ msgstr "Wine 바이너리 폴더를 열지 못했습니다"
 msgctxt "messages"
 msgid "Failed to open local mods folder"
 msgstr "로컬 모드 폴더를 열지 못했습니다"
-
-msgctxt "messages"
-msgid "Failed to open logs folder"
-msgstr "로그 폴더를 열지 못했습니다"
 
 msgctxt "messages"
 msgid "Failed to install mod {0}"
@@ -832,14 +852,6 @@ msgstr "게임 정렬"
 msgctxt "textField"
 msgid "Clear"
 msgstr "지우기"
-
-msgctxt "gameModRow"
-msgid "Open file: {0}"
-msgstr "파일 열기: {0}"
-
-msgctxt "gameModRow"
-msgid "Open folder: {0}"
-msgstr "폴더 열기: {0}"
 
 msgctxt "modsTabRow"
 msgid "Show {0} game: \"{1}\""

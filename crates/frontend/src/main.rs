@@ -32,5 +32,13 @@ mod ui_models;
 mod window_state;
 
 fn main() -> Result<(), slint::PlatformError> {
+	#[cfg(feature = "dev")]
+	unsafe {
+		std::env::set_var(
+			"SLINT_ENABLE_EXPERIMENTAL_FEATURES",
+			env!("SLINT_PROJECT_EXPERIMENTAL_FEATURES"),
+		);
+	}
+
 	app::run()
 }
