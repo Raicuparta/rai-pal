@@ -50,8 +50,8 @@ msgid "Reset Rai Pal settings"
 msgstr "Réinitialiser les paramètres de Rai Pal"
 
 msgctxt "appDropdownMenu"
-msgid "Open Logs Folder"
-msgstr "Ouvrir le dossier des journaux"
+msgid "Rai Pal logs"
+msgstr "Journaux de Rai Pal"
 
 msgctxt "appDropdownMenu"
 msgid "Language"
@@ -86,6 +86,10 @@ msgid "Update now"
 msgstr "Mettre à jour maintenant"
 
 msgctxt "commandButton"
+msgid "Save"
+msgstr "Enregistrer"
+
+msgctxt "commandButton"
 msgid "Don't ask again"
 msgstr "Ne plus demander"
 
@@ -102,8 +106,8 @@ msgid "Yes"
 msgstr "Oui"
 
 msgctxt "debugData"
-msgid "Copy debug data"
-msgstr "Copier les données de débogage"
+msgid "Copy"
+msgstr "Copier"
 
 msgctxt "debugData"
 msgid "Debug data"
@@ -284,6 +288,22 @@ msgstr "Installer"
 msgctxt "gameModRow"
 msgid "Update"
 msgstr "Mettre à jour"
+
+msgctxt "gameModRow"
+msgid "Folder: {0}"
+msgstr "Dossier : {0}"
+
+msgctxt "gameModRow"
+msgid "File: {0}"
+msgstr "Fichier : {0}"
+
+msgctxt "gameModRow"
+msgid "Open folder"
+msgstr "Ouvrir le dossier"
+
+msgctxt "gameModRow"
+msgid "Open file"
+msgstr "Ouvrir le fichier"
 
 msgctxt "gameModRow"
 msgid "Run"
@@ -508,10 +528,6 @@ msgstr "Échec de l'ouverture du dossier du binaire Wine"
 msgctxt "messages"
 msgid "Failed to open local mods folder"
 msgstr "Échec de l'ouverture du dossier local des mods"
-
-msgctxt "messages"
-msgid "Failed to open logs folder"
-msgstr "Échec de l'ouverture du dossier des journaux"
 
 msgctxt "messages"
 msgid "Failed to install mod {0}"
@@ -832,14 +848,6 @@ msgstr "Trier les jeux"
 msgctxt "textField"
 msgid "Clear"
 msgstr "Effacer"
-
-msgctxt "gameModRow"
-msgid "Open file: {0}"
-msgstr "Ouvrir le fichier : {0}"
-
-msgctxt "gameModRow"
-msgid "Open folder: {0}"
-msgstr "Ouvrir le dossier : {0}"
 
 msgctxt "modsTabRow"
 msgid "Show {0} game: \"{1}\""

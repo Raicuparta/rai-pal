@@ -50,8 +50,8 @@ msgid "Reset Rai Pal settings"
 msgstr "重置 Rai Pal 设置"
 
 msgctxt "appDropdownMenu"
-msgid "Open Logs Folder"
-msgstr "打开日志文件夹"
+msgid "Rai Pal logs"
+msgstr "Rai Pal 日志"
 
 msgctxt "appDropdownMenu"
 msgid "Language"
@@ -86,6 +86,10 @@ msgid "Update now"
 msgstr "立即更新"
 
 msgctxt "commandButton"
+msgid "Save"
+msgstr "保存"
+
+msgctxt "commandButton"
 msgid "Don't ask again"
 msgstr "不再询问"
 
@@ -102,8 +106,8 @@ msgid "Yes"
 msgstr "是"
 
 msgctxt "debugData"
-msgid "Copy debug data"
-msgstr "复制调试数据"
+msgid "Copy"
+msgstr "复制"
 
 msgctxt "debugData"
 msgid "Debug data"
@@ -284,6 +288,22 @@ msgstr "安装"
 msgctxt "gameModRow"
 msgid "Update"
 msgstr "更新"
+
+msgctxt "gameModRow"
+msgid "Folder: {0}"
+msgstr "文件夹：{0}"
+
+msgctxt "gameModRow"
+msgid "File: {0}"
+msgstr "文件：{0}"
+
+msgctxt "gameModRow"
+msgid "Open folder"
+msgstr "打开文件夹"
+
+msgctxt "gameModRow"
+msgid "Open file"
+msgstr "打开文件"
 
 msgctxt "gameModRow"
 msgid "Run"
@@ -508,10 +528,6 @@ msgstr "打开 Wine 二进制文件夹失败"
 msgctxt "messages"
 msgid "Failed to open local mods folder"
 msgstr "打开本地模组文件夹失败"
-
-msgctxt "messages"
-msgid "Failed to open logs folder"
-msgstr "打开日志文件夹失败"
 
 msgctxt "messages"
 msgid "Failed to install mod {0}"
@@ -832,14 +848,6 @@ msgstr "排序游戏"
 msgctxt "textField"
 msgid "Clear"
 msgstr "清除"
-
-msgctxt "gameModRow"
-msgid "Open file: {0}"
-msgstr "打开文件：{0}"
-
-msgctxt "gameModRow"
-msgid "Open folder: {0}"
-msgstr "打开文件夹：{0}"
 
 msgctxt "modsTabRow"
 msgid "Show {0} game: \"{1}\""

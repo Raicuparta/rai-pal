@@ -50,8 +50,8 @@ msgid "Reset Rai Pal settings"
 msgstr "Rai Pal-Einstellungen zurücksetzen"
 
 msgctxt "appDropdownMenu"
-msgid "Open Logs Folder"
-msgstr "Logs-Ordner öffnen"
+msgid "Rai Pal logs"
+msgstr "Rai Pal-Logs"
 
 msgctxt "appDropdownMenu"
 msgid "Language"
@@ -86,6 +86,10 @@ msgid "Update now"
 msgstr "Jetzt aktualisieren"
 
 msgctxt "commandButton"
+msgid "Save"
+msgstr "Speichern"
+
+msgctxt "commandButton"
 msgid "Don't ask again"
 msgstr "Nicht mehr fragen"
 
@@ -102,8 +106,8 @@ msgid "Yes"
 msgstr "Ja"
 
 msgctxt "debugData"
-msgid "Copy debug data"
-msgstr "Debug-Daten kopieren"
+msgid "Copy"
+msgstr "Kopieren"
 
 msgctxt "debugData"
 msgid "Debug data"
@@ -284,6 +288,22 @@ msgstr "Installieren"
 msgctxt "gameModRow"
 msgid "Update"
 msgstr "Aktualisieren"
+
+msgctxt "gameModRow"
+msgid "Folder: {0}"
+msgstr "Ordner: {0}"
+
+msgctxt "gameModRow"
+msgid "File: {0}"
+msgstr "Datei: {0}"
+
+msgctxt "gameModRow"
+msgid "Open folder"
+msgstr "Ordner öffnen"
+
+msgctxt "gameModRow"
+msgid "Open file"
+msgstr "Datei öffnen"
 
 msgctxt "gameModRow"
 msgid "Run"
@@ -508,10 +528,6 @@ msgstr "Wine-Binärordner konnte nicht geöffnet werden"
 msgctxt "messages"
 msgid "Failed to open local mods folder"
 msgstr "Lokaler Mod-Ordner konnte nicht geöffnet werden"
-
-msgctxt "messages"
-msgid "Failed to open logs folder"
-msgstr "Log-Ordner konnte nicht geöffnet werden"
 
 msgctxt "messages"
 msgid "Failed to install mod {0}"
@@ -832,14 +848,6 @@ msgstr "Spiele sortieren"
 msgctxt "textField"
 msgid "Clear"
 msgstr "Löschen"
-
-msgctxt "gameModRow"
-msgid "Open file: {0}"
-msgstr "Datei öffnen: {0}"
-
-msgctxt "gameModRow"
-msgid "Open folder: {0}"
-msgstr "Ordner öffnen: {0}"
 
 msgctxt "modsTabRow"
 msgid "Show {0} game: \"{1}\""
