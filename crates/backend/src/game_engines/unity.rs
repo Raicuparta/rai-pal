@@ -212,6 +212,7 @@ pub fn process_game(game: &mut Game) -> bool {
 
 	game.engine_brand = Some(EngineBrand::Unity);
 	game.unity_backend = get_unity_backend(exe_path);
+	let detection_exe_path = game.original_exe_path();
 
 	if let Some(version) = get_version(&data_path) {
 		game.engine_version_major = Some(version.numbers.major);
@@ -220,11 +221,11 @@ pub fn process_game(game: &mut Game) -> bool {
 		game.engine_version_display = Some(version.display);
 	}
 
-	game.architecture = get_architecture(exe_path)
+	game.architecture = get_architecture(&detection_exe_path)
 		.unwrap_or_else(|err| {
 			log::error!(
 				"Failed to get exe architecture for {}: {}",
-				exe_path.display(),
+				detection_exe_path.display(),
 				err
 			);
 			None

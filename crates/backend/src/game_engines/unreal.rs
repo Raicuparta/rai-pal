@@ -288,10 +288,11 @@ pub fn process_game(game: &mut Game) -> bool {
 
 	game.engine_brand = Some(EngineBrand::Unreal);
 	let game_dir = game_path.parent().unwrap_or(&game_path);
+	let detection_exe_path = game.original_exe_path();
 
 	// 1. Try Build.version file (most reliable)
 	if let Some(version) = get_version_from_build_version_file(&game_path) {
-		set_version(game, &version, &game_path);
+		set_version(game, &version, &detection_exe_path);
 		return true;
 	}
 
@@ -330,7 +331,7 @@ pub fn process_game(game: &mut Game) -> bool {
 			let version_exe_path = if is_helper_exe(&game_path) {
 				exe_path
 			} else {
-				&game_path
+				&detection_exe_path
 			};
 			set_version(game, &version, version_exe_path);
 			return true;

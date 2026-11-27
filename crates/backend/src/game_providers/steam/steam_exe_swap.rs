@@ -7,22 +7,17 @@ use std::{
 };
 
 use crate::{
-	game::Game,
+	game::{Game, exe_swap_backup_path},
 	open_better::open_detached_better,
 	path_extensions::AsValidStr,
 	result::{Error, Result},
 };
 
-const BACKUP_SUFFIX: &str = ".rai-pal-orig";
 const SCRIPT_PREFIX: &str = "#!/bin/sh\n";
 
 fn backup_path(exe_path: &Path) -> Result<PathBuf> {
-	let file_name = exe_path
-		.file_name()
-		.and_then(OsStr::to_str)
-		.ok_or_else(|| Error::InvalidOsStr(exe_path.display().to_string()))?;
-
-	Ok(exe_path.with_file_name(format!("{file_name}{BACKUP_SUFFIX}")))
+	exe_swap_backup_path(exe_path)
+		.ok_or_else(|| Error::InvalidOsStr(exe_path.display().to_string()))
 }
 
 fn shell_single_quote(value: &str) -> String {

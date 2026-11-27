@@ -92,11 +92,9 @@ fn has_gamemaker_metadata(data: &[u8]) -> bool {
 }
 
 pub fn process_game(game: &mut Game) -> bool {
-	let Some(exe_path) = game.exe_path.as_ref() else {
-		return false;
-	};
+	let detection_exe_path = game.original_exe_path();
 
-	let Some(mmap) = crate::game_engines::mmap_safe::map_readonly(exe_path)
+	let Some(mmap) = crate::game_engines::mmap_safe::map_readonly(&detection_exe_path)
 		.ok_or_log("Failed to map GameMaker executable")
 	else {
 		return false;
@@ -117,7 +115,7 @@ pub fn process_game(game: &mut Game) -> bool {
 	let overlay_start = end_of_sections.min(mmap.len());
 
 	let version = try_read_version_from_overlay(overlay_start, &mmap)
-		.or_else(|| try_read_version_from_data_win(exe_path))
+		.or_else(|| try_read_version_from_data_win(&detection_exe_path))
 		.or_else(|| try_read_version_from_pe_sections(overlay_start, &mmap));
 
 	let pe_data = &mmap[..overlay_start];

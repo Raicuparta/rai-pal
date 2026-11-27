@@ -116,11 +116,7 @@ fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
 }
 
 pub fn process_game(game: &mut Game) -> bool {
-	let Some(exe_path) = game.exe_path.as_ref() else {
-		return false;
-	};
-
-	let Some(version) = check_exe(exe_path) else {
+	let Some(version) = check_exe(&game.original_exe_path()) else {
 		return false;
 	};
 
